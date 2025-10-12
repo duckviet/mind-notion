@@ -1,8 +1,9 @@
 import React, { useState, KeyboardEvent } from "react";
-import { Textarea } from "../ui/textarea";
+
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { Card } from "@/shared/components/ui/Card";
 // import noteAction from "@/services/note.action";
-import { toast } from "sonner";
 export default function NoteCard() {
   const [title, setTitle] = useState<string>(""); // Note title
   const [content, setContent] = useState<string>(""); // Note content
@@ -29,12 +30,12 @@ export default function NoteCard() {
   return (
     <div className="relative h-full">
       {/* Overlay */}
-      {isFocus && <div className="fixed inset-0 bg-gray-200/40 z-30" />}
+      {isFocus && <div className="fixed inset-0 bg-gray-300/40 z-30" />}
 
       {/* Card Container */}
-      <div
+      <Card
         className={cn(
-          "relative bg-gray-50 p-4 rounded-lg shadow-md transition-all duration-200 h-full",
+          "relative  rounded-lg   transition-all duration-200 h-full",
           isFocus ? "z-40" : "hover:shadow-lg"
         )}
       >
@@ -55,17 +56,17 @@ export default function NoteCard() {
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           onKeyDown={handleEnter}
-          className="p-0 h-[90%] no-scrollbar focus-visible:ring-0 focus-visible:border-none text-lg border-none resize-none bg-transparent"
+          className="p-0 shadow-none mb-4 ring-0 ring-offset-0 no-scrollbar focus-visible:ring-0 focus-visible:border-none text-lg border-none resize-none bg-transparent"
           placeholder="Type your message here..."
         />
 
         {/* Save Hint */}
         {content && (
-          <p className="bg-red-400 text-white absolute px-4 left-0   bottom-0  rounded-md rounded-t-none text-center w-full">
+          <p className="  bg-red-400 text-white absolute px-4 left-0   bottom-0  rounded-md rounded-t-none text-center w-full">
             Press Ctrl + Enter to save
           </p>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
