@@ -51,9 +51,9 @@ export default function HomePage() {
           />
         </div>
 
-        {/* <div className="mb-8">
+        <div className="mb-8">
           <CollaborativeEditor />
-        </div> */}
+        </div>
 
         <div className="space-y-6">
           <div className="flex items-center justify-between">
