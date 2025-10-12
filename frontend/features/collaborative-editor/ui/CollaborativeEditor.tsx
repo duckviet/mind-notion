@@ -1,12 +1,11 @@
-
 "use client";
 
 import React from "react";
 import { useCollaborativeEditor } from "../model/use-collaborative-editor";
 import { Textarea } from "@/shared/components/ui/textarea";
-
 export function CollaborativeEditor() {
-  const { text, self, users, textAreaRef, handleTextChange } = useCollaborativeEditor();
+  const { text, self, users, textAreaRef, handleTextChange } =
+    useCollaborativeEditor();
 
   const otherUsers = users.filter((u) => (self ? u.id !== self.id : true));
 
