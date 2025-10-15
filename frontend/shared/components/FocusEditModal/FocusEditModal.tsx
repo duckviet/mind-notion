@@ -4,6 +4,7 @@ import { X, Save, Tag, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Portal from "../PortalModal/PortalModal";
 import { Textarea } from "../ui/textarea";
+import { RichTextEditor } from "../RichTextEditor";
 
 interface FocusEditModalProps {
   isOpen: boolean;
@@ -125,20 +126,22 @@ export default function FocusEditModal({
             >
               <div className="flex-1 flex glass-bg rounded-xl  rounded-glass shadow-glass-xl border border-glass-border overflow-hidden">
                 {/* Content */}
-                <div className="flex-1 flex flex-col p-6 max-w-4xl overflow-hidden">
+                <div className="flex-1 flex flex-col p-6 pr-0 overflow-scroll">
                   {/* Content Textarea */}
 
-                  <Textarea
+                  {/* <Textarea
                     ref={contentRef}
                     name="content"
                     value={formData.content}
                     onChange={handleInputChange}
                     placeholder="Start writing your note..."
-                    className="p-0 shadow-none rounded-none mb-4 ring-0 ring-offset-0 no-scrollbar focus-visible:ring-0 focus-visible:border-none text-lg border-none resize-none bg-transparent"
-                  />
+                    className="p-0 md:text-lg h-full shadow-none rounded-none mb-4 ring-0 ring-offset-0 no-scrollbar focus-visible:ring-0 focus-visible:border-none text-lg border-none resize-none bg-transparent "
+                  /> */}
+
+                  <RichTextEditor className="" />
                 </div>
 
-                <div className="p-6">
+                <div className="p-6 w-[400px] bg-transparent">
                   {/* Title Input */}
                   <div className="mb-6">
                     <input
