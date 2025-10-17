@@ -37,10 +37,27 @@ func (h *WebSocketHandler) HandleConnections(w http.ResponseWriter, r *http.Requ
 	}
 	defer h.cleanupClient(ws)
 
-	// Create a new user
-	user, err := h.collaborationService.GetUserUseCase().CreateUser("")
+	log.Printf("URL: %v", (r.URL))
+	// Get user ID from query parameter or create new user
+	userID := r.URL.Query().Get("user_id")
+	var user *domain.User
+
+	if userID != "" {
+		// Try to get existing user
+		user, err = h.collaborationService.GetUserUseCase().GetUser(userID)
+		if err != nil {
+			log.Printf("User not found, creating new user: %v", err)
+			user, err = h.collaborationService.GetUserUseCase().CreateUser("")
+		}
+	} else {
+		// Create new user
+		user, err = h.collaborationService.GetUserUseCase().CreateUser("")
+	}
+
+	log.Printf("User connected: %+v", user)
+
 	if err != nil {
-		log.Printf("Failed to create user: %v", err)
+		log.Printf("Failed to create/get user: %v", err)
 		return
 	}
 

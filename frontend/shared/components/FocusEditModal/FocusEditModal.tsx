@@ -4,6 +4,7 @@ import { X, Save, Tag, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Portal from "../PortalModal/PortalModal";
 import { Textarea } from "../ui/textarea";
+import { RichTextEditor } from "../RichTextEditor";
 
 interface FocusEditModalProps {
   isOpen: boolean;
@@ -100,7 +101,7 @@ export default function FocusEditModal({
   }
 
   return (
-    <Portal>
+    <Portal lockScroll={isOpen || false}>
       <AnimatePresence>
         {isOpen && (
           <>
@@ -119,61 +120,28 @@ export default function FocusEditModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="fixed inset-4 z-50 flex flex-col"
+              className="fixed inset-4 z-50 flex flex-col max-w-7xl w-full mx-auto"
               onKeyDown={handleKeyDown}
               tabIndex={-1}
             >
-              <div className="flex-1 flex glass-bg rounded-xl max-w-7xl w-full mx-auto rounded-glass shadow-glass-xl border border-glass-border overflow-hidden">
-                {/* Header */}
-                {/* <div className="flex items-center justify-between p-6 border-b border-glass-border">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-glass-hover text-green-500">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-text-primary">
-                        Focus Edit
-                      </h2>
-                      <p className="text-sm text-text-muted">
-                        {note?.id ? "Editing note" : "Creating new note"}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleSave}
-                      className="flex items-center gap-2 px-4 py-2 glass-bg rounded-lg border border-glass-border hover:bg-glass-hover transition-colors duration-200"
-                    >
-                      <Save className="w-4 h-4" />
-                      <span className="text-sm font-medium">Save</span>
-                      <kbd className="text-xs text-text-muted">⌘S</kbd>
-                    </button>
-                    <button
-                      onClick={onClose}
-                      className="p-2 rounded-lg hover:bg-glass-hover transition-colors duration-200"
-                      aria-label="Close"
-                    >
-                      <X className="w-5 h-5 text-text-muted" />
-                    </button>
-                  </div>
-                </div> */}
-
+              <div className="flex-1 flex glass-bg rounded-xl  rounded-glass shadow-glass-xl border border-glass-border overflow-hidden">
                 {/* Content */}
-                <div className="flex-1 flex flex-col p-6 overflow-hidden justify-center items-center">
+                <div className="flex-1 flex flex-col p-6 pr-0 overflow-scroll">
                   {/* Content Textarea */}
-                  <div className="flex-1 flex flex-col max-w-4xl w-full  ">
-                    <Textarea
-                      ref={contentRef}
-                      name="content"
-                      value={formData.content}
-                      onChange={handleInputChange}
-                      placeholder="Start writing your note..."
-                      className="p-0 shadow-none rounded-none mb-4 ring-0 ring-offset-0 no-scrollbar focus-visible:ring-0 focus-visible:border-none text-lg border-none resize-none bg-transparent"
-                    />
-                  </div>
+
+                  {/* <Textarea
+                    ref={contentRef}
+                    name="content"
+                    value={formData.content}
+                    onChange={handleInputChange}
+                    placeholder="Start writing your note..."
+                    className="p-0 md:text-lg h-full shadow-none rounded-none mb-4 ring-0 ring-offset-0 no-scrollbar focus-visible:ring-0 focus-visible:border-none text-lg border-none resize-none bg-transparent "
+                  /> */}
+
+                  <RichTextEditor className="" />
                 </div>
-                <div className="p-6">
+
+                <div className="p-6 w-[400px] bg-transparent">
                   {/* Title Input */}
                   <div className="mb-6">
                     <input

@@ -56,7 +56,7 @@ export default function PreviewOverlay({
   };
 
   return (
-    <Portal>
+    <Portal lockScroll={isOpen || false}>
       <AnimatePresence>
         {isOpen && (
           <>
