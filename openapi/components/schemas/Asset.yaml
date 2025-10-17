@@ -1,0 +1,17 @@
+type: object
+required:
+  - id
+  - name
+  - uri
+properties:
+  id:
+    type: integer
+    format: int64
+    example: 1
+  name:
+    type: string
+    example: "my_first_asset"
+  uri:
+    type: string
+    format: uri
+    example: "s3://my-bucket/data.csv"

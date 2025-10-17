@@ -1,0 +1,19 @@
+post:
+  summary: Authenticate to receive a JWT
+  operationId: login
+  tags: [Auth]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Auth/LoginCredentials.yaml
+  responses:
+    "200":
+      description: Authentication successful
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Auth/AuthTokens.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
