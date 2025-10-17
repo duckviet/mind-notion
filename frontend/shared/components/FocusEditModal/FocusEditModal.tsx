@@ -101,7 +101,7 @@ export default function FocusEditModal({
   }
 
   return (
-    <Portal>
+    <Portal lockScroll={isOpen || false}>
       <AnimatePresence>
         {isOpen && (
           <>

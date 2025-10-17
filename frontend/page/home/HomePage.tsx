@@ -55,39 +55,37 @@ export default function HomePage() {
           <CollaborativeEditor />
         </div>
 
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold text-text-primary">
-              {query ? "Search Results" : "Your Content"}
-            </h2>
-            <div className="text-sm text-text-muted">
-              {filteredResults.length}{" "}
-              {filteredResults.length === 1 ? "item" : "items"} found
-            </div>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-semibold text-text-primary">
+            {query ? "Search Results" : "Your Content"}
+          </h2>
+          <div className="text-sm text-text-muted">
+            {filteredResults.length}{" "}
+            {filteredResults.length === 1 ? "item" : "items"} found
           </div>
-
-          {filteredResults.length === 0 ? (
-            <EmptyState
-              type={query ? "no-results" : "new"}
-              action={
-                query
-                  ? undefined
-                  : {
-                      label: "Add your first item",
-                      onClick: () => setIsFabOpen(true),
-                    }
-              }
-            />
-          ) : (
-            <MasonryGrid
-              data={{
-                result: filteredResults,
-              }}
-              isLoading={false}
-              handleDelete={async () => {}}
-            />
-          )}
         </div>
+
+        {filteredResults.length === 0 ? (
+          <EmptyState
+            type={query ? "no-results" : "new"}
+            action={
+              query
+                ? undefined
+                : {
+                    label: "Add your first item",
+                    onClick: () => setIsFabOpen(true),
+                  }
+            }
+          />
+        ) : (
+          <MasonryGrid
+            data={{
+              result: filteredResults,
+            }}
+            isLoading={false}
+            handleDelete={async () => {}}
+          />
+        )}
       </div>
 
       <FloatingActionButton isOpen={isFabOpen} onToggle={handleFabToggle} />
