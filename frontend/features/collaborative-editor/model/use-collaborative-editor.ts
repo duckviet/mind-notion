@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useState, useRef } from "react";
 
 // Types would ideally move to the `entities` layer (e.g., entities/user, entities/document)
@@ -17,12 +16,46 @@ export type InitPayload = {
 export type CursorPayload = { id: string; cursor: Cursor };
 export type DocUpdatePayload = { content: string; version: number };
 
+// LocalStorage keys
+const USER_ID_KEY = "collaborative_editor_user_id";
+const USER_NAME_KEY = "collaborative_editor_user_name";
+
+// Generate or get user ID from localStorage (SSR safe)
+const getOrCreateUserId = (): string => {
+  if (typeof window === "undefined") {
+    return `user_${Date.now()}_${Math.random().toString(36)}`;
+  }
+
+  let userId = localStorage.getItem(USER_ID_KEY);
+  if (!userId) {
+    userId = `user_${Date.now()}_${Math.random().toString(36)}`;
+    localStorage.setItem(USER_ID_KEY, userId);
+  }
+  return userId;
+};
+
+// Get or set user name from localStorage (SSR safe)
+const getOrCreateUserName = (): string => {
+  if (typeof window === "undefined") {
+    return `Guest ${Math.floor(Math.random() * 1000)}`;
+  }
+
+  let userName = localStorage.getItem(USER_NAME_KEY);
+  if (!userName) {
+    userName = `Guest ${Math.floor(Math.random() * 1000)}`;
+    localStorage.setItem(USER_NAME_KEY, userName);
+  }
+  return userName;
+};
+
 export function useCollaborativeEditor() {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [text, setText] = useState("");
   const [version, setVersion] = useState(0);
   const [self, setSelf] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
+  const [userId] = useState<string>(getOrCreateUserId());
+  const [userName] = useState<string>(getOrCreateUserName());
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const send = useCallback(
@@ -35,13 +68,14 @@ export function useCollaborativeEditor() {
   );
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8080/ws");
+    // Connect with user_id as query parameter
+    const ws = new WebSocket(
+      `ws://localhost:8080/ws?user_id=${encodeURIComponent(userId)}`
+    );
 
     ws.onopen = () => {
-      const random = Math.floor(Math.random() * 1000);
-      ws.send(
-        JSON.stringify({ type: "join", payload: { name: `Guest ${random}` } })
-      );
+      // Send join message with stored user name
+      ws.send(JSON.stringify({ type: "join", payload: { name: userName } }));
     };
 
     ws.onmessage = (event) => {
@@ -53,6 +87,16 @@ export function useCollaborativeEditor() {
           setUsers(p.users);
           setText(p.content);
           setVersion(p.version);
+
+          // Update localStorage with the user info from server
+          if (typeof window !== "undefined") {
+            if (p.self.id !== userId) {
+              localStorage.setItem(USER_ID_KEY, p.self.id);
+            }
+            if (p.self.name !== userName) {
+              localStorage.setItem(USER_NAME_KEY, p.self.name);
+            }
+          }
           break;
         }
         case "user_joined": {
@@ -105,7 +149,7 @@ export function useCollaborativeEditor() {
     return () => {
       ws.close();
     };
-  }, []);
+  }, [userId, userName]);
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = event.target.value;
@@ -136,5 +180,34 @@ export function useCollaborativeEditor() {
     };
   }, [textAreaRef, updateCursor]);
 
-  return { text, self, users, textAreaRef, handleTextChange };
+  const updateUserName = useCallback(
+    (newName: string) => {
+      if (typeof window !== "undefined") {
+        localStorage.setItem(USER_NAME_KEY, newName);
+      }
+      send({ type: "join", payload: { name: newName } });
+    },
+    [send]
+  );
+
+  const clearUserData = useCallback(() => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(USER_ID_KEY);
+      localStorage.removeItem(USER_NAME_KEY);
+      // Reload page to get new user ID
+      window.location.reload();
+    }
+  }, []);
+
+  return {
+    text,
+    self,
+    users,
+    userId,
+    userName,
+    textAreaRef,
+    handleTextChange,
+    updateUserName,
+    clearUserData,
+  };
 }

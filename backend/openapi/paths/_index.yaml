@@ -1,0 +1,9 @@
+paths:
+  /auth/login:
+    $ref: "./jwt-auth/login.yaml"
+  /auth/register:
+    $ref: "./jwt-auth/register.yaml"
+  /auth/logout:
+    $ref: "./jwt-auth/logout.yaml"
+  /auth/check:
+    $ref: "./jwt-auth/check.yaml"

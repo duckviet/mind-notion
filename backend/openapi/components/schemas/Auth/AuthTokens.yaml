@@ -1,0 +1,8 @@
+type: object
+properties:
+  access_token:
+    type: string
+    example: "eyJhbGciOiJI..."
+  refresh_token:
+    type: string
+    example: "def50200..."

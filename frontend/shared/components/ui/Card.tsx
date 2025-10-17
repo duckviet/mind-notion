@@ -15,7 +15,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -2, scale: 1.02 }}
+        whileHover={{ y: -2, scale: 1 }}
         transition={{
           type: "spring",
           stiffness: 300,

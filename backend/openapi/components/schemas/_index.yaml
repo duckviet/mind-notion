@@ -1,0 +1,10 @@
+# components/schemas/_index.yaml
+AuthTokens:
+  $ref: "./Auth/AuthTokens.yaml"
+LoginCredentials:
+  $ref: "./Auth/LoginCredentials.yaml"
+UserRegistration:
+  $ref: "./Auth/UserRegistration.yaml"
+
+Asset:
+  $ref: "./Asset.yaml"

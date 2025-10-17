@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 
 // Mock data - will be moved to entities layer later

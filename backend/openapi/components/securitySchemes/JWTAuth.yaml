@@ -1,0 +1,6 @@
+type: http
+scheme: bearer
+bearerFormat: JWT
+description: |
+  Enter your JWT token in the format: Bearer <token>.
+  The token can be obtained from the `/auth/login` endpoint.

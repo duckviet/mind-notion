@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: Modular JWT Authenticated API
+  version: 1.0.0
+  description: An example API using JWT imported from a separate file.
+
+servers:
+  - url: http://localhost:8080/api/v1
+
+# Áp dụng scheme 'JWTAuth' cho toàn bộ API.
+security:
+  - BearerAuth: []
+
+paths:
+  # $ref: "./paths/jwt-auth.yaml#/paths"
+  /auth/login:
+    $ref: "./paths/jwt-auth/login.yaml"
+  /auth/register:
+    $ref: "./paths/jwt-auth/register.yaml"
+  /auth/logout:
+    $ref: "./paths/jwt-auth/logout.yaml"
+  /auth/check:
+    $ref: "./paths/jwt-auth/check.yaml"
+
+# Phần components giờ đây chỉ chứa các tham chiếu
+components:
+  securitySchemes:
+    # Key 'BearerAuth' sẽ có giá trị được load từ file bên ngoài
+    BearerAuth:
+      $ref: "./components/securitySchemes/JWTAuth.yaml"
+
+  schemas:
+    $ref: "./components/schemas/_index.yaml"
+
+  # (Bonus) Import các response tái sử dụng
+  responses:
+    $ref: "./components/responses/_index.yaml"
+
+  parameters:
+    $ref: "./components/parameters/_index.yaml"

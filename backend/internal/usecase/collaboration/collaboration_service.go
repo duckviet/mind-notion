@@ -125,7 +125,7 @@ func (s *CollaborationServiceImpl) HandleMessage(client *domain.Client, message 
 // handleJoin handles join messages
 func (s *CollaborationServiceImpl) handleJoin(client *domain.Client, payload json.RawMessage) error {
 	var joinPayload domain.JoinPayload
-	if err := json.Unmarshal(payload, &joinPayload); err != nil {
+ 	if err := json.Unmarshal(payload, &joinPayload); err != nil {
 		return fmt.Errorf("failed to unmarshal join payload: %w", err)
 	}
 	
