@@ -15,8 +15,9 @@ properties:
     type: string
     example: "This is my note content"
   thumbnail:
-    type: base64
-    example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD/"
+    type: string
+    format: uri
+    example: "https://example.com/thumbnail.png"
   tags:
     type: array
     items:
