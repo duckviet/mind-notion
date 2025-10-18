@@ -1,0 +1,29 @@
+type: object
+properties:
+  # Core fields
+  title:
+    type: string
+    example: "My Note"
+  content_type:
+    type: string
+    example: "note/article/image/video/audio"
+  status:
+    type: string
+    example: "draft/published/archived"
+
+  content:
+    type: string
+    example: "This is my note content"
+  thumbnail:
+    type: base64
+    example: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD/"
+  tags:
+    type: array
+    items:
+      type: string
+    example: ["tag1", "tag2"]
+
+  is_public:
+    type: boolean
+    example: false
+required: [title, content_type, status, content, thumbnail, tags, is_public]

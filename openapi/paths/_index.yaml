@@ -1,4 +1,5 @@
 paths:
+  # JWT Auth
   /auth/login:
     $ref: "./jwt-auth/login.yaml"
   /auth/register:
@@ -7,3 +8,42 @@ paths:
     $ref: "./jwt-auth/logout.yaml"
   /auth/check:
     $ref: "./jwt-auth/check.yaml"
+
+  # User Management
+  /user/me:
+    $ref: "./user/me.yaml"
+  /user/update:
+    $ref: "./user/update.yaml"
+  /user/delete:
+    $ref: "./user/delete.yaml"
+
+  # Note Management
+  /notes:
+    post:
+      $ref: "./note/create.yaml"
+    get:
+      $ref: "./note/list.yaml"
+  /notes/{id}:
+    get:
+      $ref: "./note/get.yaml"
+    put:
+      $ref: "./note/update.yaml"
+    delete:
+      $ref: "./note/delete.yaml"
+
+  # Folder Management
+  /folders:
+    post:
+      $ref: "./folder/create.yaml"
+    get:
+      $ref: "./folder/list.yaml"
+  /folders/{id}:
+    get:
+      $ref: "./folder/get.yaml"
+    put:
+      $ref: "./folder/update.yaml"
+    delete:
+      $ref: "./folder/delete.yaml"
+  /folders/{id}/notes:
+    post:
+      $ref: "./folder/add-note.yaml"

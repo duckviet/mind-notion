@@ -1,0 +1,46 @@
+type: object
+properties:
+  id:
+    type: string
+    example: "1234567890"
+  name:
+    type: string
+    example: "My Folder"
+  parent_id:
+    type: string
+    example: "1234567890"
+  is_public:
+    type: boolean
+    example: false
+
+  notes:
+    type: array
+    items:
+      type: string
+    example: ["1234567890", "1234567891"]
+  children_folders:
+    type: array
+    items:
+      type: string
+    example: ["1234567890", "1234567891"]
+
+  created_at:
+    type: string
+    format: date-time
+    example: "2021-01-01T00:00:00Z"
+  updated_at:
+    type: string
+    format: date-time
+    example: "2021-01-01T00:00:00Z"
+
+required:
+  [
+    id,
+    name,
+    parent_id,
+    is_public,
+    notes,
+    children_folders,
+    created_at,
+    updated_at,
+  ]

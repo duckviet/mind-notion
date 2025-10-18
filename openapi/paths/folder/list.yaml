@@ -1,0 +1,39 @@
+get:
+  summary: List user's folders
+  operationId: listFolders
+  tags: [Folder]
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: ../../components/parameters/Pagination.yaml#/LimitParam
+    - $ref: ../../components/parameters/Pagination.yaml#/OffsetParam
+    - name: parent_id
+      in: query
+      schema:
+        type: string
+      description: Filter folders by parent ID (null for root folders)
+  responses:
+    "200":
+      description: Folders retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              folders:
+                type: array
+                items:
+                  $ref: ../../components/schemas/Folder/Res_DetailFolder.yaml
+              total:
+                type: integer
+                description: Total number of folders
+              limit:
+                type: integer
+                description: Number of folders per page
+              offset:
+                type: integer
+                description: Number of folders skipped
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml
