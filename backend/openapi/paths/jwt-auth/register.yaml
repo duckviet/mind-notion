@@ -7,14 +7,14 @@ post:
     content:
       application/json:
         schema:
-          $ref: ../../components/schemas/Auth/UserRegistration.yaml
+          $ref: ../../components/schemas/Auth/Req_UserRegistration.yaml
   responses:
     "201":
       description: User registered successfully
       content:
         application/json:
           schema:
-            $ref: ../../components/schemas/Auth/AuthTokens.yaml
+            $ref: ../../components/schemas/Auth/Res_AuthTokens.yaml
     "400":
       $ref: ../../components/responses/BadRequest.yaml
     "401":
