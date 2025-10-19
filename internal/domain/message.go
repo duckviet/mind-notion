@@ -1,6 +1,10 @@
 package domain
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+)
 
 // MessageType represents the type of WebSocket message
 type MessageType string
@@ -43,8 +47,8 @@ type DocUpdatePayload struct {
 
 // InitPayload represents the payload for initialization message
 type InitPayload struct {
-	Self    User   `json:"self"`
-	Users   []User `json:"users"`
+	Self    models.User   `json:"self"`
+	Users   []models.User `json:"users"`
 	Content string `json:"content"`
 	Version int    `json:"version"`
 }
