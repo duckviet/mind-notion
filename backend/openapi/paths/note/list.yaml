@@ -1,0 +1,45 @@
+get:
+  summary: List user's notes
+  operationId: listNotes
+  tags: [Note]
+  security:
+    - BearerAuth: []
+  parameters:
+    - $ref: ../../components/parameters/Pagination.yaml#/LimitParam
+    - $ref: ../../components/parameters/Pagination.yaml#/OffsetParam
+    - name: folder_id
+      in: query
+      schema:
+        type: string
+      description: Filter notes by folder ID
+    - name: status
+      in: query
+      schema:
+        type: string
+        enum: [draft, published, archived]
+      description: Filter notes by status
+  responses:
+    "200":
+      description: Notes retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              notes:
+                type: array
+                items:
+                  $ref: ../../components/schemas/Note/Res_DetailNote.yaml
+              total:
+                type: integer
+                description: Total number of notes
+              limit:
+                type: integer
+                description: Number of notes per page
+              offset:
+                type: integer
+                description: Number of notes skipped
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

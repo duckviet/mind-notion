@@ -1,0 +1,22 @@
+delete:
+  summary: Delete folder by ID
+  operationId: deleteFolder
+  tags: [Folder]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Folder ID
+  responses:
+    "200":
+      description: Folder deleted successfully
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

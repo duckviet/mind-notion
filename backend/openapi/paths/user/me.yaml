@@ -1,0 +1,19 @@
+get:
+  summary: Get current user information
+  operationId: getMe
+  tags: [User]
+  security:
+    - BearerAuth: []
+  responses:
+    "200":
+      description: User information
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/User/Res_User.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

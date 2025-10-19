@@ -1,0 +1,26 @@
+get:
+  summary: Get folder by ID
+  operationId: getFolder
+  tags: [Folder]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Folder ID
+  responses:
+    "200":
+      description: Folder retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Folder/Res_DetailFolder.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

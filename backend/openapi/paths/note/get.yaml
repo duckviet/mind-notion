@@ -1,0 +1,26 @@
+get:
+  summary: Get note by ID
+  operationId: getNote
+  tags: [Note]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+  responses:
+    "200":
+      description: Note retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Note/Res_DetailNote.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

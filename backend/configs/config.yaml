@@ -1,0 +1,22 @@
+server:
+  host: localhost
+  port: "8080"
+  mode: debug
+
+database:
+  host: localhost
+  port: "5433"
+  user: postgres
+  password: password
+  name: collaborative_editor
+  ssl_mode: disable
+
+jwt:
+  secret_key: your-super-secret-jwt-key-change-this-in-production
+  expires_in: 3600 # 1 hour in seconds
+
+redis:
+  host: localhost
+  port: "6380"
+  password: ""
+  db: 0

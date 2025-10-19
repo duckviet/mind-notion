@@ -7,13 +7,13 @@ post:
     content:
       application/json:
         schema:
-          $ref: ../../components/schemas/Auth/LoginCredentials.yaml
+          $ref: ../../components/schemas/Auth/Req_LoginCredentials.yaml
   responses:
     "200":
       description: Authentication successful
       content:
         application/json:
           schema:
-            $ref: ../../components/schemas/Auth/AuthTokens.yaml
+            $ref: ../../components/schemas/Auth/Res_AuthTokens.yaml
     "401":
       $ref: ../../components/responses/Unauthorized.yaml

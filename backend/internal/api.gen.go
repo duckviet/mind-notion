@@ -8,12 +8,15 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"fmt"
+	"net/http"
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
@@ -21,27 +24,132 @@ const (
 	BearerAuthScopes = "BearerAuth.Scopes"
 )
 
-// AuthTokens defines model for AuthTokens.
-type AuthTokens struct {
-	AccessToken  *string `json:"access_token,omitempty"`
-	RefreshToken *string `json:"refresh_token,omitempty"`
+// Defines values for ListNotesParamsStatus.
+const (
+	Archived  ListNotesParamsStatus = "archived"
+	Draft     ListNotesParamsStatus = "draft"
+	Published ListNotesParamsStatus = "published"
+)
+
+// ReqAddNote defines model for Req_AddNote.
+type ReqAddNote struct {
+	FolderId string `json:"folder_id"`
+	NoteId   string `json:"note_id"`
 }
 
-// LoginCredentials defines model for LoginCredentials.
-type LoginCredentials struct {
+// ReqCreateFolder defines model for Req_CreateFolder.
+type ReqCreateFolder struct {
+	IsPublic bool   `json:"is_public"`
+	Name     string `json:"name"`
+	ParentId string `json:"parent_id"`
+}
+
+// ReqCreateNote defines model for Req_CreateNote.
+type ReqCreateNote struct {
+	Content     string   `json:"content"`
+	ContentType string   `json:"content_type"`
+	IsPublic    bool     `json:"is_public"`
+	Status      string   `json:"status"`
+	Tags        []string `json:"tags"`
+	Thumbnail   string   `json:"thumbnail"`
+	Title       string   `json:"title"`
+}
+
+// ReqLoginCredentials defines model for Req_LoginCredentials.
+type ReqLoginCredentials struct {
 	Password string `json:"password"`
 	Username string `json:"username"`
 }
 
-// UserRegistration defines model for UserRegistration.
-type UserRegistration struct {
+// ReqUpdateFolder defines model for Req_UpdateFolder.
+type ReqUpdateFolder struct {
+	IsPublic bool   `json:"is_public"`
+	Name     string `json:"name"`
+	ParentId string `json:"parent_id"`
+}
+
+// ReqUpdateNote defines model for Req_UpdateNote.
+type ReqUpdateNote struct {
+	Content   string   `json:"content"`
+	Id        string   `json:"id"`
+	IsPublic  bool     `json:"is_public"`
+	Tags      []string `json:"tags"`
+	Thumbnail string   `json:"thumbnail"`
+	Title     string   `json:"title"`
+}
+
+// ReqUpdateProfile defines model for Req_UpdateProfile.
+type ReqUpdateProfile struct {
+	Avatar string              `json:"avatar"`
+	Email  openapi_types.Email `json:"email"`
+	Name   string              `json:"name"`
+}
+
+// ReqUserRegistration defines model for Req_UserRegistration.
+type ReqUserRegistration struct {
 	Email    openapi_types.Email `json:"email"`
 	Password string              `json:"password"`
 	Username string              `json:"username"`
 }
 
+// ResAuthTokens defines model for Res_AuthTokens.
+type ResAuthTokens struct {
+	AccessToken  *string `json:"access_token,omitempty"`
+	RefreshToken *string `json:"refresh_token,omitempty"`
+}
+
+// ResDetailFolder defines model for Res_DetailFolder.
+type ResDetailFolder struct {
+	ChildrenFolders []string  `json:"children_folders"`
+	CreatedAt       time.Time `json:"created_at"`
+	Id              string    `json:"id"`
+	IsPublic        bool      `json:"is_public"`
+	Name            string    `json:"name"`
+	Notes           []string  `json:"notes"`
+	ParentId        string    `json:"parent_id"`
+	UpdatedAt       time.Time `json:"updated_at"`
+}
+
+// ResDetailNote defines model for Res_DetailNote.
+type ResDetailNote struct {
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	Id        string    `json:"id"`
+	IsPublic  bool      `json:"is_public"`
+	Tags      []string  `json:"tags"`
+	Thumbnail string    `json:"thumbnail"`
+	Title     string    `json:"title"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+// User defines model for User.
+type User struct {
+	Avatar    string              `json:"avatar"`
+	CreatedAt time.Time           `json:"created_at"`
+	Email     openapi_types.Email `json:"email"`
+	Id        string              `json:"id"`
+	Name      string              `json:"name"`
+	UpdatedAt time.Time           `json:"updated_at"`
+}
+
+// LimitParam defines model for LimitParam.
+type LimitParam = int
+
+// OffsetParam defines model for OffsetParam.
+type OffsetParam = int
+
 // BadRequest defines model for BadRequest.
 type BadRequest struct {
+	Error *string `json:"error,omitempty"`
+}
+
+// InternalServerError defines model for InternalServerError.
+type InternalServerError struct {
+	Error *string `json:"error,omitempty"`
+}
+
+// NotFound defines model for NotFound.
+type NotFound struct {
 	Error *string `json:"error,omitempty"`
 }
 
@@ -50,11 +158,59 @@ type Unauthorized struct {
 	Error *string `json:"error,omitempty"`
 }
 
+// ListFoldersParams defines parameters for ListFolders.
+type ListFoldersParams struct {
+	// Limit Maximum number of results to return.
+	Limit *LimitParam `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of results to skip for pagination.
+	Offset *OffsetParam `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// ParentId Filter folders by parent ID (null for root folders)
+	ParentId *string `form:"parent_id,omitempty" json:"parent_id,omitempty"`
+}
+
+// ListNotesParams defines parameters for ListNotes.
+type ListNotesParams struct {
+	// Limit Maximum number of results to return.
+	Limit *LimitParam `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of results to skip for pagination.
+	Offset *OffsetParam `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// FolderId Filter notes by folder ID
+	FolderId *string `form:"folder_id,omitempty" json:"folder_id,omitempty"`
+
+	// Status Filter notes by status
+	Status *ListNotesParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// ListNotesParamsStatus defines parameters for ListNotes.
+type ListNotesParamsStatus string
+
 // LoginJSONRequestBody defines body for Login for application/json ContentType.
-type LoginJSONRequestBody = LoginCredentials
+type LoginJSONRequestBody = ReqLoginCredentials
 
 // RegisterJSONRequestBody defines body for Register for application/json ContentType.
-type RegisterJSONRequestBody = UserRegistration
+type RegisterJSONRequestBody = ReqUserRegistration
+
+// CreateFolderJSONRequestBody defines body for CreateFolder for application/json ContentType.
+type CreateFolderJSONRequestBody = ReqCreateFolder
+
+// AddNoteToFolderJSONRequestBody defines body for AddNoteToFolder for application/json ContentType.
+type AddNoteToFolderJSONRequestBody = ReqAddNote
+
+// UpdateFolderJSONRequestBody defines body for UpdateFolder for application/json ContentType.
+type UpdateFolderJSONRequestBody = ReqUpdateFolder
+
+// CreateNoteJSONRequestBody defines body for CreateNote for application/json ContentType.
+type CreateNoteJSONRequestBody = ReqCreateNote
+
+// UpdateNoteJSONRequestBody defines body for UpdateNote for application/json ContentType.
+type UpdateNoteJSONRequestBody = ReqUpdateNote
+
+// UpdateMeJSONRequestBody defines body for UpdateMe for application/json ContentType.
+type UpdateMeJSONRequestBody = ReqUpdateProfile
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -70,6 +226,48 @@ type ServerInterface interface {
 	// Register a new user
 	// (POST /auth/register)
 	Register(ctx echo.Context) error
+	// Create a new folder
+	// (POST /folders/create)
+	CreateFolder(ctx echo.Context) error
+	// List user's folders
+	// (GET /folders/list)
+	ListFolders(ctx echo.Context, params ListFoldersParams) error
+	// Get folder by ID
+	// (GET /folders/{id})
+	GetFolder(ctx echo.Context, id string) error
+	// Add note to folder
+	// (POST /folders/{id}/add-note)
+	AddNoteToFolder(ctx echo.Context, id string) error
+	// Delete folder by ID
+	// (DELETE /folders/{id}/delete)
+	DeleteFolder(ctx echo.Context, id string) error
+	// Update folder by ID
+	// (PUT /folders/{id}/update)
+	UpdateFolder(ctx echo.Context, id string) error
+	// Create a new note
+	// (POST /notes)
+	CreateNote(ctx echo.Context) error
+	// List user's notes
+	// (GET /notes/list)
+	ListNotes(ctx echo.Context, params ListNotesParams) error
+	// Get note by ID
+	// (GET /notes/{id})
+	GetNote(ctx echo.Context, id string) error
+	// Delete note by ID
+	// (DELETE /notes/{id}/delete)
+	DeleteNote(ctx echo.Context, id string) error
+	// Update note by ID
+	// (PUT /notes/{id}/update)
+	UpdateNote(ctx echo.Context, id string) error
+	// Delete current user
+	// (DELETE /user/delete)
+	DeleteMe(ctx echo.Context) error
+	// Get current user information
+	// (GET /user/me)
+	GetMe(ctx echo.Context) error
+	// Update current user information
+	// (PATCH /user/update)
+	UpdateMe(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -121,6 +319,262 @@ func (w *ServerInterfaceWrapper) Register(ctx echo.Context) error {
 	return err
 }
 
+// CreateFolder converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateFolder(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.CreateFolder(ctx)
+	return err
+}
+
+// ListFolders converts echo context to params.
+func (w *ServerInterfaceWrapper) ListFolders(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListFoldersParams
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+	}
+
+	// ------------- Optional query parameter "parent_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "parent_id", ctx.QueryParams(), &params.ParentId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter parent_id: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.ListFolders(ctx, params)
+	return err
+}
+
+// GetFolder converts echo context to params.
+func (w *ServerInterfaceWrapper) GetFolder(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetFolder(ctx, id)
+	return err
+}
+
+// AddNoteToFolder converts echo context to params.
+func (w *ServerInterfaceWrapper) AddNoteToFolder(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.AddNoteToFolder(ctx, id)
+	return err
+}
+
+// DeleteFolder converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteFolder(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteFolder(ctx, id)
+	return err
+}
+
+// UpdateFolder converts echo context to params.
+func (w *ServerInterfaceWrapper) UpdateFolder(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UpdateFolder(ctx, id)
+	return err
+}
+
+// CreateNote converts echo context to params.
+func (w *ServerInterfaceWrapper) CreateNote(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.CreateNote(ctx)
+	return err
+}
+
+// ListNotes converts echo context to params.
+func (w *ServerInterfaceWrapper) ListNotes(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListNotesParams
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
+	}
+
+	// ------------- Optional query parameter "folder_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "folder_id", ctx.QueryParams(), &params.FolderId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter folder_id: %s", err))
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", ctx.QueryParams(), &params.Status)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter status: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.ListNotes(ctx, params)
+	return err
+}
+
+// GetNote converts echo context to params.
+func (w *ServerInterfaceWrapper) GetNote(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetNote(ctx, id)
+	return err
+}
+
+// DeleteNote converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteNote(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteNote(ctx, id)
+	return err
+}
+
+// UpdateNote converts echo context to params.
+func (w *ServerInterfaceWrapper) UpdateNote(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "id" -------------
+	var id string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", ctx.Param("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter id: %s", err))
+	}
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UpdateNote(ctx, id)
+	return err
+}
+
+// DeleteMe converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteMe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteMe(ctx)
+	return err
+}
+
+// GetMe converts echo context to params.
+func (w *ServerInterfaceWrapper) GetMe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetMe(ctx)
+	return err
+}
+
+// UpdateMe converts echo context to params.
+func (w *ServerInterfaceWrapper) UpdateMe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(BearerAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UpdateMe(ctx)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -153,28 +607,66 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/auth/login", wrapper.Login)
 	router.POST(baseURL+"/auth/logout", wrapper.Logout)
 	router.POST(baseURL+"/auth/register", wrapper.Register)
+	router.POST(baseURL+"/folders/create", wrapper.CreateFolder)
+	router.GET(baseURL+"/folders/list", wrapper.ListFolders)
+	router.GET(baseURL+"/folders/:id", wrapper.GetFolder)
+	router.POST(baseURL+"/folders/:id/add-note", wrapper.AddNoteToFolder)
+	router.DELETE(baseURL+"/folders/:id/delete", wrapper.DeleteFolder)
+	router.PUT(baseURL+"/folders/:id/update", wrapper.UpdateFolder)
+	router.POST(baseURL+"/notes", wrapper.CreateNote)
+	router.GET(baseURL+"/notes/list", wrapper.ListNotes)
+	router.GET(baseURL+"/notes/:id", wrapper.GetNote)
+	router.DELETE(baseURL+"/notes/:id/delete", wrapper.DeleteNote)
+	router.PUT(baseURL+"/notes/:id/update", wrapper.UpdateNote)
+	router.DELETE(baseURL+"/user/delete", wrapper.DeleteMe)
+	router.GET(baseURL+"/user/me", wrapper.GetMe)
+	router.PATCH(baseURL+"/user/update", wrapper.UpdateMe)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/8RW32/bNhD+Vwhuj4IkJxtQ6GlpsQ0JNmzIXPQhMVaaPFtMJZI7Um69wv/7cKQUS7Ga",
-	"df2RvfGHeHffd9/d6T2XtnXWgAmeV+85gnfWeIib50Jdw18d+EA7aU0AE5fCuUZLEbQ1xZ23hs68rKEV",
-	"tHJoHWDQyQggWoyLd6J1DfCKX5qdaLRimIznPONh7+jGB9Rmyw+H+xO7vgMZ+IGOFHiJ2pFbXlF0rA8v",
-	"Z8saBnNMe6aTh5wfMv7SiC7UFvXfoL4sjosu1GBCb4EF+wYMeadANIL6RGDjgBMyh3anFSh29Wp5dNNq",
-	"77XZZgPajFlk8M4l12Q3YYnhU6xLeulPoQkpwfs/o+EpQthf1eufpf5NX13m+QyejCNsEHw991rB5vvy",
-	"rCxnX54ykfFf7FabFwiKWBXNTKhOeP/Wopo68gGt2Q53i7NznvGNxVYEXh2fzATfeUAjWpiau7O1URZm",
-	"Yx5yy6ub4+vs6GQ1A+ulB7yGrfYBRcrxibhaoZsHQQgDubLwQ3+US9uOYaUnM5jmKRLGhhpwytRn0iQM",
-	"fCpNWR//KV0kW5Ad6rD/g+TbtyIQCEgipt067n4aQr96teQPi+hHEwDZ3nY4LhrDQg0sYa5YMspuu7I8",
-	"l/GLuIT81lDVpTdSGLYGZtdBaAOKbdC20crrgsq0aEizrxkY5aw2Ib81vC88QpUiPVJUh+BSzWuzsYRl",
-	"GvaFYT3B7OL3S9ZRgUcAunUWw+BfMA9OoAjANrqBWF46xKz8alXXiIR61KBAkUGe8R2gT74WeZmXlF7r",
-	"wAinecXP8zI/j3kKdeQ9YZQ1yDe03ULsmyTdqORLxSv+gm5jarLp/Dgry//UcL9F2PCKf1McZ1LRt7Bi",
-	"1L9mWuZy6ImxERKm78rFh0zex1hMRsNYeby6mWruZnVYZdx3bStwP2BmskMEEyLXwtBACx0athZeSxYT",
-	"nPEgtp6qINpZkZORbmInsH6G1NgKeSok8OG5VfsvxuVJmz1MSzZgB4f/LZcPpqrv4nTadM1npPU+b+OK",
-	"YMEyBAl6B0yw1EQeyZbtwqPpovt50qb40qcnuMp/xzX6H/v6Cu/DJFn3/xdE2eMsYRxygB/m6Xr44uso",
-	"+2TSfpSyF0+kbIqODRyBGkmg2T+tCO6zPOSDCWbgLaNRPZPfj9ANIA2WeNth00+6qigaK0VTWx+qZ+Wz",
-	"shBOF7sFP6wO/wQAAP//yv9KqnoMAAA=",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -10,6 +10,6 @@ get:
       content:
         application/json:
           schema:
-            $ref: ../../components/schemas/Auth/AuthTokens.yaml
+            $ref: ../../components/schemas/Auth/Res_AuthTokens.yaml
     "401":
       $ref: ../../components/responses/Unauthorized.yaml

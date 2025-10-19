@@ -21,6 +21,39 @@ paths:
     $ref: "./paths/jwt-auth/logout.yaml"
   /auth/check:
     $ref: "./paths/jwt-auth/check.yaml"
+  # User Management
+  /user/me:
+    $ref: "./paths/user/me.yaml"
+  /user/update:
+    $ref: "./paths/user/update.yaml"
+  /user/delete:
+    $ref: "./paths/user/delete.yaml"
+
+  # Note Management
+  /notes:
+    $ref: "./paths/note/create.yaml"
+  /notes/list:
+    $ref: "./paths/note/list.yaml"
+  /notes/{id}:
+    $ref: "./paths/note/get.yaml"
+  /notes/{id}/update:
+    $ref: "./paths/note/update.yaml"
+  /notes/{id}/delete:
+    $ref: "./paths/note/delete.yaml"
+
+  # Folder Management
+  /folders/create:
+    $ref: "./paths/folder/create.yaml"
+  /folders/list:
+    $ref: "./paths/folder/list.yaml"
+  /folders/{id}:
+    $ref: "./paths/folder/get.yaml"
+  /folders/{id}/update:
+    $ref: "./paths/folder/update.yaml"
+  /folders/{id}/delete:
+    $ref: "./paths/folder/delete.yaml"
+  /folders/{id}/add-note:
+    $ref: "./paths/folder/add-note.yaml"
 
 # Phần components giờ đây chỉ chứa các tham chiếu
 components:

@@ -1,0 +1,9 @@
+type: object
+properties:
+  note_id:
+    type: string
+    example: "1234567890"
+  folder_id:
+    type: string
+    example: "1234567890"
+required: [note_id, folder_id]

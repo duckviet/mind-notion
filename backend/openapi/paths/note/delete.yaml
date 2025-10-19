@@ -1,0 +1,22 @@
+delete:
+  summary: Delete note by ID
+  operationId: deleteNote
+  tags: [Note]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+  responses:
+    "200":
+      description: Note deleted successfully
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

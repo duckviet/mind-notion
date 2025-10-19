@@ -1,11 +1,14 @@
 package domain
 
-import "github.com/gorilla/websocket"
+import (
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+	"github.com/gorilla/websocket"
+)
 
 // Client represents a WebSocket client connection
 type Client struct {
 	Conn *websocket.Conn
-	User *User
+	User *models.User
 }
 
 // ClientRepository defines the interface for client management
