@@ -2,8 +2,8 @@ import React, { useState, KeyboardEvent } from "react";
 
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { Card } from "@/shared/components/ui/Card";
-// import noteAction from "@/services/note.action";
+import { Card } from "@/shared/components/Card";
+import { createNote } from "@/shared/services/generated/api";
 export default function NoteCard() {
   const [title, setTitle] = useState<string>(""); // Note title
   const [content, setContent] = useState<string>(""); // Note content
@@ -11,20 +11,30 @@ export default function NoteCard() {
 
   // Handle Ctrl + Enter for saving
   const handleEnter = async (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // if (e.ctrlKey && e.key === "Enter") {
-    //   if (content.trim()) {
-    //     const response = await noteAction.postAddNote(
-    //       !title ? "New note" : title,
-    //       content
-    //     );
-    //     console.log("Saved note response:", response);
-    //     setTitle("");
-    //     setContent("");
-    //     setIsFocus(false);
-    //   } else {
-    //     toast.warning("Please fill in note content before saving.");
-    //   }
-    // }
+    if (e.ctrlKey && e.key === "Enter") {
+      if (content.trim()) {
+        try {
+          const payload = {
+            title: title?.trim() ? title : "New note",
+            content_type: "text",
+            status: "draft",
+            content,
+            thumbnail: "",
+            tags: [] as string[],
+            is_public: false,
+          };
+          const response = await createNote(payload);
+          console.log("Saved note response:", response);
+          setTitle("");
+          setContent("");
+          setIsFocus(false);
+        } catch (err) {
+          console.error("Failed to create note", err);
+        }
+      } else {
+        // No content; ignore
+      }
+    }
   };
 
   return (

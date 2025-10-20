@@ -2,7 +2,8 @@ type: object
 properties:
   id:
     type: string
-    example: "1234567890"
+    description: "User UUID"
+    example: "550e8400-e29b-41d4-a716-446655440000"
   name:
     type: string
     example: "John Doe"

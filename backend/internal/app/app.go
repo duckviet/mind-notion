@@ -7,6 +7,7 @@ import (
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/domain"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
@@ -50,8 +51,13 @@ func New(ctx context.Context) (*App, func(), error) {
 	folderService := service.NewFolderService(folderRepo, cfg)
 	authService := service.NewAuthService(userRepo, cfg)
 
-	// Initialize handlers
-	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService)
+    // Initialize collaboration (websocket) components
+    clientRepo := domain.NewInMemoryClientRepository()
+    collabService := service.NewCollaborationService(userRepo, noteRepo, clientRepo, userService, noteService)
+    wsHandler := handlers.NewWebSocketHandler(collabService)
+
+    // Initialize handlers
+    router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, wsHandler)
 
 	app := &App{
 		router: router,

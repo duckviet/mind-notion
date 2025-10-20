@@ -46,7 +46,7 @@ export default class ClientRequest {
   constructor() {
     const backendUrl =
       (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
-      "";
+      "http://localhost:8080";
     this.axiosInstance = axios.create({
       baseURL: backendUrl,
       timeout: 30000,
@@ -113,9 +113,8 @@ export default class ClientRequest {
             localStorage.setItem("access_token", access_token);
             localStorage.setItem("refresh_token", refresh_token);
 
-            this.axiosInstance.defaults.headers.common[
-              "Authorization"
-            ] = `Bearer ${access_token}`;
+            this.axiosInstance.defaults.headers.common["Authorization"] =
+              `Bearer ${access_token}`;
             originalRequest.headers["Authorization"] = `Bearer ${access_token}`;
 
             this.processQueue(null, access_token);

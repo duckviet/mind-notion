@@ -59,7 +59,7 @@ func (r *InMemoryClientRepository) GetAll() []*Client {
 }
 
 // GetByUserID retrieves a client by user ID
-func (r *InMemoryClientRepository) GetByUserID(userID uint) (*Client, error) {
+func (r *InMemoryClientRepository) GetByUserID(userID string) (*Client, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	

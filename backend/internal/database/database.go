@@ -52,6 +52,13 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 	}
 	
 	// Auto migrate models
+	// If schema exists from previous run with bigint IDs, drop and recreate (empty DB scenario)
+	// if err := db.Exec(`CREATE EXTENSION IF NOT EXISTS "pgcrypto"`).Error; err != nil {
+	// 	return nil, fmt.Errorf("failed to ensure pgcrypto: %w", err)
+	// }
+	// _ = db.Migrator().DropTable(&models.FolderNote{}, &models.NoteTag{})
+	// _ = db.Migrator().DropTable(&models.Folder{}, &models.Note{}, &models.User{}, &models.Tag{})
+
 	if err := db.AutoMigrate(
 		&models.User{},
 		&models.Folder{},

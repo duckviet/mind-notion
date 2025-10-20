@@ -10,6 +10,10 @@
 package handlers
 
 import (
+	"net/http"
+	"strings"
+
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/dto"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -21,28 +25,94 @@ type AuthAPI struct {
 // Get /api/v1/auth/check
 // Check current JWT and return basic info 
 func (api *AuthAPI) CheckAuth(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	// Lấy token từ header Authorization: Bearer <token>
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing Authorization header"})
+		return
+	}
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	token = strings.TrimSpace(token)
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+		return
+	}
+
+	user, err := api.authService.ValidateToken(c.Request.Context(), token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	// Trả về thông tin cơ bản của user
+    c.JSON(http.StatusOK, gin.H{
+        "id":       user.ID,
+        "username": user.Username,
+        "email":    user.Email,
+        "name":     user.Name,
+        "status":   user.Status,
+    })
 }
 
 // Post /api/v1/auth/login
 // Authenticate to receive a JWT 
 func (api *AuthAPI) Login(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	var req dto.ReqLoginCredentials
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+		return
+	}
+
+	tokens, err := api.authService.Login(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, tokens)
 }
 
 // Post /api/v1/auth/logout
 // Logout and invalidate JWT 
 func (api *AuthAPI) Logout(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	// Lấy token từ header Authorization: Bearer <token>
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing Authorization header"})
+		return
+	}
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+	token = strings.TrimSpace(token)
+	if token == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+		return
+	}
+
+	err := api.authService.Logout(c.Request.Context(), token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "logout successful"})
 }
 
 // Post /api/v1/auth/register
 // Register a new user 
 func (api *AuthAPI) Register(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	var req dto.ReqUserRegistration
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+		return
+	}
+
+	tokens, err := api.authService.Register(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Đăng ký thành công trả 201
+	c.JSON(http.StatusCreated, tokens)
 }
 

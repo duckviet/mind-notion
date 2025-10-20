@@ -5,11 +5,21 @@ import { FloatingActionButton } from "@/shared/components/FloatingActionButton";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { useSearch } from "@/features/search-content/model/use-search";
 import { CollaborativeEditor } from "@/features/collaborative-editor/ui/CollaborativeEditor";
+import { useAuthStore } from "@/features/auth/store/authStore";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const { query, setQuery, filteredResults, handleSearch } = useSearch();
   const [isFabOpen, setIsFabOpen] = useState(false);
+  const { isAuthenticated } = useAuthStore();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/auth");
+    }
+  }, [isAuthenticated, router]);
 
   const handleQueryIndex = () => {
     console.log("Searching for:", query);
@@ -51,9 +61,9 @@ export default function HomePage() {
           />
         </div>
 
-        <div className="mb-8">
+        {/* <div className="mb-8">
           <CollaborativeEditor />
-        </div>
+        </div> */}
 
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold text-text-primary">

@@ -2,7 +2,7 @@ generate-oapi-codegen:
 	swagger-cli bundle openapi/openapi.yaml -o openapi/dist.yaml --type yaml
 	oapi-codegen -generate types,server,spec -package api -o internal/api.gen.go openapi/dist.yaml
 
-OAPI_SPEC_SRC := openapi/dist.yaml
+OAPI_SPEC_SRC := openapi/openapi.yaml
 OAPI_SPEC_DST := openapi/dist.yaml
 GENERATED_SRC_DIR := internal/generated-gin-server
 HANDLERS_DST_DIR := internal/handlers
@@ -27,7 +27,15 @@ generate-gin-server:
 	@echo "3. --- Moving generated files to their final destinations ---"
 	mv -f $(GENERATED_SRC_DIR)/go/routers.go $(HANDLERS_DST_DIR)/routers.gen.go
 	mv -f $(GENERATED_SRC_DIR)/go/model_*.go $(DTO_DST_DIR)/
-	mv -f $(GENERATED_SRC_DIR)/go/api_*.go $(HANDLERS_DST_DIR)/
+	
+	@for f in $(GENERATED_SRC_DIR)/go/api_*.go; do \
+		dest="$(HANDLERS_DST_DIR)/$$(basename "$$f")"; \
+		if [ ! -f "$$dest" ]; then \
+			mv -f "$$f" "$$dest"; \
+		else \
+			echo "Skip $$dest (already exists)"; \
+		fi \
+	done
 
 	@echo "4. --- Fixing package declarations in moved files ---"
 	# Sửa package trong file router thành 'package handlers'

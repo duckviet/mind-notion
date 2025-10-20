@@ -10,13 +10,13 @@ import (
 // FolderRepository defines the interface for folder data operations
 type FolderRepository interface {
 	Create(ctx context.Context, folder *models.Folder) error
-	GetByID(ctx context.Context, id uint) (*models.Folder, error)
+	GetByID(ctx context.Context, id string) (*models.Folder, error)
 	Update(ctx context.Context, folder *models.Folder) error
-	Delete(ctx context.Context, id uint) error
+    Delete(ctx context.Context, id string) error
 	List(ctx context.Context, params FolderListParams) ([]*models.Folder, int64, error)
-	GetByUserID(ctx context.Context, userID uint, params FolderListParams) ([]*models.Folder, int64, error)
-	AddNoteToFolder(ctx context.Context, folderID, noteID uint) error
-	RemoveNoteFromFolder(ctx context.Context, folderID, noteID uint) error
+	GetByUserID(ctx context.Context, userID string, params FolderListParams) ([]*models.Folder, int64, error)
+	AddNoteToFolder(ctx context.Context, folderID, noteID string) error
+	RemoveNoteFromFolder(ctx context.Context, folderID, noteID string) error
 }
 
 // folderRepository implements FolderRepository
@@ -35,14 +35,15 @@ func (r *folderRepository) Create(ctx context.Context, folder *models.Folder) er
 }
 
 // GetByID retrieves a folder by ID
-func (r *folderRepository) GetByID(ctx context.Context, id uint) (*models.Folder, error) {
+func (r *folderRepository) GetByID(ctx context.Context, id string) (*models.Folder, error) {
 	var folder models.Folder
-	err := r.db.WithContext(ctx).
+    err := r.db.WithContext(ctx).
 		Preload("User").
 		Preload("Parent").
 		Preload("Children").
 		Preload("Notes").
-		First(&folder, id).Error
+        Where("id = ?", id).
+        First(&folder).Error
 	return &folder, err
 }
 
@@ -52,8 +53,8 @@ func (r *folderRepository) Update(ctx context.Context, folder *models.Folder) er
 }
 
 // Delete deletes a folder
-func (r *folderRepository) Delete(ctx context.Context, id uint) error {
-	return r.db.WithContext(ctx).Delete(&models.Folder{}, id).Error
+func (r *folderRepository) Delete(ctx context.Context, id string) error {
+    return r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Folder{}).Error
 }
 
 // List retrieves folders with pagination
@@ -65,7 +66,7 @@ func (r *folderRepository) List(ctx context.Context, params FolderListParams) ([
 
 	// Apply filters
 	if params.ParentID != nil {
-		if *params.ParentID == 0 {
+		if *params.ParentID == "" {
 			query = query.Where("parent_id IS NULL")
 		} else {
 			query = query.Where("parent_id = ?", *params.ParentID)
@@ -89,15 +90,15 @@ func (r *folderRepository) List(ctx context.Context, params FolderListParams) ([
 }
 
 // GetByUserID retrieves folders by user ID
-func (r *folderRepository) GetByUserID(ctx context.Context, userID uint, params FolderListParams) ([]*models.Folder, int64, error) {
+func (r *folderRepository) GetByUserID(ctx context.Context, userID string, params FolderListParams) ([]*models.Folder, int64, error) {
 	var folders []*models.Folder
 	var total int64
 
-	query := r.db.WithContext(ctx).Model(&models.Folder{}).Where("user_id = ?", userID)
+    query := r.db.WithContext(ctx).Model(&models.Folder{}).Where("user_id = ?", userID)
 
 	// Apply filters
 	if params.ParentID != nil {
-		if *params.ParentID == 0 {
+		if *params.ParentID == "" {
 			query = query.Where("parent_id IS NULL")
 		} else {
 			query = query.Where("parent_id = ?", *params.ParentID)
@@ -118,7 +119,7 @@ func (r *folderRepository) GetByUserID(ctx context.Context, userID uint, params 
 }
 
 // AddNoteToFolder adds a note to a folder
-func (r *folderRepository) AddNoteToFolder(ctx context.Context, folderID, noteID uint) error {
+func (r *folderRepository) AddNoteToFolder(ctx context.Context, folderID, noteID string) error {
 	folderNote := &models.FolderNote{
 		FolderID: folderID,
 		NoteID:   noteID,
@@ -127,7 +128,7 @@ func (r *folderRepository) AddNoteToFolder(ctx context.Context, folderID, noteID
 }
 
 // RemoveNoteFromFolder removes a note from a folder
-func (r *folderRepository) RemoveNoteFromFolder(ctx context.Context, folderID, noteID uint) error {
+func (r *folderRepository) RemoveNoteFromFolder(ctx context.Context, folderID, noteID string) error {
 	return r.db.WithContext(ctx).
 		Where("folder_id = ? AND note_id = ?", folderID, noteID).
 		Delete(&models.FolderNote{}).Error

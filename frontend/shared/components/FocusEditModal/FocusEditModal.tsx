@@ -1,21 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Save, Tag, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Portal from "../PortalModal/PortalModal";
 import { Textarea } from "../ui/textarea";
 import { RichTextEditor } from "../RichTextEditor";
+import { CollaborativeEditor } from "@/features/collaborative-editor/ui/CollaborativeEditor";
+import { NoteCardProps } from "@/entities/note/ui/NoteCard";
 
 interface FocusEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  note: {
-    id: string;
-    title: string;
-    content: string;
-    tags?: string[];
-    [key: string]: any;
-  };
+  note: NoteCardProps;
   onSave: (data: { title: string; content: string; tags?: string[] }) => void;
 }
 
@@ -104,7 +100,7 @@ export default function FocusEditModal({
     <Portal lockScroll={isOpen || false}>
       <AnimatePresence>
         {isOpen && (
-          <>
+          <Fragment>
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -137,7 +133,7 @@ export default function FocusEditModal({
                     placeholder="Start writing your note..."
                     className="p-0 md:text-lg h-full shadow-none rounded-none mb-4 ring-0 ring-offset-0 no-scrollbar focus-visible:ring-0 focus-visible:border-none text-lg border-none resize-none bg-transparent "
                   /> */}
-
+                  <CollaborativeEditor />
                   <RichTextEditor className="" />
                 </div>
 
@@ -207,7 +203,7 @@ export default function FocusEditModal({
                 </div> */}
               </div>
             </motion.div>
-          </>
+          </Fragment>
         )}
       </AnimatePresence>
     </Portal>

@@ -10,11 +10,11 @@ import (
 // UserRepository defines the interface for user data operations
 type UserRepository interface {
 	Create(ctx context.Context, user *models.User) error
-	GetByID(ctx context.Context, id uint) (*models.User, error)
+	GetByID(ctx context.Context, id string) (*models.User, error)
 	GetByUsername(ctx context.Context, username string) (*models.User, error)
 	GetByEmail(ctx context.Context, email string) (*models.User, error)
 	Update(ctx context.Context, user *models.User) error
-	Delete(ctx context.Context, id uint) error
+	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, params ListParams) ([]*models.User, int64, error)
 }
 
@@ -34,24 +34,33 @@ func (r *userRepository) Create(ctx context.Context, user *models.User) error {
 }
 
 // GetByID retrieves a user by ID
-func (r *userRepository) GetByID(ctx context.Context, id uint) (*models.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id string) (*models.User, error) {
 	var user models.User
-	err := r.db.WithContext(ctx).First(&user, id).Error
-	return &user, err
+    err := r.db.WithContext(ctx).Where("id = ?", id).First(&user).Error
+    if err != nil {
+        return nil, err
+    }
+    return &user, nil
 }
 
 // GetByUsername retrieves a user by username
 func (r *userRepository) GetByUsername(ctx context.Context, username string) (*models.User, error) {
 	var user models.User
-	err := r.db.WithContext(ctx).Where("username = ?", username).First(&user).Error
-	return &user, err
+    err := r.db.WithContext(ctx).Where("username = ?", username).First(&user).Error
+    if err != nil {
+        return nil, err
+    }
+    return &user, nil
 }
 
 // GetByEmail retrieves a user by email
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
 	var user models.User
-	err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
-	return &user, err
+    err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
+    if err != nil {
+        return nil, err
+    }
+    return &user, nil
 }
 
 // Update updates a user
@@ -60,8 +69,8 @@ func (r *userRepository) Update(ctx context.Context, user *models.User) error {
 }
 
 // Delete deletes a user
-func (r *userRepository) Delete(ctx context.Context, id uint) error {
-	return r.db.WithContext(ctx).Delete(&models.User{}, id).Error
+func (r *userRepository) Delete(ctx context.Context, id string) error {
+    return r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.User{}).Error
 }
 
 // List retrieves users with pagination

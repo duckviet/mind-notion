@@ -9,7 +9,7 @@ import {
   ContextMenuTrigger,
 } from "@/shared/components/ui/context-menu";
 import { Trash2Icon, Eye } from "lucide-react";
-import { Card } from "@/shared/components/ui/Card";
+import { Card } from "@/shared/components/Card";
 import WebArticleDisplay from "./WebArticleDisplay";
 
 type Props = {

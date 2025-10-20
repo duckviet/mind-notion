@@ -15,6 +15,7 @@ import (
 
 type User struct {
 
+	// User UUID
 	Id string `json:"id"`
 
 	Name string `json:"name"`

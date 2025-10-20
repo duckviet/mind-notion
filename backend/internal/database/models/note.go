@@ -11,14 +11,14 @@ type Note struct {
 	IsPublic    bool      `gorm:"default:false" json:"is_public"`
 
 	// Foreign Keys
-	UserID uint `gorm:"not null" json:"user_id"`
+    UserID string `gorm:"type:uuid;not null" json:"user_id"`
 
 	// Relationships
-	User   User     `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"user,omitempty"`
+    User   User     `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE" json:"user,omitempty"`
 	Tags   []Tag    `gorm:"many2many:note_tags;constraint:OnDelete:CASCADE" json:"tags,omitempty"`
 	Folders []Folder `gorm:"many2many:folder_notes;constraint:OnDelete:CASCADE" json:"folders,omitempty"`
 
-	Version int `gorm:"default:0" json:"version"`
+    Version int `gorm:"default:0" json:"version"`
 }
 
 // NoteStatus represents the status of a note

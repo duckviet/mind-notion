@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import NoteCard from "@/entities/note/ui/NoteCard";
 import ArticleCard from "@/entities/web-article/ui/ArticleCard";
 import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
-import CardSkeleton from "@/shared/components/ui/CardSkeleton";
+import CardSkeleton from "@/shared/components/CardSkeleton";
 
 type Props = {
   data: {

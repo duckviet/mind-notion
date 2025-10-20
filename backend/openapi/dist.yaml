@@ -561,7 +561,8 @@ components:
       properties:
         id:
           type: string
-          example: '1234567890'
+          description: User UUID
+          example: 550e8400-e29b-41d4-a716-446655440000
         name:
           type: string
           example: John Doe
@@ -794,6 +795,12 @@ components:
         content:
           type: string
           example: This is my note content
+        content_type:
+          type: string
+          example: text/markdown/html
+        status:
+          type: string
+          example: draft/published/archived
         thumbnail:
           type: string
           format: uri
@@ -825,6 +832,8 @@ components:
         - is_public
         - created_at
         - updated_at
+        - content_type
+        - status
   responses:
     BadRequest:
       description: Bad Request. The request is invalid.

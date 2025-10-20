@@ -15,7 +15,7 @@ type NoteListParams struct {
 	Page     int
 	Limit    int
 	Status   *models.NoteStatus
-	FolderID *uint
+	FolderID *string
 	IsPublic *bool
 }
 
@@ -23,6 +23,6 @@ type NoteListParams struct {
 type FolderListParams struct {
 	Page     int
 	Limit    int
-	ParentID *uint
+	ParentID *string
 	IsPublic *bool
 }

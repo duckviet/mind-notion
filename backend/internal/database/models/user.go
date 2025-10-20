@@ -13,10 +13,10 @@ type User struct {
 	Status    UserStatus `gorm:"type:varchar(20);default:'active'" json:"status"`
 
 	// Relationships
-	Notes   []Note   `gorm:"foreignKey:UserID" json:"notes,omitempty"`
-	Folders []Folder `gorm:"foreignKey:UserID" json:"folders,omitempty"`
+    Notes   []Note   `gorm:"foreignKey:UserID" json:"notes,omitempty"`
+    Folders []Folder `gorm:"foreignKey:UserID" json:"folders,omitempty"`
 
-	LastLoginAt *time.Time `json:"last_login_at,omitempty"`
+    LastLoginAt *time.Time `json:"last_login_at,omitempty"`
 }
 
 // UserStatus represents the status of a user
