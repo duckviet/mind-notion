@@ -22,7 +22,7 @@ import {
 import { Trash2Icon, Eye, Edit3 } from "lucide-react";
 
 import NoteDisplay from "./NoteDisplay";
-import { Card } from "@/shared/components/ui/Card";
+import { Card } from "@/shared/components/Card";
 
 type Props = {
   match: {

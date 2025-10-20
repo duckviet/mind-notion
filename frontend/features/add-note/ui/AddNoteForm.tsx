@@ -2,7 +2,7 @@ import React, { useState, KeyboardEvent } from "react";
 
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { Card } from "@/shared/components/ui/Card";
+import { Card } from "@/shared/components/Card";
 // import noteAction from "@/services/note.action";
 export default function NoteCard() {
   const [title, setTitle] = useState<string>(""); // Note title
