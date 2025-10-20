@@ -9,6 +9,12 @@ properties:
   content:
     type: string
     example: "This is my note content"
+  content_type:
+    type: string
+    example: "text/markdown/html"
+  status:
+    type: string
+    example: "draft/published/archived"
   thumbnail:
     type: string
     format: uri
@@ -31,4 +37,15 @@ properties:
     example: "2021-01-01T00:00:00Z"
 
 required:
-  [id, title, content, thumbnail, tags, is_public, created_at, updated_at]
+  [
+    id,
+    title,
+    content,
+    thumbnail,
+    tags,
+    is_public,
+    created_at,
+    updated_at,
+    content_type,
+    status,
+  ]

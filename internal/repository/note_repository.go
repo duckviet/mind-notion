@@ -10,11 +10,11 @@ import (
 // NoteRepository defines the interface for note data operations
 type NoteRepository interface {
 	Create(ctx context.Context, note *models.Note) error
-	GetByID(ctx context.Context, id uint) (*models.Note, error)
+	GetByID(ctx context.Context, id string) (*models.Note, error)
 	Update(ctx context.Context, note *models.Note) error
-	Delete(ctx context.Context, id uint) error
+	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, params NoteListParams) ([]*models.Note, int64, error)
-	GetByUserID(ctx context.Context, userID uint, params NoteListParams) ([]*models.Note, int64, error)
+	GetByUserID(ctx context.Context, userID string, params NoteListParams) ([]*models.Note, int64, error)
 }
 
 // noteRepository implements NoteRepository
@@ -33,7 +33,7 @@ func (r *noteRepository) Create(ctx context.Context, note *models.Note) error {
 }
 
 // GetByID retrieves a note by ID
-func (r *noteRepository) GetByID(ctx context.Context, id uint) (*models.Note, error) {
+func (r *noteRepository) GetByID(ctx context.Context, id string) (*models.Note, error) {
 	var note models.Note
 	err := r.db.WithContext(ctx).
 		Preload("User").
@@ -49,7 +49,7 @@ func (r *noteRepository) Update(ctx context.Context, note *models.Note) error {
 }
 
 // Delete deletes a note
-func (r *noteRepository) Delete(ctx context.Context, id uint) error {
+func (r *noteRepository) Delete(ctx context.Context, id string) error {
 	return r.db.WithContext(ctx).Delete(&models.Note{}, id).Error
 }
 
@@ -86,7 +86,7 @@ func (r *noteRepository) List(ctx context.Context, params NoteListParams) ([]*mo
 }
 
 // GetByUserID retrieves notes by user ID
-func (r *noteRepository) GetByUserID(ctx context.Context, userID uint, params NoteListParams) ([]*models.Note, int64, error) {
+func (r *noteRepository) GetByUserID(ctx context.Context, userID string, params NoteListParams) ([]*models.Note, int64, error) {
 	var notes []*models.Note
 	var total int64
 

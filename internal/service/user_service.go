@@ -16,14 +16,14 @@ import (
 // UserService defines the interface for user business logic
 type UserService interface {
 	CreateUser(ctx context.Context, req CreateUserRequest) (*models.User, error)
-	GetUserByID(ctx context.Context, id uint) (*models.User, error)
+	GetUserByID(ctx context.Context, id string) (*models.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 	GetUserByEmail(ctx context.Context, email string) (*models.User, error)
-	UpdateUser(ctx context.Context, id uint, req UpdateUserRequest) (*models.User, error)
-	DeleteUser(ctx context.Context, id uint) error
+	UpdateUser(ctx context.Context, id string, req UpdateUserRequest) (*models.User, error)
+	DeleteUser(ctx context.Context, id string) error
 	ListUsers(ctx context.Context, params repository.ListParams) ([]*models.User, int64, error)
 	Authenticate(ctx context.Context, email, password string) (*models.User, error)
-	UpdateLastLogin(ctx context.Context, userID uint) error
+	UpdateLastLogin(ctx context.Context, userID string) error
 }
 
 // userService implements UserService
@@ -99,7 +99,7 @@ func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest) (*m
 }
 
 // GetUserByID retrieves a user by ID
-func (s *userService) GetUserByID(ctx context.Context, id uint) (*models.User, error) {
+func (s *userService) GetUserByID(ctx context.Context, id string) (*models.User, error) {
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -135,7 +135,7 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (*models
 }
 
 // UpdateUser updates a user
-func (s *userService) UpdateUser(ctx context.Context, id uint, req UpdateUserRequest) (*models.User, error) {
+func (s *userService) UpdateUser(ctx context.Context, id string, req UpdateUserRequest) (*models.User, error) {
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -160,7 +160,7 @@ func (s *userService) UpdateUser(ctx context.Context, id uint, req UpdateUserReq
 }
 
 // DeleteUser deletes a user
-func (s *userService) DeleteUser(ctx context.Context, id uint) error {
+func (s *userService) DeleteUser(ctx context.Context, id string) error {
 	// Check if user exists
 	_, err := s.repo.GetByID(ctx, id)
 	if err != nil {
@@ -210,7 +210,7 @@ func (s *userService) Authenticate(ctx context.Context, email, password string) 
 }
 
 // UpdateLastLogin updates the last login time for a user
-func (s *userService) UpdateLastLogin(ctx context.Context, userID uint) error {
+func (s *userService) UpdateLastLogin(ctx context.Context, userID string) error {
 	user, err := s.repo.GetByID(ctx, userID)
 	if err != nil {
 		return err

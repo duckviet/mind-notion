@@ -13,6 +13,7 @@ import (
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/dto"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
+	"gorm.io/gorm"
 )
 
 // AuthService defines the interface for authentication business logic
@@ -40,16 +41,26 @@ func NewAuthService(userRepo repository.UserRepository, config *config.Config) A
 
 // Register registers a new user
 func (s *authService) Register(ctx context.Context, req dto.ReqUserRegistration) (*dto.ResAuthTokens, error) {
-	// Check if user already exists
-	existingUser, _ := s.userRepo.GetByUsername(ctx, req.Username)
-	if existingUser != nil {
-		return nil, errors.New("username already exists")
-	}
+	
+	fmt.Println("Register request:", req)
 
-	existingUser, _ = s.userRepo.GetByEmail(ctx, req.Email)
-	if existingUser != nil {
-		return nil, errors.New("email already exists")
-	}
+    // Check if user already exists (username)
+    existingUser, err := s.userRepo.GetByUsername(ctx, req.Username)
+    if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+        return nil, fmt.Errorf("failed to check username: %w", err)
+    }
+    if existingUser != nil {
+        return nil, errors.New("username already exists")
+    }
+
+    // Check if user already exists (email)
+    existingUser, err = s.userRepo.GetByEmail(ctx, req.Email)
+    if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+        return nil, fmt.Errorf("failed to check email: %w", err)
+    }
+    if existingUser != nil {
+        return nil, errors.New("email already exists")
+    }
 
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -71,8 +82,8 @@ func (s *authService) Register(ctx context.Context, req dto.ReqUserRegistration)
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	// Generate tokens
-	tokens, err := s.generateTokens(user.ID)
+    // Generate tokens
+    tokens, err := s.generateTokens(user.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate tokens: %w", err)
 	}
@@ -82,6 +93,9 @@ func (s *authService) Register(ctx context.Context, req dto.ReqUserRegistration)
 
 // Login authenticates a user
 func (s *authService) Login(ctx context.Context, req dto.ReqLoginCredentials) (*dto.ResAuthTokens, error) {
+	
+	fmt.Println("Login request:", req)
+	
 	// Get user by username or email
 	user, err := s.userRepo.GetByUsername(ctx, req.Username)
 	if err != nil {
@@ -141,7 +155,10 @@ func (s *authService) ValidateToken(ctx context.Context, token string) (*models.
 	}
 
 	// Get user from database
-	userID := uint((*claims)["user_id"].(float64))
+    userID, _ := (*claims)["user_id"].(string)
+    if userID == "" {
+        return nil, errors.New("invalid token: bad user_id type")
+    }
 	user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("user not found: %w", err)
@@ -163,9 +180,9 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 		return nil, fmt.Errorf("invalid refresh token: %w", err)
 	}
 
-	// Get user from database
-	userID := uint((*claims)["user_id"].(float64))
-	user, err := s.userRepo.GetByID(ctx, userID)
+    // Get user from database
+    userID, _ := (*claims)["user_id"].(string)
+    user, err := s.userRepo.GetByID(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("user not found: %w", err)
 	}
@@ -176,7 +193,7 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 	}
 
 	// Generate new tokens
-	tokens, err := s.generateTokens(user.ID)
+    tokens, err := s.generateTokens(user.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate tokens: %w", err)
 	}
@@ -185,15 +202,15 @@ func (s *authService) RefreshToken(ctx context.Context, refreshToken string) (*d
 }
 
 // generateTokens generates access and refresh tokens
-func (s *authService) generateTokens(userID uint) (*dto.ResAuthTokens, error) {
+func (s *authService) generateTokens(userID string) (*dto.ResAuthTokens, error) {
 	// Access token (short-lived)
-	accessToken, err := s.createToken(userID, time.Hour*1) // 1 hour
+    accessToken, err := s.createToken(userID, time.Hour*1) // 1 hour
 	if err != nil {
 		return nil, err
 	}
 
 	// Refresh token (long-lived)
-	refreshToken, err := s.createToken(userID, time.Hour*24*7) // 7 days
+    refreshToken, err := s.createToken(userID, time.Hour*24*7) // 7 days
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +222,7 @@ func (s *authService) generateTokens(userID uint) (*dto.ResAuthTokens, error) {
 }
 
 // createToken creates a JWT token
-func (s *authService) createToken(userID uint, duration time.Duration) (string, error) {
+func (s *authService) createToken(userID string, duration time.Duration) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
 		"exp":     time.Now().Add(duration).Unix(),
@@ -231,15 +248,11 @@ func (s *authService) parseToken(tokenString string) (*jwt.MapClaims, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// Extract user ID
-		userIDFloat, ok := claims["user_id"].(float64)
-		if !ok {
-			return nil, errors.New("invalid token: missing user_id")
-		}
-		
-		// Convert to uint
-		userID := uint(userIDFloat)
-		claims["user_id"] = userID
+        // Ensure user_id exists and is a string
+        userID, ok := claims["user_id"].(string)
+        if !ok || userID == "" {
+            return nil, errors.New("invalid token: missing user_id")
+        }
 		
 		return &claims, nil
 	}
@@ -249,6 +262,6 @@ func (s *authService) parseToken(tokenString string) (*jwt.MapClaims, error) {
 
 // JWTClaims represents JWT token claims
 type JWTClaims struct {
-	UserID uint `json:"user_id"`
+    UserID string `json:"user_id"`
 	jwt.RegisteredClaims
 }

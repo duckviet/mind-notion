@@ -21,6 +21,10 @@ type ResDetailNote struct {
 
 	Content string `json:"content"`
 
+	ContentType string `json:"content_type"`
+
+	Status string `json:"status"`
+
 	Thumbnail string `json:"thumbnail"`
 
 	Tags []string `json:"tags"`

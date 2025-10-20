@@ -14,13 +14,13 @@ import (
 // NoteService defines the interface for note business logic
 type NoteService interface {
 	CreateNote(ctx context.Context, req CreateNoteRequest) (*models.Note, error)
-	GetNoteByID(ctx context.Context, id uint) (*models.Note, error)
-	UpdateNote(ctx context.Context, id uint, req UpdateNoteRequest) (*models.Note, error)
-	DeleteNote(ctx context.Context, id uint) error
+	GetNoteByID(ctx context.Context, id string) (*models.Note, error)
+	UpdateNote(ctx context.Context, id string, req UpdateNoteRequest) (*models.Note, error)
+	DeleteNote(ctx context.Context, id string) error
 	ListNotes(ctx context.Context, params repository.NoteListParams) ([]*models.Note, int64, error)
-	GetNotesByUserID(ctx context.Context, userID uint, params repository.NoteListParams) ([]*models.Note, int64, error)
-	AddTagToNote(ctx context.Context, noteID, tagID uint) error
-	RemoveTagFromNote(ctx context.Context, noteID, tagID uint) error
+	GetNotesByUserID(ctx context.Context, userID string, params repository.NoteListParams) ([]*models.Note, int64, error)
+	AddTagToNote(ctx context.Context, noteID, tagID string) error
+	RemoveTagFromNote(ctx context.Context, noteID, tagID string) error
 }
 
 // noteService implements NoteService
@@ -37,7 +37,7 @@ type CreateNoteRequest struct {
 	Status      string   `json:"status" validate:"omitempty,oneof=draft published archived"`
 	Thumbnail   string   `json:"thumbnail,omitempty"`
 	IsPublic    bool     `json:"is_public"`
-	UserID      uint     `json:"user_id" validate:"required"`
+    UserID      string   `json:"user_id" validate:"required"`
 	TagIDs      []uint   `json:"tag_ids,omitempty"`
 }
 
@@ -70,7 +70,7 @@ func (s *noteService) CreateNote(ctx context.Context, req CreateNoteRequest) (*m
 		req.Status = "draft"
 	}
 
-	note := &models.Note{
+    note := &models.Note{
 		Title:       req.Title,
 		Content:     req.Content,
 		ContentType: req.ContentType,
@@ -88,7 +88,7 @@ func (s *noteService) CreateNote(ctx context.Context, req CreateNoteRequest) (*m
 }
 
 // GetNoteByID retrieves a note by ID
-func (s *noteService) GetNoteByID(ctx context.Context, id uint) (*models.Note, error) {
+func (s *noteService) GetNoteByID(ctx context.Context, id string) (*models.Note, error) {
 	note, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -100,7 +100,7 @@ func (s *noteService) GetNoteByID(ctx context.Context, id uint) (*models.Note, e
 }
 
 // UpdateNote updates a note
-func (s *noteService) UpdateNote(ctx context.Context, id uint, req UpdateNoteRequest) (*models.Note, error) {
+func (s *noteService) UpdateNote(ctx context.Context, id string, req UpdateNoteRequest) (*models.Note, error) {
 	note, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -137,7 +137,7 @@ func (s *noteService) UpdateNote(ctx context.Context, id uint, req UpdateNoteReq
 }
 
 // DeleteNote deletes a note
-func (s *noteService) DeleteNote(ctx context.Context, id uint) error {
+func (s *noteService) DeleteNote(ctx context.Context, id string) error {
 	// Check if note exists
 	_, err := s.repo.GetByID(ctx, id)
 	if err != nil {
@@ -164,7 +164,7 @@ func (s *noteService) ListNotes(ctx context.Context, params repository.NoteListP
 }
 
 // GetNotesByUserID retrieves notes by user ID
-func (s *noteService) GetNotesByUserID(ctx context.Context, userID uint, params repository.NoteListParams) ([]*models.Note, int64, error) {
+func (s *noteService) GetNotesByUserID(ctx context.Context, userID string, params repository.NoteListParams) ([]*models.Note, int64, error) {
 	notes, total, err := s.repo.GetByUserID(ctx, userID, params)
 	if err != nil {
 		return nil, 0, ErrInternalServerError
@@ -173,14 +173,14 @@ func (s *noteService) GetNotesByUserID(ctx context.Context, userID uint, params 
 }
 
 // AddTagToNote adds a tag to a note
-func (s *noteService) AddTagToNote(ctx context.Context, noteID, tagID uint) error {
+func (s *noteService) AddTagToNote(ctx context.Context, noteID, tagID string) error {
 	// This would need to be implemented in the repository
 	// For now, return not implemented
 	return ErrNotImplemented
 }
 
 // RemoveTagFromNote removes a tag from a note
-func (s *noteService) RemoveTagFromNote(ctx context.Context, noteID, tagID uint) error {
+func (s *noteService) RemoveTagFromNote(ctx context.Context, noteID, tagID string) error {
 	// This would need to be implemented in the repository
 	// For now, return not implemented
 	return ErrNotImplemented

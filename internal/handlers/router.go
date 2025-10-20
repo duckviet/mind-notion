@@ -4,6 +4,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"  // Thay thế bằng module của bạn
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service" // Thay thế bằng module của bạn
@@ -19,33 +20,34 @@ func SetupRouter(
 	userService service.UserService,
 	noteService service.NoteService,
 	folderService service.FolderService,
+    wsHandler *WebSocketHandler,
 ) *gin.Engine {
 
 	// 1. Khởi tạo Gin Engine và thiết lập mode
 	gin.SetMode(cfg.Server.Mode)
 	router := gin.Default()
 
-	// 2. Thiết lập các Middleware toàn cục
-	router.Use(corsMiddleware())
-	router.Use(loggingMiddleware())
-	// router.Use(authMiddleware()) // Bạn sẽ thêm middleware xác thực ở đây
+    // 2. Thiết lập các Middleware toàn cục
+    router.Use(corsMiddleware())
+    router.Use(loggingMiddleware())
+    router.Use(authMiddleware(authService))
 
 	// 3. Thiết lập các Route không thuộc API spec
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "OK"})
 	})
-	router.GET("/ws", func(c *gin.Context) {
-		// Logic của WebSocket handler
-	})
+    router.GET("/ws", func(c *gin.Context) {
+        wsHandler.HandleConnections(c.Writer, c.Request)
+    })
 
 	// 4. Tạo struct `ApiHandleFunctions` mà `routers.gen.go` yêu cầu
 	// và "tiêm" các handler bạn vừa tạo vào đó.
-	apiHandlers := ApiHandleFunctions{
-		AuthAPI:   AuthAPI{authService},
-		UserAPI:   UserAPI{userService},
-		NoteAPI:   NoteAPI{noteService},
-		FolderAPI: FolderAPI{folderService},
-	}
+    apiHandlers := ApiHandleFunctions{
+        AuthAPI:   AuthAPI{authService},
+        UserAPI:   UserAPI{userService},
+        NoteAPI:   NoteAPI{noteService: noteService, authService: authService},
+        FolderAPI: FolderAPI{folderService},
+    }
 
 	// 5. GỌI HÀM TỪ FILE AUTO-GEN ĐỂ ĐĂNG KÝ TẤT CẢ API ROUTES
 	// Đây chính là điểm kết nối quan trọng nhất!
@@ -87,4 +89,38 @@ func loggingMiddleware() gin.HandlerFunc {
 			param.ErrorMessage,
 		)
 	})
+}
+
+// authMiddleware validates Bearer tokens and injects the user into context.
+// Skips public endpoints like /health, /ws, and /api/v1/auth/*
+func authMiddleware(authService service.AuthService) gin.HandlerFunc {
+    return func(c *gin.Context) {
+        path := c.Request.URL.Path
+        // Allowlist public paths
+        if path == "/health" || strings.HasPrefix(path, "/ws") || strings.HasPrefix(path, "/api/v1/auth/") {
+            c.Next()
+            return
+        }
+
+        authHeader := c.GetHeader("Authorization")
+        if authHeader == "" {
+            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing Authorization header"})
+            return
+        }
+        token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+        if token == "" {
+            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+            return
+        }
+
+        user, err := authService.ValidateToken(c.Request.Context(), token)
+        if err != nil {
+            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+            return
+        }
+
+        // Attach user to context
+        c.Set("user", user)
+        c.Next()
+    }
 }

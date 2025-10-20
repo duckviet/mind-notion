@@ -48,21 +48,14 @@ func (h *WebSocketHandler) HandleConnections(w http.ResponseWriter, r *http.Requ
 	if userID != "" {
 		// Try to get existing user
 		// Convert string to uint for userID
-		var uid uint
-		if _, parseErr := fmt.Sscanf(userID, "%d", &uid); parseErr == nil {
-			user, err = h.collaborationService.GetUserUseCase().GetUserByID(context.Background(), uid)
-			if err != nil {
-				log.Printf("User not found, creating new user: %v", err)
-				user, err = h.collaborationService.GetUserUseCase().CreateUser(context.Background(), service.CreateUserRequest{
-					Name: "",
-				})
-			}
-		} else {
-			log.Printf("Invalid user ID format, creating new user: %v", parseErr)
+		user, err = h.collaborationService.GetUserUseCase().GetUserByID(context.Background(), userID)
+		if err != nil {
+			log.Printf("User not found, creating new user: %v", err)
 			user, err = h.collaborationService.GetUserUseCase().CreateUser(context.Background(), service.CreateUserRequest{
 				Name: "",
 			})
 		}
+		 
 	} else {
 		// Create new user
 		user, err = h.collaborationService.GetUserUseCase().CreateUser(context.Background(), service.CreateUserRequest{
