@@ -1,37 +1,38 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
-	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
-	httphandler "github.com/duckviet/gin-collaborative-editor/backend/internal/delivery/http"
-	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
-	"github.com/duckviet/gin-collaborative-editor/backend/internal/usecase/collaboration"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/app"
 )
 
 func main() {
-	// Initialize repositories
-	userRepo := repository.NewInMemoryUserRepository()
-	docRepo := repository.NewInMemoryDocumentRepository()
-	clientRepo := repository.NewInMemoryClientRepository()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	// Initialize collaboration service
-	collaborationService := collaboration.NewCollaborationService(
-		userRepo,
-		docRepo,
-		clientRepo,
-	)
+	// Initialize application
+	application, cleanup, err := app.New(ctx)
+	if err != nil {
+		log.Fatal("Failed to initialize app:", err)
+	}
+	defer cleanup()
 
-	// Initialize HTTP handlers
-	wsHandler := httphandler.NewWebSocketHandler(collaborationService)
+	// Handle graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// Setup routes
-	http.HandleFunc("/ws", wsHandler.HandleConnections)
+	go func() {
+		<-sigChan
+		log.Println("Shutting down gracefully...")
+		cancel()
+	}()
 
-	// Start server
-	fmt.Println("🚀 Collaborative Editor Server starting on :8080")
-	fmt.Println("📡 WebSocket endpoint: ws://localhost:8080/ws")
-	
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// Run application
+	if err := application.Run(ctx); err != nil {
+		log.Fatal("Failed to run app:", err)
+	}
 }

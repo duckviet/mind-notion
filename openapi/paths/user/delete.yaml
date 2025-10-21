@@ -1,0 +1,15 @@
+delete:
+  summary: Delete current user
+  operationId: deleteMe
+  tags: [User]
+  security:
+    - BearerAuth: []
+  responses:
+    "200":
+      description: User deleted successfully
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

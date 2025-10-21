@@ -1,0 +1,7 @@
+# Ignore files we don't need
+main.go
+go.mod
+Dockerfile
+api/
+README.md
+.openapi-generator/

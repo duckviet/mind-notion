@@ -1,0 +1,15 @@
+get:
+  summary: Check current JWT and return basic info
+  operationId: checkAuth
+  tags: [Auth]
+  security:
+    - BearerAuth: []
+  responses:
+    "200":
+      description: Token is valid
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Auth/Res_AuthTokens.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml

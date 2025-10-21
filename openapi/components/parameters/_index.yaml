@@ -1,0 +1,4 @@
+LimitParam:
+  $ref: "./Pagination.yaml#/LimitParam"
+OffsetParam:
+  $ref: "./Pagination.yaml#/OffsetParam"
