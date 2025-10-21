@@ -39,7 +39,8 @@ func (r *noteRepository) GetByID(ctx context.Context, id string) (*models.Note, 
 		Preload("User").
 		Preload("Tags").
 		Preload("Folders").
-		First(&note, id).Error
+		Where("id = ?", id).
+		First(&note).Error
 	return &note, err
 }
 

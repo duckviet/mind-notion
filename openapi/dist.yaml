@@ -754,6 +754,12 @@ components:
         content:
           type: string
           example: This is my note content
+        content_type:
+          type: string
+          example: text/markdown/html
+        status:
+          type: string
+          example: draft/published/archived
         thumbnail:
           type: string
           format: uri
@@ -772,6 +778,8 @@ components:
         - id
         - title
         - content
+        - content_type
+        - status
         - thumbnail
         - tags
         - is_public
