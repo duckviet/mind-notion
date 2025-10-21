@@ -9,20 +9,12 @@ import {
   ContextMenuTrigger,
 } from "@/shared/components/ui/context-menu";
 import { Trash2Icon, Eye } from "lucide-react";
-import { Card } from "@/shared/components/ui/Card";
+import { Card } from "@/shared/components/Card";
 import WebArticleDisplay from "./WebArticleDisplay";
+import { NoteCardProps } from "@/entities/note/ui/NoteCard";
 
 type Props = {
-  match: {
-    id: string;
-    score: any;
-    metadata: {
-      type: string;
-      title: string;
-      content?: string;
-      [key: string]: any;
-    };
-  };
+  match: NoteCardProps;
   onDelete?: (id: string) => Promise<void>;
 };
 
@@ -44,15 +36,15 @@ export default function ArticleCard({ match, onDelete }: Props) {
       <ContextMenuTrigger asChild>
         <Card
           // role="article"
-          aria-label={`Web Article card: ${match.metadata.title}`}
+          aria-label={`Web Article card: ${match.title}`}
         >
           <div className="flex justify-between items-center w-full mb-3 gap-4">
             <h2 className="text-lg font-semibold text-text-primary leading-tight">
-              {match.metadata.title}
+              {match.title}
             </h2>
           </div>
           <div className="h-px w-full bg-gradient-to-r from-transparent via-glass-border to-transparent mb-4"></div>
-          <WebArticleDisplay metadata={match.metadata} />
+          {/* <WebArticleDisplay metadata={match.metadata} /> */}
         </Card>
       </ContextMenuTrigger>
       <ContextMenuContent className="glass-bg border-glass-border shadow-glass-lg">

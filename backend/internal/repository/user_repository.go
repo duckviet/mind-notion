@@ -1,84 +1,101 @@
 package repository
 
 import (
-	"fmt"
-	"sync"
-	"time"
+	"context"
 
-	"github.com/duckviet/gin-collaborative-editor/backend/internal/domain"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/database"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
 )
 
-// InMemoryUserRepository implements UserRepository using in-memory storage
-type InMemoryUserRepository struct {
-	users map[string]*domain.User
-	mu    sync.RWMutex
+// UserRepository defines the interface for user data operations
+type UserRepository interface {
+	Create(ctx context.Context, user *models.User) error
+	GetByID(ctx context.Context, id string) (*models.User, error)
+	GetByUsername(ctx context.Context, username string) (*models.User, error)
+	GetByEmail(ctx context.Context, email string) (*models.User, error)
+	Update(ctx context.Context, user *models.User) error
+	Delete(ctx context.Context, id string) error
+	List(ctx context.Context, params ListParams) ([]*models.User, int64, error)
 }
 
-// NewInMemoryUserRepository creates a new in-memory user repository
-func NewInMemoryUserRepository() *InMemoryUserRepository {
-	return &InMemoryUserRepository{
-		users: make(map[string]*domain.User),
-	}
+// userRepository implements UserRepository
+type userRepository struct {
+	db *database.DB
+}
+
+// NewUserRepository creates a new user repository
+func NewUserRepository(db *database.DB) UserRepository {
+	return &userRepository{db: db}
 }
 
 // Create creates a new user
-func (r *InMemoryUserRepository) Create(user *domain.User) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
-	r.users[user.ID] = user
-	return nil
+func (r *userRepository) Create(ctx context.Context, user *models.User) error {
+	return r.db.WithContext(ctx).Create(user).Error
 }
 
 // GetByID retrieves a user by ID
-func (r *InMemoryUserRepository) GetByID(id string) (*domain.User, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	
-	user, exists := r.users[id]
-	if !exists {
-		return nil, fmt.Errorf("user not found: %s", id)
-	}
-	return user, nil
+func (r *userRepository) GetByID(ctx context.Context, id string) (*models.User, error) {
+	var user models.User
+    err := r.db.WithContext(ctx).Where("id = ?", id).First(&user).Error
+    if err != nil {
+        return nil, err
+    }
+    return &user, nil
 }
 
-// Update updates an existing user
-func (r *InMemoryUserRepository) Update(user *domain.User) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	
-	if _, exists := r.users[user.ID]; !exists {
-		return fmt.Errorf("user not found: %s", user.ID)
-	}
-	
-	user.UpdatedAt = time.Now()
-	r.users[user.ID] = user
-	return nil
+// GetByUsername retrieves a user by username
+func (r *userRepository) GetByUsername(ctx context.Context, username string) (*models.User, error) {
+	var user models.User
+    err := r.db.WithContext(ctx).Where("username = ?", username).First(&user).Error
+    if err != nil {
+        return nil, err
+    }
+    return &user, nil
 }
 
-// Delete deletes a user by ID
-func (r *InMemoryUserRepository) Delete(id string) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	
-	if _, exists := r.users[id]; !exists {
-		return fmt.Errorf("user not found: %s", id)
-	}
-	
-	delete(r.users, id)
-	return nil
+// GetByEmail retrieves a user by email
+func (r *userRepository) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+	var user models.User
+    err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
+    if err != nil {
+        return nil, err
+    }
+    return &user, nil
 }
 
-// List returns all users
-func (r *InMemoryUserRepository) List() ([]*domain.User, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	
-	users := make([]*domain.User, 0, len(r.users))
-	for _, user := range r.users {
-		users = append(users, user)
+// Update updates a user
+func (r *userRepository) Update(ctx context.Context, user *models.User) error {
+	return r.db.WithContext(ctx).Save(user).Error
+}
+
+// Delete deletes a user
+func (r *userRepository) Delete(ctx context.Context, id string) error {
+    return r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.User{}).Error
+}
+
+// List retrieves users with pagination
+func (r *userRepository) List(ctx context.Context, params ListParams) ([]*models.User, int64, error) {
+	var users []*models.User
+	var total int64
+
+	query := r.db.WithContext(ctx).Model(&models.User{})
+
+	// Apply filters
+	if params.Status != nil {
+		query = query.Where("status = ?", *params.Status)
 	}
-	return users, nil
+	if params.Email != nil {
+		query = query.Where("email ILIKE ?", "%"+*params.Email+"%")
+	}
+
+	// Count total
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	// Apply pagination and get results
+	offset := (params.Page - 1) * params.Limit
+	err := query.Offset(offset).Limit(params.Limit).Find(&users).Error
+
+	return users, total, err
 }

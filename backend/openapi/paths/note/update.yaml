@@ -1,0 +1,34 @@
+put:
+  summary: Update note by ID
+  operationId: updateNote
+  tags: [Note]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Note/Req_UpdateNote.yaml
+  responses:
+    "200":
+      description: Note updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Note/Res_DetailNote.yaml
+    "400":
+      $ref: ../../components/responses/BadRequest.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

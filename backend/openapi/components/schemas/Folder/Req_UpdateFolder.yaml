@@ -1,0 +1,12 @@
+type: object
+properties:
+  name:
+    type: string
+    example: "My Folder"
+  parent_id:
+    type: string
+    example: "1234567890"
+  is_public:
+    type: boolean
+    example: false
+required: [name, parent_id, is_public]

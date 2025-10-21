@@ -4,25 +4,64 @@ import { cn } from "@/lib/utils";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
-import React, { Fragment } from "react";
+import React, { Fragment, useEffect } from "react";
+import ExtLink from "./ExtLink";
+import ExtListKit from "./ExtListKit";
+import ExtCodeBlock from "./ExtCodeBlock";
+import ExtHeading from "./ExtHeading";
+import ExtMathematics, { migrateMathStrings } from "./ExtMathematics";
+import ExtTableKit from "./ExtTable";
 
-const Tiptap = ({ className }: { className?: string }) => {
+const Tiptap = ({
+  className,
+  content,
+  onContentChange,
+}: {
+  className?: string;
+  content?: string;
+  onContentChange?: (content: string) => void;
+}) => {
   const editor = useEditor(
     {
-      extensions: [StarterKit, Link],
+      extensions: [
+        StarterKit,
+        ExtLink,
+        ...ExtListKit,
+        ExtCodeBlock,
+        ExtHeading,
+        ExtMathematics,
+        ...ExtTableKit,
+      ],
       editorProps: {
         attributes: {
           class: "h-full focus:outline-none",
         },
       },
-      content: "<p>Hello World! 🌎️</p>",
+      content: content || "<p>Hello World! 🌎️</p>",
       // Don't render immediately on the server to avoid SSR issues
       immediatelyRender: false,
       injectCSS: false,
-      enableInputRules: [Link, "horizontalRule"],
+      enableInputRules: [
+        ExtLink,
+        "horizontalRule",
+        ...ExtListKit,
+        ExtCodeBlock,
+        ExtHeading,
+        ExtMathematics,
+        ...ExtTableKit,
+      ],
+      onCreate: ({ editor: currentEditor }) => {
+        migrateMathStrings(currentEditor);
+      },
     },
     []
   );
+
+  useEffect(() => {
+    if (onContentChange && editor) {
+      onContentChange(editor.getHTML());
+    }
+  }, [editor?.getHTML()]);
 
   return (
     <Fragment>

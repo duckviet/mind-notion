@@ -1,0 +1,15 @@
+type: object
+properties:
+  name:
+    type: string
+    example: "John Doe"
+  email:
+    type: string
+    format: email
+    example: "john.doe@example.com"
+  avatar:
+    type: string
+    format: uri
+    example: "https://example.com/avatar.png"
+
+required: [name, email, avatar]

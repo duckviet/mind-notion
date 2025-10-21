@@ -7,7 +7,7 @@ import { PreviewOverlay } from "@/shared/components/PreviewOverlay";
 // Dynamic import to prevent SSR issues
 const FocusEditModal = dynamic(
   () =>
-    import("@/shared/components/FocusEditModal").then((mod) => ({
+    import("@/features/note-editing").then((mod) => ({
       default: mod.FocusEditModal,
     })),
   { ssr: false }
@@ -22,19 +22,15 @@ import {
 import { Trash2Icon, Eye, Edit3 } from "lucide-react";
 
 import NoteDisplay from "./NoteDisplay";
-import { Card } from "@/shared/components/ui/Card";
+import { Card } from "@/shared/components/Card";
+import { ResDetailNote } from "@/shared/services/generated/api";
+
+export interface NoteCardProps extends ResDetailNote {
+  score: number;
+}
 
 type Props = {
-  match: {
-    id: string;
-    score: any;
-    metadata: {
-      type: string;
-      title: string;
-      content?: string;
-      [key: string]: any;
-    };
-  };
+  match: NoteCardProps;
   onDelete?: (id: string) => Promise<void>;
   onUpdateNote?: (id: string, data: { title: string; content: string }) => void;
 };
@@ -84,20 +80,20 @@ export default function NoteCard({ match, onDelete, onUpdateNote }: Props) {
           className="cursor-pointer"
           tabIndex={0}
           role="button"
-          aria-label={`Edit note: ${match.metadata.title}. Double-click or press E to edit.`}
+          aria-label={`Edit note: ${match.title}. Double-click or press E to edit.`}
         >
           <Card
             // role="article"
             className="rounded-lg border-none"
-            aria-label={`Note card: ${match.metadata.title}`}
+            aria-label={`Note card: ${match.title}`}
           >
             <div className="flex justify-between items-center w-full mb-3  gap-4">
               <h2 className="text-lg font-semibold text-text-primary leading-tight">
-                {match.metadata.title}
+                {match.title}
               </h2>
             </div>
             <div className="h-px w-full bg-gradient-to-r from-transparent via-glass-border to-transparent mb-4"></div>
-            <NoteDisplay metadata={match.metadata} />
+            <NoteDisplay content={match.content} />
           </Card>
         </div>
       </ContextMenuTrigger>
@@ -142,11 +138,7 @@ export default function NoteCard({ match, onDelete, onUpdateNote }: Props) {
       <FocusEditModal
         isOpen={isFocusEditOpen}
         onClose={() => setIsFocusEditOpen(false)}
-        note={{
-          ...match.metadata,
-          id: match.id,
-          content: match.metadata.content || "",
-        }}
+        note={match}
         onSave={handleSaveNote}
       />
     </ContextMenu>

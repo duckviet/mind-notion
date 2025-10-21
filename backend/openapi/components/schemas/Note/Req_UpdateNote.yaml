@@ -1,0 +1,30 @@
+type: object
+properties:
+  id:
+    type: string
+    example: "1234567890"
+  title:
+    type: string
+    example: "My Note"
+  content:
+    type: string
+    example: "This is my note content"
+  content_type:
+    type: string
+    example: "text/markdown/html"
+  status:
+    type: string
+    example: "draft/published/archived"
+  thumbnail:
+    type: string
+    format: uri
+    example: "https://example.com/thumbnail.png"
+  tags:
+    type: array
+    items:
+      type: string
+    example: ["tag1", "tag2"]
+  is_public:
+    type: boolean
+    example: false
+required: [id, title, content, content_type, status, thumbnail, tags, is_public]

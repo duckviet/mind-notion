@@ -1,30 +1,55 @@
 import React, { useState, KeyboardEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/shared/components/ui/textarea";
-import { Card } from "@/shared/components/ui/Card";
-// import noteAction from "@/services/note.action";
+import { Card } from "@/shared/components/Card";
+import {
+  createNote,
+  getListNotesQueryKey,
+} from "@/shared/services/generated/api";
 export default function NoteCard() {
   const [title, setTitle] = useState<string>(""); // Note title
   const [content, setContent] = useState<string>(""); // Note content
   const [isFocus, setIsFocus] = useState<boolean>(false); // Focus state
+  const [isSaving, setIsSaving] = useState<boolean>(false); // Saving state
+  const queryClient = useQueryClient();
 
   // Handle Ctrl + Enter for saving
   const handleEnter = async (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // if (e.ctrlKey && e.key === "Enter") {
-    //   if (content.trim()) {
-    //     const response = await noteAction.postAddNote(
-    //       !title ? "New note" : title,
-    //       content
-    //     );
-    //     console.log("Saved note response:", response);
-    //     setTitle("");
-    //     setContent("");
-    //     setIsFocus(false);
-    //   } else {
-    //     toast.warning("Please fill in note content before saving.");
-    //   }
-    // }
+    if (e.ctrlKey && e.key === "Enter") {
+      if (content.trim() && !isSaving) {
+        setIsSaving(true);
+        try {
+          const payload = {
+            title: title?.trim() ? title : "New note",
+            content_type: "text",
+            status: "draft",
+            content,
+            thumbnail: "",
+            tags: [] as string[],
+            is_public: false,
+          };
+          const response = await createNote(payload);
+          console.log("Saved note response:", response);
+
+          // Invalidate and refetch notes list
+          await queryClient.invalidateQueries({
+            queryKey: ["/notes/list"],
+          });
+
+          setTitle("");
+          setContent("");
+          setIsFocus(false);
+        } catch (err) {
+          console.error("Failed to create note", err);
+        } finally {
+          setIsSaving(false);
+        }
+      } else {
+        // No content; ignore
+      }
+    }
   };
 
   return (
@@ -62,8 +87,8 @@ export default function NoteCard() {
 
         {/* Save Hint */}
         {content && (
-          <p className="  bg-red-400 text-white absolute px-4 left-0   bottom-0  rounded-md rounded-t-none text-center w-full">
-            Press Ctrl + Enter to save
+          <p className="bg-red-400 text-white absolute px-4 left-0 bottom-0 rounded-md rounded-t-none text-center w-full">
+            {isSaving ? "Saving..." : "Press Ctrl + Enter to save"}
           </p>
         )}
       </Card>

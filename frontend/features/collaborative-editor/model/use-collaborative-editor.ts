@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/features/auth";
 import { useCallback, useEffect, useState, useRef } from "react";
 
 // Types would ideally move to the `entities` layer (e.g., entities/user, entities/document)
@@ -34,30 +35,17 @@ const getOrCreateUserId = (): string => {
   return userId;
 };
 
-// Get or set user name from localStorage (SSR safe)
-const getOrCreateUserName = (): string => {
-  if (typeof window === "undefined") {
-    return `Guest ${Math.floor(Math.random() * 1000)}`;
-  }
-
-  let userName = localStorage.getItem(USER_NAME_KEY);
-  if (!userName) {
-    userName = `Guest ${Math.floor(Math.random() * 1000)}`;
-    localStorage.setItem(USER_NAME_KEY, userName);
-  }
-  return userName;
-};
-
 export function useCollaborativeEditor() {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [text, setText] = useState("");
   const [version, setVersion] = useState(0);
   const [self, setSelf] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
-  const [userId] = useState<string>(getOrCreateUserId());
-  const [userName] = useState<string>(getOrCreateUserName());
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  const { user } = useAuthStore();
+  const userId = user?.id;
+  const userName = user?.name;
   const send = useCallback(
     (msg: Message) => {
       if (socket && socket.readyState === WebSocket.OPEN) {
@@ -69,9 +57,8 @@ export function useCollaborativeEditor() {
 
   useEffect(() => {
     // Connect with user_id as query parameter
-    const ws = new WebSocket(
-      `ws://localhost:8080/ws?user_id=${encodeURIComponent(userId)}`
-    );
+    const qs = userId ? `?user_id=${encodeURIComponent(userId)}` : "";
+    const ws = new WebSocket(`ws://localhost:8080/ws${qs}`);
 
     ws.onopen = () => {
       // Send join message with stored user name

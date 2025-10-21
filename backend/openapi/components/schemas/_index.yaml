@@ -1,0 +1,32 @@
+# components/schemas/_index.yaml
+Res_AuthTokens:
+  $ref: "./Auth/Res_AuthTokens.yaml"
+Req_LoginCredentials:
+  $ref: "./Auth/Req_LoginCredentials.yaml"
+Req_UserRegistration:
+  $ref: "./Auth/Req_UserRegistration.yaml"
+
+User:
+  $ref: "./User/Res_User.yaml"
+Req_UpdateProfile:
+  $ref: "./User/Req_UpdateProfile.yaml"
+
+Req_CreateFolder:
+  $ref: "./Folder/Req_CreateFolder.yaml"
+Req_UpdateFolder:
+  $ref: "./Folder/Req_UpdateFolder.yaml"
+Req_AddNote:
+  $ref: "./Folder/Req_AddNote.yaml"
+Req_RemoveFolder:
+  $ref: "./Folder/Req_RemoveFolder.yaml"
+Res_DetailFolder:
+  $ref: "./Folder/Res_DetailFolder.yaml"
+
+Req_CreateNote:
+  $ref: "./Note/Req_CreateNote.yaml"
+Req_UpdateNote:
+  $ref: "./Note/Req_UpdateNote.yaml"
+Req_RemoveNote:
+  $ref: "./Note/Req_RemoveNote.yaml"
+Res_DetailNote:
+  $ref: "./Note/Res_DetailNote.yaml"
