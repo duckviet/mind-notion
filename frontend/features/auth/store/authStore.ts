@@ -1,18 +1,19 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { User } from "@/shared/services/generated/api";
+import { getMe, User } from "@/shared/services/generated/api";
 
 interface AuthState {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
-  isAuthenticated: boolean;
+  isAuthenticated: boolean | null;
 }
 
 interface AuthActions {
   setUser: (user: User) => void;
   setTokens: (accessToken: string, refreshToken?: string) => void;
   logout: () => void;
+  fetchMe: () => void;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -24,7 +25,7 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       accessToken: null,
       refreshToken: null,
-      isAuthenticated: false,
+      isAuthenticated: null,
 
       // Actions
       setUser: (user) => set({ user, isAuthenticated: true }),
@@ -48,8 +49,12 @@ export const useAuthStore = create<AuthStore>()(
           user: null,
           accessToken: null,
           refreshToken: null,
-          isAuthenticated: false,
+          isAuthenticated: null,
         });
+      },
+      fetchMe: async () => {
+        const user = await getMe();
+        set({ user, isAuthenticated: true });
       },
     }),
     {

@@ -14,17 +14,17 @@ export const useLogin = () => {
       // Store tokens and user info
       if (data.access_token) {
         setTokens(data.access_token, data.refresh_token);
-
+        console.log(data);
         // You might want to fetch user info here
         // For now, we'll create a basic user object
-        setUser({
-          id: "1", // This should come from the API response
-          name: "User", // This should come from the API response
-          email: "user@example.com", // This should come from the API response
-          avatar: "",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
+        // setUser({
+        //   id: "1", // This should come from the API response
+        //   name: "User", // This should come from the API response
+        //   email: "user@example.com", // This should come from the API response
+        //   avatar: "",
+        //   created_at: new Date().toISOString(),
+        //   updated_at: new Date().toISOString(),
+        // });
       }
     },
     onError: (error) => {

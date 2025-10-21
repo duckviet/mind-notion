@@ -10,6 +10,10 @@
 package handlers
 
 import (
+	"net/http"
+
+	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -28,8 +32,20 @@ func (api *UserAPI) DeleteMe(c *gin.Context) {
 // Get /api/v1/user/me
 // Get current user information 
 func (api *UserAPI) GetMe(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	userVal, ok := c.Get("user")
+    if !ok {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+        return
+    }
+    u := userVal.(*dbmodels.User)
+
+	c.JSON(200, gin.H{
+		"id": u.ID,
+		"username": u.Username,
+		"email": u.Email,
+		"name": u.Name,
+		"status": u.Status,
+	})
 }
 
 // Patch /api/v1/user/update

@@ -7,7 +7,7 @@ import { PreviewOverlay } from "@/shared/components/PreviewOverlay";
 // Dynamic import to prevent SSR issues
 const FocusEditModal = dynamic(
   () =>
-    import("@/shared/components/FocusEditModal").then((mod) => ({
+    import("@/features/note-editing").then((mod) => ({
       default: mod.FocusEditModal,
     })),
   { ssr: false }

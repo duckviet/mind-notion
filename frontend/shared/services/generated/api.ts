@@ -100,6 +100,8 @@ export interface ReqUpdateNote {
   id: string;
   title: string;
   content: string;
+  content_type: string;
+  status: string;
   thumbnail: string;
   tags: string[];
   is_public: boolean;

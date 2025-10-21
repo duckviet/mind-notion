@@ -1,14 +1,13 @@
 import React, { Fragment, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import NoteCard from "@/entities/note/ui/NoteCard";
+import NoteCard, { NoteCardProps } from "@/entities/note/ui/NoteCard";
 import ArticleCard from "@/entities/web-article/ui/ArticleCard";
 import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
 import CardSkeleton from "@/shared/components/CardSkeleton";
 
 type Props = {
-  data: {
-    result: any[];
-  };
+  data: NoteCardProps[];
+
   isLoading?: boolean;
   handleDelete: (id?: string) => Promise<void>;
 };
@@ -103,7 +102,7 @@ export default function MasonryGrid({ data, isLoading, handleDelete }: Props) {
               ))}
             </Fragment>
           ) : (
-            data.result.map((result: any) => {
+            data.map((result: NoteCardProps) => {
               const cardProps = {
                 match: result,
                 onDelete: handleDelete,
@@ -116,10 +115,10 @@ export default function MasonryGrid({ data, isLoading, handleDelete }: Props) {
                   className="h-fit"
                   transition={{ duration: 0.4, ease: "easeOut" }}
                 >
-                  {result.metadata.type === "note" ? (
+                  {result.content_type === "text" ? (
                     <NoteCard {...cardProps} />
                   ) : (
-                    <ArticleCard {...cardProps} />
+                    <ArticleCard match={result} onDelete={handleDelete} />
                   )}
                 </motion.div>
               );

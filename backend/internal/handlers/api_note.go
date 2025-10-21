@@ -144,12 +144,13 @@ func (api *NoteAPI) UpdateNote(c *gin.Context) {
     idStr := c.Param("id")
 
     var body struct {
-        Title       string  `json:"title"`
-        Content     string  `json:"content"`
-        ContentType string  `json:"content_type"`
-        Status      string  `json:"status"`
-        Thumbnail   string  `json:"thumbnail"`
-        IsPublic    *bool   `json:"is_public"`
+        Title       string   `json:"title"`
+        Content     string   `json:"content"`
+        ContentType string   `json:"content_type"`
+        Status      string   `json:"status"`
+        Thumbnail   string   `json:"thumbnail"`
+        Tags        []string `json:"tags"`
+        IsPublic    *bool    `json:"is_public"`
     }
     if err := c.ShouldBindJSON(&body); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
@@ -175,6 +176,7 @@ func (api *NoteAPI) UpdateNote(c *gin.Context) {
         ContentType: body.ContentType,
         Status:      body.Status,
         Thumbnail:   body.Thumbnail,
+        TagIDs:      []uint{}, // TODO: Convert string tags to tag IDs
         IsPublic:    body.IsPublic,
     })
     if err != nil {
