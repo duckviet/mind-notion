@@ -1,43 +1,40 @@
+// HomePage.tsx
 "use client";
-import { MasonryGrid } from "@/widgets/content-grid";
+import { useState, useMemo } from "react";
+import { useNotes } from "@/shared/hooks/useNotes";
 import { SearchField } from "@/features/search-content/ui/SearchField";
-import { FloatingActionButton } from "@/shared/components/FloatingActionButton";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { CollaborativeEditor } from "@/features/collaborative-editor/ui/CollaborativeEditor";
-import { useAuthStore } from "@/features/auth/store/authStore";
-import { useState, useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { useListNotes } from "@/shared/services/generated/api";
+import { FloatingActionButton } from "@/shared/components/FloatingActionButton";
+import { MasonryGrid } from "@/widgets/content-grid";
+import NoteCard from "@/entities/note/ui/NoteCard";
+import ArticleCard from "@/entities/web-article/ui/ArticleCard";
+import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
+import { Variants } from "framer-motion";
+import { ReqUpdateNote } from "@/shared/services/generated/api";
+import { AnimateCardProvider } from "@/entities/note/ui/AnimateCardProvider";
 
 export default function HomePage() {
   const [query, setQuery] = useState("");
   const [isFabOpen, setIsFabOpen] = useState(false);
 
-  // Fetch notes from API
   const {
-    data: notesData,
+    notes: notesData,
     isLoading,
     error,
-  } = useListNotes({
-    limit: 50,
-    offset: 0,
-  });
+    deleteNote,
+    createNote,
+    updateNote,
+  } = useNotes({ limit: 50, offset: 0 });
 
-  // Transform API data to match expected format
   const notes = useMemo(() => {
-    if (!notesData?.notes) return [];
-    return notesData.notes.map((note) => ({
+    return (notesData || []).map((note) => ({
       ...note,
-      score: 1.0, // Default score for notes
+      score: 1.0,
     }));
-  }, [notesData?.notes]);
+  }, [notesData]);
 
-  // Filter notes based on search query
   const filteredResults = useMemo(() => {
-    if (!query.trim()) {
-      return notes;
-    }
-
+    if (!query.trim()) return notes;
     return notes.filter(
       (item) =>
         item.title.toLowerCase().includes(query.toLowerCase()) ||
@@ -52,51 +49,42 @@ export default function HomePage() {
     setQuery(searchTerm);
   };
 
-  const handleQueryIndex = () => {
-    console.log("Searching for:", query);
+  const handleDelete = async (id: string) => {
+    if (confirm("Delete this note?")) {
+      await deleteNote(id);
+    }
   };
 
+  const handleUpdate = async (id: string, data: ReqUpdateNote) => {
+    try {
+      await updateNote({ id, data });
+    } catch (error) {
+      console.error("Failed to update note:", error);
+    }
+  };
   const handleFabToggle = () => {
     setIsFabOpen(!isFabOpen);
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        const searchInput = document.querySelector(
-          'input[role="searchbox"]'
-        ) as HTMLInputElement;
-        if (searchInput) {
-          searchInput.focus();
-        }
-      }
-      if (e.key === "Escape" && isFabOpen) {
-        setIsFabOpen(false);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isFabOpen]);
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-red-500">Failed to load notes</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <div className="container mx-auto px-6 py-8">
-        <div className="mb-8">
-          <SearchField
-            query={query}
-            setQuery={setQuery}
-            onEnter={handleQueryIndex}
-            onSearch={handleSearch}
-          />
-        </div>
+        <SearchField
+          query={query}
+          setQuery={setQuery}
+          onSearch={handleSearch}
+          onEnter={() => {}}
+        />
 
-        {/* <div className="mb-8">
-          <CollaborativeEditor />
-        </div> */}
-
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-semibold text-text-primary">
             {query ? "Search Results" : "Your Content"}
           </h2>
@@ -106,15 +94,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="text-text-muted">Loading your notes...</div>
-          </div>
-        ) : error ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="text-red-500">Failed to load notes</div>
-          </div>
-        ) : filteredResults.length === 0 ? (
+        {filteredResults.length === 0 && !isLoading ? (
           <EmptyState
             type={query ? "no-results" : "new"}
             action={
@@ -127,12 +107,37 @@ export default function HomePage() {
             }
           />
         ) : (
-          <MasonryGrid
-            key={`notes-${filteredResults.length}-${Date.now()}`}
-            data={filteredResults}
-            isLoading={isLoading}
-            handleDelete={async () => {}}
-          />
+          <MasonryGrid data={filteredResults} isLoading={isLoading}>
+            {isLoading && filteredResults.length === 0 ? (
+              <div key="loading">Loading...</div>
+            ) : (
+              <div key="content-grid">
+                <AnimateCardProvider>
+                  {/* AddNoteForm */}
+                  <div key="add-note-form" className="mb-6 break-inside-avoid">
+                    <AddNoteForm onCreate={createNote} />
+                  </div>
+                  {/* Notes & Articles */}
+                  {filteredResults.map((note) => (
+                    <div
+                      key={note.id}
+                      className="h-fit mb-6 break-inside-avoid"
+                    >
+                      {note.content_type === "text" ? (
+                        <NoteCard
+                          match={note}
+                          onDelete={handleDelete}
+                          onUpdateNote={handleUpdate}
+                        />
+                      ) : (
+                        <ArticleCard match={note} onDelete={handleDelete} />
+                      )}
+                    </div>
+                  ))}
+                </AnimateCardProvider>
+              </div>
+            )}
+          </MasonryGrid>
         )}
       </div>
 

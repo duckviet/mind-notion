@@ -1,62 +1,53 @@
+// MasonryGrid.tsx
 import React, { Fragment, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import NoteCard, { NoteCardProps } from "@/entities/note/ui/NoteCard";
-import ArticleCard from "@/entities/web-article/ui/ArticleCard";
-import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
-import CardSkeleton from "@/shared/components/CardSkeleton";
 
-type Props = {
-  data: NoteCardProps[];
-
+type MasonryGridProps = {
+  data: any[];
+  children: React.ReactNode;
+  className?: string;
+  columnCount?: number;
+  gap?: number;
   isLoading?: boolean;
-  handleDelete: (id?: string) => Promise<void>;
+  layoutAnimation?: boolean;
 };
 
-export default function MasonryGrid({ data, isLoading, handleDelete }: Props) {
+export default function MasonryGrid({
+  data,
+  children,
+  className = "",
+  columnCount: providedColumnCount,
+  gap = 6,
+  isLoading = false,
+  layoutAnimation = false,
+}: MasonryGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const [columnCount, setColumnCount] = useState(4);
 
+  // CSS columns approach - no manual layout needed
   useEffect(() => {
     if (!gridRef.current) return;
 
-    const updateLayout = () => {
+    const updateColumnCount = () => {
       const grid = gridRef.current!;
-      const items = Array.from(grid.children) as HTMLElement[];
       const computedStyle = getComputedStyle(grid);
-      const gap = parseInt(computedStyle.gap || "16");
-
-      const currentColumnCount =
-        computedStyle.gridTemplateColumns.split(" ").length;
+      const currentColumnCount = parseInt(computedStyle.columnCount) || 1;
       setColumnCount(currentColumnCount);
-
-      items.forEach((item) => {
-        item.style.marginTop = "0";
-      });
-
-      items.forEach((item, index) => {
-        if (index < currentColumnCount) return;
-
-        const itemRect = item.getBoundingClientRect();
-        const aboveItem = items[index - currentColumnCount];
-        const aboveRect = aboveItem.getBoundingClientRect();
-
-        const desiredSpace = gap;
-        const currentSpace = itemRect.top - aboveRect.bottom;
-        const adjustment = desiredSpace - currentSpace;
-
-        if (adjustment !== 0) {
-          const currentMargin = parseInt(item.style.marginTop || "0");
-          item.style.marginTop = `${currentMargin + adjustment}px`;
-        }
-      });
     };
 
-    updateLayout();
-    const resizeObserver = new ResizeObserver(() => updateLayout());
-    resizeObserver.observe(gridRef.current);
+    const resizeObserver = new ResizeObserver(() => {
+      updateColumnCount();
+    });
 
-    return () => resizeObserver.disconnect();
-  }, [data]);
+    if (gridRef.current) {
+      resizeObserver.observe(gridRef.current);
+      updateColumnCount();
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [data.length, data]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -66,65 +57,26 @@ export default function MasonryGrid({ data, isLoading, handleDelete }: Props) {
     },
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
   return (
     <div className="w-full relative">
       <motion.div
         ref={gridRef}
-        className="grid gap-6 auto-rows-auto grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6"
+        style={{
+          columnGap: "24px",
+          columnFill: "balance",
+        }}
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <motion.div
-          variants={itemVariants}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-        >
-          <AddNoteForm />
-        </motion.div>
-
-        <AnimatePresence>
-          {isLoading ? (
-            <Fragment>
-              {Array.from({ length: 8 }).map((_, index) => (
-                <motion.div
-                  key={`skeleton-${index}`}
-                  variants={itemVariants}
-                  className="h-fit"
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                >
-                  <CardSkeleton index={index} />
-                </motion.div>
-              ))}
-            </Fragment>
-          ) : (
-            data.map((result: NoteCardProps) => {
-              const cardProps = {
-                match: result,
-                onDelete: handleDelete,
-              };
-              return (
-                <motion.div
-                  key={result.id}
-                  variants={itemVariants}
-                  layout
-                  className="h-fit"
-                  transition={{ duration: 0.4, ease: "easeOut" }}
-                >
-                  {result.content_type === "text" ? (
-                    <NoteCard {...cardProps} />
-                  ) : (
-                    <ArticleCard match={result} onDelete={handleDelete} />
-                  )}
-                </motion.div>
-              );
-            })
-          )}
-        </AnimatePresence>
+        {isLoading ? (
+          React.Children.map(children, (child: any) =>
+            React.isValidElement(child) ? child : null
+          )
+        ) : (
+          <AnimatePresence mode="popLayout">{children}</AnimatePresence>
+        )}
       </motion.div>
     </div>
   );

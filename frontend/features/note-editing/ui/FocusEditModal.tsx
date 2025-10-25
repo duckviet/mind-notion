@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, Fragment } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  Fragment,
+  useCallback,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Save, Tag, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,13 +14,13 @@ import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { CollaborativeEditor } from "@/features/collaborative-editor/ui/CollaborativeEditor";
 import { NoteCardProps } from "@/entities/note/ui/NoteCard";
 import { useMutation } from "@tanstack/react-query";
-import { updateNote } from "@/shared/services/generated/api";
+import { ReqUpdateNote, updateNote } from "@/shared/services/generated/api";
 
 interface FocusEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   note: NoteCardProps;
-  onSave?: (data: { title: string; content: string; tags?: string[] }) => void;
+  onSave?: (data: ReqUpdateNote) => void;
 }
 
 export default function FocusEditModal({
@@ -30,30 +36,7 @@ export default function FocusEditModal({
   });
   const [newTag, setNewTag] = useState("");
   const titleRef = useRef<HTMLInputElement>(null);
-
-  // react-query mutation for updating the note
-  const { mutateAsync: updateNoteMutate, isPending: isSaving } = useMutation({
-    mutationFn: async () => {
-      if (!note?.id) return;
-      await updateNote(note.id, {
-        id: note.id,
-        title: formData.title,
-        content: formData.content,
-        thumbnail: note.thumbnail || "",
-        tags: formData.tags,
-        content_type: "text",
-        status: "draft",
-        is_public: note.is_public || false,
-      });
-    },
-    onSuccess: () => {
-      onClose();
-    },
-    onError: (err) => {
-      // Optionally show error UI/toast here
-      // Could call onClose or leave open for retry
-    },
-  });
+  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   // Focus title input when modal opens
   useEffect(() => {
@@ -102,25 +85,51 @@ export default function FocusEditModal({
     }));
   };
 
-  // Save: Ctrl+Enter only
+  // Save: Ctrl+Enter only; prevent bubbling to avoid interfering with children
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Prevent default Tab key for modal shell, let RichTextEditor process its own Tab
+    if (
+      e.key === "Tab" &&
+      editorContainerRef.current &&
+      // Check if activeElement is inside the rich editor's DOM
+      editorContainerRef.current.contains(document.activeElement)
+    ) {
+      // Do nothing here—let RichTextEditor handle Tab as usual
+      return;
+    }
+
     if (e.key === "Escape") {
       onClose();
     } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
       e.preventDefault();
-      handleSave();
+      const payload = {
+        id: note.id,
+        title: formData.title,
+        content: formData.content,
+        content_type: "text",
+        status: "draft",
+        thumbnail: note.thumbnail || "",
+        tags: formData.tags,
+        is_public: note.is_public || false,
+      };
+      onSave && onSave(payload);
     }
   };
 
-  const handleSave = async () => {
-    try {
-      await updateNoteMutate();
-      if (onSave) onSave(formData);
-      // onClose will happen in onSuccess of mutation
-    } catch (e) {
-      // Optionally error UI
+  // Prevent outer modal capturing Tab key so RichTextEditor can use it for tabs
+  const handleTabTrap = useCallback((e: React.KeyboardEvent) => {
+    // If focus is inside the rich editor container, prevent the outer modal from handling Tab
+    if (
+      e.key === "Tab" &&
+      editorContainerRef.current &&
+      editorContainerRef.current.contains(document.activeElement)
+    ) {
+      // Prevent default so focus stays inside the editor and Tab goes to editor (not to next input)
+      e.stopPropagation();
+      // Do not preventDefault so tiptap editor can handle Tab
+      return;
     }
-  };
+  }, []);
 
   // Don't render on server side
   if (typeof window === "undefined") {
@@ -148,12 +157,18 @@ export default function FocusEditModal({
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="fixed inset-4 z-50 flex flex-col max-w-7xl w-full mx-auto"
-              onKeyDown={handleKeyDown}
+              onKeyDown={(e) => {
+                handleTabTrap(e);
+                handleKeyDown(e);
+              }}
               tabIndex={-1}
             >
               <div className="flex-1 flex glass-bg rounded-xl  rounded-glass shadow-glass-xl border border-glass-border overflow-hidden">
                 {/* Content */}
-                <div className="flex-1 flex flex-col p-6 pr-0 overflow-scroll">
+                <div
+                  className="flex-1 flex flex-col p-6 pr-0 overflow-scroll"
+                  ref={editorContainerRef}
+                >
                   <RichTextEditor
                     onContentChange={(content) => {
                       setFormData((prev) => ({ ...prev, content }));
@@ -173,7 +188,7 @@ export default function FocusEditModal({
                       onChange={handleInputChange}
                       placeholder="Note title..."
                       className="w-full text-2xl font-semibold bg-transparent border-none outline-none text-text-primary placeholder:text-text-muted resize-none"
-                      disabled={isSaving}
+                      // disabled={isSaving}
                     />
                   </div>
 
@@ -195,7 +210,7 @@ export default function FocusEditModal({
                           <button
                             onClick={() => handleRemoveTag(tag)}
                             className="text-text-muted hover:text-text-secondary transition-colors"
-                            disabled={isSaving}
+                            // disabled={isSaving}
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -208,7 +223,7 @@ export default function FocusEditModal({
                       onKeyDown={handleAddTag}
                       placeholder="Add tag and press Enter..."
                       className="w-full px-3 py-2 glass-bg rounded-lg border border-glass-border text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent-blue focus:ring-offset-2"
-                      disabled={isSaving}
+                      // disabled={isSaving}
                     />
                   </div>
                 </div>

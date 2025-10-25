@@ -7,8 +7,13 @@ import { Card } from "@/shared/components/Card";
 import {
   createNote,
   getListNotesQueryKey,
+  ReqCreateNote,
 } from "@/shared/services/generated/api";
-export default function NoteCard() {
+export default function AddNoteForm({
+  onCreate,
+}: {
+  onCreate: (data: ReqCreateNote) => void;
+}) {
   const [title, setTitle] = useState<string>(""); // Note title
   const [content, setContent] = useState<string>(""); // Note content
   const [isFocus, setIsFocus] = useState<boolean>(false); // Focus state
@@ -21,26 +26,15 @@ export default function NoteCard() {
       if (content.trim() && !isSaving) {
         setIsSaving(true);
         try {
-          const payload = {
-            title: title?.trim() ? title : "New note",
+          onCreate({
+            title,
+            content,
             content_type: "text",
             status: "draft",
-            content,
             thumbnail: "",
-            tags: [] as string[],
+            tags: [],
             is_public: false,
-          };
-          const response = await createNote(payload);
-          console.log("Saved note response:", response);
-
-          // Invalidate and refetch notes list
-          await queryClient.invalidateQueries({
-            queryKey: ["/notes/list"],
           });
-
-          setTitle("");
-          setContent("");
-          setIsFocus(false);
         } catch (err) {
           console.error("Failed to create note", err);
         } finally {

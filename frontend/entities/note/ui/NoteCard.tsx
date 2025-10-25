@@ -23,7 +23,7 @@ import { Trash2Icon, Eye, Edit3 } from "lucide-react";
 
 import NoteDisplay from "./NoteDisplay";
 import { Card } from "@/shared/components/Card";
-import { ResDetailNote } from "@/shared/services/generated/api";
+import { ReqUpdateNote, ResDetailNote } from "@/shared/services/generated/api";
 
 export interface NoteCardProps extends ResDetailNote {
   score: number;
@@ -32,20 +32,16 @@ export interface NoteCardProps extends ResDetailNote {
 type Props = {
   match: NoteCardProps;
   onDelete?: (id: string) => Promise<void>;
-  onUpdateNote?: (id: string, data: { title: string; content: string }) => void;
+  onUpdateNote?: (id: string, data: ReqUpdateNote) => void;
 };
 
 export default function NoteCard({ match, onDelete, onUpdateNote }: Props) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isFocusEditOpen, setIsFocusEditOpen] = useState(false);
 
-  const handleSaveNote = (data: {
-    title: string;
-    content: string;
-    tags?: string[];
-  }) => {
+  const handleSaveNote = (data: ReqUpdateNote) => {
     if (onUpdateNote) {
-      onUpdateNote(match.id, { title: data.title, content: data.content });
+      onUpdateNote(match.id, data);
     }
   };
 

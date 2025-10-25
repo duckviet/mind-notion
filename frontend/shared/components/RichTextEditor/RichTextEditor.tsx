@@ -59,9 +59,17 @@ const Tiptap = ({
 
   useEffect(() => {
     if (onContentChange && editor) {
-      onContentChange(editor.getHTML());
+      const handleUpdate = () => {
+        onContentChange(editor.getHTML());
+      };
+
+      editor.on("update", handleUpdate);
+
+      return () => {
+        editor.off("update", handleUpdate);
+      };
     }
-  }, [editor?.getHTML()]);
+  }, [editor, onContentChange]);
 
   return (
     <Fragment>
