@@ -180,7 +180,7 @@ func (api *NoteAPI) UpdateNote(c *gin.Context) {
         IsPublic:    body.IsPublic,
     })
     if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
     c.JSON(http.StatusOK, updated)

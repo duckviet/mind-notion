@@ -51,7 +51,7 @@ func (r *noteRepository) Update(ctx context.Context, note *models.Note) error {
 
 // Delete deletes a note
 func (r *noteRepository) Delete(ctx context.Context, id string) error {
-	return r.db.WithContext(ctx).Delete(&models.Note{}, id).Error
+	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Note{}).Error
 }
 
 // List retrieves notes with pagination
