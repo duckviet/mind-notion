@@ -314,6 +314,71 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  '/notes/{id}/tom':
+    put:
+      summary: Update note top of mind by ID
+      operationId: updateNoteTOM
+      tags:
+        - Note
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Note ID
+        - name: tom
+          in: query
+          required: true
+          schema:
+            type: boolean
+            example: true
+          description: Top of mind
+      responses:
+        '200':
+          description: Note top of mind updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: '1234567890'
+                  top_of_mind:
+                    type: boolean
+                    example: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /notes/list-tom:
+    get:
+      summary: List user's top of mind notes
+      operationId: listNotesTOM
+      tags:
+        - Note
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Top of mind notes retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Res_DetailNote'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /folders/create:
     post:
       summary: Create a new folder
@@ -809,6 +874,9 @@ components:
         status:
           type: string
           example: draft/published/archived
+        top_of_mind:
+          type: boolean
+          example: false
         thumbnail:
           type: string
           format: uri
@@ -842,6 +910,7 @@ components:
         - updated_at
         - content_type
         - status
+        - top_of_mind
   responses:
     BadRequest:
       description: Bad Request. The request is invalid.

@@ -25,6 +25,8 @@ type ResDetailNote struct {
 
 	Status string `json:"status"`
 
+	TopOfMind bool `json:"top_of_mind"`
+
 	Thumbnail string `json:"thumbnail"`
 
 	Tags []string `json:"tags"`

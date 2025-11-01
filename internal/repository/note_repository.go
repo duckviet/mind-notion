@@ -15,6 +15,8 @@ type NoteRepository interface {
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, params NoteListParams) ([]*models.Note, int64, error)
 	GetByUserID(ctx context.Context, userID string, params NoteListParams) ([]*models.Note, int64, error)
+	UpdateTOM(ctx context.Context, id string, tom bool) error
+	ListTOM(ctx context.Context, userID string) ([]*models.Note, error)
 }
 
 // noteRepository implements NoteRepository
@@ -61,6 +63,9 @@ func (r *noteRepository) List(ctx context.Context, params NoteListParams) ([]*mo
 
 	query := r.db.WithContext(ctx).Model(&models.Note{})
 
+	// Exclude top_of_mind notes from regular list
+	query = query.Where("top_of_mind = ?", false)
+
 	// Apply filters
 	if params.Status != nil {
 		query = query.Where("status = ?", *params.Status)
@@ -73,25 +78,29 @@ func (r *noteRepository) List(ctx context.Context, params NoteListParams) ([]*mo
 		query = query.Where("is_public = ?", *params.IsPublic)
 	}
 
-	// Count total
+	// Count total (with all filters applied)
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
 	// Apply pagination and get results
 	offset := (params.Page - 1) * params.Limit
-	err := query.Preload("User").Preload("Tags").
-		Offset(offset).Limit(params.Limit).Find(&notes).Error
+	err := query.
+		Preload("User").Preload("Tags").
+		Offset(offset).Limit(params.Limit).
+		Find(&notes).Error
 
 	return notes, total, err
 }
 
-// GetByUserID retrieves notes by user ID
+// GetByUserID retrieves notes by user ID (excludes top_of_mind notes)
 func (r *noteRepository) GetByUserID(ctx context.Context, userID string, params NoteListParams) ([]*models.Note, int64, error) {
 	var notes []*models.Note
 	var total int64
 
-	query := r.db.WithContext(ctx).Model(&models.Note{}).Where("user_id = ?", userID)
+	query := r.db.WithContext(ctx).Model(&models.Note{}).
+		Where("user_id = ?", userID).
+		Where("top_of_mind = ?", false)
 
 	// Apply filters
 	if params.Status != nil {
@@ -102,7 +111,7 @@ func (r *noteRepository) GetByUserID(ctx context.Context, userID string, params 
 			Where("folder_notes.folder_id = ?", *params.FolderID)
 	}
 
-	// Count total
+	// Count total (with all filters applied)
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
@@ -113,4 +122,25 @@ func (r *noteRepository) GetByUserID(ctx context.Context, userID string, params 
 		Offset(offset).Limit(params.Limit).Find(&notes).Error
 
 	return notes, total, err
+}
+
+
+func (r *noteRepository) UpdateTOM(ctx context.Context, id string, tom bool) error {
+	return r.db.WithContext(ctx).
+		Model(&models.Note{}).
+		Where("id = ?", id).
+		Update("top_of_mind", tom).Error
+}
+
+// ListTOM lists all notes where TopOfMind is true for a specific user
+func (r *noteRepository) ListTOM(ctx context.Context, userID string) ([]*models.Note, error) {
+	var notes []*models.Note
+	err := r.db.WithContext(ctx).
+		Model(&models.Note{}).
+		Where("top_of_mind = ? AND user_id = ?", true, userID).
+		Preload("Tags").
+		Preload("Folders").
+		Order("updated_at DESC"). // Sort by most recently updated
+		Find(&notes).Error
+	return notes, err
 }

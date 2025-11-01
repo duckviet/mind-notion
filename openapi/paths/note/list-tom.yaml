@@ -1,0 +1,20 @@
+get:
+  summary: List user's top of mind notes
+  operationId: listNotesTOM
+  tags: [Note]
+  security:
+    - BearerAuth: []
+  responses:
+    "200":
+      description: Top of mind notes retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: ../../components/schemas/Note/Res_DetailNote.yaml
+
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml
