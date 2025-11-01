@@ -19,7 +19,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/shared/components/ui/context-menu";
-import { Trash2Icon, Eye, Edit3 } from "lucide-react";
+import { Trash2Icon, Eye, Edit3, Brain } from "lucide-react";
 
 import NoteDisplay from "./NoteDisplay";
 import { Card } from "@/shared/components/Card";
@@ -33,9 +33,15 @@ type Props = {
   match: NoteCardProps;
   onDelete?: (id: string) => Promise<void>;
   onUpdateNote?: (id: string, data: ReqUpdateNote) => void;
+  onPin?: (id: string, tom: boolean) => void;
 };
 
-export default function NoteCard({ match, onDelete, onUpdateNote }: Props) {
+export default function NoteCard({
+  match,
+  onDelete,
+  onUpdateNote,
+  onPin,
+}: Props) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isFocusEditOpen, setIsFocusEditOpen] = useState(false);
 
@@ -57,6 +63,12 @@ export default function NoteCard({ match, onDelete, onUpdateNote }: Props) {
 
   const handleFocusEdit = () => {
     setIsFocusEditOpen(true);
+  };
+
+  const handlePin = (tom: boolean) => {
+    if (onPin) {
+      onPin(match.id, tom);
+    }
   };
 
   // Add keyboard shortcut for focus edit (E key)
@@ -119,6 +131,15 @@ export default function NoteCard({ match, onDelete, onUpdateNote }: Props) {
           <p className="text-sm">Delete</p>
           <ContextMenuShortcut>
             <Trash2Icon className="w-3 h-3" />
+          </ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem
+          onClick={() => handlePin(true)}
+          className="focus:bg-glass-hover"
+        >
+          <p className="text-sm">Pin</p>
+          <ContextMenuShortcut>
+            <Brain className="w-3 h-3" />
           </ContextMenuShortcut>
         </ContextMenuItem>
       </ContextMenuContent>

@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, useEffect } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -25,7 +25,9 @@ export function DraggableItem({
       id,
       disabled,
     });
-
+  useEffect(() => {
+    // console.log("id", id, "isDragging", isDragging);
+  }, [id, isDragging]);
   const draggableStyle: CSSProperties = {
     transform: CSS.Transform.toString(transform),
     opacity: isDragging ? 0.5 : 1,
@@ -34,8 +36,9 @@ export function DraggableItem({
 
   return (
     <div
+      data-id={id}
       ref={setNodeRef}
-      style={draggableStyle}
+      // style={draggableStyle}
       className={className}
       {...attributes}
       {...listeners}

@@ -21,6 +21,8 @@ type NoteService interface {
 	GetNotesByUserID(ctx context.Context, userID string, params repository.NoteListParams) ([]*models.Note, int64, error)
 	AddTagToNote(ctx context.Context, noteID, tagID string) error
 	RemoveTagFromNote(ctx context.Context, noteID, tagID string) error
+	UpdateNoteTOM(ctx context.Context, id string, tom bool) (*models.Note, error)
+	ListNotesTOM(ctx context.Context, userID string) ([]*models.Note, error)
 }
 
 // noteService implements NoteService
@@ -75,6 +77,7 @@ func (s *noteService) CreateNote(ctx context.Context, req CreateNoteRequest) (*m
 		Content:     req.Content,
 		ContentType: req.ContentType,
 		Status:      models.NoteStatus(req.Status),
+		TopOfMind:   false,
 		Thumbnail:   req.Thumbnail,
 		IsPublic:    req.IsPublic,
 		UserID:      req.UserID,
@@ -184,4 +187,27 @@ func (s *noteService) RemoveTagFromNote(ctx context.Context, noteID, tagID strin
 	// This would need to be implemented in the repository
 	// For now, return not implemented
 	return ErrNotImplemented
+}
+
+// UpdateNoteTOM updates a note top of mind by ID
+func (s *noteService) UpdateNoteTOM(ctx context.Context, id string, tom bool) (*models.Note, error) {
+	note, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNoteNotFound
+		}
+		return nil, ErrInternalServerError
+	}
+	note.TopOfMind = tom
+	if err := s.repo.Update(ctx, note); err != nil {
+		return nil, ErrInternalServerError
+	}
+	return note, nil
+}
+func (s *noteService) ListNotesTOM(ctx context.Context, userID string) ([]*models.Note, error) {
+	notes, err := s.repo.ListTOM(ctx, userID)
+	if err != nil {
+		return nil, ErrInternalServerError
+	}
+	return notes, nil
 }

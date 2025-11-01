@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
@@ -28,7 +28,9 @@ export function SortableItem({
     id,
     disabled,
   });
-
+  useEffect(() => {
+    // console.log("id", id, "isDragging", isDragging);
+  }, [id, isDragging]);
   const sortableStyle: CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -38,6 +40,7 @@ export function SortableItem({
 
   return (
     <div
+      data-id={id}
       ref={setNodeRef}
       style={sortableStyle}
       className={className}

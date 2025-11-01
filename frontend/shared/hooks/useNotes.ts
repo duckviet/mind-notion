@@ -22,9 +22,11 @@ export function useNotes(params: ListParams = { limit: 50, offset: 0 }) {
   const queryKey = getListNotesQueryKey(params);
   // Chỉ wrap generated hook - đơn giản và mạnh mẽ
   const notesQuery = useGeneratedListNotes(params);
+
   useEffect(() => {
     setNotes(notesQuery.data?.notes ?? []);
   }, [notesQuery.data?.notes]);
+
   // Mutations đơn giản với automatic invalidation
   const createMutation = useMutation({
     mutationFn: (data: ReqCreateNote) => apiCreateNote(data),
@@ -51,6 +53,9 @@ export function useNotes(params: ListParams = { limit: 50, offset: 0 }) {
     },
   });
 
+  // Thêm refetch
+  const refetch = notesQuery.refetch;
+
   return {
     // List data
     notes,
@@ -59,7 +64,7 @@ export function useNotes(params: ListParams = { limit: 50, offset: 0 }) {
     isLoading: notesQuery.isLoading,
     isError: notesQuery.isError,
     error: notesQuery.error,
-    refetch: notesQuery.refetch,
+    refetch,
 
     // Mutations
     createNote: createMutation.mutateAsync,

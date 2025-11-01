@@ -40,7 +40,10 @@ paths:
     $ref: "./paths/note/update.yaml"
   /notes/{id}/delete:
     $ref: "./paths/note/delete.yaml"
-
+  /notes/{id}/tom:
+    $ref: "./paths/note/update-tom.yaml"
+  /notes/list-tom:
+    $ref: "./paths/note/list-tom.yaml"
   # Folder Management
   /folders/create:
     $ref: "./paths/folder/create.yaml"

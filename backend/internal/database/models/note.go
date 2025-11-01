@@ -7,6 +7,7 @@ type Note struct {
 	Content     string    `gorm:"type:text" json:"content"`
 	ContentType string    `gorm:"type:varchar(50);default:'text'" json:"content_type"`
 	Status      NoteStatus `gorm:"type:varchar(20);default:'draft'" json:"status"`
+	TopOfMind   bool      `gorm:"default:false" json:"top_of_mind"`
 	Thumbnail   string    `gorm:"type:text" json:"thumbnail"`
 	IsPublic    bool      `gorm:"default:false" json:"is_public"`
 

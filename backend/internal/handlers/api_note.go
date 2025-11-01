@@ -186,3 +186,36 @@ func (api *NoteAPI) UpdateNote(c *gin.Context) {
     c.JSON(http.StatusOK, updated)
 }
 
+// Put /api/v1/notes/:id?tom={tom}
+// Update note top of mind by ID
+func (api *NoteAPI) UpdateNoteTOM(c *gin.Context) {
+    idStr := c.Param("id")
+    tomStr := c.Query("tom")
+    tom := tomStr == "true"
+    fmt.Println("UpdateNoteTOM request:", tomStr, tom)
+    updated, err := api.noteService.UpdateNoteTOM(c.Request.Context(), idStr, tom)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    c.JSON(http.StatusOK, updated)
+}
+
+// Get /api/v1/notes/list-tom
+// List user's top of mind notes
+func (api *NoteAPI) ListNotesTOM(c *gin.Context) {
+    // Get authenticated user
+    userVal, exists := c.Get("user")
+    if !exists {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+        return
+    }
+    u := userVal.(*dbmodels.User)
+
+    notes, err := api.noteService.ListNotesTOM(c.Request.Context(), u.ID)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    c.JSON(http.StatusOK, notes)
+}
