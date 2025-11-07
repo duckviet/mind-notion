@@ -5,11 +5,9 @@ import React, {
   useRef,
   useCallback,
   Fragment,
-  useMemo,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Tag, AlertCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
 import Portal from "@/shared/components/PortalModal/PortalModal";
 import { Input } from "@/shared/components/ui/input";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
@@ -46,6 +44,23 @@ export default function FocusEditModal({
   const titleRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const contentInputRef = useRef<HTMLDivElement>(null);
+
+  // Track initial values when modal opens to prevent auto-save on mount
+  const initialFormDataRef = useRef({
+    title: "",
+    content: "",
+    tags: [] as string[],
+  });
+
+  // Track previous saved values to avoid unnecessary auto-saves
+  const prevSavedDataRef = useRef({
+    title: "",
+    content: "",
+    tags: [] as string[],
+  });
+
+  // Track if modal just opened to prevent immediate auto-save
+  const justOpenedRef = useRef(false);
 
   // Initialize form data when modal opens
   useEffect(() => {
@@ -208,30 +223,13 @@ export default function FocusEditModal({
     onSettled: () => setIsSaving(false),
   });
 
-  // Track initial values when modal opens to prevent auto-save on mount
-  const initialFormDataRef = useRef({
-    title: "",
-    content: "",
-    tags: [] as string[],
-  });
-
-  // Track previous saved values to avoid unnecessary auto-saves
-  const prevSavedDataRef = useRef({
-    title: "",
-    content: "",
-    tags: [] as string[],
-  });
-
-  // Track if modal just opened to prevent immediate auto-save
-  const justOpenedRef = useRef(false);
-
   useEffect(() => {
     if (isOpen && note) {
       justOpenedRef.current = true;
       // Reset flag after a short delay to allow user to start typing
       const timer = setTimeout(() => {
         justOpenedRef.current = false;
-      }, 3000); // Prevent auto-save for 2 seconds after opening
+      }, 3000); // Prevent auto-save for 3 seconds after opening
       return () => clearTimeout(timer);
     }
   }, [isOpen, note]);
@@ -369,49 +367,32 @@ export default function FocusEditModal({
       });
 
       toast.success("Note saved successfully");
-      onClose();
-    } catch (error) {
+    } catch (err) {
       toast.error("Failed to save note");
-      console.error("Save error:", error);
+      console.error(err);
     } finally {
       setIsSaving(false);
     }
   }, [
-    formData,
-    note.id,
-    note.thumbnail,
-    note.is_public,
-    onSave,
-    onClose,
     validateTitle,
+    formData.title,
+    formData.content,
+    formData.tags,
+    note,
+    onSave,
     queryClient,
   ]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      // Escape to close (only when not in editor)
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-        return;
-      }
-
-      // Ctrl/Cmd + Enter to save
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-        e.preventDefault();
-        handleSave();
-        return;
-      }
-
-      // Ctrl/Cmd + S to save
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
-        handleSave();
-        return;
-      }
-    },
-    [handleSave, onClose]
-  );
+  // Save: Ctrl+Enter only
+  const isEscapeKey = (e: React.KeyboardEvent) => e.key === "Escape";
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isEscapeKey(e)) {
+      onClose();
+    } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      handleSave();
+    }
+  };
 
   const handleTitleBlur = useCallback(() => {
     if (formData.title.trim()) {
@@ -498,7 +479,6 @@ export default function FocusEditModal({
                     </div>
 
                     {/* Rich Text Editor */}
-
                     <RichTextEditor
                       ref={contentInputRef as React.RefObject<HTMLDivElement>}
                       onContentChange={handleContentChange}
@@ -523,7 +503,6 @@ export default function FocusEditModal({
                         {formData.tags.map((tag) => (
                           <div
                             key={tag}
-                            // variant="secondary"
                             className="px-3 py-1 cursor-pointer hover:bg-red-100"
                             onClick={() => handleRemoveTag(tag)}
                           >
