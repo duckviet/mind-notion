@@ -1,6 +1,6 @@
-generate-oapi-codegen:
-	swagger-cli bundle openapi/openapi.yaml -o openapi/dist.yaml --type yaml
-	oapi-codegen -generate types,server,spec -package api -o internal/api.gen.go openapi/dist.yaml
+# generate-oapi-codegen:
+# 	swagger-cli bundle openapi/openapi.yaml -o openapi/dist.yaml --type yaml
+# 	oapi-codegen -generate types,server,spec -package api -o internal/api.gen.go openapi/dist.yaml
 
 OAPI_SPEC_SRC := openapi/openapi.yaml
 OAPI_SPEC_DST := openapi/dist.yaml

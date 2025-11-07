@@ -1,0 +1,42 @@
+put:
+  summary: Update note top of mind by ID
+  operationId: updateNoteTOM
+  tags: [Note]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+    - name: tom
+      in: query
+      required: true
+      schema:
+        type: boolean
+        example: true
+      description: Top of mind
+  responses:
+    "200":
+      description: Note top of mind updated successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "1234567890"
+              top_of_mind:
+                type: boolean
+                example: true
+    "400":
+      $ref: ../../components/responses/BadRequest.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

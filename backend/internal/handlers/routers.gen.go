@@ -159,10 +159,22 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.NoteAPI.ListNotes,
 		},
 		{
+			"ListNotesTOM",
+			http.MethodGet,
+			"/api/v1/notes/list-tom",
+			handleFunctions.NoteAPI.ListNotesTOM,
+		},
+		{
 			"UpdateNote",
 			http.MethodPut,
 			"/api/v1/notes/:id/update",
 			handleFunctions.NoteAPI.UpdateNote,
+		},
+		{
+			"UpdateNoteTOM",
+			http.MethodPut,
+			"/api/v1/notes/:id/tom",
+			handleFunctions.NoteAPI.UpdateNoteTOM,
 		},
 		{
 			"DeleteMe",

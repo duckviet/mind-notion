@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
 
 import { PreviewOverlay } from "@/shared/components/PreviewOverlay";
+import { useModal } from "@/shared/contexts/ModalContext";
 
 // Dynamic import to prevent SSR issues
 const FocusEditModal = dynamic(
@@ -19,11 +20,11 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/shared/components/ui/context-menu";
-import { Trash2Icon, Eye, Edit3 } from "lucide-react";
+import { Trash2Icon, Eye, Edit3, Brain } from "lucide-react";
 
 import NoteDisplay from "./NoteDisplay";
 import { Card } from "@/shared/components/Card";
-import { ResDetailNote } from "@/shared/services/generated/api";
+import { ReqUpdateNote, ResDetailNote } from "@/shared/services/generated/api";
 
 export interface NoteCardProps extends ResDetailNote {
   score: number;
@@ -32,20 +33,23 @@ export interface NoteCardProps extends ResDetailNote {
 type Props = {
   match: NoteCardProps;
   onDelete?: (id: string) => Promise<void>;
-  onUpdateNote?: (id: string, data: { title: string; content: string }) => void;
+  onUpdateNote?: (id: string, data: ReqUpdateNote) => void;
+  onPin?: (id: string, tom: boolean) => void;
 };
 
-export default function NoteCard({ match, onDelete, onUpdateNote }: Props) {
+export default function NoteCard({
+  match,
+  onDelete,
+  onUpdateNote,
+  onPin,
+}: Props) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isFocusEditOpen, setIsFocusEditOpen] = useState(false);
+  const { openModal, closeModal } = useModal();
 
-  const handleSaveNote = (data: {
-    title: string;
-    content: string;
-    tags?: string[];
-  }) => {
+  const handleSaveNote = (data: ReqUpdateNote) => {
     if (onUpdateNote) {
-      onUpdateNote(match.id, { title: data.title, content: data.content });
+      onUpdateNote(match.id, data);
     }
   };
 
@@ -61,6 +65,13 @@ export default function NoteCard({ match, onDelete, onUpdateNote }: Props) {
 
   const handleFocusEdit = () => {
     setIsFocusEditOpen(true);
+    openModal();
+  };
+
+  const handlePin = (tom: boolean) => {
+    if (onPin) {
+      onPin(match.id, tom);
+    }
   };
 
   // Add keyboard shortcut for focus edit (E key)
@@ -125,6 +136,15 @@ export default function NoteCard({ match, onDelete, onUpdateNote }: Props) {
             <Trash2Icon className="w-3 h-3" />
           </ContextMenuShortcut>
         </ContextMenuItem>
+        <ContextMenuItem
+          onClick={() => handlePin(true)}
+          className="focus:bg-glass-hover"
+        >
+          <p className="text-sm">Pin</p>
+          <ContextMenuShortcut>
+            <Brain className="w-3 h-3" />
+          </ContextMenuShortcut>
+        </ContextMenuItem>
       </ContextMenuContent>
 
       {/* Preview Overlay */}
@@ -137,7 +157,10 @@ export default function NoteCard({ match, onDelete, onUpdateNote }: Props) {
       {/* Focus Edit Modal */}
       <FocusEditModal
         isOpen={isFocusEditOpen}
-        onClose={() => setIsFocusEditOpen(false)}
+        onClose={() => {
+          setIsFocusEditOpen(false);
+          closeModal();
+        }}
         note={match}
         onSave={handleSaveNote}
       />

@@ -117,6 +117,7 @@ export interface ResDetailNote {
   content: string;
   content_type: string;
   status: string;
+  top_of_mind: boolean;
   thumbnail: string;
   tags: string[];
   is_public: boolean;
@@ -190,6 +191,18 @@ export type ListNotes200 = {
   limit?: number;
   /** Number of notes skipped */
   offset?: number;
+};
+
+export type UpdateNoteTOMParams = {
+  /**
+   * Top of mind
+   */
+  tom: boolean;
+};
+
+export type UpdateNoteTOM200 = {
+  id?: string;
+  top_of_mind?: boolean;
 };
 
 export type ListFoldersParams = {
@@ -1471,6 +1484,228 @@ export const useDeleteNote = <
 
   return useMutation(mutationOptions, queryClient);
 };
+
+/**
+ * @summary Update note top of mind by ID
+ */
+export const updateNoteTOM = (id: string, params: UpdateNoteTOMParams) => {
+  return customInstance<UpdateNoteTOM200>({
+    url: `/notes/${id}/tom`,
+    method: "PUT",
+    params,
+  });
+};
+
+export const getUpdateNoteTOMMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateNoteTOM>>,
+    TError,
+    { id: string; params: UpdateNoteTOMParams },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateNoteTOM>>,
+  TError,
+  { id: string; params: UpdateNoteTOMParams },
+  TContext
+> => {
+  const mutationKey = ["updateNoteTOM"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateNoteTOM>>,
+    { id: string; params: UpdateNoteTOMParams }
+  > = (props) => {
+    const { id, params } = props ?? {};
+
+    return updateNoteTOM(id, params);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateNoteTOMMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateNoteTOM>>
+>;
+
+export type UpdateNoteTOMMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Update note top of mind by ID
+ */
+export const useUpdateNoteTOM = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateNoteTOM>>,
+      TError,
+      { id: string; params: UpdateNoteTOMParams },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateNoteTOM>>,
+  TError,
+  { id: string; params: UpdateNoteTOMParams },
+  TContext
+> => {
+  const mutationOptions = getUpdateNoteTOMMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary List user's top of mind notes
+ */
+export const listNotesTOM = (signal?: AbortSignal) => {
+  return customInstance<ResDetailNote[]>({
+    url: `/notes/list-tom`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getListNotesTOMQueryKey = () => {
+  return [`/notes/list-tom`] as const;
+};
+
+export const getListNotesTOMQueryOptions = <
+  TData = Awaited<ReturnType<typeof listNotesTOM>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof listNotesTOM>>, TError, TData>
+  >;
+}) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListNotesTOMQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listNotesTOM>>> = ({
+    signal,
+  }) => listNotesTOM(signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listNotesTOM>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListNotesTOMQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listNotesTOM>>
+>;
+export type ListNotesTOMQueryError =
+  | UnauthorizedResponse
+  | InternalServerErrorResponse;
+
+export function useListNotesTOM<
+  TData = Awaited<ReturnType<typeof listNotesTOM>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotesTOM>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listNotesTOM>>,
+          TError,
+          Awaited<ReturnType<typeof listNotesTOM>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListNotesTOM<
+  TData = Awaited<ReturnType<typeof listNotesTOM>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotesTOM>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listNotesTOM>>,
+          TError,
+          Awaited<ReturnType<typeof listNotesTOM>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListNotesTOM<
+  TData = Awaited<ReturnType<typeof listNotesTOM>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotesTOM>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary List user's top of mind notes
+ */
+
+export function useListNotesTOM<
+  TData = Awaited<ReturnType<typeof listNotesTOM>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotesTOM>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getListNotesTOMQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
 
 /**
  * @summary Create a new folder
