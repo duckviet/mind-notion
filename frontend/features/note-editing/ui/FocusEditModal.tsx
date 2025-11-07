@@ -103,10 +103,14 @@ export default function FocusEditModal({
   };
 
   // Save: Ctrl+Enter only
+  const isEscapeKey = (e: React.KeyboardEvent) => e.key === "Escape";
+  const isSubmitShortcut = (e: React.KeyboardEvent) =>
+    (e.ctrlKey || e.metaKey) && e.key === "Enter";
+  
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
+    if (isEscapeKey(e)) {
       onClose();
-    } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    } else if (isSubmitShortcut(e)) {
       e.preventDefault();
       handleSave();
     }
