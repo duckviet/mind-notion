@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import React, { Fragment, useCallback, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import ExtLink from "./ExtLink";
 import ExtListKit from "./ExtListKit";
 import ExtCodeBlock from "./ExtCodeBlock";
@@ -12,12 +12,11 @@ import ExtMathematics, { migrateMathStrings } from "./ExtMathematics";
 import ExtTableKit from "./ExtTable";
 import { EditorView } from "@tiptap/pm/view";
 
-// Extend Tiptap props: add onKeyDown handler support
 interface TiptapProps {
   ref?: React.RefObject<HTMLDivElement>;
   className?: string;
   content?: string;
-  onContentChange?: (content: string) => void;
+  onUpdate?: (content: string) => void;
   editable?: boolean;
   onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
 }
@@ -25,30 +24,58 @@ interface TiptapProps {
 const Tiptap = ({
   ref,
   className,
-  content: initialContent,
-  onContentChange,
-  editable,
+  content = "<p></p>",
+  onUpdate,
+  editable = true,
   onKeyDown,
 }: TiptapProps) => {
-  const editorConfig = useMemo(
-    () => ({
-      extensions: [
-        StarterKit.configure({
-          // Exclude extensions that we override with custom versions
-          bulletList: false,
-          orderedList: false,
-          listItem: false,
-          codeBlock: false,
-          heading: false,
-          link: false,
-        }),
-        ExtLink,
-        ...ExtListKit,
-        ExtCodeBlock,
-        ExtHeading,
-        ExtMathematics,
-        ...ExtTableKit,
-      ],
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const onUpdateRef = useRef(onUpdate);
+  const onKeyDownRef = useRef(onKeyDown);
+  const contentRef = useRef(content);
+  const isUpdatingRef = useRef(false);
+
+  // Keep refs updated without causing re-renders
+  useEffect(() => {
+    onUpdateRef.current = onUpdate;
+  }, [onUpdate]);
+
+  useEffect(() => {
+    onKeyDownRef.current = onKeyDown;
+  }, [onKeyDown]);
+
+  useEffect(() => {
+    contentRef.current = content;
+  }, [content]);
+
+  // Memoize extensions to prevent recreation
+  const extensions = useMemo(
+    () => [
+      StarterKit.configure({
+        bulletList: false,
+        orderedList: false,
+        listItem: false,
+        codeBlock: false,
+        heading: false,
+        link: false,
+      }),
+      ExtLink,
+      ...ExtListKit,
+      ExtCodeBlock,
+      ExtHeading,
+      ExtMathematics,
+      ...ExtTableKit,
+    ],
+    []
+  );
+
+  const editor = useEditor(
+    {
+      extensions,
+      content: contentRef.current,
+      immediatelyRender: false,
+      editable,
+      injectCSS: false,
       editorProps: {
         attributes: {
           class: cn(
@@ -57,108 +84,73 @@ const Tiptap = ({
           ),
         },
         handleDOMEvents: {
-          // Wire the onKeyDown prop from parent if provided
           keydown: (_: EditorView, event: KeyboardEvent) => {
-            // event is KeyboardEvent
-            if (typeof onKeyDown === "function") {
-              // Make a React KeyboardEvent-like wrapper
-              // You can use event directly, but for type-safety, cast
-              onKeyDown(
+            if (onKeyDownRef.current)
+              onKeyDownRef.current(
                 event as unknown as React.KeyboardEvent<HTMLDivElement>
               );
-            }
-            // Don't prevent default, allow downstream plugins
-            // Always return false so tiptap default keymaps run
             return false;
           },
         },
       },
-      content: initialContent || "<p></p>",
-      immediatelyRender: false,
-      injectCSS: false,
-      editable,
-      enableInputRules: editable
-        ? [
-            ExtLink,
-            "horizontalRule",
-            ...ExtListKit,
-            ExtCodeBlock,
-            ExtHeading,
-            ExtMathematics,
-            ...ExtTableKit,
-          ]
-        : [],
-    }),
-    [initialContent, editable, onKeyDown]
-  );
-
-  const editor = useEditor(editorConfig, [initialContent, editable, onKeyDown]);
-
-  // Memoize content change handler
-  const handleContentChange = useCallback(
-    (content: string) => {
-      if (onContentChange) {
-        // Throttle updates để performance tốt hơn
-        onContentChange(content);
-      }
     },
-    [onContentChange]
+    [editable] // Only recreate when editable changes
   );
 
-  // Setup event listeners with proper cleanup
+  /** Handle editor updates (with debounce) */
   useEffect(() => {
     if (!editor) return;
-
     let lastContent = editor.getHTML();
-    let timeoutId: NodeJS.Timeout;
 
     const handleUpdate = () => {
-      const currentContent = editor.getHTML();
-      // Only trigger onContentChange if content actually changed
-      if (currentContent !== lastContent) {
-        lastContent = currentContent;
-        handleContentChange(currentContent);
+      const html = editor.getHTML();
+      if (html !== lastContent) {
+        lastContent = html;
+        onUpdateRef.current?.(html);
       }
     };
 
-    // Debounce updates để tránh quá nhiều calls
     const debouncedUpdate = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleUpdate, 300);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(handleUpdate, 300);
     };
 
-    // Only listen to 'update' event, not 'selectionUpdate'
-    // 'selectionUpdate' fires on cursor movement without content changes
     editor.on("update", debouncedUpdate);
-
-    // Migrate math strings on create
     migrateMathStrings(editor);
 
     return () => {
-      clearTimeout(timeoutId);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       editor.off("update", debouncedUpdate);
     };
-  }, [editor, handleContentChange]);
+  }, [editor]); // Remove onUpdate from deps, use ref instead
 
-  // Update content when initialContent changes (for external updates)
+  /** Sync when parent changes - only when content actually differs */
   useEffect(() => {
-    if (editor && initialContent !== undefined) {
-      const currentHTML = editor.getHTML();
-      // Chỉ update nếu content thực sự thay đổi
-      if (currentHTML !== initialContent) {
-        editor.commands.setContent(initialContent, { emitUpdate: false }); // false = don't emit update
-      }
+    if (!editor || content === undefined || isUpdatingRef.current) return;
+
+    const current = editor.getHTML();
+    // Only update if content is truly different to avoid unnecessary updates
+    if (current !== content) {
+      isUpdatingRef.current = true;
+      // Defer setContent to avoid flushSync conflict during React render
+      queueMicrotask(() => {
+        if (editor && !editor.isDestroyed) {
+          editor.commands.setContent(content, { emitUpdate: false });
+          // Reset flag after update completes
+          requestAnimationFrame(() => {
+            isUpdatingRef.current = false;
+          });
+        } else {
+          isUpdatingRef.current = false;
+        }
+      });
     }
-  }, [editor, initialContent]);
+    contentRef.current = content;
+  }, [editor, content]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (editor) {
-        editor.destroy();
-      }
-    };
-  }, [editor]);
+  /** Cleanup */
+  useEffect(() => () => editor?.destroy(), [editor]);
+
   if (!editor) {
     return (
       <div
@@ -166,19 +158,18 @@ const Tiptap = ({
           "w-full h-full animate-pulse bg-gray-100 rounded",
           className
         )}
-      >
-        <div className="h-32 bg-gray-200 rounded animate-pulse" />
-      </div>
+      />
     );
   }
+
   return (
     <EditorContent
       ref={ref}
+      editor={editor}
       className={cn(
-        "w-full h-full focus:outline-none ring-0 ring-offset-0 focus-visible:ring-0 focus-visible:border-none resize-none",
+        "w-full h-full focus:outline-none ring-0 ring-offset-0 resize-none",
         className
       )}
-      editor={editor}
     />
   );
 };

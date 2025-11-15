@@ -38,7 +38,6 @@ function getDecorations({
   const decorations: Decoration[] = [];
 
   const codeBlocks = findChildren(doc, (node) => node.type.name === name);
-  console.log(decorations, codeBlocks);
   for (const block of codeBlocks) {
     let from = block.pos + 1;
     let language = block.node.attrs.language || defaultLanguage;
@@ -90,7 +89,6 @@ function getDecorations({
         lang: language,
         theme: getThemeToApply(theme),
       });
-      console.log(tokens);
 
       const themeToApply = highlighter.getLoadedThemes().includes(theme)
         ? theme

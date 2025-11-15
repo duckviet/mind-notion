@@ -50,7 +50,7 @@ const Sidebar = () => {
     return () => document.removeEventListener("click", onDocClick);
   }, []);
   return (
-    <div className="h-full w-16 fixed flex-col items-center flex px-4 py-16  left-2 top-0">
+    <div className="h-full w-16 fixed flex-col items-center flex px-4 py-16  left-2 top-0 z-100">
       <div></div>
       <div className="flex-1 flex flex-col gap-6 justify-end">
         {SIDEBAR_ITEMS.map((item) => (
@@ -71,7 +71,7 @@ const Sidebar = () => {
           </button>
 
           {menuOpen && (
-            <div className="absolute left-8 bottom-0 mb-0 w-44 rounded-md border bg-white shadow-md p-1 z-50">
+            <div className="absolute left-8 bottom-0 mb-0 w-44 rounded-md border bg-white shadow-md p-1 ">
               {!isAuthenticated ? (
                 <Link
                   href="/auth"

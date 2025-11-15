@@ -175,7 +175,7 @@ function HomePageContent() {
       }}
     >
       <div className="min-h-screen">
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-6 py-6 space-y-6">
           <SearchField
             className="rounded-md"
             query={query}
@@ -195,7 +195,7 @@ function HomePageContent() {
             />
           </SortableContext>
 
-          <div className="flex items-center justify-between mb-6">
+          {/* <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-text-primary mt-2">
               {query ? "Search Results" : "Your Content"}
             </h2>
@@ -203,7 +203,7 @@ function HomePageContent() {
               {filteredResults.length}{" "}
               {filteredResults.length === 1 ? "item" : "items"} found
             </div>
-          </div>
+          </div> */}
 
           {filteredResults.length === 0 && !isLoading ? (
             <EmptyState

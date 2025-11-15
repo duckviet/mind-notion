@@ -1,531 +1,366 @@
-// FocusEditModal.tsx - Cải tiến
 import React, {
   useState,
   useEffect,
   useRef,
   useCallback,
   Fragment,
+  useMemo,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Tag, AlertCircle } from "lucide-react";
+import { X, Tag, AlertCircle, Plus } from "lucide-react";
 import Portal from "@/shared/components/PortalModal/PortalModal";
 import { Input } from "@/shared/components/ui/input";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
-import { NoteCardProps } from "@/entities/note/ui/NoteCard";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ReqUpdateNote, updateNote } from "@/shared/services/generated/api";
+import {
+  getGetNoteQueryKey,
+  ReqUpdateNote,
+  ResDetailNote,
+  useGetNote,
+  useUpdateNote,
+} from "@/shared/services/generated/api";
+import dayjs from "dayjs";
+import { Button } from "@/shared/components/ui/button";
 
 interface FocusEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  note: NoteCardProps;
+  noteId: string;
   onSave?: (data: ReqUpdateNote) => void;
-  onDelete?: () => void;
+}
+
+function useDebouncedEffect(effect: () => void, deps: any[], delay: number) {
+  useEffect(() => {
+    const handler = setTimeout(effect, delay);
+    return () => clearTimeout(handler);
+  }, [...deps, delay]);
 }
 
 export default function FocusEditModal({
   isOpen,
   onClose,
-  note,
+  noteId,
   onSave,
-  onDelete,
 }: FocusEditModalProps) {
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
+  const queryKey = useMemo(() => getGetNoteQueryKey(noteId), [noteId]);
+
+  const { data: note } = useGetNote(
+    noteId,
+    {
+      query: {
+        enabled: isOpen && !!noteId,
+        staleTime: 60_000,
+        refetchOnWindowFocus: false,
+      },
+    },
+    queryClient
+  );
+
+  const [form, setForm] = useState({
     title: "",
     content: "",
     tags: [] as string[],
   });
   const [newTag, setNewTag] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [titleError, setTitleError] = useState("");
+  const [error, setError] = useState("");
 
-  const titleRef = useRef<HTMLInputElement>(null);
+  // lưu lại lần cuối đã save để tránh gọi API khi không có thay đổi
+  const lastSavedRef = useRef(form);
+
   const modalRef = useRef<HTMLDivElement>(null);
-  const contentInputRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
 
-  // Track initial values when modal opens to prevent auto-save on mount
-  const initialFormDataRef = useRef({
-    title: "",
-    content: "",
-    tags: [] as string[],
-  });
-
-  // Track previous saved values to avoid unnecessary auto-saves
-  const prevSavedDataRef = useRef({
-    title: "",
-    content: "",
-    tags: [] as string[],
-  });
-
-  // Track if modal just opened to prevent immediate auto-save
-  const justOpenedRef = useRef(false);
-
-  // Initialize form data when modal opens
+  // Prefill khi mở modal hoặc khi note thay đổi thực sự
   useEffect(() => {
-    if (isOpen && note) {
-      const initialData = {
-        title: note.title || "",
-        content: note.content || "",
-        tags: note.tags || [],
-      };
-      setFormData(initialData);
-      // Initialize initial and saved refs to prevent auto-save on mount
-      initialFormDataRef.current = { ...initialData };
-      prevSavedDataRef.current = { ...initialData };
-      setNewTag("");
-      setTitleError("");
+    if (!isOpen || !note) return;
+
+    const next = {
+      title: note.title ?? "",
+      content: note.content ?? "",
+      tags: note.tags ?? [],
+    };
+
+    const same =
+      next.title === form.title &&
+      next.content === form.content &&
+      JSON.stringify(next.tags) === JSON.stringify(form.tags);
+
+    if (!same) {
+      setForm(next);
+      lastSavedRef.current = next; // coi state từ server là đã save
+      setError("");
     }
-  }, [isOpen, note]);
+  }, [isOpen, note]); // cố tình không đưa form vào deps
 
-  // Validate title
-  const validateTitle = useCallback((title: string) => {
-    if (!title.trim()) {
-      setTitleError("Title cannot be empty");
-      return false;
-    }
-    if (title.length > 200) {
-      setTitleError("Title cannot exceed 200 characters");
-      return false;
-    }
-    setTitleError("");
-    return true;
-  }, []);
+  const validateTitle = (t: string) => {
+    if (!t.trim()) return "Title cannot be empty";
+    if (t.length > 200) return "Title too long";
+    return "";
+  };
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const { name, value } = e.target;
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+  const updateNoteMutation = useUpdateNote(
+    {
+      mutation: {
+        onMutate: async ({ id, data }) => {
+          setIsSaving(true);
+          await queryClient.cancelQueries({ queryKey });
 
-      if (name === "title") {
-        validateTitle(value);
-      }
-    },
-    [validateTitle]
-  );
+          const previous = queryClient.getQueryData<ResDetailNote>(queryKey);
 
-  const handleContentChange = useCallback((content: string) => {
-    setFormData((prev) => ({ ...prev, content }));
-  }, []);
-
-  const handleAddTag = useCallback(
-    (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter" && newTag.trim()) {
-        e.preventDefault();
-
-        // Validate tag
-        const trimmedTag = newTag.trim();
-        if (trimmedTag.length > 50) {
-          toast.error("Tag cannot exceed 50 characters");
-          return;
-        }
-
-        if (formData.tags.includes(trimmedTag)) {
-          toast.warning("Tag already exists");
-          setNewTag("");
-          return;
-        }
-
-        setFormData((prev) => ({
-          ...prev,
-          tags: [...prev.tags, trimmedTag],
-        }));
-        setNewTag("");
-      }
-    },
-    [newTag, formData.tags]
-  );
-
-  const handleRemoveTag = useCallback((tagToRemove: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }));
-  }, []);
-
-  // Optimistic auto-save with setQueryData on onSuccess
-  const autoSaveMutation = useMutation({
-    mutationFn: (data: { title: string; content: string }) =>
-      updateNote(note.id, {
-        id: note.id,
-        title: data.title,
-        content: data.content,
-        tags: formData.tags,
-        content_type: "text",
-        status: "draft",
-        thumbnail: note.thumbnail || "",
-        is_public: note.is_public || false,
-      }),
-    onMutate: () => setIsSaving(true),
-    onSuccess: (updated, variables) => {
-      // Optimistically update cache for the list and individual note
-      queryClient.setQueryData(["note", note.id], (old: any) => ({
-        ...old,
-        ...{
-          ...note,
-          ...{
-            title: variables.title,
-            content: variables.content,
-            tags: formData.tags,
-          },
-        },
-      }));
-
-      // Optimistically update the notes list if available
-      queryClient.setQueryData(["notes"], (old: any) => {
-        if (!old) return old;
-        // Support paginated or flat arrays of notes
-        // Simple flat array
-        if (Array.isArray(old)) {
-          return old.map((item) =>
-            item.id === note.id
-              ? {
-                  ...item,
-                  title: variables.title,
-                  content: variables.content,
-                  tags: formData.tags,
+          queryClient.setQueryData<ResDetailNote>(queryKey, (old) =>
+            old
+              ? { ...old, ...data }
+              : {
+                  top_of_mind: false,
+                  created_at: "",
+                  updated_at: "",
+                  ...data,
                 }
-              : item
           );
-        }
-        // Paginated data (e.g., {pages: [{items: []}, ...]})
-        if (old.pages) {
-          return {
-            ...old,
-            pages: old.pages.map((page: any) => ({
-              ...page,
-              items: page.items.map((item: any) =>
-                item.id === note.id
-                  ? {
-                      ...item,
-                      title: variables.title,
-                      content: variables.content,
-                      tags: formData.tags,
-                    }
-                  : item
-              ),
-            })),
-          };
-        }
-        return old;
-      });
 
-      toast.success("Note auto-saved");
+          return { previous };
+        },
+        onError: (_err, _vars, context) => {
+          if (context?.previous) {
+            queryClient.setQueryData(queryKey, context.previous);
+          }
+          toast.error("Failed to auto-save note");
+        },
+        onSuccess: (serverNote) => {
+          queryClient.setQueryData(queryKey, serverNote);
+        },
+        onSettled: () => {
+          setIsSaving(false);
+        },
+      },
     },
-    onError: (error) => {
-      toast.error("Failed to auto-save note");
-      console.error("Auto-save error:", error);
+    queryClient
+  );
+
+  // Auto-save chỉ khi form khác lastSavedRef
+  useDebouncedEffect(
+    () => {
+      if (!noteId) return;
+      const err = validateTitle(form.title);
+      if (err || !form.title.trim() || isSaving) return;
+
+      const changed =
+        form.title !== lastSavedRef.current.title ||
+        form.content !== lastSavedRef.current.content ||
+        JSON.stringify(form.tags) !== JSON.stringify(lastSavedRef.current.tags);
+
+      if (!changed) return;
+
+      const payload: ReqUpdateNote = {
+        id: noteId,
+        title: form.title,
+        content: form.content,
+        content_type: "text",
+        status: note?.status ?? "draft",
+        thumbnail: note?.thumbnail ?? "",
+        tags: form.tags,
+        is_public: note?.is_public ?? false,
+      };
+
+      lastSavedRef.current = form; // đánh dấu đã lưu
+      updateNoteMutation.mutate({ id: noteId, data: payload });
     },
-    onSettled: () => setIsSaving(false),
-  });
+    [form, noteId, note?.status, note?.thumbnail, note?.is_public],
+    1500
+  );
 
-  useEffect(() => {
-    if (isOpen && note) {
-      justOpenedRef.current = true;
-      // Reset flag after a short delay to allow user to start typing
-      const timer = setTimeout(() => {
-        justOpenedRef.current = false;
-      }, 3000); // Prevent auto-save for 3 seconds after opening
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, note]);
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+    if (name === "title") setError(validateTitle(value));
+  }, []);
 
-  useEffect(() => {
-    // Don't auto-save if modal just opened
-    if (justOpenedRef.current) {
-      return;
-    }
+  const handleContentChange = useCallback(
+    (val: string) => setForm((f) => ({ ...f, content: val })),
+    []
+  );
 
-    // Check if there are actual changes from the last saved state
-    const hasChanges =
-      prevSavedDataRef.current.title !== formData.title ||
-      prevSavedDataRef.current.content !== formData.content ||
-      JSON.stringify(prevSavedDataRef.current.tags) !==
-        JSON.stringify(formData.tags);
+  const handleTagAdd = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key !== "Enter" || !newTag.trim()) return;
+      e.preventDefault();
+      const tag = newTag.trim();
+      if (tag.length > 50) return toast.error("Tag too long");
+      if (form.tags.includes(tag)) return toast.info("Tag exists");
+      setForm((f) => ({ ...f, tags: [...f.tags, tag] }));
+      setNewTag("");
+    },
+    [newTag, form.tags]
+  );
 
-    // Only auto-save if:
-    // 1. There are actual changes from last saved state
-    // 2. Title is not empty (at least one character)
-    // 3. No validation errors
-    // 4. Not currently saving
-    if (hasChanges && formData.title.trim() && !titleError && !isSaving) {
-      const timer = setTimeout(() => {
-        // Double-check that values haven't changed while waiting
-        const stillHasChanges =
-          prevSavedDataRef.current.title !== formData.title ||
-          prevSavedDataRef.current.content !== formData.content ||
-          JSON.stringify(prevSavedDataRef.current.tags) !==
-            JSON.stringify(formData.tags);
+  const handleRemove = useCallback(
+    (tag: string) =>
+      setForm((f) => ({ ...f, tags: f.tags.filter((t) => t !== tag) })),
+    []
+  );
 
-        if (
-          stillHasChanges &&
-          formData.title.trim() &&
-          !titleError &&
-          !isSaving
-        ) {
-          // Update ref before mutation to avoid duplicate saves
-          prevSavedDataRef.current = {
-            title: formData.title,
-            content: formData.content,
-            tags: formData.tags,
-          };
-
-          autoSaveMutation.mutate({
-            title: formData.title,
-            content: formData.content,
-          });
-        }
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [
-    formData.title,
-    formData.content,
-    formData.tags,
-    titleError,
-    isSaving,
-    autoSaveMutation,
-  ]);
-
-  const handleSave = useCallback(async () => {
-    // Final validation
-    if (!validateTitle(formData.title)) {
+  const handleSave = useCallback(() => {
+    const err = validateTitle(form.title);
+    if (err) {
+      setError(err);
       titleRef.current?.focus();
       return;
     }
 
-    if (!formData.content.trim() && !formData.title.trim()) {
-      toast.error("Note must have either title or content");
-      return;
-    }
+    const payload: ReqUpdateNote = {
+      id: noteId,
+      title: form.title,
+      content: form.content,
+      content_type: "text",
+      status: note?.status ?? "draft",
+      thumbnail: note?.thumbnail ?? "",
+      tags: form.tags,
+      is_public: note?.is_public ?? false,
+    };
 
-    setIsSaving(true);
+    lastSavedRef.current = form;
+    onSave?.(payload);
+    updateNoteMutation.mutate({ id: noteId, data: payload });
+    toast.success("Saved");
+  }, [form, note, noteId, onSave, updateNoteMutation]);
 
-    try {
-      const payload = {
-        id: note.id,
-        title: formData.title.trim(),
-        content: formData.content.trim(),
-        content_type: "text",
-        status: "draft",
-        thumbnail: note.thumbnail || "",
-        tags: formData.tags,
-        is_public: note.is_public || false,
-      };
-
-      if (onSave) {
-        await onSave(payload);
-      }
-
-      // Optimistically update the cache
-      queryClient.setQueryData(["note", note.id], (old: any) => ({
-        ...old,
-        ...note,
-        title: formData.title,
-        content: formData.content,
-        tags: formData.tags,
-      }));
-
-      queryClient.setQueryData(["notes"], (old: any) => {
-        if (!old) return old;
-        if (Array.isArray(old)) {
-          return old.map((item) =>
-            item.id === note.id
-              ? {
-                  ...item,
-                  title: formData.title,
-                  content: formData.content,
-                  tags: formData.tags,
-                }
-              : item
-          );
-        }
-        if (old.pages) {
-          return {
-            ...old,
-            pages: old.pages.map((page: any) => ({
-              ...page,
-              items: page.items.map((item: any) =>
-                item.id === note.id
-                  ? {
-                      ...item,
-                      title: formData.title,
-                      content: formData.content,
-                      tags: formData.tags,
-                    }
-                  : item
-              ),
-            })),
-          };
-        }
-        return old;
-      });
-
-      toast.success("Note saved successfully");
-    } catch (err) {
-      toast.error("Failed to save note");
-      console.error(err);
-    } finally {
-      setIsSaving(false);
-    }
-  }, [
-    validateTitle,
-    formData.title,
-    formData.content,
-    formData.tags,
-    note,
-    onSave,
-    queryClient,
-  ]);
-
-  // Save: Ctrl+Enter only
-  const isEscapeKey = (e: React.KeyboardEvent) => e.key === "Escape";
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (isEscapeKey(e)) {
-      onClose();
-    } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-      e.preventDefault();
-      handleSave();
-    }
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") onClose();
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") handleSave();
   };
 
-  const handleTitleBlur = useCallback(() => {
-    if (formData.title.trim()) {
-      validateTitle(formData.title);
-    }
-  }, [formData.title, validateTitle]);
+  const handleOutside = (e: React.MouseEvent) => {
+    if (!modalRef.current?.contains(e.target as Node)) onClose();
+  };
 
-  const handleClickOutside = useCallback(
-    (e: React.MouseEvent) => {
-      // Only close if clicking directly on backdrop or outside modal content
-      const target = e.target as HTMLElement;
-      if (!modalRef.current?.contains(target)) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
-  // Focus title when modal opens
   useEffect(() => {
-    if (isOpen && titleRef.current) {
-      // Wait for animation to complete
-      const timer = setTimeout(() => {
-        titleRef.current?.focus();
-        titleRef.current?.select();
-      }, 200);
+    if (isOpen) {
+      const timer = setTimeout(() => titleRef.current?.focus(), 200);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
-  // Don't render on server side
-  if (typeof window === "undefined") {
-    return null;
-  }
+  if (typeof window === "undefined") return null;
 
   return (
     <Portal lockScroll={isOpen}>
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {isOpen && (
           <Fragment>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-              onClick={handleClickOutside}
+              onClick={handleOutside}
             />
-
-            {/* Modal */}
             <motion.div
               ref={modalRef}
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
-              onKeyDown={handleKeyDown}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              onKeyDown={handleKey}
               tabIndex={-1}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
             >
-              <div className="w-full max-w-7xl max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden pointer-events-auto">
-                {/* Content Area */}
+              <div className="w-full max-w-7xl max-h-[90vh] bg-white rounded-xl shadow-xl pointer-events-auto flex flex-col overflow-hidden">
                 <div className="flex-1 flex overflow-hidden">
-                  {/* Editor */}
-                  <div className="flex-1 min-w-0 overflow-y-auto p-6">
-                    {/* Title Input */}
-                    <div className="mb-6">
+                  <div className="flex-1 p-6 overflow-y-auto space-y-4">
+                    <div>
                       <input
                         ref={titleRef}
                         name="title"
-                        value={formData.title}
-                        onChange={handleInputChange}
-                        onBlur={handleTitleBlur}
-                        placeholder="Note title..."
-                        className="w-full text-2xl font-semibold bg-transparent border-none outline-none text-text-primary placeholder:text-text-muted resize-none"
+                        value={form.title}
+                        onChange={handleChange}
+                        placeholder="Your note title..."
+                        className="w-full text-3xl font-semibold text-black outline-none mb-3"
                         maxLength={200}
                       />
-                      {titleError && (
-                        <div className="flex items-center gap-2 mt-2 text-sm text-red-600">
+                      {error && (
+                        <div className="flex items-center gap-2 text-red-600 text-sm mb-3">
                           <AlertCircle className="w-4 h-4" />
-                          <span>{titleError}</span>
+                          <span>{error}</span>
                         </div>
                       )}
                     </div>
-
-                    {/* Rich Text Editor */}
                     <RichTextEditor
-                      ref={contentInputRef as React.RefObject<HTMLDivElement>}
-                      onContentChange={handleContentChange}
-                      content={formData.content}
-                      className="max-h-full min-h-[600px]"
-                      editable={true}
+                      content={form.content}
+                      onUpdate={handleContentChange}
+                      editable
                     />
                   </div>
 
-                  {/* Sidebar */}
-                  <div className="w-80 border-l border-gray-200 bg-gray-50 p-6 flex flex-col">
-                    {/* Tags Section */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Tag className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm font-medium text-gray-700">
-                          Tags ({formData.tags.length})
+                  <div className="w-72 border-l border-gray-200 bg-gray-50 p-6 flex flex-col space-y-10">
+                    <div className="">
+                      <div className="text-sm  flex items-center">
+                        <span className="text-gray-500"> Created by:</span>
+                        <span className="ml-auto font-medium">{"Unknown"}</span>
+                      </div>
+                      <div className="text-sm  mt-1 flex items-center">
+                        <span className="text-gray-500">Created:</span>
+                        <span className="ml-auto font-medium">
+                          {note?.created_at
+                            ? dayjs(note.created_at).format("DD/MM/YYYY HH:mm")
+                            : dayjs().format("DD/MM/YYYY HH:mm")}
                         </span>
                       </div>
-
-                      <div className="flex flex-wrap gap-2 mb-4 max-h-48 overflow-y-auto">
-                        {formData.tags.map((tag) => (
+                      <div className="text-sm  mt-1 flex items-center">
+                        <span className="text-gray-500"> Last modified: </span>
+                        <span className="ml-auto font-medium">
+                          {note?.updated_at
+                            ? dayjs(note.updated_at).format("DD/MM/YYYY HH:mm")
+                            : dayjs().format("DD/MM/YYYY HH:mm")}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-gray-500 text-lg font-medium">
+                          Tags ({form.tags.length})
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-3 overflow-auto max-h-40">
+                        {form.tags.map((t) => (
                           <div
-                            key={tag}
-                            className="px-3 py-1 cursor-pointer hover:bg-red-100"
-                            onClick={() => handleRemoveTag(tag)}
+                            key={t}
+                            className="bg-gray-200 rounded px-2 py-1 text-sm cursor-pointer hover:bg-red-100"
+                            onClick={() => handleRemove(t)}
                           >
-                            <span className="mr-1">#{tag}</span>
-                            <X className="w-3 h-3 ml-1" />
+                            #{t} <X className="w-3 h-3 inline" />
                           </div>
                         ))}
                       </div>
-
                       <Input
                         value={newTag}
                         onChange={(e) => setNewTag(e.target.value)}
-                        onKeyDown={handleAddTag}
-                        placeholder="Add tag and press Enter..."
-                        className="w-full px-3 py-2"
-                        disabled={isSaving}
+                        onKeyDown={handleTagAdd}
+                        placeholder="New tag..."
                         maxLength={50}
+                        disabled={isSaving}
                       />
                     </div>
 
-                    {/* Character count */}
-                    <div className="text-xs text-gray-500 text-right mt-4 pt-4 border-t border-gray-200">
-                      {formData.content.length} characters
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500 text-lg font-medium">
+                          Comments
+                        </span>
+                        <Button className="cursor-pointer text-gray-600 hover:text-gray-800">
+                          <Plus className="w-6 h-6" />
+                        </Button>
+                      </div>
+                      <div className="flex flex-col gap-4">
+                        <span className="text-center text-white text-sm mt-3 bg-gray-200 rounded-md p-4">
+                          No comments yet
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-right mt-auto text-gray-500">
+                      {form.content.length} chars
                     </div>
                   </div>
                 </div>
