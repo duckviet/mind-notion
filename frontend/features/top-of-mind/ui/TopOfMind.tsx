@@ -14,7 +14,7 @@ const TopOfMind = ({ notes, onDelete, onUpdate, onUnpin }: Props) => {
   return (
     <DroppableZone
       id="top-of-mind-zone"
-      activeClassName="ring-2 ring-blue-400 bg-blue-50"
+      activeClassName="ring-2 ring-blue-300/20 ring-offset-1 ring-offset-blue-300/20 rounded-md"
     >
       <div className="flex gap-3 justify-center items-center bg-[#dee2ea] w-full rounded-md my-4 p-4 min-h-[120px] transition-all">
         {notes.length === 0 ? (

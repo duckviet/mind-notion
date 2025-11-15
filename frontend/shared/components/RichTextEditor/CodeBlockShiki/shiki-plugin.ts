@@ -38,7 +38,6 @@ function getDecorations({
   const decorations: Decoration[] = [];
 
   const codeBlocks = findChildren(doc, (node) => node.type.name === name);
-  console.log(decorations, codeBlocks);
   for (const block of codeBlocks) {
     let from = block.pos + 1;
     let language = block.node.attrs.language || defaultLanguage;
@@ -90,7 +89,6 @@ function getDecorations({
         lang: language,
         theme: getThemeToApply(theme),
       });
-      console.log(tokens);
 
       const themeToApply = highlighter.getLoadedThemes().includes(theme)
         ? theme
@@ -310,17 +308,13 @@ export function ShikiPlugin({
             // OR transaction has changes that completely encapsulte a node
             // (for example, a transaction that affects the entire document).
             // Such transactions can happen during collab syncing via y-prosemirror, for example.
-            transaction.steps.some((step) => {
+            transaction.steps.some((step: any) => {
               return (
-                // @ts-expect-error
                 step.from !== undefined &&
-                // @ts-expect-error
                 step.to !== undefined &&
                 oldNodes.some((node) => {
                   return (
-                    // @ts-expect-error
                     node.pos >= step.from &&
-                    // @ts-expect-error
                     node.pos + node.node.nodeSize <= step.to
                   );
                 })

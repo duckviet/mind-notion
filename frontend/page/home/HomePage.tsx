@@ -165,17 +165,14 @@ function HomePageContent() {
           notes.find((n) => n.id === noteId) ||
           topOfMindNotesData?.find((n) => n.id === noteId);
         return note ? (
-          <div className="opacity-80">
-            <NoteCard
-              match={{ ...note, title: noteId || "", score: 1.0 }}
-              onUpdateNote={() => {}}
-            />
+          <div className="opacity-80 w-full min-w-[300px]">
+            <NoteCard match={{ ...note, score: 1.0 }} onUpdateNote={() => {}} />
           </div>
         ) : null;
       }}
     >
       <div className="min-h-screen">
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-6 py-6 space-y-6">
           <SearchField
             className="rounded-md"
             query={query}
@@ -195,7 +192,7 @@ function HomePageContent() {
             />
           </SortableContext>
 
-          <div className="flex items-center justify-between mb-6">
+          {/* <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-text-primary mt-2">
               {query ? "Search Results" : "Your Content"}
             </h2>
@@ -203,7 +200,7 @@ function HomePageContent() {
               {filteredResults.length}{" "}
               {filteredResults.length === 1 ? "item" : "items"} found
             </div>
-          </div>
+          </div> */}
 
           {filteredResults.length === 0 && !isLoading ? (
             <EmptyState
@@ -220,7 +217,7 @@ function HomePageContent() {
           ) : (
             <DroppableZone
               id="grid-zone"
-              activeClassName="ring-2 ring-green-400"
+              activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
             >
               <MasonryGrid data={filteredResults} isLoading={isLoading}>
                 {isLoading && filteredResults.length === 0 ? (
