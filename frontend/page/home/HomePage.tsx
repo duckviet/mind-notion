@@ -165,11 +165,8 @@ function HomePageContent() {
           notes.find((n) => n.id === noteId) ||
           topOfMindNotesData?.find((n) => n.id === noteId);
         return note ? (
-          <div className="opacity-80">
-            <NoteCard
-              match={{ ...note, title: noteId || "", score: 1.0 }}
-              onUpdateNote={() => {}}
-            />
+          <div className="opacity-80 w-full min-w-[300px]">
+            <NoteCard match={{ ...note, score: 1.0 }} onUpdateNote={() => {}} />
           </div>
         ) : null;
       }}
@@ -220,7 +217,7 @@ function HomePageContent() {
           ) : (
             <DroppableZone
               id="grid-zone"
-              activeClassName="ring-2 ring-green-400"
+              activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
             >
               <MasonryGrid data={filteredResults} isLoading={isLoading}>
                 {isLoading && filteredResults.length === 0 ? (
