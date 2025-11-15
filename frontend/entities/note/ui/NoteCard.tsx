@@ -161,7 +161,7 @@ export default function NoteCard({
           setIsFocusEditOpen(false);
           closeModal();
         }}
-        note={match}
+        noteId={match.id}
         onSave={handleSaveNote}
       />
     </ContextMenu>
