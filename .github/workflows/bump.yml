@@ -24,7 +24,7 @@ jobs:
         with:
           doc: mindnotion
           token: ${{ secrets.BUMP_ACCESS_TOKEN }}
-          file: backend/openapi/openapi.yaml
+          file: backend/openapi/dist.yaml
   api-diff:
     if: ${{ github.event_name == 'pull_request' }}
     name: Check API diff on Bump.sh
@@ -37,7 +37,7 @@ jobs:
         with:
           doc: mindnotion
           token: ${{ secrets.BUMP_ACCESS_TOKEN }}
-          file: backend/openapi/openapi.yaml
+          file: backend/openapi/dist.yaml
           command: diff
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
