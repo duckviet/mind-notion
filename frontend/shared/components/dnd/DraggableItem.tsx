@@ -25,12 +25,10 @@ export function DraggableItem({
       id,
       disabled,
     });
-  useEffect(() => {
-    // console.log("id", id, "isDragging", isDragging);
-  }, [id, isDragging]);
+
   const draggableStyle: CSSProperties = {
     transform: CSS.Transform.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0 : 1,
     ...style,
   };
 
@@ -38,7 +36,7 @@ export function DraggableItem({
     <div
       data-id={id}
       ref={setNodeRef}
-      // style={draggableStyle}
+      style={draggableStyle}
       className={className}
       {...attributes}
       {...listeners}
