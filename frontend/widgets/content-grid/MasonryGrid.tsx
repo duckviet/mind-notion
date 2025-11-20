@@ -15,11 +15,7 @@ type MasonryGridProps = {
 export default function MasonryGrid({
   data,
   children,
-  className = "",
-  columnCount: providedColumnCount,
-  gap = 6,
   isLoading = false,
-  layoutAnimation = false,
 }: MasonryGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
   const [columnCount, setColumnCount] = useState(4);
