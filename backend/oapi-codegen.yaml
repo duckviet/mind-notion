@@ -1,0 +1,8 @@
+# oapi-codegen.yaml
+package: gen
+generate:
+  - types
+  - server
+output: internal/api/api.gen.go
+compatibility: false
+use-experimental-tags: true
