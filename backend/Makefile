@@ -8,9 +8,12 @@ GENERATED_SRC_DIR := internal/generated-gin-server
 HANDLERS_DST_DIR := internal/handlers
 DTO_DST_DIR := internal/dto
 
-.PHONY: generate-gin-server
+MODEL_DST_DIR := internal/model
+API_DST_DIR := internal/api
+
+.PHONY: openapi-generator-cli oapi-codegen
 # Target để tạo một dự án Gin mới
-generate-gin-server:
+openapi-generator-cli:
 	@echo "0. --- Generating bunble file to dist ---"
 	swagger-cli bundle ${OAPI_SPEC_SRC} -o ${OAPI_SPEC_DST} --type yaml
 	@echo "1.--- Generating a new Gin server project ---"
@@ -55,6 +58,23 @@ generate-gin-server:
 	rm -rf $(GENERATED_SRC_DIR)
 
 	@echo "--- Code generation and integration complete! ---"
+
+
+
+oapi-codegen:
+
+	@echo "1. --- Generating Go code using oapi-codegen ---"
+	mkdir -p $(MODEL_DST_DIR) $(API_DST_DIR)
+
+	# Sinh types (models)
+	oapi-codegen -generate "types" -package model \
+		-o $(MODEL_DST_DIR)/types.gen.go $(OAPI_SPEC_DST)
+
+	# Sinh server handlers (Gin)
+	oapi-codegen -generate "gin" -package api \
+		-o $(API_DST_DIR)/api.gen.go $(OAPI_SPEC_DST)
+
+	@echo "--- Code generation via oapi-codegen complete! ---"
 
 .PHONY: dev db-up db-down dev-up dev-down clean
 
