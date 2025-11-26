@@ -20,7 +20,8 @@ func SetupRouter(
 	userService service.UserService,
 	noteService service.NoteService,
 	folderService service.FolderService,
-    wsHandler *WebSocketHandler,
+	wsHandler *WebSocketHandler,
+	searchHandler *SearchHandler,
 ) *gin.Engine {
 
 	// 1. Khởi tạo Gin Engine và thiết lập mode
@@ -36,9 +37,15 @@ func SetupRouter(
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "OK"})
 	})
-    router.GET("/ws", func(c *gin.Context) {
-        wsHandler.HandleConnections(c.Writer, c.Request)
-    })
+	router.GET("/ws", func(c *gin.Context) {
+		wsHandler.HandleConnections(c.Writer, c.Request)
+	})
+
+	// 3.1. Search routes (semantic search with Pinecone)
+	if searchHandler != nil {
+		router.GET("/api/v1/notes/search", searchHandler.SearchNotes)
+		router.POST("/api/v1/notes/reindex", searchHandler.ReindexAllNotes)
+	}
 
 	// 4. Tạo struct `ApiHandleFunctions` mà `routers.gen.go` yêu cầu
 	// và "tiêm" các handler bạn vừa tạo vào đó.

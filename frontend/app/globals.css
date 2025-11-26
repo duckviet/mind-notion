@@ -17,8 +17,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont,
-    sans-serif;
+  --font-sans:
+    "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
 }
 

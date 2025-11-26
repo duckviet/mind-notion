@@ -165,7 +165,10 @@ function HomePageContent() {
           notes.find((n) => n.id === noteId) ||
           topOfMindNotesData?.find((n) => n.id === noteId);
         return note ? (
-          <div className="opacity-80 w-full min-w-[300px]">
+          <div
+            className="opacity-80 w-full min-w-[300px]"
+            style={{ rotate: "5deg" }}
+          >
             <NoteCard match={{ ...note, score: 1.0 }} onUpdateNote={() => {}} />
           </div>
         ) : null;
@@ -191,16 +194,6 @@ function HomePageContent() {
               onUnpin={handleUpdateTopOfMindNote}
             />
           </SortableContext>
-
-          {/* <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-text-primary mt-2">
-              {query ? "Search Results" : "Your Content"}
-            </h2>
-            <div className="text-sm text-text-muted">
-              {filteredResults.length}{" "}
-              {filteredResults.length === 1 ? "item" : "items"} found
-            </div>
-          </div> */}
 
           {filteredResults.length === 0 && !isLoading ? (
             <EmptyState

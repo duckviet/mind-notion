@@ -42,7 +42,7 @@ export default function SearchField({
     <div className={cn("relative", className)}>
       <motion.div
         className={cn(
-          "relative glass-bg rounded-search shadow-glass-md border-glass-border rounded-md",
+          "relative bg-white rounded-xl",
           "transition-all duration-200 ease-out",
           isFocused && "shadow-glass-lg border-accent-blue"
         )}
@@ -50,7 +50,8 @@ export default function SearchField({
           scale: isFocused ? 1.02 : 1,
           boxShadow: isFocused
             ? "0 0 0 3px rgba(102, 126, 234, 0.1), 0 10px 15px -3px rgb(0 0 0 / 0.1)"
-            : "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06)",
+            : undefined,
+          //   : "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06)",
         }}
         transition={{ duration: 0.2 }}
       >
@@ -97,22 +98,6 @@ export default function SearchField({
           )}
         </div>
       </motion.div>
-
-      {/* Search suggestions overlay could go here */}
-      {isFocused && query && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className="absolute top-full left-0 right-0 mt-2 glass-bg rounded-glass shadow-glass-lg border-glass-border z-10"
-        >
-          <div className="p-4">
-            <div className="text-sm text-text-muted">
-              Press Enter to search for "{query}"
-            </div>
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 }

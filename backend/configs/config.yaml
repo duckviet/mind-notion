@@ -20,3 +20,13 @@ redis:
   port: "6380"
   password: ""
   db: 0
+
+pinecone:
+  api_key: "" # Set via PINECONE_API_KEY env var
+  environment: "" # e.g., us-east-1
+  index_name: "mindnotion"
+  namespace: "__default__"
+
+cohere:
+  api_key: "" # Set via COHERE_API_KEY env var
+  model: "embed-multilingual-v3.0"
