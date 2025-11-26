@@ -66,4 +66,14 @@ func setDefaults() {
 	viper.SetDefault("redis.port", "6379")
 	viper.SetDefault("redis.password", "")
 	viper.SetDefault("redis.db", 0)
+
+	// Pinecone defaults
+	viper.SetDefault("pinecone.api_key", "")
+	viper.SetDefault("pinecone.environment", "")
+	viper.SetDefault("pinecone.index_name", "notes")
+	viper.SetDefault("pinecone.namespace", "default")
+
+	// Cohere defaults
+	viper.SetDefault("cohere.api_key", "")
+	viper.SetDefault("cohere.model", "embed-multilingual-v3.0")
 }

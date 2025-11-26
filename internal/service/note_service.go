@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
 
 	"gorm.io/gorm"
 
@@ -27,38 +28,40 @@ type NoteService interface {
 
 // noteService implements NoteService
 type noteService struct {
-	repo   repository.NoteRepository
-	config *config.Config
+	repo          repository.NoteRepository
+	config        *config.Config
+	searchService SearchService
 }
 
 // CreateNoteRequest represents the request to create a note
 type CreateNoteRequest struct {
-	Title       string   `json:"title" validate:"required,min=1,max=200"`
-	Content     string   `json:"content"`
-	ContentType string   `json:"content_type" validate:"omitempty,oneof=text markdown html"`
-	Status      string   `json:"status" validate:"omitempty,oneof=draft published archived"`
-	Thumbnail   string   `json:"thumbnail,omitempty"`
-	IsPublic    bool     `json:"is_public"`
-    UserID      string   `json:"user_id" validate:"required"`
-	TagIDs      []uint   `json:"tag_ids,omitempty"`
+	Title       string `json:"title" validate:"required,min=1,max=200"`
+	Content     string `json:"content"`
+	ContentType string `json:"content_type" validate:"omitempty,oneof=text markdown html"`
+	Status      string `json:"status" validate:"omitempty,oneof=draft published archived"`
+	Thumbnail   string `json:"thumbnail,omitempty"`
+	IsPublic    bool   `json:"is_public"`
+	UserID      string `json:"user_id" validate:"required"`
+	TagIDs      []uint `json:"tag_ids,omitempty"`
 }
 
 // UpdateNoteRequest represents the request to update a note
 type UpdateNoteRequest struct {
-	Title       string   `json:"title,omitempty" validate:"omitempty,min=1,max=200"`
-	Content     string   `json:"content,omitempty"`
-	ContentType string   `json:"content_type,omitempty" validate:"omitempty,oneof=text markdown html"`
-	Status      string   `json:"status,omitempty" validate:"omitempty,oneof=draft published archived"`
-	Thumbnail   string   `json:"thumbnail,omitempty"`
-	IsPublic    *bool    `json:"is_public,omitempty"`
-	TagIDs      []uint   `json:"tag_ids,omitempty"`
+	Title       string `json:"title,omitempty" validate:"omitempty,min=1,max=200"`
+	Content     string `json:"content,omitempty"`
+	ContentType string `json:"content_type,omitempty" validate:"omitempty,oneof=text markdown html"`
+	Status      string `json:"status,omitempty" validate:"omitempty,oneof=draft published archived"`
+	Thumbnail   string `json:"thumbnail,omitempty"`
+	IsPublic    *bool  `json:"is_public,omitempty"`
+	TagIDs      []uint `json:"tag_ids,omitempty"`
 }
 
 // NewNoteService creates a new note service
-func NewNoteService(repo repository.NoteRepository, config *config.Config) NoteService {
+func NewNoteService(repo repository.NoteRepository, config *config.Config, searchService SearchService) NoteService {
 	return &noteService{
-		repo:   repo,
-		config: config,
+		repo:          repo,
+		config:        config,
+		searchService: searchService,
 	}
 }
 
@@ -72,7 +75,7 @@ func (s *noteService) CreateNote(ctx context.Context, req CreateNoteRequest) (*m
 		req.Status = "draft"
 	}
 
-    note := &models.Note{
+	note := &models.Note{
 		Title:       req.Title,
 		Content:     req.Content,
 		ContentType: req.ContentType,
@@ -85,6 +88,13 @@ func (s *noteService) CreateNote(ctx context.Context, req CreateNoteRequest) (*m
 
 	if err := s.repo.Create(ctx, note); err != nil {
 		return nil, ErrInternalServerError
+	}
+
+	// Index the note in vector store if search service is available
+	if s.searchService != nil {
+		if err := s.searchService.IndexNote(ctx, note); err != nil {
+			log.Printf("Warning: failed to index note %s: %v", note.ID, err)
+		}
 	}
 
 	return note, nil
@@ -204,6 +214,7 @@ func (s *noteService) UpdateNoteTOM(ctx context.Context, id string, tom bool) (*
 	}
 	return note, nil
 }
+
 func (s *noteService) ListNotesTOM(ctx context.Context, userID string) ([]*models.Note, error) {
 	notes, err := s.repo.ListTOM(ctx, userID)
 	if err != nil {

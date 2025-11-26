@@ -11,6 +11,8 @@ type Config struct {
 	Database DatabaseConfig `mapstructure:"database"`
 	JWT      JWTConfig      `mapstructure:"jwt"`
 	Redis    RedisConfig    `mapstructure:"redis"`
+	Pinecone PineconeConfig `mapstructure:"pinecone"`
+	Cohere   CohereConfig   `mapstructure:"cohere"`
 }
 
 // ServerConfig holds server configuration
@@ -44,6 +46,18 @@ type RedisConfig struct {
 	DB       int    `mapstructure:"db"`
 }
 
+// PineconeConfig holds Pinecone vector database configuration
+type PineconeConfig struct {
+	APIKey      string `mapstructure:"api_key"`
+	IndexName   string `mapstructure:"index_name"`
+	Namespace   string `mapstructure:"namespace"`
+}
+
+// CohereConfig holds Cohere embeddings configuration
+type CohereConfig struct {
+	APIKey string `mapstructure:"api_key"`
+	Model  string `mapstructure:"model"` // embed-english-v3.0 or embed-multilingual-v3.0
+}
 // Validate validates the configuration
 func (c *Config) Validate() error {
 	if c.Server.Port == "" {
@@ -61,7 +75,15 @@ func (c *Config) Validate() error {
 	if c.JWT.SecretKey == "" {
 		return fmt.Errorf("JWT secret key is required")
 	}
-	
+
+	if c.Pinecone.APIKey == "" {
+		return fmt.Errorf("pinecone API key is required")
+	}
+
+	if c.Cohere.APIKey == "" {
+		return fmt.Errorf("cohere API key is required")
+	}
+
 	return nil
 }
 
