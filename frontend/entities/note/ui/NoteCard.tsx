@@ -95,7 +95,7 @@ export default function NoteCard({
         >
           <Card
             // role="article"
-            className="rounded-lg border-none"
+            className="rounded-2xl bg-white"
             aria-label={`Note card: ${match.title}`}
           >
             <div className="flex justify-between items-center w-full mb-3  gap-4">
@@ -103,7 +103,7 @@ export default function NoteCard({
                 {match.title}
               </h2>
             </div>
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-glass-border to-transparent mb-4"></div>
+            <div className=" mb-4"></div>
             <NoteDisplay content={match.content} />
           </Card>
         </div>

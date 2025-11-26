@@ -254,6 +254,7 @@ export default function FocusEditModal({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
               onClick={handleOutside}
             />
@@ -267,9 +268,9 @@ export default function FocusEditModal({
               tabIndex={-1}
               className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
             >
-              <div className="w-full max-w-7xl max-h-[90vh] bg-white rounded-xl shadow-xl pointer-events-auto flex flex-col overflow-hidden">
-                <div className="flex-1 flex overflow-hidden">
-                  <div className="flex-1 p-6 overflow-y-auto space-y-4">
+              <div className="w-auto h-full max-h-[90vh] items-center space-x-4 pointer-events-auto flex flex-col  ">
+                <div className="flex-1 flex overflow-hidden w-full gap-4 justify-center">
+                  <div className="flex-1 p-6 overflow-y-auto space-y-4 rounded-2xl bg-white max-w-6xl min-w-5xl w-full">
                     <div>
                       <input
                         ref={titleRef}
@@ -277,7 +278,7 @@ export default function FocusEditModal({
                         value={form.title}
                         onChange={handleChange}
                         placeholder="Your note title..."
-                        className="w-full text-3xl font-semibold text-black outline-none mb-3"
+                        className="w-full text-4xl font-semibold text-black outline-none mb-3"
                         maxLength={200}
                       />
                       {error && (
@@ -294,7 +295,7 @@ export default function FocusEditModal({
                     />
                   </div>
 
-                  <div className="w-72 border-l border-gray-200 bg-gray-50 p-6 flex flex-col space-y-10">
+                  <div className="w-72  rounded-2xl border-gray-200 bg-gray-50 p-6 flex flex-col space-y-10">
                     <div className="">
                       <div className="text-sm  flex items-center">
                         <span className="text-gray-500"> Created by:</span>
