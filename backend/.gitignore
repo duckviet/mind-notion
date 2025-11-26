@@ -1,2 +1,2 @@
 .env
-configs/config.yaml
+*.config.yaml
