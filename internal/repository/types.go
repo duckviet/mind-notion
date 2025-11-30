@@ -17,6 +17,7 @@ type NoteListParams struct {
 	Status   *models.NoteStatus
 	FolderID *string
 	IsPublic *bool
+	Query    *string
 }
 
 // FolderListParams represents folder-specific list parameters
