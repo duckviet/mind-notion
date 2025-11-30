@@ -18,7 +18,7 @@ type NoteService interface {
 	GetNoteByID(ctx context.Context, id string) (*models.Note, error)
 	UpdateNote(ctx context.Context, id string, req UpdateNoteRequest) (*models.Note, error)
 	DeleteNote(ctx context.Context, id string) error
-	ListNotes(ctx context.Context, params repository.NoteListParams) ([]*models.Note, int64, error)
+	ListNotes(ctx context.Context, params repository.NoteListParams, userID string) ([]*models.Note, int64, error)
 	GetNotesByUserID(ctx context.Context, userID string, params repository.NoteListParams) ([]*models.Note, int64, error)
 	AddTagToNote(ctx context.Context, noteID, tagID string) error
 	RemoveTagFromNote(ctx context.Context, noteID, tagID string) error
@@ -168,7 +168,10 @@ func (s *noteService) DeleteNote(ctx context.Context, id string) error {
 }
 
 // ListNotes retrieves notes with pagination
-func (s *noteService) ListNotes(ctx context.Context, params repository.NoteListParams) ([]*models.Note, int64, error) {
+func (s *noteService) ListNotes(ctx context.Context, params repository.NoteListParams, userID string) ([]*models.Note, int64, error) {
+	if params.Query != nil {
+		return s.searchService.SearchNotes(ctx, *params.Query, userID, params.Limit)
+	}
 	notes, total, err := s.repo.List(ctx, params)
 	if err != nil {
 		return nil, 0, ErrInternalServerError
@@ -178,6 +181,9 @@ func (s *noteService) ListNotes(ctx context.Context, params repository.NoteListP
 
 // GetNotesByUserID retrieves notes by user ID
 func (s *noteService) GetNotesByUserID(ctx context.Context, userID string, params repository.NoteListParams) ([]*models.Note, int64, error) {
+	if params.Query != nil && *params.Query != "" {
+		return s.searchService.SearchNotes(ctx, *params.Query, userID, params.Limit)
+	}
 	notes, total, err := s.repo.GetByUserID(ctx, userID, params)
 	if err != nil {
 		return nil, 0, ErrInternalServerError

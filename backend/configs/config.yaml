@@ -24,7 +24,7 @@ redis:
 pinecone:
   api_key: ""
   environment: "" # e.g., us-east-1
-  index_name: "mindnotion"
+  index_name: "mind-notion"
   namespace: "__default__"
 
 cohere:

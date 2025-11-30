@@ -14,9 +14,12 @@ import { useEffect, useState } from "react";
 export type ListParams = {
   limit?: number;
   offset?: number;
+  query?: string;
 };
 
-export function useNotes(params: ListParams = { limit: 50, offset: 0 }) {
+export function useNotes(
+  params: ListParams = { limit: 50, offset: 0, query: "" }
+) {
   const [notes, setNotes] = useState<ResDetailNote[]>([]);
   const queryClient = useQueryClient();
   const queryKey = getListNotesQueryKey(params);
