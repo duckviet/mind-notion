@@ -164,6 +164,10 @@ export type ListNotesParams = {
    */
   offset?: OffsetParamParameter;
   /**
+   * Query to search for
+   */
+  query?: string;
+  /**
    * Filter notes by folder ID
    */
   folder_id?: string;
@@ -191,6 +195,8 @@ export type ListNotes200 = {
   limit?: number;
   /** Number of notes skipped */
   offset?: number;
+  /** Query to search for */
+  query?: string;
 };
 
 export type UpdateNoteTOMParams = {
@@ -1031,7 +1037,11 @@ export const getListNotesQueryKey = (params?: ListNotesParams) => {
 
 export const getListNotesQueryOptions = <
   TData = Awaited<ReturnType<typeof listNotes>>,
-  TError = UnauthorizedResponse | InternalServerErrorResponse,
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
 >(
   params?: ListNotesParams,
   options?: {
@@ -1059,12 +1069,18 @@ export type ListNotesQueryResult = NonNullable<
   Awaited<ReturnType<typeof listNotes>>
 >;
 export type ListNotesQueryError =
+  | BadRequestResponse
   | UnauthorizedResponse
+  | NotFoundResponse
   | InternalServerErrorResponse;
 
 export function useListNotes<
   TData = Awaited<ReturnType<typeof listNotes>>,
-  TError = UnauthorizedResponse | InternalServerErrorResponse,
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
 >(
   params: undefined | ListNotesParams,
   options: {
@@ -1086,7 +1102,11 @@ export function useListNotes<
 };
 export function useListNotes<
   TData = Awaited<ReturnType<typeof listNotes>>,
-  TError = UnauthorizedResponse | InternalServerErrorResponse,
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
 >(
   params?: ListNotesParams,
   options?: {
@@ -1108,7 +1128,11 @@ export function useListNotes<
 };
 export function useListNotes<
   TData = Awaited<ReturnType<typeof listNotes>>,
-  TError = UnauthorizedResponse | InternalServerErrorResponse,
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
 >(
   params?: ListNotesParams,
   options?: {
@@ -1126,7 +1150,11 @@ export function useListNotes<
 
 export function useListNotes<
   TData = Awaited<ReturnType<typeof listNotes>>,
-  TError = UnauthorizedResponse | InternalServerErrorResponse,
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
 >(
   params?: ListNotesParams,
   options?: {

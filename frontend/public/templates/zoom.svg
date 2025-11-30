@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64px" height="64px">
+<linearGradient id="FoGLpwYq7s2feUCIi~dRia" x1="32" x2="32" y1="1895.5" y2="1948.676" gradientTransform="translate(0 -1890)" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#1a6dff"/>
+<stop offset="1" stop-color="#c822ff"/>
+</linearGradient>
+<path fill="url(#FoGLpwYq7s2feUCIi~dRia)" d="M32,58C17.663,58,6,46.336,6,32S17.663,6,32,6s26,11.664,26,26S46.337,58,32,58z M32,8 C18.767,8,8,18.767,8,32s10.767,24,24,24s24-10.767,24-24S45.233,8,32,8z"/>
+<linearGradient id="FoGLpwYq7s2feUCIi~dRib" x1="27" x2="27" y1="43" y2="25" gradientTransform="matrix(1 0 0 -1 0 66)" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#6dc7ff"/>
+<stop offset="1" stop-color="#e6abff"/>
+</linearGradient>
+<path fill="url(#FoGLpwYq7s2feUCIi~dRib)" d="M38,41H20.5c-3.038,0-5.5-2.462-5.5-5.5V24c0-0.552,0.448-1,1-1h17.5 c3.038,0,5.5,2.462,5.5,5.5V40C39,40.552,38.552,41,38,41z"/>
+<linearGradient id="FoGLpwYq7s2feUCIi~dRic" x1="45" x2="45" y1="42.999" y2="24.999" gradientTransform="matrix(1 0 0 -1 0 66)" gradientUnits="userSpaceOnUse">
+<stop offset="0" stop-color="#6dc7ff"/>
+<stop offset="1" stop-color="#e6abff"/>
+</linearGradient>
+<path fill="url(#FoGLpwYq7s2feUCIi~dRic)" d="M48.724,23.053c-0.167-0.083-0.371-0.066-0.522,0.047L41,28.475v7.05l7.201,5.376 c0.088,0.066,0.193,0.1,0.299,0.1c0.076,0,0.153-0.018,0.224-0.053C48.894,40.862,49,40.689,49,40.5v-17 C49,23.311,48.894,23.138,48.724,23.053z"/>
+</svg>

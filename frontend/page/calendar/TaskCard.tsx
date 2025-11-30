@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
-import { DayTask } from "./DayMode";
+import { DayTask } from "./WeeklyMode";
 
 const TaskCard = ({ task }: { task: DayTask }) => (
-  <div className="rounded-lg bg-white p-3 text-left   transition hover:shadow-md">
+  <div className="rounded-2xl cursor-pointer bg-white p-3 text-left   transition hover:shadow-md">
     <p className="text-lg font-semibold">{task.title}</p>
     {task.description && (
       <p className="text-xs text-muted-foreground">{task.description}</p>

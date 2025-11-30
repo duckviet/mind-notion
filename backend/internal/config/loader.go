@@ -2,68 +2,96 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
+ 
 
-// Load loads configuration from file and environment variables
+ 
+
 func Load() (*Config, error) {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./configs")
-	viper.AddConfigPath(".")
-	
-	// Enable reading from environment variables
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	
-	// Set default values
-	setDefaults()
-	
-	// Read config file
-	if err := viper.ReadInConfig(); err != nil {
+	// Load file .env nếu có (không bắt buộc trong Production)
+	if err := godotenv.Load(); err != nil {
+		log.Println("Note: .env file not found, using environment variables")
+	}
+
+	// 2. Sử dụng instance mới thay vì global viper (Best practice)
+	v := viper.New()
+
+	// Thiết lập các giá trị mặc định
+	setDefaults(v)
+
+	// Cấu hình tìm file yaml
+	v.SetConfigName("config")
+	v.SetConfigType("yaml")
+	v.AddConfigPath("./configs")
+	v.AddConfigPath(".")
+
+	// 3. Quan trọng: Thiết lập Environment Override
+	// server.port sẽ map với SERVER_PORT
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.AutomaticEnv()
+
+	// Đọc file config
+	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 			return nil, fmt.Errorf("failed to read config file: %w", err)
 		}
-		// Config file not found, use defaults and environment variables
+		// File không tồn tại là bình thường nếu dùng Env vars hoàn toàn
+		log.Println("ℹ️  No config file found. Using defaults and environment variables.")
+	} else {
+		log.Printf("✅ Loaded config from: %s", v.ConfigFileUsed())
 	}
-	
+
 	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
+	// Unmarshal config vào struct
+	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
 	}
-	
+
 	// Validate configuration
 	if err := cfg.Validate(); err != nil {
 		return nil, fmt.Errorf("config validation failed: %w", err)
 	}
-	
+
 	return &cfg, nil
 }
 
-// setDefaults sets default configuration values
-func setDefaults() {
+// setDefaults nhận vào viper instance
+func setDefaults(v *viper.Viper) {
 	// Server defaults
-	viper.SetDefault("server.host", "localhost")
-	viper.SetDefault("server.port", "8080")
-	viper.SetDefault("server.mode", "debug")
-	
+	v.SetDefault("server.host", "localhost")
+	v.SetDefault("server.port", "8080")
+	v.SetDefault("server.mode", "debug")
+
 	// Database defaults
-	viper.SetDefault("database.host", "localhost")
-	viper.SetDefault("database.port", "5432")
-	viper.SetDefault("database.user", "postgres")
-	viper.SetDefault("database.password", "password")
-	viper.SetDefault("database.name", "collaborative_editor")
-	viper.SetDefault("database.ssl_mode", "disable")
-	
+	v.SetDefault("database.host", "localhost")
+	v.SetDefault("database.port", "5432")
+	v.SetDefault("database.user", "postgres")
+	v.SetDefault("database.password", "password")
+	v.SetDefault("database.name", "collaborative_editor")
+	v.SetDefault("database.ssl_mode", "disable")
+
 	// JWT defaults
-	viper.SetDefault("jwt.secret_key", "your-secret-key")
-	viper.SetDefault("jwt.expires_in", 3600) // 1 hour
-	
+	v.SetDefault("jwt.secret_key", "your-secret-key")
+	v.SetDefault("jwt.expires_in", 3600)
+
 	// Redis defaults
-	viper.SetDefault("redis.host", "localhost")
-	viper.SetDefault("redis.port", "6379")
-	viper.SetDefault("redis.password", "")
-	viper.SetDefault("redis.db", 0)
+	v.SetDefault("redis.host", "localhost")
+	v.SetDefault("redis.port", "6379")
+	v.SetDefault("redis.password", "")
+	v.SetDefault("redis.db", 0)
+
+	// Pinecone defaults
+	v.SetDefault("pinecone.api_key", "")
+	v.SetDefault("pinecone.environment", "")
+	v.SetDefault("pinecone.index_name", "notes")
+	v.SetDefault("pinecone.namespace", "default")
+
+	// Cohere defaults
+	v.SetDefault("cohere.api_key", "")
+	v.SetDefault("cohere.model", "embed-multilingual-v3.0")
 }
