@@ -47,7 +47,7 @@ func (h *SearchHandler) SearchNotes(c *gin.Context) {
 	}
 
 	// Perform semantic search
-	notes, err := h.searchService.SearchNotes(c.Request.Context(), query, u.ID, limit)
+	notes, total, err := h.searchService.SearchNotes(c.Request.Context(), query, u.ID, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -55,7 +55,7 @@ func (h *SearchHandler) SearchNotes(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"notes": notes,
-		"total": len(notes),
+		"total": total,
 		"query": query,
 	})
 }

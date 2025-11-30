@@ -21,4 +21,7 @@ type ListNotes200Response struct {
 
 	// Number of notes skipped
 	Offset int32 `json:"offset,omitempty"`
+
+	// Query to search for
+	Query string `json:"query,omitempty"`
 }

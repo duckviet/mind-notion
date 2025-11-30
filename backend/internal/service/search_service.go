@@ -18,7 +18,7 @@ type SearchService interface {
 	IndexNote(ctx context.Context, note *models.Note) error
 
 	// SearchNotes performs semantic search on notes
-	SearchNotes(ctx context.Context, query string, userID string, limit int) ([]*models.Note, error)
+	SearchNotes(ctx context.Context, query string, userID string, limit int) ([]*models.Note, int64, error)
 
 	// DeleteNoteIndex removes a note from the vector store
 	DeleteNoteIndex(ctx context.Context, noteID string) error
@@ -55,85 +55,67 @@ func (s *searchService) IndexNote(ctx context.Context, note *models.Note) error 
 
 	// Prepare text for embedding (combine title and content)
 	text := prepareNoteText(note)
+	log.Printf("📄 Indexing note %s: Title='%s', Text length=%d, Content preview='%.100s...'", 
+		note.ID, note.Title, len(text), text)
 	if text == "" {
-		log.Printf("Skipping empty note: %s", note.ID)
+		log.Printf("⚠️ Skipping empty note: %s", note.ID)
 		return nil
 	}
-
-	// Generate embedding
-	embeddings, err := s.embeddings.Embed(ctx, []string{text})
-	if err != nil {
-		return fmt.Errorf("failed to generate embedding: %w", err)
-	}
-
-	if len(embeddings) == 0 {
-		return fmt.Errorf("no embedding generated")
-	}
-
-	// Create document for vector store
-	doc := vectorstore.Document{
-		ID:     note.ID,
-		Vector: embeddings[0],
+ 
+	doc := vectorstore.InsertTextDocument{
+		ID:       note.ID,
+		Text:     text,
 		Metadata: map[string]string{
 			"user_id": note.UserID,
 			"title":   note.Title,
 			"status":  string(note.Status),
 		},
 	}
-
-	// Upsert to vector store
-	if err := s.vectorStore.Upsert(ctx, []vectorstore.Document{doc}); err != nil {
+	
+	log.Printf("📤 Sending to Pinecone: ID=%s, Text length=%d, Metadata=%+v", 
+		doc.ID, len(doc.Text), doc.Metadata)
+	
+	if err := s.vectorStore.UpsertText(ctx, []vectorstore.InsertTextDocument{doc}, note.UserID); err != nil {
+		log.Printf("❌ Failed to index note %s: %v", note.ID, err)
 		return fmt.Errorf("failed to upsert to vector store: %w", err)
 	}
 
-	log.Printf("✅ Indexed note: %s", note.ID)
+	log.Printf("✅ Successfully indexed note: %s", note.ID)
 	return nil
 }
 
 // SearchNotes performs semantic search on notes
-func (s *searchService) SearchNotes(ctx context.Context, query string, userID string, limit int) ([]*models.Note, error) {
+func (s *searchService) SearchNotes(ctx context.Context, query string, userID string, limit int) ([]*models.Note, int64, error) {
 	if query == "" {
-		return nil, fmt.Errorf("query cannot be empty")
+		return nil, 0, fmt.Errorf("query cannot be empty")
 	}
 
 	if limit <= 0 {
 		limit = 10
 	}
 
-	// Generate query embedding
-	queryVector, err := s.embeddings.EmbedQuery(ctx, query)
+	results, err := s.vectorStore.SearchText(ctx, query, limit, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate query embedding: %w", err)
+		return nil, 0, fmt.Errorf("failed to search vector store: %w", err)
 	}
+	total := int64(len(results))
 
-	// Build filter for user's notes
-	filter := map[string]string{}
-	if userID != "" {
-		filter["user_id"] = userID
-	}
-
-	// Search vector store
-	results, err := s.vectorStore.Search(ctx, queryVector, limit, filter)
-	if err != nil {
-		return nil, fmt.Errorf("failed to search vector store: %w", err)
-	}
-
-	if len(results) == 0 {
-		return []*models.Note{}, nil
+	if total == 0 {
+		return []*models.Note{}, total, nil
 	}
 
 	// Fetch full notes from database
 	notes := make([]*models.Note, 0, len(results))
 	for _, result := range results {
-		note, err := s.noteRepo.GetByID(ctx, result.ID)
+		note, err := s.noteRepo.GetByID(ctx, result)
 		if err != nil {
-			log.Printf("Warning: failed to fetch note %s: %v", result.ID, err)
+			log.Printf("Warning: failed to fetch note %s: %v", result, err)
 			continue
 		}
 		notes = append(notes, note)
 	}
 
-	return notes, nil
+	return notes, total, nil
 }
 
 // DeleteNoteIndex removes a note from the vector store
@@ -142,11 +124,17 @@ func (s *searchService) DeleteNoteIndex(ctx context.Context, noteID string) erro
 		return fmt.Errorf("noteID cannot be empty")
 	}
 
-	if err := s.vectorStore.Delete(ctx, []string{noteID}); err != nil {
+	// Get note to retrieve userID for namespace
+	note, err := s.noteRepo.GetByID(ctx, noteID)
+	if err != nil {
+		return fmt.Errorf("failed to get note for deletion: %w", err)
+	}
+
+	if err := s.vectorStore.Delete(ctx, []string{noteID}, note.UserID); err != nil {
 		return fmt.Errorf("failed to delete from vector store: %w", err)
 	}
 
-	log.Printf("✅ Deleted note index: %s", noteID)
+	log.Printf("✅ Deleted note index: %s (namespace: user_%s)", noteID, note.UserID)
 	return nil
 }
 

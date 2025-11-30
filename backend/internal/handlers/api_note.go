@@ -108,6 +108,7 @@ func (api *NoteAPI) ListNotes(c *gin.Context) {
     // Optional filters
     limitStr := c.Query("limit")
     offsetStr := c.Query("offset")
+    query := c.Query("query")
 
     limit := 20
     if limitStr != "" {
@@ -121,6 +122,7 @@ func (api *NoteAPI) ListNotes(c *gin.Context) {
             offset = v
         }
     }
+    
     page := 1
     if limit > 0 {
         page = (offset / limit) + 1
@@ -129,13 +131,13 @@ func (api *NoteAPI) ListNotes(c *gin.Context) {
     // list only current user's notes
     userVal, _ := c.Get("user")
     u := userVal.(*dbmodels.User)
-    params := repository.NoteListParams{Page: page, Limit: limit}
+    params := repository.NoteListParams{Page: page, Limit: limit, Query: &query}
     notes, total, err := api.noteService.GetNotesByUserID(c.Request.Context(), u.ID, params)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
-    c.JSON(http.StatusOK, gin.H{"notes": notes, "total": total, "limit": limit, "offset": offset})
+    c.JSON(http.StatusOK, gin.H{"notes": notes, "total": total, "limit": limit, "offset": offset, "query": query})
 }
 
 // Put /api/v1/notes/:id/update

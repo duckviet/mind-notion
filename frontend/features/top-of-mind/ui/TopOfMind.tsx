@@ -17,7 +17,11 @@ const TopOfMind = ({ notes, onDelete, onUpdate, onUnpin }: Props) => {
       activeClassName="ring-2 ring-blue-300/20 ring-offset-1 ring-offset-blue-300/20 rounded-2xl"
     >
       <div
-        style={{ scrollBehavior: "smooth" }}
+        style={{
+          scrollbarWidth: "none",
+          scrollBehavior: "smooth",
+          scrollbarGutter: "stable",
+        }}
         className="flex gap-3 justify-center items-center bg-[#dee2ea] w-full rounded-2xl my-4 p-4 min-h-[120px] transition-all overflow-x-auto"
       >
         {notes.length === 0 ? (

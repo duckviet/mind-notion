@@ -26,12 +26,14 @@ import {
 import { TopOfMind } from "@/features/top-of-mind";
 import { DragEndEvent } from "@dnd-kit/core";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
+import { useDebounce } from "use-debounce";
 
 function HomePageContent() {
   const [query, setQuery] = useState("");
   const [isFabOpen, setIsFabOpen] = useState(false);
   const { isModalOpen } = useModal();
 
+  const [debouncedQuery] = useDebounce(query, 300);
   const {
     notes: notesData,
     setNotes,
@@ -41,7 +43,7 @@ function HomePageContent() {
     createNote,
     updateNote,
     refetch,
-  } = useNotes({ limit: 50, offset: 0 });
+  } = useNotes({ limit: 50, offset: 0, query: debouncedQuery });
 
   const {
     data: topOfMindNotesData,
@@ -56,22 +58,6 @@ function HomePageContent() {
       score: 1.0,
     }));
   }, [notesData]);
-
-  const filteredResults = useMemo(() => {
-    if (!query.trim()) return notes;
-    return notes.filter(
-      (item) =>
-        item.title.toLowerCase().includes(query.toLowerCase()) ||
-        item.content?.toLowerCase().includes(query.toLowerCase()) ||
-        item.tags?.some((tag) =>
-          tag.toLowerCase().includes(query.toLowerCase())
-        )
-    );
-  }, [notes, query]);
-
-  const handleSearch = (searchTerm: string) => {
-    setQuery(searchTerm);
-  };
 
   const handleDelete = async (id: string) => {
     if (confirm("Delete this note?")) {
@@ -180,7 +166,6 @@ function HomePageContent() {
             className="rounded-md"
             query={query}
             setQuery={setQuery}
-            onSearch={handleSearch}
             onEnter={() => {}}
           />
 
@@ -195,7 +180,7 @@ function HomePageContent() {
             />
           </SortableContext>
 
-          {filteredResults.length === 0 && !isLoading ? (
+          {notes.length === 0 && !isLoading ? (
             <EmptyState
               type={query ? "no-results" : "new"}
               action={
@@ -212,8 +197,8 @@ function HomePageContent() {
               id="grid-zone"
               activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
             >
-              <MasonryGrid data={filteredResults} isLoading={isLoading}>
-                {isLoading && filteredResults.length === 0 ? (
+              <MasonryGrid data={notes} isLoading={isLoading}>
+                {isLoading && notes.length === 0 ? (
                   <div key="loading">Loading...</div>
                 ) : (
                   <div key="content-grid">
@@ -227,7 +212,7 @@ function HomePageContent() {
                       </div>
                       {/* Notes & Articles */}
 
-                      {filteredResults.map((note) => (
+                      {notes.map((note) => (
                         // <SortableItem key={note.id} id={note.id}>
                         <DraggableItem
                           className="h-fit mb-6 break-inside-avoid"

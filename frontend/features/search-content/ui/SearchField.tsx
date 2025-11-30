@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { useDebounce } from "use-debounce";
@@ -20,13 +20,6 @@ export default function SearchField({
   className,
 }: Props) {
   const [isFocused, setIsFocused] = useState(false);
-  const [debouncedQuery] = useDebounce(query, 300);
-
-  useEffect(() => {
-    if (debouncedQuery && onSearch) {
-      onSearch(debouncedQuery);
-    }
-  }, [debouncedQuery, onSearch]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -34,9 +27,16 @@ export default function SearchField({
     }
   };
 
-  const handleClear = () => {
+  const handleSearch = useCallback(
+    (value: string) => {
+      setQuery(value);
+    },
+    [setQuery]
+  );
+
+  const handleClear = useCallback(() => {
     setQuery("");
-  };
+  }, [setQuery]);
 
   return (
     <div className={cn("relative", className)}>
@@ -62,7 +62,7 @@ export default function SearchField({
             type="text"
             placeholder="Search my mind..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
