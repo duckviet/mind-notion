@@ -11,7 +11,7 @@ import { ICalendar } from "./CalendarPage";
 import { HolidayCode } from "./CalendarPage";
 import { CalendarDay } from "./CalendarPage";
 import CalendarModeComponent from "./CalendarModeComponent";
-import DayMode from "./DayMode";
+import WeeklyMode from "./WeeklyMode";
 import { cn } from "@/lib/utils";
 function YearDays({
   calendars,
@@ -269,7 +269,7 @@ function YearDays({
           />
         )}
 
-        {calendarMode === "weekly" && <DayMode />}
+        {calendarMode === "weekly" && <WeeklyMode />}
       </div>
     </div>
   );

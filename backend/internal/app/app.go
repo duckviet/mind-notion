@@ -8,9 +8,11 @@ import (
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/domain"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/embeddings"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/vectorstore"
 	"github.com/gin-gonic/gin"
 )
 
@@ -45,19 +47,43 @@ func New(ctx context.Context) (*App, func(), error) {
 	noteRepo := repository.NewNoteRepository(db)
 	folderRepo := repository.NewFolderRepository(db)
 
+	var (
+		searchService service.SearchService
+		searchHandler *handlers.SearchHandler
+	)
+
+	// Initialize search components (optional - only if Pinecone and Cohere are configured)
+	if cfg.Pinecone.APIKey != "" && cfg.Cohere.APIKey != "" {
+		embeddingProvider, err := embeddings.NewCohereProvider(cfg.Cohere)
+		if err != nil {
+			log.Printf("Warning: failed to initialize Cohere embeddings: %v", err)
+		} else {
+			vectorStore, err := vectorstore.NewPineconeStore(ctx, cfg.Pinecone)
+			if err != nil {
+				log.Printf("Warning: failed to initialize Pinecone: %v", err)
+			} else {
+				searchService = service.NewSearchService(embeddingProvider, vectorStore, noteRepo)
+				searchHandler = handlers.NewSearchHandler(searchService)
+				log.Printf("🔍 Semantic search: ✅ Enabled (Pinecone + Cohere)")
+			}
+		}
+	} else {
+		log.Printf("🔍 Semantic search: ⚠️ Disabled (missing Pinecone or Cohere API keys)")
+	}
+
 	// Initialize services
 	userService := service.NewUserService(userRepo, cfg)
-	noteService := service.NewNoteService(noteRepo, cfg)
+	noteService := service.NewNoteService(noteRepo, cfg, searchService)
 	folderService := service.NewFolderService(folderRepo, cfg)
 	authService := service.NewAuthService(userRepo, cfg)
 
-    // Initialize collaboration (websocket) components
-    clientRepo := domain.NewInMemoryClientRepository()
-    collabService := service.NewCollaborationService(userRepo, noteRepo, clientRepo, userService, noteService)
-    wsHandler := handlers.NewWebSocketHandler(collabService)
+	// Initialize collaboration (websocket) components
+	clientRepo := domain.NewInMemoryClientRepository()
+	collabService := service.NewCollaborationService(userRepo, noteRepo, clientRepo, userService, noteService)
+	wsHandler := handlers.NewWebSocketHandler(collabService)
 
-    // Initialize handlers
-    router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, wsHandler)
+	// Initialize handlers
+	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, wsHandler, searchHandler)
 
 	app := &App{
 		router: router,
@@ -77,11 +103,11 @@ func New(ctx context.Context) (*App, func(), error) {
 // Run starts the application
 func (a *App) Run(ctx context.Context) error {
 	serverAddr := fmt.Sprintf(":%s", a.config.Server.Port)
-	
+
 	log.Printf("🚀 Collaborative Editor Server starting on %s:%s", a.config.Server.Host, a.config.Server.Port)
 	log.Printf("📡 WebSocket endpoint: ws://localhost:%s/ws", a.config.Server.Port)
 	log.Printf("🌐 REST API endpoint: http://localhost:%s/api/v1", a.config.Server.Port)
 	log.Printf("💾 Database connection: ✅ Connected")
-	
+
 	return a.router.Run(serverAddr)
 }

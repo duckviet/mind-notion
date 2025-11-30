@@ -26,12 +26,14 @@ import {
 import { TopOfMind } from "@/features/top-of-mind";
 import { DragEndEvent } from "@dnd-kit/core";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
+import { useDebounce } from "use-debounce";
 
 function HomePageContent() {
   const [query, setQuery] = useState("");
   const [isFabOpen, setIsFabOpen] = useState(false);
   const { isModalOpen } = useModal();
 
+  const [debouncedQuery] = useDebounce(query, 300);
   const {
     notes: notesData,
     setNotes,
@@ -41,7 +43,7 @@ function HomePageContent() {
     createNote,
     updateNote,
     refetch,
-  } = useNotes({ limit: 50, offset: 0 });
+  } = useNotes({ limit: 50, offset: 0, query: debouncedQuery });
 
   const {
     data: topOfMindNotesData,
@@ -56,22 +58,6 @@ function HomePageContent() {
       score: 1.0,
     }));
   }, [notesData]);
-
-  const filteredResults = useMemo(() => {
-    if (!query.trim()) return notes;
-    return notes.filter(
-      (item) =>
-        item.title.toLowerCase().includes(query.toLowerCase()) ||
-        item.content?.toLowerCase().includes(query.toLowerCase()) ||
-        item.tags?.some((tag) =>
-          tag.toLowerCase().includes(query.toLowerCase())
-        )
-    );
-  }, [notes, query]);
-
-  const handleSearch = (searchTerm: string) => {
-    setQuery(searchTerm);
-  };
 
   const handleDelete = async (id: string) => {
     if (confirm("Delete this note?")) {
@@ -165,7 +151,10 @@ function HomePageContent() {
           notes.find((n) => n.id === noteId) ||
           topOfMindNotesData?.find((n) => n.id === noteId);
         return note ? (
-          <div className="opacity-80 w-full min-w-[300px]">
+          <div
+            className="opacity-80 w-full min-w-[300px]"
+            style={{ rotate: "5deg" }}
+          >
             <NoteCard match={{ ...note, score: 1.0 }} onUpdateNote={() => {}} />
           </div>
         ) : null;
@@ -177,7 +166,6 @@ function HomePageContent() {
             className="rounded-md"
             query={query}
             setQuery={setQuery}
-            onSearch={handleSearch}
             onEnter={() => {}}
           />
 
@@ -192,17 +180,7 @@ function HomePageContent() {
             />
           </SortableContext>
 
-          {/* <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-text-primary mt-2">
-              {query ? "Search Results" : "Your Content"}
-            </h2>
-            <div className="text-sm text-text-muted">
-              {filteredResults.length}{" "}
-              {filteredResults.length === 1 ? "item" : "items"} found
-            </div>
-          </div> */}
-
-          {filteredResults.length === 0 && !isLoading ? (
+          {notes.length === 0 && !isLoading ? (
             <EmptyState
               type={query ? "no-results" : "new"}
               action={
@@ -219,8 +197,8 @@ function HomePageContent() {
               id="grid-zone"
               activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
             >
-              <MasonryGrid data={filteredResults} isLoading={isLoading}>
-                {isLoading && filteredResults.length === 0 ? (
+              <MasonryGrid data={notes} isLoading={isLoading}>
+                {isLoading && notes.length === 0 ? (
                   <div key="loading">Loading...</div>
                 ) : (
                   <div key="content-grid">
@@ -234,7 +212,7 @@ function HomePageContent() {
                       </div>
                       {/* Notes & Articles */}
 
-                      {filteredResults.map((note) => (
+                      {notes.map((note) => (
                         // <SortableItem key={note.id} id={note.id}>
                         <DraggableItem
                           className="h-fit mb-6 break-inside-avoid"

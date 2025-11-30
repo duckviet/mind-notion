@@ -5,6 +5,7 @@ import {
   UserIcon,
   LogOutIcon,
   InfoIcon,
+  CalendarDaysIcon,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -17,6 +18,11 @@ const Sidebar = () => {
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const SIDEBAR_ITEMS = [
+    {
+      label: "Calendar",
+      icon: <CalendarDaysIcon className="w-6 h-6" />,
+      href: "/calendar",
+    },
     {
       label: "Home",
       icon: <HomeIcon className="w-6 h-6" />,

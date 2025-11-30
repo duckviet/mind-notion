@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"log"
 
 	"gorm.io/gorm"
 
@@ -17,7 +18,7 @@ type NoteService interface {
 	GetNoteByID(ctx context.Context, id string) (*models.Note, error)
 	UpdateNote(ctx context.Context, id string, req UpdateNoteRequest) (*models.Note, error)
 	DeleteNote(ctx context.Context, id string) error
-	ListNotes(ctx context.Context, params repository.NoteListParams) ([]*models.Note, int64, error)
+	ListNotes(ctx context.Context, params repository.NoteListParams, userID string) ([]*models.Note, int64, error)
 	GetNotesByUserID(ctx context.Context, userID string, params repository.NoteListParams) ([]*models.Note, int64, error)
 	AddTagToNote(ctx context.Context, noteID, tagID string) error
 	RemoveTagFromNote(ctx context.Context, noteID, tagID string) error
@@ -27,38 +28,40 @@ type NoteService interface {
 
 // noteService implements NoteService
 type noteService struct {
-	repo   repository.NoteRepository
-	config *config.Config
+	repo          repository.NoteRepository
+	config        *config.Config
+	searchService SearchService
 }
 
 // CreateNoteRequest represents the request to create a note
 type CreateNoteRequest struct {
-	Title       string   `json:"title" validate:"required,min=1,max=200"`
-	Content     string   `json:"content"`
-	ContentType string   `json:"content_type" validate:"omitempty,oneof=text markdown html"`
-	Status      string   `json:"status" validate:"omitempty,oneof=draft published archived"`
-	Thumbnail   string   `json:"thumbnail,omitempty"`
-	IsPublic    bool     `json:"is_public"`
-    UserID      string   `json:"user_id" validate:"required"`
-	TagIDs      []uint   `json:"tag_ids,omitempty"`
+	Title       string `json:"title" validate:"required,min=1,max=200"`
+	Content     string `json:"content"`
+	ContentType string `json:"content_type" validate:"omitempty,oneof=text markdown html"`
+	Status      string `json:"status" validate:"omitempty,oneof=draft published archived"`
+	Thumbnail   string `json:"thumbnail,omitempty"`
+	IsPublic    bool   `json:"is_public"`
+	UserID      string `json:"user_id" validate:"required"`
+	TagIDs      []uint `json:"tag_ids,omitempty"`
 }
 
 // UpdateNoteRequest represents the request to update a note
 type UpdateNoteRequest struct {
-	Title       string   `json:"title,omitempty" validate:"omitempty,min=1,max=200"`
-	Content     string   `json:"content,omitempty"`
-	ContentType string   `json:"content_type,omitempty" validate:"omitempty,oneof=text markdown html"`
-	Status      string   `json:"status,omitempty" validate:"omitempty,oneof=draft published archived"`
-	Thumbnail   string   `json:"thumbnail,omitempty"`
-	IsPublic    *bool    `json:"is_public,omitempty"`
-	TagIDs      []uint   `json:"tag_ids,omitempty"`
+	Title       string `json:"title,omitempty" validate:"omitempty,min=1,max=200"`
+	Content     string `json:"content,omitempty"`
+	ContentType string `json:"content_type,omitempty" validate:"omitempty,oneof=text markdown html"`
+	Status      string `json:"status,omitempty" validate:"omitempty,oneof=draft published archived"`
+	Thumbnail   string `json:"thumbnail,omitempty"`
+	IsPublic    *bool  `json:"is_public,omitempty"`
+	TagIDs      []uint `json:"tag_ids,omitempty"`
 }
 
 // NewNoteService creates a new note service
-func NewNoteService(repo repository.NoteRepository, config *config.Config) NoteService {
+func NewNoteService(repo repository.NoteRepository, config *config.Config, searchService SearchService) NoteService {
 	return &noteService{
-		repo:   repo,
-		config: config,
+		repo:          repo,
+		config:        config,
+		searchService: searchService,
 	}
 }
 
@@ -72,7 +75,7 @@ func (s *noteService) CreateNote(ctx context.Context, req CreateNoteRequest) (*m
 		req.Status = "draft"
 	}
 
-    note := &models.Note{
+	note := &models.Note{
 		Title:       req.Title,
 		Content:     req.Content,
 		ContentType: req.ContentType,
@@ -85,6 +88,13 @@ func (s *noteService) CreateNote(ctx context.Context, req CreateNoteRequest) (*m
 
 	if err := s.repo.Create(ctx, note); err != nil {
 		return nil, ErrInternalServerError
+	}
+
+	// Index the note in vector store if search service is available
+	if s.searchService != nil {
+		if err := s.searchService.IndexNote(ctx, note); err != nil {
+			log.Printf("Warning: failed to index note %s: %v", note.ID, err)
+		}
 	}
 
 	return note, nil
@@ -158,7 +168,10 @@ func (s *noteService) DeleteNote(ctx context.Context, id string) error {
 }
 
 // ListNotes retrieves notes with pagination
-func (s *noteService) ListNotes(ctx context.Context, params repository.NoteListParams) ([]*models.Note, int64, error) {
+func (s *noteService) ListNotes(ctx context.Context, params repository.NoteListParams, userID string) ([]*models.Note, int64, error) {
+	if params.Query != nil {
+		return s.searchService.SearchNotes(ctx, *params.Query, userID, params.Limit)
+	}
 	notes, total, err := s.repo.List(ctx, params)
 	if err != nil {
 		return nil, 0, ErrInternalServerError
@@ -168,6 +181,9 @@ func (s *noteService) ListNotes(ctx context.Context, params repository.NoteListP
 
 // GetNotesByUserID retrieves notes by user ID
 func (s *noteService) GetNotesByUserID(ctx context.Context, userID string, params repository.NoteListParams) ([]*models.Note, int64, error) {
+	if params.Query != nil && *params.Query != "" {
+		return s.searchService.SearchNotes(ctx, *params.Query, userID, params.Limit)
+	}
 	notes, total, err := s.repo.GetByUserID(ctx, userID, params)
 	if err != nil {
 		return nil, 0, ErrInternalServerError
@@ -204,6 +220,7 @@ func (s *noteService) UpdateNoteTOM(ctx context.Context, id string, tom bool) (*
 	}
 	return note, nil
 }
+
 func (s *noteService) ListNotesTOM(ctx context.Context, userID string) ([]*models.Note, error) {
 	notes, err := s.repo.ListTOM(ctx, userID)
 	if err != nil {

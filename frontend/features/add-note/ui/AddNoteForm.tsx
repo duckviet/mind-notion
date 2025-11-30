@@ -9,6 +9,7 @@ import {
   getListNotesQueryKey,
   ReqCreateNote,
 } from "@/shared/services/generated/api";
+import { RichTextEditor } from "@/shared/components/RichTextEditor";
 export default function AddNoteForm({
   onCreate,
 }: {
@@ -21,7 +22,7 @@ export default function AddNoteForm({
   const queryClient = useQueryClient();
 
   // Handle Ctrl + Enter for saving
-  const handleEnter = async (e: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleEnter = async (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.ctrlKey && e.key === "Enter") {
       if (content.trim() && !isSaving) {
         setIsSaving(true);
@@ -49,6 +50,9 @@ export default function AddNoteForm({
     }
   };
 
+  const isSaveHintVisible =
+    content.trim() && content !== "<p></p>" ? true : false;
+  console.log(content, isSaveHintVisible);
   return (
     <div className="relative h-full">
       {/* Overlay */}
@@ -57,7 +61,7 @@ export default function AddNoteForm({
       {/* Card Container */}
       <Card
         className={cn(
-          "relative  rounded-lg   transition-all duration-200 h-full",
+          "relative bg-white rounded-2xl transition-all duration-200 h-full",
           isFocus ? "z-40" : "hover:shadow-lg"
         )}
       >
@@ -67,24 +71,37 @@ export default function AddNoteForm({
           onChange={(e) => setTitle(e.target.value)}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
-          className="text-xl text-red-500 placeholder:text-red-500 mb-2 bg-transparent w-full focus:outline-none"
+          className="text-xl mb-2 bg-transparent w-full focus:outline-none"
           placeholder="Add a new note"
         />
 
         {/* Note Content */}
-        <Textarea
+        {/* <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           onKeyDown={handleEnter}
-          className="p-0 shadow-none mb-4 ring-0 ring-offset-0 no-scrollbar focus-visible:ring-0 focus-visible:border-none text-lg border-none resize-none bg-transparent"
+          className="p-0 shadow-none mb-4 ring-0 ring-offset-0 no-scrollbar focus-visible:ring-0 focus-visible:border-none text-lg border-none resize-none bg-transparent min-h-36"
           placeholder="Type your message here..."
-        />
+        /> */}
 
+        <RichTextEditor
+          toolbar={false}
+          placeholder="Type your message here..."
+          content={content}
+          onUpdate={(content) => setContent(content)}
+          onFocus={() => setIsFocus(true)}
+          onBlur={() => setIsFocus(false)}
+          onKeyDown={handleEnter}
+          className="min-h-36 max-h-100 overflow-y-auto cursor-text w-full h-full"
+        />
         {/* Save Hint */}
-        {content && (
-          <p className="bg-red-400 text-white absolute px-4 left-0 bottom-0 rounded-md rounded-t-none text-center w-full">
+        {isSaveHintVisible && (
+          <p
+            style={{ color: "white" }}
+            className="bg-red-400 text-white absolute px-4 left-0 bottom-0 rounded-2xl rounded-t-none text-center w-full"
+          >
             {isSaving ? "Saving..." : "Press Ctrl + Enter to save"}
           </p>
         )}
