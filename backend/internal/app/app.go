@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database"
@@ -102,11 +103,15 @@ func New(ctx context.Context) (*App, func(), error) {
 
 // Run starts the application
 func (a *App) Run(ctx context.Context) error {
-	serverAddr := fmt.Sprintf(":%s", a.config.Server.Port)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = a.config.Server.Port
+	}
+	serverAddr := fmt.Sprintf(":%s", port)
 
-	log.Printf("🚀 Collaborative Editor Server starting on %s:%s", a.config.Server.Host, a.config.Server.Port)
-	log.Printf("📡 WebSocket endpoint: ws://localhost:%s/ws", a.config.Server.Port)
-	log.Printf("🌐 REST API endpoint: http://localhost:%s/api/v1", a.config.Server.Port)
+	log.Printf("🚀 Collaborative Editor Server starting on %s:%s", a.config.Server.Host, serverAddr)
+	log.Printf("📡 WebSocket endpoint: ws://localhost:%s/ws", serverAddr)
+	log.Printf("🌐 REST API endpoint: http://localhost:%s/api/v1", serverAddr)
 	log.Printf("💾 Database connection: ✅ Connected")
 
 	return a.router.Run(serverAddr)
