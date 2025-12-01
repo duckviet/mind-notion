@@ -50,7 +50,11 @@ function HomePageContent() {
     isLoading: isLoadingTopOfMindNotes,
     error: errorTopOfMindNotes,
     refetch: refetchTopOfMindNotes,
-  } = useListNotesTOM();
+  } = useListNotesTOM({
+    query: {
+      retry: false,
+    },
+  });
 
   const notes = useMemo(() => {
     return (notesData || []).map((note) => ({
@@ -119,13 +123,13 @@ function HomePageContent() {
     }
   };
 
-  if (error) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-red-500">Failed to load notes</div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="flex justify-center items-center min-h-screen">
+  //       <div className="text-red-500">Failed to load notes</div>
+  //     </div>
+  //   );
+  // }
 
   const handleUpdateTopOfMindNote = async (id: string, tom: boolean) => {
     try {
@@ -179,7 +183,7 @@ function HomePageContent() {
               onUnpin={handleUpdateTopOfMindNote}
             />
           </SortableContext>
-
+          {/* 
           {notes.length === 0 && !isLoading ? (
             <EmptyState
               type={query ? "no-results" : "new"}
@@ -192,53 +196,53 @@ function HomePageContent() {
                     }
               }
             />
-          ) : (
-            <DroppableZone
-              id="grid-zone"
-              activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
-            >
-              <MasonryGrid data={notes} isLoading={isLoading}>
-                {isLoading && notes.length === 0 ? (
-                  <div key="loading">Loading...</div>
-                ) : (
-                  <div key="content-grid">
-                    <AnimateCardProvider>
-                      {/* AddNoteForm */}
-                      <div
-                        key="add-note-form"
-                        className="mb-6 break-inside-avoid"
-                      >
-                        <AddNoteForm onCreate={createNote} />
-                      </div>
-                      {/* Notes & Articles */}
+          ) : ( */}
+          <DroppableZone
+            id="grid-zone"
+            activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
+          >
+            <MasonryGrid data={notes} isLoading={isLoading}>
+              {isLoading && notes.length === 0 ? (
+                <div key="loading">Loading...</div>
+              ) : (
+                <div key="content-grid">
+                  <AnimateCardProvider>
+                    {/* AddNoteForm */}
+                    <div
+                      key="add-note-form"
+                      className="mb-6 break-inside-avoid"
+                    >
+                      <AddNoteForm onCreate={createNote} />
+                    </div>
+                    {/* Notes & Articles */}
 
-                      {notes.map((note) => (
-                        // <SortableItem key={note.id} id={note.id}>
-                        <DraggableItem
-                          className="h-fit mb-6 break-inside-avoid"
-                          key={note.id}
-                          id={note.id}
-                        >
-                          {note.content_type === "text" ? (
-                            <NoteCard
-                              match={note}
-                              onDelete={handleDelete}
-                              onUpdateNote={handleUpdate}
-                              onPin={handleUpdateTopOfMindNote}
-                            />
-                          ) : (
-                            <ArticleCard match={note} onDelete={handleDelete} />
-                          )}
-                        </DraggableItem>
-                        // </SortableItem>
-                      ))}
-                      {/* </SortableContext> */}
-                    </AnimateCardProvider>
-                  </div>
-                )}
-              </MasonryGrid>
-            </DroppableZone>
-          )}
+                    {notes.map((note) => (
+                      // <SortableItem key={note.id} id={note.id}>
+                      <DraggableItem
+                        className="h-fit mb-6 break-inside-avoid"
+                        key={note.id}
+                        id={note.id}
+                      >
+                        {note.content_type === "text" ? (
+                          <NoteCard
+                            match={note}
+                            onDelete={handleDelete}
+                            onUpdateNote={handleUpdate}
+                            onPin={handleUpdateTopOfMindNote}
+                          />
+                        ) : (
+                          <ArticleCard match={note} onDelete={handleDelete} />
+                        )}
+                      </DraggableItem>
+                      // </SortableItem>
+                    ))}
+                    {/* </SortableContext> */}
+                  </AnimateCardProvider>
+                </div>
+              )}
+            </MasonryGrid>
+          </DroppableZone>
+          {/* )} */}
         </div>
 
         <FloatingActionButton isOpen={isFabOpen} onToggle={handleFabToggle} />
