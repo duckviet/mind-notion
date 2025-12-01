@@ -49,12 +49,20 @@ func SetupRouter(
 
 	// 4. Tạo struct `ApiHandleFunctions` mà `routers.gen.go` yêu cầu
 	// và "tiêm" các handler bạn vừa tạo vào đó.
-    apiHandlers := ApiHandleFunctions{
-        AuthAPI:   AuthAPI{authService},
-        UserAPI:   UserAPI{userService},
-        NoteAPI:   NoteAPI{noteService: noteService, authService: authService},
-        FolderAPI: FolderAPI{folderService},
-    }
+	apiHandlers := ApiHandleFunctions{
+		AuthAPI:   AuthAPI{authService},
+		UserAPI:   UserAPI{userService},
+		NoteAPI:   NoteAPI{noteService: noteService, authService: authService},
+		FolderAPI: FolderAPI{folderService},
+	}
+
+	// 4.1. Backwards-compatible short auth routes without the `/api/v1` prefix.
+	// The frontend is calling `/auth/*`, so we expose thin wrappers that
+	// delegate to the same AuthAPI handlers used by the generated routes.
+	router.POST("/auth/login", apiHandlers.AuthAPI.Login)
+	router.POST("/auth/logout", apiHandlers.AuthAPI.Logout)
+	router.POST("/auth/register", apiHandlers.AuthAPI.Register)
+	router.GET("/auth/check", apiHandlers.AuthAPI.CheckAuth)
 
 	// 5. GỌI HÀM TỪ FILE AUTO-GEN ĐỂ ĐĂNG KÝ TẤT CẢ API ROUTES
 	// Đây chính là điểm kết nối quan trọng nhất!
@@ -101,33 +109,36 @@ func loggingMiddleware() gin.HandlerFunc {
 // authMiddleware validates Bearer tokens and injects the user into context.
 // Skips public endpoints like /health, /ws, and /api/v1/auth/*
 func authMiddleware(authService service.AuthService) gin.HandlerFunc {
-    return func(c *gin.Context) {
-        path := c.Request.URL.Path
-        // Allowlist public paths
-        if path == "/health" || strings.HasPrefix(path, "/ws") || strings.HasPrefix(path, "/api/v1/auth/") {
-            c.Next()
-            return
-        }
+	return func(c *gin.Context) {
+		path := c.Request.URL.Path
+		// Allowlist public paths
+		if path == "/health" ||
+			strings.HasPrefix(path, "/ws") ||
+			strings.HasPrefix(path, "/api/v1/auth/") ||
+			strings.HasPrefix(path, "/auth/") {
+			c.Next()
+			return
+		}
 
-        authHeader := c.GetHeader("Authorization")
-        if authHeader == "" {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing Authorization header"})
-            return
-        }
-        token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
-        if token == "" {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
-            return
-        }
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing Authorization header"})
+			return
+		}
+		token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
+		if token == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+			return
+		}
 
-        user, err := authService.ValidateToken(c.Request.Context(), token)
-        if err != nil {
-            c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-            return
-        }
+		user, err := authService.ValidateToken(c.Request.Context(), token)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
 
-        // Attach user to context
-        c.Set("user", user)
-        c.Next()
-    }
+		// Attach user to context
+		c.Set("user", user)
+		c.Next()
+	}
 }
