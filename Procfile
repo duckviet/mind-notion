@@ -1,1 +1,1 @@
-web: ./bin/gin-collaborative-editor-backend
+web: ./bin/app
