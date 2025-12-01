@@ -1,1 +1,1 @@
-web: cd backend && ./bin/gin-collaborative-editor-backend
+web: ./backend/bin/gin-collaborative-editor-backend
