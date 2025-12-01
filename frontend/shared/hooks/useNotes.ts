@@ -24,7 +24,11 @@ export function useNotes(
   const queryClient = useQueryClient();
   const queryKey = getListNotesQueryKey(params);
   // Chỉ wrap generated hook - đơn giản và mạnh mẽ
-  const notesQuery = useGeneratedListNotes(params);
+  const notesQuery = useGeneratedListNotes(params, {
+    query: {
+      retry: false,
+    },
+  });
 
   useEffect(() => {
     setNotes(notesQuery.data?.notes ?? []);

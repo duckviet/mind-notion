@@ -59,10 +59,10 @@ func SetupRouter(
 	// 4.1. Backwards-compatible short auth routes without the `/api/v1` prefix.
 	// The frontend is calling `/auth/*`, so we expose thin wrappers that
 	// delegate to the same AuthAPI handlers used by the generated routes.
-	router.POST("/auth/login", apiHandlers.AuthAPI.Login)
-	router.POST("/auth/logout", apiHandlers.AuthAPI.Logout)
-	router.POST("/auth/register", apiHandlers.AuthAPI.Register)
-	router.GET("/auth/check", apiHandlers.AuthAPI.CheckAuth)
+	// router.POST("/auth/login", apiHandlers.AuthAPI.Login)
+	// router.POST("/auth/logout", apiHandlers.AuthAPI.Logout)
+	// router.POST("/auth/register", apiHandlers.AuthAPI.Register)
+	// router.GET("/auth/check", apiHandlers.AuthAPI.CheckAuth)
 
 	// 5. GỌI HÀM TỪ FILE AUTO-GEN ĐỂ ĐĂNG KÝ TẤT CẢ API ROUTES
 	// Đây chính là điểm kết nối quan trọng nhất!
