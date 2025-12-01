@@ -1,1 +1,1 @@
-web: cd backend && go run ./cmd/app/main.go
+web: ./bin/gin-collaborative-editor-backend

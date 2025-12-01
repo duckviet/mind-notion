@@ -9,9 +9,10 @@ cd backend
 
 go mod tidy
 go mod download
+cd ..
 
 # Build the application
-go build -o bin/gin-collaborative-editor-backend ./cmd/app
+go build -o ./bin/gin-collaborative-editor-backend ./backend/cmd/app
 
 echo "Build completed successfully!"
 
