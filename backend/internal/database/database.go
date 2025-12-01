@@ -3,6 +3,9 @@ package database
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
@@ -18,8 +21,23 @@ type DB struct {
 }
 
 // New creates a new database connection
+// Priority: DATABASE_URL (Heroku) > config.DatabaseConfig
 func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
-	dsn := buildDSN(cfg)
+	var dsn string
+	var err error
+	
+	// Check for Heroku DATABASE_URL first (highest priority)
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL != "" {
+		// Parse and use DATABASE_URL
+		dsn, err = parseDatabaseURL(dbURL)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse DATABASE_URL: %w", err)
+		}
+	} else {
+		// Fallback to config
+		dsn = buildDSN(cfg)
+	}
 	
 	// Configure GORM logger
 	gormLogger := logger.Default.LogMode(logger.Info)
@@ -73,7 +91,38 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 	return &DB{db}, nil
 }
 
-// buildDSN builds the database connection string
+// parseDatabaseURL parses Heroku DATABASE_URL format
+// Format: postgres://user:password@host:port/dbname?sslmode=require
+func parseDatabaseURL(dbURL string) (string, error) {
+	parsedURL, err := url.Parse(dbURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid DATABASE_URL format: %w", err)
+	}
+
+	// Extract components
+	user := parsedURL.User.Username()
+	password, _ := parsedURL.User.Password()
+	host := parsedURL.Hostname()
+	port := parsedURL.Port()
+	if port == "" {
+		port = "5432" // Default PostgreSQL port
+	}
+	dbname := strings.TrimPrefix(parsedURL.Path, "/")
+
+	// Parse SSL mode from query parameters
+	sslmode := "require" // Default for Heroku
+	if parsedURL.Query().Get("sslmode") != "" {
+		sslmode = parsedURL.Query().Get("sslmode")
+	}
+
+	// Build DSN in PostgreSQL format
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		host, port, user, password, dbname, sslmode)
+
+	return dsn, nil
+}
+
+// buildDSN builds the database connection string from config
 func buildDSN(cfg config.DatabaseConfig) string {
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Name, cfg.SSLMode)
