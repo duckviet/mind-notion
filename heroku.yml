@@ -1,0 +1,5 @@
+build:
+  docker:
+    web: Dockerfile # Chỉ định Dockerfile nào sẽ được sử dụng cho process 'web'
+run:
+  web: ./gin-collaborative-editor-backend # Lệnh để chạy process 'web'
