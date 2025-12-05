@@ -46,7 +46,7 @@ export default class ClientRequest {
   constructor() {
     const backendUrl =
       (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
-      "http://localhost:8080";
+      "http://localhost:8080/api/v1";
     this.axiosInstance = axios.create({
       baseURL: backendUrl,
       timeout: 30000,
