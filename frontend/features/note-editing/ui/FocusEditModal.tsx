@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Tag, AlertCircle, Plus } from "lucide-react";
+import { X, AlertCircle, Plus } from "lucide-react";
 import Portal from "@/shared/components/PortalModal/PortalModal";
 import { Input } from "@/shared/components/ui/input";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
@@ -22,6 +22,9 @@ import {
 } from "@/shared/services/generated/api";
 import dayjs from "dayjs";
 import { Button } from "@/shared/components/ui/button";
+import NoteMetadataPanel from "./NoteMetadataPanel";
+import NoteTagsSection from "./NoteTagsSection";
+import CommentSection from "./CommentSection";
 
 interface FocusEditModalProps {
   isOpen: boolean;
@@ -30,11 +33,45 @@ interface FocusEditModalProps {
   onSave?: (data: ReqUpdateNote) => void;
 }
 
+type FormState = {
+  title: string;
+  content: string;
+  tags: string[];
+};
+
 function useDebouncedEffect(effect: () => void, deps: any[], delay: number) {
   useEffect(() => {
     const handler = setTimeout(effect, delay);
     return () => clearTimeout(handler);
   }, [...deps, delay]);
+}
+
+function isFormUnchanged(next: FormState, current: FormState): boolean {
+  return (
+    next.title === current.title &&
+    next.content === current.content &&
+    JSON.stringify(next.tags) === JSON.stringify(current.tags)
+  );
+}
+
+function isFormChanged(current: FormState, lastSaved: FormState): boolean {
+  return (
+    current.title !== lastSaved.title ||
+    current.content !== lastSaved.content ||
+    JSON.stringify(current.tags) !== JSON.stringify(lastSaved.tags)
+  );
+}
+
+function canAutoSave(
+  noteId: string,
+  form: FormState,
+  isSaving: boolean,
+  isChanged: boolean
+): boolean {
+  if (!noteId) return false;
+  if (!form.title.trim()) return false;
+  if (isSaving) return false;
+  return isChanged;
 }
 
 export default function FocusEditModal({
@@ -83,12 +120,7 @@ export default function FocusEditModal({
       tags: note.tags ?? [],
     };
 
-    const same =
-      next.title === form.title &&
-      next.content === form.content &&
-      JSON.stringify(next.tags) === JSON.stringify(form.tags);
-
-    if (!same) {
+    if (!isFormUnchanged(next, form)) {
       setForm(next);
       lastSavedRef.current = next; // coi state từ server là đã save
       setError("");
@@ -143,16 +175,11 @@ export default function FocusEditModal({
   // Auto-save chỉ khi form khác lastSavedRef
   useDebouncedEffect(
     () => {
-      if (!noteId) return;
       const err = validateTitle(form.title);
       if (err || !form.title.trim() || isSaving) return;
 
-      const changed =
-        form.title !== lastSavedRef.current.title ||
-        form.content !== lastSavedRef.current.content ||
-        JSON.stringify(form.tags) !== JSON.stringify(lastSavedRef.current.tags);
-
-      if (!changed) return;
+      const changed = isFormChanged(form, lastSavedRef.current);
+      if (!canAutoSave(noteId, form, isSaving, changed)) return;
 
       const payload: ReqUpdateNote = {
         id: noteId,
@@ -296,70 +323,17 @@ export default function FocusEditModal({
                   </div>
 
                   <div className="w-72  rounded-2xl border-gray-200 bg-gray-50 p-6 flex flex-col space-y-10">
-                    <div className="">
-                      <div className="text-sm  flex items-center">
-                        <span className="text-gray-500"> Created by:</span>
-                        <span className="ml-auto font-medium">{"Unknown"}</span>
-                      </div>
-                      <div className="text-sm  mt-1 flex items-center">
-                        <span className="text-gray-500">Created:</span>
-                        <span className="ml-auto font-medium">
-                          {note?.created_at
-                            ? dayjs(note.created_at).format("DD/MM/YYYY HH:mm")
-                            : dayjs().format("DD/MM/YYYY HH:mm")}
-                        </span>
-                      </div>
-                      <div className="text-sm  mt-1 flex items-center">
-                        <span className="text-gray-500"> Last modified: </span>
-                        <span className="ml-auto font-medium">
-                          {note?.updated_at
-                            ? dayjs(note.updated_at).format("DD/MM/YYYY HH:mm")
-                            : dayjs().format("DD/MM/YYYY HH:mm")}
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-gray-500 text-lg font-medium">
-                          Tags ({form.tags.length})
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mb-3 overflow-auto max-h-40">
-                        {form.tags.map((t) => (
-                          <div
-                            key={t}
-                            className="bg-gray-200 rounded px-2 py-1 text-sm cursor-pointer hover:bg-red-100"
-                            onClick={() => handleRemove(t)}
-                          >
-                            #{t} <X className="w-3 h-3 inline" />
-                          </div>
-                        ))}
-                      </div>
-                      <Input
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        onKeyDown={handleTagAdd}
-                        placeholder="New tag..."
-                        maxLength={50}
-                        disabled={isSaving}
-                      />
-                    </div>
+                    <NoteMetadataPanel note={note} />
+                    <NoteTagsSection
+                      tags={form.tags}
+                      newTag={newTag}
+                      onNewTagChange={setNewTag}
+                      onTagAdd={handleTagAdd}
+                      onTagRemove={handleRemove}
+                      disabled={isSaving}
+                    />
 
-                    <div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-500 text-lg font-medium">
-                          Comments
-                        </span>
-                        <Button className="cursor-pointer text-gray-600 hover:text-gray-800">
-                          <Plus className="w-6 h-6" />
-                        </Button>
-                      </div>
-                      <div className="flex flex-col gap-4">
-                        <span className="text-center text-white text-sm mt-3 bg-gray-200 rounded-md p-4">
-                          No comments yet
-                        </span>
-                      </div>
-                    </div>
+                    <CommentSection />
                     <div className="text-xs text-right mt-auto text-gray-500">
                       {form.content.length} chars
                     </div>
