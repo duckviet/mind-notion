@@ -17,7 +17,7 @@ export default class EventEmitter {
   /** Register a one-time event listener */
 
   once(eventName: string, listener: Function): void {
-    const wrapper = (...args: any[]) => {
+    const wrapper = (...args: unknown[]) => {
       try {
         listener(...args);
       } finally {
@@ -30,7 +30,7 @@ export default class EventEmitter {
   }
 
   /** Emit an event */
-  emit(eventName: string, ...args: any[]): void {
+  emit(eventName: string, ...args: unknown[]): void {
     if (this.events[eventName]) {
       this.events[eventName].forEach((listener) => {
         listener(...args);

@@ -13,7 +13,7 @@ type MasonryGridProps = {
 };
 
 export default function MasonryGrid({
-  data,
+  // data,
   children,
   isLoading = false,
 }: MasonryGridProps) {

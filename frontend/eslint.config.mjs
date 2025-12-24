@@ -39,6 +39,7 @@ const eslintConfig = [
       "react/no-unescaped-entities": "warn",
       "jsx-a11y/alt-text": "warn",
       "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/no-unsafe-function-type": "off",
     },
   },
 ];
