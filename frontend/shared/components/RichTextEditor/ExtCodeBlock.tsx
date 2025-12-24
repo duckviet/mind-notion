@@ -82,7 +82,7 @@ const CodeBlockComponent = (props: any) => {
         </button>
       </div>
       <pre
-        className="p-4   font-mono border border-gray-200 text-sm overflow-x-auto"
+        className="p-4   font-mono  text-sm overflow-x-auto"
         spellCheck={false}
         data-language={language}
       >

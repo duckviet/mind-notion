@@ -35,7 +35,7 @@ const Toolbar = ({ editor }: { editor: Editor }) => {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-wrap gap-1 p-2 bg-gray-50 rounded-lg border border-gray-200"
+      className="flex   gap-1 p-2 bg-gray-50 rounded-lg border border-gray-200 sticky -top-4 z-15 shadow-md"
     >
       {/* Text Formatting */}
       <ToolbarButton

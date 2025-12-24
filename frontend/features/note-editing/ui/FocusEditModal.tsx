@@ -282,7 +282,7 @@ export default function FocusEditModal({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-100"
               onClick={handleOutside}
             />
             <motion.div
@@ -293,11 +293,11 @@ export default function FocusEditModal({
               transition={{ duration: 0.2 }}
               onKeyDown={handleKey}
               tabIndex={-1}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+              className="fixed inset-0 z-100 flex items-center justify-center p-4 pointer-events-none"
             >
-              <div className="w-auto h-full max-h-[90vh] items-center space-x-4 pointer-events-auto flex flex-col  ">
-                <div className="flex-1 flex overflow-hidden w-full gap-4 justify-center">
-                  <div className="flex-1 p-6 overflow-y-auto space-y-4 rounded-2xl bg-white max-w-6xl min-w-5xl w-full">
+              <div className="w-[95vw] h-full max-h-[90vh]  items-center space-x-4 pointer-events-auto flex flex-col  ">
+                <div className="flex-1 flex overflow-hidden w-full gap-4 justify-center bg-[#f0f2f5] p-2 rounded-[16px]">
+                  <div className="flex-1 p-6 overflow-y-auto space-y-4 rounded-2xl bg-white   w-full ">
                     <div>
                       <input
                         ref={titleRef}
@@ -322,7 +322,7 @@ export default function FocusEditModal({
                     />
                   </div>
 
-                  <div className="w-72  rounded-2xl border-gray-200 bg-gray-50 p-6 flex flex-col space-y-10">
+                  <div className="w-1/6  rounded-2xl p-4 flex flex-col space-y-10">
                     <NoteMetadataPanel note={note} />
                     <NoteTagsSection
                       tags={form.tags}
