@@ -10,16 +10,16 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, fallback }: ProtectedRouteProps) {
-  const { isAuthenticated, accessToken } = useAuthStore();
+  const { isAuth } = useAuthStore();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated || !accessToken) {
+    if (!isAuth) {
       router.push("/auth");
     }
-  }, [isAuthenticated, accessToken, router]);
+  }, [isAuth, router]);
 
-  if (!isAuthenticated || !accessToken) {
+  if (!isAuth) {
     return (
       fallback || (
         <div className="flex items-center justify-center min-h-screen">

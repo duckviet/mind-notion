@@ -1,0 +1,5 @@
+type: object
+properties:
+  refresh_token:
+    type: string
+    example: "def50200..."

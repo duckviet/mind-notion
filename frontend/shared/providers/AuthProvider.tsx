@@ -1,41 +1,22 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/authStore";
-import { getMe } from "../services/generated/api";
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { isAuthenticated: isAuth, fetchMe } = useAuthStore();
-  const router = useRouter();
-  // Server-side redirect for better performance and SEO
-  if (typeof window === "undefined" && isAuth === false) {
-    router.replace("/");
-  }
+  const { isAuth, fetchMe } = useAuthStore();
 
-  // Client-side redirect as fallback
+  // Chỉ đồng bộ user info khi đã authenticated
+  // Redirect/guard routes được xử lý bởi middleware ở server-side
   useEffect(() => {
-    if (isAuth === false) {
-      router.replace("/auth");
-    } else {
+    if (isAuth === true) {
       fetchMe();
     }
-  }, [isAuth, router, fetchMe]);
+  }, [isAuth, fetchMe]);
 
-  // // Show nothing while checking auth status
-  // if (isAuth === null) {
-  //   return null;
-  // }
-
-  // // Show nothing if not authenticated
-  // if (isAuth === false) {
-  //   return null;
-  // }
-
-  // Only render children if authenticated
   return <>{children}</>;
 }
