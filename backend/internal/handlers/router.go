@@ -34,6 +34,7 @@ func SetupRouter(
 
 	// Global middleware
 	router.Use(corsMiddleware())
+	router.Use(rateLimitMiddleware())
 	router.Use(loggingMiddleware())
 	router.Use(authMiddleware(authService))
 
@@ -53,7 +54,7 @@ func SetupRouter(
 
 	// API handlers
 	apiHandlers := ApiHandleFunctions{
-		AuthAPI:   AuthAPI{authService},
+		AuthAPI:   *NewAuthAPI(authService, cfg),
 		UserAPI:   UserAPI{userService},
 		NoteAPI:   NoteAPI{noteService: noteService, authService: authService},
 		FolderAPI: FolderAPI{folderService},

@@ -84,6 +84,31 @@ paths:
                 $ref: '#/components/schemas/Res_AuthTokens'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /auth/refresh-token:
+    post:
+      summary: Refresh a JWT
+      operationId: refresh-token
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+                  example: def50200...
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Res_AuthTokens'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /user/me:
     get:
       summary: Get current user information

@@ -1,0 +1,19 @@
+post:
+  summary: Refresh a JWT
+  operationId: refresh-token
+  tags: [Auth]
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Auth/Req_RefreshToken.yaml
+  responses:
+    "200":
+      description: Token refreshed successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Auth/Res_AuthTokens.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml

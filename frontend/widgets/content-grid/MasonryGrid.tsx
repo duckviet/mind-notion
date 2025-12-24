@@ -1,5 +1,5 @@
 // MasonryGrid.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type MasonryGridProps = {
@@ -13,37 +13,37 @@ type MasonryGridProps = {
 };
 
 export default function MasonryGrid({
-  data,
+  // data,
   children,
   isLoading = false,
 }: MasonryGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
-  const [columnCount, setColumnCount] = useState(4);
+  // const [columnCount, setColumnCount] = useState(4);
 
   // CSS columns approach - no manual layout needed
-  useEffect(() => {
-    if (!gridRef.current) return;
+  // useEffect(() => {
+  //   if (!gridRef.current) return;
 
-    const updateColumnCount = () => {
-      const grid = gridRef.current!;
-      const computedStyle = getComputedStyle(grid);
-      const currentColumnCount = parseInt(computedStyle.columnCount) || 1;
-      setColumnCount(currentColumnCount);
-    };
+  //   const updateColumnCount = () => {
+  //     const grid = gridRef.current!;
+  //     const computedStyle = getComputedStyle(grid);
+  //     const currentColumnCount = parseInt(computedStyle.columnCount) || 1;
+  //     // setColumnCount(currentColumnCount);
+  //   };
 
-    const resizeObserver = new ResizeObserver(() => {
-      updateColumnCount();
-    });
+  //   const resizeObserver = new ResizeObserver(() => {
+  //     updateColumnCount();
+  //   });
 
-    if (gridRef.current) {
-      resizeObserver.observe(gridRef.current);
-      updateColumnCount();
-    }
+  //   if (gridRef.current) {
+  //     resizeObserver.observe(gridRef.current);
+  //     updateColumnCount();
+  //   }
 
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [data.length, data]);
+  //   return () => {
+  //     resizeObserver.disconnect();
+  //   };
+  // }, [data.length, data]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
