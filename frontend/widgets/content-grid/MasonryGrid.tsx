@@ -18,7 +18,7 @@ export default function MasonryGrid({
   isLoading = false,
 }: MasonryGridProps) {
   const gridRef = useRef<HTMLDivElement>(null);
-  const [columnCount, setColumnCount] = useState(4);
+  const [_, setColumnCount] = useState(4);
 
   // CSS columns approach - no manual layout needed
   useEffect(() => {
