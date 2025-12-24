@@ -56,6 +56,7 @@ export const useTiptapEditor = ({
   const onKeyDownRef = useRef(onKeyDown);
   const contentRef = useRef(content);
   const isUpdatingRef = useRef(false);
+  const lastUserInputRef = useRef<number>(0); // Track last user input time
 
   // Keep refs updated without causing re-renders
   useEffect(() => {
@@ -131,6 +132,7 @@ export const useTiptapEditor = ({
       const html = editor.getHTML();
       if (html !== lastContent) {
         lastContent = html;
+        lastUserInputRef.current = Date.now(); // Track when user made changes
         onUpdateRef.current?.(html);
       }
     };
@@ -152,6 +154,15 @@ export const useTiptapEditor = ({
   /** Sync when parent changes - only when content actually differs */
   useEffect(() => {
     if (!editor || content === undefined || isUpdatingRef.current) return;
+
+    // Don't sync if user just made changes recently (within last 500ms)
+    // This prevents race condition where debounced update triggers parent update
+    // which then tries to sync back and overwrites user input
+    const timeSinceLastInput = Date.now() - lastUserInputRef.current;
+    if (timeSinceLastInput < 500) {
+      contentRef.current = content;
+      return;
+    }
 
     const current = editor.getHTML();
     // Only update if content is truly different to avoid unnecessary updates

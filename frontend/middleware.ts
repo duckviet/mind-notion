@@ -37,47 +37,47 @@ function isTokenExpired(token: string): boolean {
 }
 
 export function middleware(request: NextRequest) {
-  // const { pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl;
 
-  // // Public routes that don't require authentication
-  // const publicPaths = ["/", "/auth"];
-  // const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
+  // Public routes that don't require authentication
+  const publicPaths = ["/", "/auth"];
+  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
-  // // Get access token from cookie
-  // const accessToken = request.cookies.get("access_token")?.value;
-  // const refreshToken = request.cookies.get("refresh_token")?.value;
+  // Get access token from cookie
+  const accessToken = request.cookies.get("access_token")?.value;
+  const refreshToken = request.cookies.get("refresh_token")?.value;
 
-  // // Check if user has valid token
-  // const hasValidToken =
-  //   accessToken && !isTokenExpired(accessToken) ? true : false;
-  // const hasRefreshToken = !!refreshToken;
+  // Check if user has valid token
+  const hasValidToken =
+    accessToken && !isTokenExpired(accessToken) ? true : false;
+  const hasRefreshToken = !!refreshToken;
 
   // Create response
   const response = NextResponse.next();
 
-  // // Set auth status header for client components to read
-  // response.headers.set(
-  //   "x-auth-status",
-  //   hasValidToken ? "authenticated" : "unauthenticated"
-  // );
-  // response.headers.set(
-  //   "x-has-refresh-token",
-  //   hasRefreshToken ? "true" : "false"
-  // );
+  // Set auth status header for client components to read
+  response.headers.set(
+    "x-auth-status",
+    hasValidToken ? "authenticated" : "unauthenticated"
+  );
+  response.headers.set(
+    "x-has-refresh-token",
+    hasRefreshToken ? "true" : "false"
+  );
 
-  // // If accessing protected route without valid token, redirect to auth
-  // if (!isPublicPath && !hasValidToken) {
-  //   const url = request.nextUrl.clone();
-  //   url.pathname = "/auth";
-  //   return NextResponse.redirect(url);
-  // }
+  // If accessing protected route without valid token, redirect to auth
+  if (!isPublicPath && !hasValidToken) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth";
+    return NextResponse.redirect(url);
+  }
 
-  // // If accessing auth page with valid token, redirect to home
-  // if (isPublicPath && hasValidToken && pathname === "/auth") {
-  //   const url = request.nextUrl.clone();
-  //   url.pathname = "/";
-  //   return NextResponse.redirect(url);
-  // }
+  // If accessing auth page with valid token, redirect to home
+  if (isPublicPath && hasValidToken && pathname === "/auth") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
 
   return response;
 }

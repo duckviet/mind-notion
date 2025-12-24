@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getMe, User } from "@/shared/services/generated/api";
-import { clientInstance } from "@/shared/services/axios";
 
 type AuthState = {
   isAuth: boolean | null;
@@ -32,8 +31,6 @@ export const useAuthStore = create<AuthStore>()(
       },
       logout() {
         set({ isAuth: false, user: null });
-        clientInstance.removeAccessToken();
-        clientInstance.removeRefreshToken();
       },
       setUser(user: User) {
         set({ user });

@@ -109,3 +109,11 @@ div {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.5);
 }
+
+.ProseMirror .react-renderer.node-codeBlock {
+  border-radius: 8px;
+}
+
+.ProseMirror .react-renderer.node-codeBlock {
+  background-color: #121822 !important;
+}
