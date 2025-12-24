@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/dto"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
@@ -20,6 +21,15 @@ import (
 
 type AuthAPI struct {
 	authService service.AuthService
+	config      *config.Config
+}
+
+// NewAuthAPI creates a new AuthAPI instance
+func NewAuthAPI(authService service.AuthService, cfg *config.Config) *AuthAPI {
+	return &AuthAPI{
+		authService: authService,
+		config:      cfg,
+	}
 }
 
 // Get /api/v1/auth/check
@@ -69,30 +79,38 @@ func (api *AuthAPI) Login(c *gin.Context) {
 		return
 	}
 
+	// Set HttpOnly cookies (security best practice)
+	setAuthCookies(c, api.config, tokens.AccessToken, tokens.RefreshToken)
+
+	// Return tokens in response body for backward compatibility
+	// Frontend axios interceptor needs tokens to set Authorization header
+	// HttpOnly cookies are used by middleware for server-side auth check
 	c.JSON(http.StatusOK, tokens)
 }
 
 // Post /api/v1/auth/logout
 // Logout and invalidate JWT 
 func (api *AuthAPI) Logout(c *gin.Context) {
-	// Lấy token từ header Authorization: Bearer <token>
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing Authorization header"})
-		return
-	}
-	token := strings.TrimPrefix(authHeader, "Bearer ")
-	token = strings.TrimSpace(token)
+	// Try to get token from Authorization header or cookie
+	token := extractTokenFromRequest(c)
 	if token == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing token"})
+		// If no token, still clear cookies and return success
+		clearAuthCookies(c, api.config)
+		c.JSON(http.StatusOK, gin.H{"message": "logout successful"})
 		return
 	}
 
+	// Invalidate token in backend
 	err := api.authService.Logout(c.Request.Context(), token)
 	if err != nil {
+		// Even if logout fails, clear cookies
+		clearAuthCookies(c, api.config)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Clear HttpOnly cookies
+	clearAuthCookies(c, api.config)
 
 	c.JSON(http.StatusOK, gin.H{"message": "logout successful"})
 }
@@ -112,7 +130,41 @@ func (api *AuthAPI) Register(c *gin.Context) {
 		return
 	}
 
-	// Đăng ký thành công trả 201
+	// Set HttpOnly cookies (security best practice)
+	setAuthCookies(c, api.config, tokens.AccessToken, tokens.RefreshToken)
+
+	// Return tokens in response body for backward compatibility
+	// HttpOnly cookies are used by middleware for server-side auth check
 	c.JSON(http.StatusCreated, tokens)
 }
 
+// Post /api/v1/auth/refresh-token
+// Refresh a JWT 
+func (api *AuthAPI) RefreshToken(c *gin.Context) {
+	var req dto.RefreshTokenRequest
+	
+	// Try to get refresh token from request body first
+	if err := c.ShouldBindJSON(&req); err == nil && req.RefreshToken != "" {
+		// Use refresh token from request body
+	} else {
+		// Fallback to cookie (for HttpOnly cookies)
+		req.RefreshToken = getRefreshTokenFromCookie(c)
+		if req.RefreshToken == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "missing refresh token"})
+			return
+		}
+	}
+
+	tokens, err := api.authService.RefreshToken(c.Request.Context(), req.RefreshToken)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Set new HttpOnly cookies
+	setAuthCookies(c, api.config, tokens.AccessToken, tokens.RefreshToken)
+
+	// Return tokens in response body for backward compatibility
+	// HttpOnly cookies are used by middleware for server-side auth check
+	c.JSON(http.StatusOK, tokens)
+}

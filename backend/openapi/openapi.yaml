@@ -21,6 +21,8 @@ paths:
     $ref: "./paths/jwt-auth/logout.yaml"
   /auth/check:
     $ref: "./paths/jwt-auth/check.yaml"
+  /auth/refresh-token:
+    $ref: "./paths/jwt-auth/refresh-token.yaml"
   # User Management
   /user/me:
     $ref: "./paths/user/me.yaml"

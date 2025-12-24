@@ -1,69 +1,54 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { getMe, User } from "@/shared/services/generated/api";
+import { clientInstance } from "@/shared/services/axios";
 
-interface AuthState {
+type AuthState = {
+  isAuth: boolean | null;
   user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
-  isAuthenticated: boolean | null;
-}
+};
 
-interface AuthActions {
-  setUser: (user: User) => void;
-  setTokens: (accessToken: string, refreshToken?: string) => void;
+type AuthAction = {
+  login: () => void;
   logout: () => void;
+  setUser: (user: User) => void;
+  removeUser: () => void;
   fetchMe: () => void;
-}
+};
 
-type AuthStore = AuthState & AuthActions;
+const initialState: AuthState = {
+  isAuth: null,
+  user: null,
+};
+
+type AuthStore = AuthState & AuthAction;
 
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
-      // State
-      user: null,
-      accessToken: null,
-      refreshToken: null,
-      isAuthenticated: null,
-
-      // Actions
-      setUser: (user) => set({ user, isAuthenticated: true }),
-
-      setTokens: (accessToken, refreshToken) => {
-        if (typeof window !== "undefined") {
-          localStorage.setItem("access_token", accessToken);
-          if (refreshToken) {
-            localStorage.setItem("refresh_token", refreshToken);
-          }
-        }
-        set({ accessToken, refreshToken, isAuthenticated: true });
+      ...initialState,
+      login() {
+        set({ isAuth: true });
       },
-
-      logout: () => {
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("refresh_token");
-        }
-        set({
-          user: null,
-          accessToken: null,
-          refreshToken: null,
-          isAuthenticated: null,
-        });
+      logout() {
+        set({ isAuth: false, user: null });
+        clientInstance.removeAccessToken();
+        clientInstance.removeRefreshToken();
       },
+      setUser(user: User) {
+        set({ user });
+      },
+      removeUser: () => set({ user: null }),
       fetchMe: async () => {
         const user = await getMe();
-        set({ user, isAuthenticated: true });
+        set({ user });
       },
     }),
     {
       name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
-        isAuthenticated: state.isAuthenticated,
+        isAuth: state.isAuth,
       }),
     }
   )

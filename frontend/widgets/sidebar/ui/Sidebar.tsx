@@ -13,7 +13,7 @@ import { useAuthStore } from "@/features/auth/store/authStore";
 import authAction from "@/shared/services/actions/auth.action";
 
 const Sidebar = () => {
-  const { isAuthenticated, logout: clearAuthStore } = useAuthStore();
+  const { isAuth, logout: clearAuthStore } = useAuthStore();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -78,7 +78,7 @@ const Sidebar = () => {
 
           {menuOpen && (
             <div className="absolute left-8 bottom-0 mb-0 w-44 rounded-md border bg-white shadow-md p-1 ">
-              {!isAuthenticated ? (
+              {!isAuth ? (
                 <Link
                   href="/auth"
                   className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-100"
