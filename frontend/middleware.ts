@@ -1,96 +1,66 @@
+import { jwtDecode } from "jwt-decode";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Helper function to decode JWT without verification (just to check expiration)
-// Compatible with Edge runtime
-function decodeJWT(token: string): { exp?: number } | null {
-  try {
-    const base64Url = token.split(".")[1];
-    if (!base64Url) return null;
-
-    // Decode base64url (Edge runtime compatible)
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(
-      base64.length + ((4 - (base64.length % 4)) % 4),
-      "="
-    );
-
-    // Use atob for Edge runtime (available in Edge runtime)
-    const binaryString = atob(padded);
-    const jsonPayload = binaryString
-      .split("")
-      .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-      .join("");
-
-    return JSON.parse(decodeURIComponent(jsonPayload));
-  } catch {
-    return null;
-  }
-}
-
-// Check if token is expired
+// Hàm check đơn giản không verify signature (để performance tốt ở middleware)
 function isTokenExpired(token: string): boolean {
-  const decoded = decodeJWT(token);
-  if (!decoded || !decoded.exp) return true;
-  const currentTime = Date.now() / 1000;
-  return decoded.exp <= currentTime;
+  try {
+    const claims = jwtDecode(token);
+    if (!claims || !claims.exp) return true;
+    const currentTime = Date.now() / 1000;
+    // Thêm buffer 10s để tránh lệch giờ
+    return claims.exp < currentTime - 10;
+  } catch {
+    return true;
+  }
 }
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Public routes that don't require authentication
-  const publicPaths = ["/", "/auth"];
-  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
-
-  // Get access token from cookie
   const accessToken = request.cookies.get("access_token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
 
-  // Check if user has valid token
-  const hasValidToken =
-    accessToken && !isTokenExpired(accessToken) ? true : false;
-  const hasRefreshToken = !!refreshToken;
+  console.log(refreshToken);
+  // Logic quan trọng:
+  // 1. Có Access Token còn hạn -> Authenticated
+  // 2. Access Token hết hạn (hoặc không có) NHƯNG có Refresh Token -> Vẫn cho qua (Client sẽ tự refresh)
+  // 3. Không có cả hai -> Unauthenticated
 
-  // Create response
-  const response = NextResponse.next();
+  const isAccessTokenValid = accessToken && !isTokenExpired(accessToken);
+  const canRefresh = !!refreshToken;
 
-  // Set auth status header for client components to read
-  response.headers.set(
-    "x-auth-status",
-    hasValidToken ? "authenticated" : "unauthenticated"
-  );
-  response.headers.set(
-    "x-has-refresh-token",
-    hasRefreshToken ? "true" : "false"
-  );
+  // Ta coi là "đã đăng nhập" nếu token hợp lệ HOẶC có thể refresh
+  const isAuthenticated = isAccessTokenValid || canRefresh;
 
-  // If accessing protected route without valid token, redirect to auth
-  if (!isPublicPath && !hasValidToken) {
+  const publicPaths = ["/", "/auth"];
+  const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
+
+  // 1. Nếu chưa đăng nhập mà vào Private Route -> Đá về Login
+  if (!isPublicPath && !isAuthenticated) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth";
+    // Thêm callbackUrl nếu muốn trải nghiệm tốt hơn
+    url.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(url);
   }
 
-  // If accessing auth page with valid token, redirect to home
-  if (isPublicPath && hasValidToken && pathname === "/auth") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.redirect(url);
+  // 2. Nếu đã đăng nhập mà vào trang Auth -> Đá về Home
+  if (isPublicPath && isAuthenticated && pathname === "/auth") {
+    return NextResponse.redirect(new URL("/", request.url));
   }
+
+  const response = NextResponse.next();
+
+  // Set header để Client Component biết trạng thái mà không cần check lại cookie
+  response.headers.set(
+    "x-auth-status",
+    isAuthenticated ? "authenticated" : "unauthenticated"
+  );
 
   return response;
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };

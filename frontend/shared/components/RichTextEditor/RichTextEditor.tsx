@@ -35,6 +35,7 @@ import { SlashCommand, SlashCommandMenu } from "./SplashCommand";
 import Portal from "@/shared/components/PortalModal/PortalModal";
 import { TemplatesModal } from "./TemplatesModal";
 import { defaultTemplates, type Template } from "./templates";
+import { TableOfContents } from "./TableOfContents";
 
 interface TiptapProps {
   toolbar?: boolean;
@@ -45,7 +46,8 @@ interface TiptapProps {
   editable?: boolean;
   onUpdate?: (content: string) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
-
+  onEditorReady?: (editor: Editor) => void;
+  showTOC?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
 }
@@ -132,7 +134,8 @@ const Tiptap = ({
   onUpdate,
   editable = true,
   onKeyDown,
-
+  onEditorReady,
+  showTOC = false,
   onFocus,
   onBlur,
 }: TiptapProps) => {
@@ -307,7 +310,10 @@ const Tiptap = ({
 
   useEffect(() => {
     editorRef.current = editor;
-  }, [editor]);
+    if (editor && onEditorReady) {
+      onEditorReady(editor);
+    }
+  }, [editor, onEditorReady]);
 
   useEffect(() => {
     if (!slashMenu.isOpen) return;
@@ -332,35 +338,38 @@ const Tiptap = ({
   return (
     <div className="flex flex-col gap-2">
       {toolbar && <Toolbar editor={editor} />}
-      <div className="relative">
-        <EditorContent
-          ref={ref}
-          editor={editor}
-          className={cn(
-            "w-full h-full focus:outline-none ring-0 ring-offset-0 resize-none",
-            className
-          )}
-          onFocus={onFocus}
-          onBlur={onBlur}
-        />
+      <div className="relative flex gap-4">
+        <div className="flex-1">
+          <EditorContent
+            ref={ref}
+            editor={editor}
+            className={cn(
+              "w-full h-full focus:outline-none ring-0 ring-offset-0 resize-none",
+              className
+            )}
+            onFocus={onFocus}
+            onBlur={onBlur}
+          />
 
-        {slashMenu.isOpen && (
-          <Portal lockScroll={true}>
-            <div
-              className="fixed inset-0 z-40 bg-black/5"
-              onMouseDown={(e) => {
-                e.stopPropagation();
-                closeSlashMenu();
-              }}
-            />
-            <SlashCommandMenu
-              position={slashMenu.position}
-              commands={slashCommands}
-              selectedIndex={slashMenu.selectedIndex}
-              onSelect={handleCommandSelect}
-            />
-          </Portal>
-        )}
+          {slashMenu.isOpen && (
+            <Portal lockScroll={true}>
+              <div
+                className="fixed inset-0 z-40 bg-black/5"
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  closeSlashMenu();
+                }}
+              />
+              <SlashCommandMenu
+                position={slashMenu.position}
+                commands={slashCommands}
+                selectedIndex={slashMenu.selectedIndex}
+                onSelect={handleCommandSelect}
+              />
+            </Portal>
+          )}
+        </div>
+        {showTOC && <TableOfContents editor={editor} />}
       </div>
       <TemplatesModal
         isOpen={isTemplatesModalOpen}

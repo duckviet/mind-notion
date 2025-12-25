@@ -1,11 +1,15 @@
 // HomePage.tsx
 "use client";
-import { useState, useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { useNotes } from "@/shared/hooks/useNotes";
 import { SearchField } from "@/features/search-content";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { FloatingActionButton } from "@/shared/components/FloatingActionButton";
-import { MasonryGrid } from "@/widgets/content-grid";
+const MasonryGrid = dynamic(
+  () => import("@/widgets/content-grid").then((m) => m.MasonryGrid),
+  { ssr: false }
+);
 import NoteCard from "@/entities/note/ui/NoteCard";
 import ArticleCard from "@/entities/web-article/ui/ArticleCard";
 import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
@@ -27,6 +31,30 @@ import { TopOfMind } from "@/features/top-of-mind";
 import { DragEndEvent } from "@dnd-kit/core";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import { useDebounce } from "use-debounce";
+
+const SkeletonBlock = ({ className }: { className?: string }) => (
+  <div
+    className={`animate-pulse rounded-md bg-slate-200/80 ${className ?? ""}`}
+  />
+);
+
+const GridSkeleton = ({ items = 6 }: { items?: number }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {Array.from({ length: items }).map((_, idx) => (
+      <div key={idx} className="break-inside-avoid">
+        <SkeletonBlock className="h-48 w-full" />
+      </div>
+    ))}
+  </div>
+);
+
+const TopOfMindSkeleton = () => (
+  <div className="flex gap-3 overflow-x-auto py-2">
+    {Array.from({ length: 4 }).map((_, idx) => (
+      <SkeletonBlock key={idx} className="h-20 w-48 flex-shrink-0" />
+    ))}
+  </div>
+);
 
 function HomePageContent() {
   const [query, setQuery] = useState("");
@@ -123,6 +151,31 @@ function HomePageContent() {
     }
   };
 
+  const renderOverlay = useCallback(
+    (activeId: string | number | null) => {
+      const noteId = activeId?.toString();
+      const note =
+        notes.find((n) => n.id === noteId) ||
+        topOfMindNotesData?.find((n) => n.id === noteId);
+
+      if (!note) return null;
+
+      const previewText = note.title || note.content || "Note";
+
+      return (
+        <div className="w-full min-w-[260px] max-w-[320px] rounded-lg border border-border bg-white/90 shadow-lg px-4 py-3 opacity-90">
+          <div className="text-xs font-semibold text-muted-foreground mb-2">
+            Dragging
+          </div>
+          <div className="text-sm font-medium text-foreground line-clamp-2">
+            {previewText}
+          </div>
+        </div>
+      );
+    },
+    [notes, topOfMindNotesData]
+  );
+
   // if (error) {
   //   return (
   //     <div className="flex justify-center items-center min-h-screen">
@@ -164,7 +217,7 @@ function HomePageContent() {
         ) : null;
       }}
     >
-      <div className="min-h-screen">
+      <div className="min-h-screen overflow-hidden">
         <div className="container mx-auto px-6 py-6 space-y-6">
           <SearchField
             className="rounded-md"
@@ -178,10 +231,14 @@ function HomePageContent() {
             items={topOfMindNotesData?.map((n) => n.id) || []}
             strategy={rectSortingStrategy}
           >
-            <TopOfMind
-              notes={topOfMindNotesData || []}
-              onUnpin={handleUpdateTopOfMindNote}
-            />
+            {isLoadingTopOfMindNotes && !topOfMindNotesData ? (
+              <TopOfMindSkeleton />
+            ) : (
+              <TopOfMind
+                notes={topOfMindNotesData || []}
+                onUnpin={handleUpdateTopOfMindNote}
+              />
+            )}
           </SortableContext>
           {/* 
           {notes.length === 0 && !isLoading ? (
@@ -203,7 +260,7 @@ function HomePageContent() {
           >
             <MasonryGrid data={notes} isLoading={isLoading}>
               {isLoading && notes.length === 0 ? (
-                <div key="loading">Loading...</div>
+                <GridSkeleton />
               ) : (
                 <div key="content-grid">
                   <AnimateCardProvider>
@@ -212,12 +269,15 @@ function HomePageContent() {
                       key="add-note-form"
                       className="mb-6 break-inside-avoid"
                     >
-                      <AddNoteForm onCreate={createNote} />
+                      {isLoading ? (
+                        <SkeletonBlock className="h-28 w-full" />
+                      ) : (
+                        <AddNoteForm onCreate={createNote} />
+                      )}
                     </div>
                     {/* Notes & Articles */}
 
                     {notes.map((note) => (
-                      // <SortableItem key={note.id} id={note.id}>
                       <DraggableItem
                         className="h-fit mb-6 break-inside-avoid"
                         key={note.id}
@@ -234,9 +294,7 @@ function HomePageContent() {
                           <ArticleCard match={note} onDelete={handleDelete} />
                         )}
                       </DraggableItem>
-                      // </SortableItem>
                     ))}
-                    {/* </SortableContext> */}
                   </AnimateCardProvider>
                 </div>
               )}
