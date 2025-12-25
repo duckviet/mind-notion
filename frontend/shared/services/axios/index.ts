@@ -1,4 +1,4 @@
-import ClientRequest from "./ClientRequest";
+import { ClientRequest } from "./ClientRequest";
 
 const clientInstance = ClientRequest.getInstance();
 const client = clientInstance.getAxiosInstance();
