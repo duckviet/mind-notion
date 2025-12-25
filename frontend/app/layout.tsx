@@ -4,7 +4,9 @@ import "./globals.css";
 import Sidebar from "@/widgets/sidebar/ui/Sidebar";
 import { QueryProvider } from "@/shared/providers/QueryProvider";
 import { AuthProvider } from "@/shared/providers/AuthProvider";
+import { ThemeProvider } from "@/shared/providers/ThemeProvider";
 import AutoLogin from "@/features/auth/store/autoLogin";
+import { AppearanceApplier } from "@/shared/providers/AppearanceApplier";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,20 +29,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryProvider>
-          <AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AppearanceApplier />
+          <QueryProvider>
             <AutoLogin>
-              <div className="relative">
-                <Sidebar />
-                {children}
-              </div>
+              <AuthProvider>
+                <div className="relative">
+                  <Sidebar />
+                  {children}
+                </div>
+              </AuthProvider>
             </AutoLogin>
-          </AuthProvider>
-        </QueryProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

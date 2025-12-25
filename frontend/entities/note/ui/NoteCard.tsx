@@ -98,12 +98,11 @@ export default function NoteCard({
             className="rounded-2xl bg-white"
             aria-label={`Note card: ${match.title}`}
           >
-            <div className="flex justify-between items-center w-full mb-3  gap-4">
-              <h2 className="text-lg font-semibold text-text-primary leading-tight">
+            <div className="flex justify-between items-center w-full mb-4">
+              <h2 className="text-xl font-semibold text-text-primary leading-tight">
                 {match.title}
               </h2>
             </div>
-            <div className=" mb-4"></div>
             <NoteDisplay content={match.content} />
           </Card>
         </div>

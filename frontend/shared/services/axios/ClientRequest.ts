@@ -1,35 +1,21 @@
-import type {
+import axios, {
   AxiosError,
   AxiosInstance,
   InternalAxiosRequestConfig,
 } from "axios";
-import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-import authAction from "../actions/auth.action";
-import EventEmitter from "../events/EventEmitter";
+import Cookies from "js-cookie"; // Dùng cái này để quản lý cookie nhất quán
+import { refreshToken } from "../generated/api";
 
-// Define a type for the failed request queue items
 interface FailedRequestQueueItem {
   resolve: (value: any) => void;
   reject: (reason?: any) => void;
 }
-export interface IClientRequest {
-  get events(): EventEmitter;
 
-  getAxiosInstance(): AxiosInstance;
-  getAccessToken(): string | null;
-  hasAccessToken(): boolean;
-  getRefreshToken(): string | null;
-  hasRefreshToken(): boolean;
-  setAccessToken(token: string): void;
-  setRefreshToken(token: string): void;
-  removeAccessToken(): void;
-  removeRefreshToken(): void;
-  isAccessTokenValid(): boolean;
-}
-
-export default class ClientRequest implements IClientRequest {
+export class ClientRequest {
   static instance: ClientRequest | null = null;
+  private axiosInstance: AxiosInstance;
+  private isRefreshing = false;
+  private failedQueue: FailedRequestQueueItem[] = [];
 
   public static getInstance(): ClientRequest {
     if (!ClientRequest.instance) {
@@ -38,82 +24,30 @@ export default class ClientRequest implements IClientRequest {
     return ClientRequest.instance;
   }
 
-  private axiosInstance!: AxiosInstance;
-  private isRefreshing = false;
-  private failedQueue: FailedRequestQueueItem[] = [];
-  public events = new EventEmitter();
-  public static EVENTS = {
-    FORBIDDEN: "FORBIDDEN", // 401
-    TOKEN_EXPIRED: "TOKEN_EXPIRED",
-  };
-
-  private processQueue(error: Error | null, token: string | null = null) {
-    this.failedQueue.forEach((prom) => {
-      if (error) {
-        prom.reject(error);
-      } else {
-        prom.resolve(token);
-      }
-    });
-    this.failedQueue = [];
-  }
-
-  public getAccessToken(): string | null {
-    if (typeof localStorage === "undefined") return null;
-    return localStorage.getItem("access_token");
-  }
-
   constructor() {
-    const backendUrl =
-      (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BACKEND_URL) ||
-      "http://localhost:8080/api/v1";
     this.axiosInstance = axios.create({
-      baseURL: backendUrl,
+      baseURL:
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api/v1",
       timeout: 30000,
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
     });
-    const handleRequestWithToken = async (
-      config: InternalAxiosRequestConfig
-    ) => {
-      const accessToken = this.getAccessToken();
-      if (this.isAccessTokenValid()) {
-        config.headers["Authorization"] = `Bearer ${accessToken}`;
-      } else {
-        this.events.emit(ClientRequest.EVENTS.TOKEN_EXPIRED);
-        const waitRefetchToken = new Promise((resolve) => {
-          const interval = setInterval(() => {
-            if (this.isAccessTokenValid()) {
-              clearInterval(interval);
-              resolve(null);
-            }
-          }, 1000);
-        });
-        await waitRefetchToken;
-        const newToken = await this.getAccessToken();
-        config.headers["Authorization"] = `Bearer ${newToken}`;
-      }
-      return config;
-    };
-    const requestHandler = async (config: InternalAxiosRequestConfig<any>) => {
-      // if config have skipAuthInterceptor (token is expired) -> skip
-      if (config.skipAuthInterceptor) {
+
+    // Request Interceptor: Chỉ đơn giản là gắn token nếu có
+    this.axiosInstance.interceptors.request.use(
+      (config) => {
+        // Đọc từ Cookie thay vì LocalStorage để nhất quán với Middleware
+        const token = Cookies.get("access_token");
+        if (token) {
+          config.headers["Authorization"] = `Bearer ${token}`;
+        }
         return config;
-      }
-
-      if (this.hasAccessToken()) {
-        config = await handleRequestWithToken(config);
-      }
-
-      return config;
-    };
-    this.axiosInstance.interceptors.request.use(requestHandler.bind(this));
-
-    this.axiosInstance.interceptors.response.use(
-      (response) => {
-        return response;
       },
+      (error) => Promise.reject(error)
+    );
+
+    // Response Interceptor: Xử lý 401 & Refresh Token
+    this.axiosInstance.interceptors.response.use(
+      (response) => response,
       async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & {
           _retry?: boolean;
@@ -125,6 +59,7 @@ export default class ClientRequest implements IClientRequest {
           !originalRequest._retry
         ) {
           if (this.isRefreshing) {
+            // Nếu đang refresh, xếp các request khác vào hàng đợi
             return new Promise((resolve, reject) => {
               this.failedQueue.push({ resolve, reject });
             })
@@ -132,93 +67,54 @@ export default class ClientRequest implements IClientRequest {
                 originalRequest.headers["Authorization"] = `Bearer ${token}`;
                 return this.axiosInstance(originalRequest);
               })
-              .catch((err) => {
-                return Promise.reject(err);
-              });
+              .catch((err) => Promise.reject(err));
           }
 
           originalRequest._retry = true;
           this.isRefreshing = true;
+          const refresh_token = Cookies.get("refresh_token");
 
           try {
-            const newTokens = await authAction.refreshToken();
-            const { access_token, refresh_token } = newTokens;
+            // Gọi API refresh token
+            // Backend nên tự set-cookie mới cho access_token và refresh_token
+            const newTokens = await refreshToken({ refresh_token });
+            const { access_token } = newTokens;
 
-            if (access_token && refresh_token) {
-              this.setAccessToken(access_token);
-              this.setRefreshToken(refresh_token);
+            // Nếu Backend không tự set cookie access_token, ta set thủ công ở đây:
+            if (access_token) {
+              Cookies.set("access_token", access_token);
               this.axiosInstance.defaults.headers.common["Authorization"] =
-                `Bearer ${access_token}`;
-              originalRequest.headers["Authorization"] =
                 `Bearer ${access_token}`;
 
               this.processQueue(null, access_token);
               return this.axiosInstance(originalRequest);
             }
+            throw new Error("Refresh failed");
           } catch (refreshError) {
             this.processQueue(refreshError as Error, null);
-            // The refreshToken action already handles logout
+            // Xử lý logout nếu refresh thất bại
+            Cookies.remove("access_token");
+            Cookies.remove("refresh_token");
+            window.location.href = "/auth"; // Force reload về login
             return Promise.reject(refreshError);
           } finally {
             this.isRefreshing = false;
           }
         }
-
         return Promise.reject(error);
       }
     );
   }
 
-  public getAxiosInstance(): AxiosInstance {
+  private processQueue(error: Error | null, token: string | null = null) {
+    this.failedQueue.forEach((prom) => {
+      if (error) prom.reject(error);
+      else prom.resolve(token);
+    });
+    this.failedQueue = [];
+  }
+
+  public getAxiosInstance() {
     return this.axiosInstance;
-  }
-  public getRefreshToken(): string | null {
-    if (typeof localStorage === "undefined") return null;
-    return localStorage.getItem("refresh_token");
-  }
-  public hasAccessToken(): boolean {
-    const accessToken = this.getAccessToken();
-    return !!accessToken;
-  }
-  public hasRefreshToken(): boolean {
-    const refreshToken = this.getRefreshToken();
-    return !!refreshToken;
-  }
-  public setAccessToken(token: string): void {
-    // Store in localStorage for axios interceptor to read
-    // Backend sets HttpOnly cookies automatically, so we don't need to set cookies here
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem("access_token", token);
-    }
-    // Note: Cookies are now set by backend with HttpOnly flag (more secure)
-    // We keep localStorage for axios interceptor to read and set Authorization header
-  }
-  public setRefreshToken(token: string): void {
-    // Store in localStorage for refresh token logic
-    // Backend sets HttpOnly cookies automatically
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem("refresh_token", token);
-    }
-    // Note: Cookies are now set by backend with HttpOnly flag (more secure)
-  }
-  public removeAccessToken(): void {
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem("access_token");
-    }
-    // Cookies are cleared by backend on logout
-    // We can't clear HttpOnly cookies from client-side
-  }
-  public removeRefreshToken(): void {
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem("refresh_token");
-    }
-    // Cookies are cleared by backend on logout
-  }
-  public isAccessTokenValid(): boolean {
-    const accessToken = this.getAccessToken();
-    if (!accessToken) return false;
-    const decodedToken = jwtDecode(accessToken);
-    const currentTime = Date.now() / 1000;
-    return !!(decodedToken.exp && decodedToken.exp > currentTime);
   }
 }

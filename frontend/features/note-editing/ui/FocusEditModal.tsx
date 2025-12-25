@@ -316,6 +316,7 @@ export default function FocusEditModal({
                       )}
                     </div>
                     <RichTextEditor
+                      showTOC={true}
                       content={form.content}
                       onUpdate={handleContentChange}
                       editable

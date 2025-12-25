@@ -17,11 +17,11 @@ const TopOfMindCard: React.FC<TopOfMindCardProps> = ({ note, onUnpin }) => {
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <Card className="w-42 h-full  flex flex-col justify-center items-center rounded-xl bg-white ">
-          {/* <h3 className="text-base font-semibold text-center truncate w-full px-2">
+        <Card className="w-42 h-32  flex flex-col justify-center items-center rounded-xl bg-white ">
+          <h3 className="text-base font-semibold text-center truncate w-full px-2">
             {note.title}
-          </h3> */}
-          <p className="text-xs text-text-muted  line-clamp-4 w-full">
+          </h3>
+          <p className="text-xs text-text-muted  line-clamp-3 w-full">
             {note.content}
           </p>
         </Card>

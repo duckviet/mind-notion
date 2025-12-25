@@ -31,7 +31,7 @@ const Sidebar = () => {
     {
       label: "Settings",
       icon: <SettingsIcon className="w-6 h-6" />,
-      href: "/",
+      href: "/settings",
     },
   ];
 

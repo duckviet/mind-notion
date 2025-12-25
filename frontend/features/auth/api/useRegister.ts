@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { register } from "@/shared/services/generated/api";
 import { toast } from "sonner";
 import { useAuthStore } from "../store/authStore";
-import { clientInstance } from "@/shared/services/axios";
+import Cookies from "js-cookie"; // Import thư viện quản lý cookie
 
 export const useRegister = () => {
   const { login: loginStore, fetchMe } = useAuthStore();
@@ -16,13 +16,14 @@ export const useRegister = () => {
       return response;
     },
     onSuccess: (data) => {
-      // Backend now sets HttpOnly cookies automatically
-      // Store tokens in localStorage if provided (backward compatibility)
-      if (data.access_token && data.refresh_token) {
-        clientInstance.setAccessToken(data.access_token);
-        clientInstance.setRefreshToken(data.refresh_token);
+      if (data.access_token) {
+        Cookies.set("access_token", data.access_token, {
+          expires: 1, // 1 ngày (hoặc theo exp của token)
+          // secure: true, // Bật nếu dùng HTTPS
+          // sameSite: 'strict'
+        });
       }
-      // Even if no tokens in response, cookies are set by backend
+
       loginStore();
       fetchMe();
       toast.success("Registration successful");

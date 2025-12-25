@@ -10,6 +10,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -78,6 +79,8 @@ func (api *AuthAPI) Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
+	fmt.Println("AccessToken:", tokens.AccessToken)
+	fmt.Println("RefreshToken:", tokens.RefreshToken)
 
 	// Set HttpOnly cookies (security best practice)
 	setAuthCookies(c, api.config, tokens.AccessToken, tokens.RefreshToken)
@@ -142,29 +145,42 @@ func (api *AuthAPI) Register(c *gin.Context) {
 // Refresh a JWT 
 func (api *AuthAPI) RefreshToken(c *gin.Context) {
 	var req dto.RefreshTokenRequest
+
+	// 1. Lấy Token: Ưu tiên Cookie (vì HttpOnly an toàn hơn), sau đó mới đến Body
+	refreshToken := getRefreshTokenFromCookie(c)
 	
-	// Try to get refresh token from request body first
-	if err := c.ShouldBindJSON(&req); err == nil && req.RefreshToken != "" {
-		// Use refresh token from request body
-	} else {
-		// Fallback to cookie (for HttpOnly cookies)
-		req.RefreshToken = getRefreshTokenFromCookie(c)
-		if req.RefreshToken == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "missing refresh token"})
-			return
+	if refreshToken == "" {
+		// Nếu cookie không có, thử đọc từ Body (để hỗ trợ các client khác như Mobile)
+		if err := c.ShouldBindJSON(&req); err == nil {
+			refreshToken = req.RefreshToken
 		}
 	}
 
-	tokens, err := api.authService.RefreshToken(c.Request.Context(), req.RefreshToken)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// Nếu cuối cùng vẫn không có token
+	if refreshToken == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing refresh token"})
 		return
 	}
 
-	// Set new HttpOnly cookies
+	// 2. Gọi Service để verify và tạo cặp token mới
+	tokens, err := api.authService.RefreshToken(c.Request.Context(), refreshToken)
+	if err != nil {
+		// QUAN TRỌNG: Nếu token hết hạn hoặc không hợp lệ, xóa luôn Cookie cũ 
+		// để trình duyệt sạch sẽ và trả về 401.
+		clearAuthCookies(c, api.config) 
+		
+		// Trả về 401 để Axios Interceptor bên Frontend biết đường mà Redirect sang /auth
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired refresh token"})
+		return
+	}
+
+	// 3. Set cặp HttpOnly cookies mới (Access Token & Refresh Token)
+	// Việc set Access Token vào Cookie giúp Middleware Next.js đọc được.
 	setAuthCookies(c, api.config, tokens.AccessToken, tokens.RefreshToken)
 
-	// Return tokens in response body for backward compatibility
-	// HttpOnly cookies are used by middleware for server-side auth check
+	// Set thêm một cookie thường (HttpOnly=false) làm "cờ hiệu" cho Frontend JS
+	c.SetCookie("is_logged_in", "true", 3600*24*7, "/", "", false, false)
+
+	// 4. Trả về tokens trong response body
 	c.JSON(http.StatusOK, tokens)
 }

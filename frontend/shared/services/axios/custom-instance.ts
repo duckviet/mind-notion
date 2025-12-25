@@ -1,5 +1,5 @@
 import { AxiosRequestConfig } from "axios";
-import ClientRequest from "./ClientRequest";
+import { ClientRequest } from "./ClientRequest";
 
 // Orval expects this specific function signature
 export const customInstance = <T>(config: AxiosRequestConfig): Promise<T> => {
