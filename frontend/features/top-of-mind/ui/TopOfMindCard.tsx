@@ -21,6 +21,7 @@ const TopOfMindCard: React.FC<TopOfMindCardProps> = ({ note, onUnpin }) => {
           <h3 className="text-base font-semibold text-center truncate w-full px-2">
             {note.title}
           </h3>
+
           <p className="text-xs text-text-muted  line-clamp-3 w-full">
             {note.content}
           </p>
