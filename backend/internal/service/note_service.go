@@ -10,6 +10,7 @@ import (
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/utils"
 )
 
 // NoteService defines the interface for note business logic
@@ -170,24 +171,40 @@ func (s *noteService) DeleteNote(ctx context.Context, id string) error {
 // ListNotes retrieves notes with pagination
 func (s *noteService) ListNotes(ctx context.Context, params repository.NoteListParams, userID string) ([]*models.Note, int64, error) {
 	if params.Query != nil {
-		return s.searchService.SearchNotes(ctx, *params.Query, userID, params.Limit)
+		notes, total, err := s.searchService.SearchNotes(ctx, *params.Query, userID, params.Limit)
+		if err != nil {
+			return nil, 0, err
+		}
+		utils.FormatNotePreviews(notes, utils.DefaultNotePreviewLength)
+		return notes, total, nil
 	}
+
 	notes, total, err := s.repo.List(ctx, params)
 	if err != nil {
 		return nil, 0, ErrInternalServerError
 	}
+
+	utils.FormatNotePreviews(notes, utils.DefaultNotePreviewLength)
 	return notes, total, nil
 }
 
 // GetNotesByUserID retrieves notes by user ID
 func (s *noteService) GetNotesByUserID(ctx context.Context, userID string, params repository.NoteListParams) ([]*models.Note, int64, error) {
 	if params.Query != nil && *params.Query != "" {
-		return s.searchService.SearchNotes(ctx, *params.Query, userID, params.Limit)
+		notes, total, err := s.searchService.SearchNotes(ctx, *params.Query, userID, params.Limit)
+		if err != nil {
+			return nil, 0, err
+		}
+		utils.FormatNotePreviews(notes, utils.DefaultNotePreviewLength)
+		return notes, total, nil
 	}
+
 	notes, total, err := s.repo.GetByUserID(ctx, userID, params)
 	if err != nil {
 		return nil, 0, ErrInternalServerError
 	}
+
+	utils.FormatNotePreviews(notes, utils.DefaultNotePreviewLength)
 	return notes, total, nil
 }
 

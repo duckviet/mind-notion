@@ -6,6 +6,7 @@ import { useNotes } from "@/shared/hooks/useNotes";
 import { SearchField } from "@/features/search-content";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { FloatingActionButton } from "@/shared/components/FloatingActionButton";
+import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";
 const MasonryGrid = dynamic(
   () => import("@/widgets/content-grid").then((m) => m.MasonryGrid),
   { ssr: false }
@@ -59,6 +60,8 @@ const TopOfMindSkeleton = () => (
 function HomePageContent() {
   const [query, setQuery] = useState("");
   const [isFabOpen, setIsFabOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { isModalOpen } = useModal();
 
   const [debouncedQuery] = useDebounce(query, 300);
@@ -91,9 +94,20 @@ function HomePageContent() {
     }));
   }, [notesData]);
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Delete this note?")) {
-      await deleteNote(id);
+  const handleDeleteRequest = (id: string) => {
+    setDeleteTargetId(id);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setIsDeleting(true);
+    try {
+      await deleteNote(deleteTargetId);
+    } catch (error) {
+      console.error("Failed to delete note:", error);
+    } finally {
+      setIsDeleting(false);
+      setDeleteTargetId(null);
     }
   };
 
@@ -286,12 +300,15 @@ function HomePageContent() {
                         {note.content_type === "text" ? (
                           <NoteCard
                             match={note}
-                            onDelete={handleDelete}
+                            onDelete={handleDeleteRequest}
                             onUpdateNote={handleUpdate}
                             onPin={handleUpdateTopOfMindNote}
                           />
                         ) : (
-                          <ArticleCard match={note} onDelete={handleDelete} />
+                          <ArticleCard
+                            match={note}
+                            onDelete={handleDeleteRequest}
+                          />
                         )}
                       </DraggableItem>
                     ))}
@@ -304,6 +321,21 @@ function HomePageContent() {
         </div>
 
         <FloatingActionButton isOpen={isFabOpen} onToggle={handleFabToggle} />
+
+        <ConfirmDialog
+          open={!!deleteTargetId}
+          title="Delete this note?"
+          description="This action cannot be undone."
+          confirmLabel={isDeleting ? "Deleting..." : "Delete"}
+          confirmVariant="destructive"
+          isConfirming={isDeleting}
+          onConfirm={handleConfirmDelete}
+          onOpenChange={(open) => {
+            if (!open) {
+              setDeleteTargetId(null);
+            }
+          }}
+        />
       </div>
     </MultiZoneDndProvider>
   );

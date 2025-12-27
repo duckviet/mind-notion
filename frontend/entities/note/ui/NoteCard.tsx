@@ -32,7 +32,7 @@ export interface NoteCardProps extends ResDetailNote {
 
 type Props = {
   match: NoteCardProps;
-  onDelete?: (id: string) => Promise<void>;
+  onDelete?: (id: string) => void | Promise<void>;
   onUpdateNote?: (id: string, data: ReqUpdateNote) => void;
   onPin?: (id: string, tom: boolean) => void;
 };
@@ -95,7 +95,7 @@ export default function NoteCard({
         >
           <Card
             // role="article"
-            className="rounded-2xl bg-white"
+            className="rounded-2xl bg-white w-full"
             aria-label={`Note card: ${match.title}`}
           >
             <div className="flex justify-between items-center w-full mb-4">
@@ -103,15 +103,14 @@ export default function NoteCard({
                 {match.title}
               </h2>
             </div>
-            <NoteDisplay content={match.content} />
+            <div className="overflow-hidden">
+              <NoteDisplay content={match.content} />
+            </div>
           </Card>
         </div>
       </ContextMenuTrigger>
-      <ContextMenuContent className="glass-bg border-glass-border shadow-glass-lg">
-        <ContextMenuItem
-          onSelect={handlePreview}
-          className="focus:bg-glass-hover"
-        >
+      <ContextMenuContent className="bg-white border-gray-200 shadow-xl">
+        <ContextMenuItem onSelect={handlePreview} className="hover:bg-gray-200">
           <p className="text-sm">Preview</p>
           <ContextMenuShortcut>
             <Eye className="w-4 h-4 " />
@@ -119,18 +118,15 @@ export default function NoteCard({
         </ContextMenuItem>
         <ContextMenuItem
           onSelect={handleFocusEdit}
-          className="focus:bg-glass-hover"
+          className="focus:bg-gray-200"
         >
           <p className="text-sm">Focus Edit</p>
           <ContextMenuShortcut>
             <Edit3 className="w-4 h-4 " />
           </ContextMenuShortcut>
         </ContextMenuItem>
-        <ContextMenuItem
-          onClick={handleDelete}
-          className="focus:bg-glass-hover text-red-500 hover:text-red-600"
-        >
-          <p className="text-sm">Delete</p>
+        <ContextMenuItem onClick={handleDelete} className="focus:bg-gray-200 ">
+          <p className="text-sm ">Delete</p>
           <ContextMenuShortcut>
             <Trash2Icon className="w-3 h-3" />
           </ContextMenuShortcut>

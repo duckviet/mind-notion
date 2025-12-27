@@ -15,7 +15,7 @@ import { NoteCardProps } from "@/entities/note/ui/NoteCard";
 
 type Props = {
   match: NoteCardProps;
-  onDelete?: (id: string) => Promise<void>;
+  onDelete?: (id: string) => void | Promise<void>;
 };
 
 export default function ArticleCard({ match, onDelete }: Props) {
