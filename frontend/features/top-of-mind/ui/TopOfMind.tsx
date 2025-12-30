@@ -22,7 +22,7 @@ const TopOfMind = ({ notes, onDelete, onUpdate, onUnpin }: Props) => {
           scrollBehavior: "smooth",
           scrollbarGutter: "stable",
         }}
-        className="flex gap-3 justify-center items-center bg-[#dee2ea] w-full rounded-2xl my-4 p-4 min-h-[120px] transition-all overflow-x-auto"
+        className="flex gap-3 justify-center items-center bg-[#dee2ea] w-full rounded-2xl my-4 p-4 h-[154px] transition-all overflow-x-auto"
       >
         {notes.length === 0 ? (
           <div className="text-text-muted text-sm">

@@ -7,9 +7,10 @@ import {
   ReqCreateNote,
   ReqUpdateNote,
   getListNotesQueryKey,
+  ListNotes200,
   ResDetailNote,
 } from "@/shared/services/generated/api";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 export type ListParams = {
   limit?: number;
@@ -20,19 +21,18 @@ export type ListParams = {
 export function useNotes(
   params: ListParams = { limit: 50, offset: 0, query: "" }
 ) {
-  const [notes, setNotes] = useState<ResDetailNote[]>([]);
+  const stableParams = useMemo(
+    () => params,
+    [params.limit, params.offset, params.query]
+  );
   const queryClient = useQueryClient();
-  const queryKey = getListNotesQueryKey(params);
+  const queryKey = getListNotesQueryKey(stableParams);
   // Chỉ wrap generated hook - đơn giản và mạnh mẽ
-  const notesQuery = useGeneratedListNotes(params, {
+  const notesQuery = useGeneratedListNotes(stableParams, {
     query: {
       retry: false,
     },
   });
-
-  useEffect(() => {
-    setNotes(notesQuery.data?.notes ?? []);
-  }, [notesQuery.data?.notes]);
 
   // Mutations đơn giản với automatic invalidation
   const createMutation = useMutation({
@@ -46,18 +46,14 @@ export function useNotes(
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ReqUpdateNote }) =>
-      apiUpdateNote(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKey });
-    },
+    mutationFn: async ({ id, data }: { id: string; data: ReqUpdateNote }) =>
+      await apiUpdateNote(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKey }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: apiDeleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKey });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKey }),
   });
 
   // Thêm refetch
@@ -65,8 +61,7 @@ export function useNotes(
 
   return {
     // List data
-    notes,
-    setNotes,
+    notes: notesQuery.data?.notes ?? [],
     total: notesQuery.data?.total ?? 0,
     isLoading: notesQuery.isLoading,
     isError: notesQuery.isError,
