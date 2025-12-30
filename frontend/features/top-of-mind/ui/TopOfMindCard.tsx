@@ -7,6 +7,8 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/shared/components/ui/context-menu";
+import NoteDisplay from "@/entities/note/ui/NoteDisplay";
+import { CardContent, CardTitle } from "@/shared/components/ui/card";
 
 type TopOfMindCardProps = {
   note: ResDetailNote;
@@ -17,14 +19,13 @@ const TopOfMindCard: React.FC<TopOfMindCardProps> = ({ note, onUnpin }) => {
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <Card className="w-42 h-32  flex flex-col justify-center items-center rounded-xl bg-white ">
-          <h3 className="text-base font-semibold text-center truncate w-full px-2">
-            {note.title}
-          </h3>
-
-          <p className="text-xs text-text-muted  line-clamp-3 w-full">
-            {note.content}
-          </p>
+        <Card className="w-42 h-32 overflow-hidden  rounded-xl bg-white py-2 px-4 ">
+          <div className="w-full">
+            <CardTitle className="line-clamp-2 mb-1">{note.title}</CardTitle>
+          </div>{" "}
+          <CardContent className="p-0">
+            <NoteDisplay content={note.content} zoom={0.5} />
+          </CardContent>
         </Card>
       </ContextMenuTrigger>
       <ContextMenuContent>

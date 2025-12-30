@@ -1,10 +1,10 @@
+// LoginForm.tsx
 "use client";
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-
 import { z } from "zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, User, Lock } from "lucide-react";
 import { useLogin } from "../api/useLogin";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -50,25 +50,28 @@ export const LoginForm = ({
     try {
       await loginMutation.mutateAsync(data);
       onSuccess?.();
-    } catch (error) {
-      // Error is handled by the mutation
+    } catch {
+      // Error handled by mutation
     }
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">
-          Sign In
+    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl shadow-slate-200/50">
+      <CardHeader className="space-y-1 pb-6">
+        <CardTitle className="text-2xl font-bold text-center text-slate-800">
+          Welcome Back
         </CardTitle>
-        <CardDescription className="text-center">
+        <CardDescription className="text-center text-slate-500">
           Enter your credentials to access your account
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {loginMutation.error && (
-            <Alert variant="destructive">
+            <Alert
+              variant="destructive"
+              className="bg-red-50 border-red-200 text-red-700"
+            >
               <AlertDescription>
                 {loginMutation.error.message ||
                   "Login failed. Please try again."}
@@ -77,33 +80,54 @@ export const LoginForm = ({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="username">Username or Email</Label>
-            <Input
-              id="username"
-              type="text"
-              placeholder="Enter your username or email"
-              {...register("username")}
-              className={errors.username ? "border-red-500" : ""}
-            />
+            <Label
+              htmlFor="username"
+              className="text-sm font-medium text-slate-700"
+            >
+              Username or Email
+            </Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                id="username"
+                type="text"
+                placeholder="Enter your username or email"
+                {...register("username")}
+                className={`pl-10 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all ${
+                  errors.username ? "border-red-400 focus:border-red-500" : ""
+                }`}
+              />
+            </div>
             {errors.username && (
-              <p className="text-sm text-red-500">{errors.username.message}</p>
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="inline-block w-1 h-1 bg-red-500 rounded-full" />
+                {errors.username.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label
+              htmlFor="password"
+              className="text-sm font-medium text-slate-700"
+            >
+              Password
+            </Label>
             <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 {...register("password")}
-                className={errors.password ? "border-red-500 pr-10" : "pr-10"}
+                className={`pl-10 pr-10 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all ${
+                  errors.password ? "border-red-400 focus:border-red-500" : ""
+                }`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -113,13 +137,17 @@ export const LoginForm = ({
               </button>
             </div>
             {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
+              <p className="text-sm text-red-500 flex items-center gap-1">
+                <span className="inline-block w-1 h-1 bg-red-500 rounded-full" />
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           <Button
             type="submit"
-            className="w-full"
+            variant="default"
+            className="w-full h-11 bg-[#306af0] text-white border-slate-200 hover:bg-slate-100 hover:border-slate-300 hover:text-slate-700 cursor-pointer transition-all"
             disabled={loginMutation.isPending}
           >
             {loginMutation.isPending ? (
@@ -132,18 +160,25 @@ export const LoginForm = ({
             )}
           </Button>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <button
-                type="button"
-                onClick={onSwitchToRegister}
-                className="text-blue-600 hover:text-blue-800 font-medium"
-              >
-                Sign up
-              </button>
-            </p>
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-slate-400">
+                New to our platform?
+              </span>
+            </div>
           </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onSwitchToRegister}
+            className="w-full h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 transition-all"
+          >
+            Create an account
+          </Button>
         </form>
       </CardContent>
     </Card>
