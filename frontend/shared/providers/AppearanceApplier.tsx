@@ -4,7 +4,11 @@ import { useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useSettingsStore } from "@/shared/stores/settingsStore";
 
-const accentPalette: Record<string, { primary: string; strong: string; subtle: string }> = {
+const accentPalette: Record<
+  string,
+  { primary: string; strong: string; subtle: string }
+> = {
+  neutral: { primary: "#adadad", strong: "#5e5e5e", subtle: "#e3e3e3" },
   blue: { primary: "#2563eb", strong: "#1d4ed8", subtle: "#dbeafe" },
   purple: { primary: "#7c3aed", strong: "#6d28d9", subtle: "#ede9fe" },
   green: { primary: "#16a34a", strong: "#15803d", subtle: "#dcfce7" },
@@ -13,8 +17,10 @@ const accentPalette: Record<string, { primary: string; strong: string; subtle: s
 };
 
 const fontStacks: Record<string, string> = {
-  inter: '"Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  geist: '"Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  inter:
+    '"Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  geist:
+    '"Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   system: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 };
 

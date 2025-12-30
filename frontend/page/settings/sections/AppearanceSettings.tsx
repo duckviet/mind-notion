@@ -62,6 +62,7 @@ const AppearanceSettings = () => {
   ];
 
   const colors: { value: PrimaryColor; label: string; color: string }[] = [
+    { value: "neutral", label: "Neutral", color: "bg-neutral-600" },
     { value: "blue", label: "Blue", color: "bg-blue-600" },
     { value: "purple", label: "Purple", color: "bg-purple-600" },
     { value: "green", label: "Green", color: "bg-green-600" },
@@ -109,7 +110,7 @@ const AppearanceSettings = () => {
                     "group relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 p-4 transition-all hover:scale-[1.02]",
                     isSelected
                       ? "border-primary/50 bg-primary/5 shadow-sm"
-                      : "border-border hover:bg-muted/50"
+                      : "bg-slate-50/50 border-slate-300"
                   )}
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
@@ -134,7 +135,9 @@ const AppearanceSettings = () => {
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-none shadow-sm bg-white/80">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Primary Color</CardTitle>
+            <CardTitle className="text-base font-semibold">
+              Primary Color
+            </CardTitle>
             <CardDescription className="text-sm">
               Pick a color for accents and highlights.
             </CardDescription>
@@ -165,7 +168,9 @@ const AppearanceSettings = () => {
 
         <Card className="border-none shadow-sm bg-white/80">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Typography</CardTitle>
+            <CardTitle className="text-base font-semibold">
+              Typography
+            </CardTitle>
             <CardDescription className="text-sm">
               Choose the font family for the interface.
             </CardDescription>
@@ -181,8 +186,8 @@ const AppearanceSettings = () => {
                     className={cn(
                       "relative flex flex-col items-center justify-center rounded-lg border-2 p-3 transition-all hover:bg-muted/50",
                       isSelected
-                        ? "border-primary"
-                        : "border-transparent bg-muted/40"
+                        ? "border-primary/50 bg-primary/5 shadow-sm"
+                        : "bg-slate-50/50 border-slate-300"
                     )}
                   >
                     <span
@@ -246,7 +251,9 @@ const AppearanceSettings = () => {
       {/* Live Preview */}
       <Card className="border-none shadow-sm bg-white/80">
         <CardHeader>
-          <CardTitle className="text-base font-semibold">Live Preview</CardTitle>
+          <CardTitle className="text-base font-semibold">
+            Live Preview
+          </CardTitle>
           <CardDescription className="text-sm">
             See how accent, typography, and density feel in the interface.
           </CardDescription>
@@ -256,8 +263,12 @@ const AppearanceSettings = () => {
             <div className="rounded-xl border border-border/70 bg-white/70 p-4 shadow-sm dark:border-border/50 dark:bg-background/40">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-foreground">Project card</div>
-                  <div className="text-xs text-muted-foreground">Updated just now</div>
+                  <div className="text-sm font-semibold text-foreground">
+                    Project card
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Updated just now
+                  </div>
                 </div>
                 <span className="rounded-full bg-[color:var(--accent-100)] px-2 py-1 text-[11px] font-medium text-[color:var(--accent-600)]">
                   Accent chip
@@ -280,8 +291,12 @@ const AppearanceSettings = () => {
             <div className="rounded-xl border border-border/70 bg-white/70 p-4 shadow-sm dark:border-border/50 dark:bg-background/40">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-foreground">Form preview</div>
-                  <div className="text-xs text-muted-foreground">Adapts to density</div>
+                  <div className="text-sm font-semibold text-foreground">
+                    Form preview
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Adapts to density
+                  </div>
                 </div>
                 <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                   {viewMode === "compact" ? "Compact" : "Default"}

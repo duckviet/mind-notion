@@ -159,7 +159,6 @@ export const TableOfContents = ({
 
     editor.state.doc.descendants((node, pos) => {
       if (node.type.name.match(/^heading/)) {
-        console.log(pos, node);
         const level = node?.attrs?.level || 0;
         if (level > maxHeadingLevel) return;
 
@@ -177,7 +176,6 @@ export const TableOfContents = ({
     return headings;
   }, [editor?.state, maxHeadingLevel]);
 
-  console.log(flatHeadings);
   const tree = useMemo(() => {
     const result = buildHeadingTree(flatHeadings);
     treeRef.current = result;
@@ -314,7 +312,6 @@ export const TableOfContents = ({
 
   if (flatHeadings.length === 0) return null;
 
-  console.log(tree);
   if (!editor?.storage.extTableOfContents.toc) return null;
 
   return (

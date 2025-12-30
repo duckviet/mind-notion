@@ -67,7 +67,6 @@ function HomePageContent() {
   const [debouncedQuery] = useDebounce(query, 300);
   const {
     notes: notesData,
-    setNotes,
     isLoading,
     error,
     deleteNote,
@@ -118,6 +117,7 @@ function HomePageContent() {
       console.error("Failed to update note:", error);
     }
   };
+
   const handleFabToggle = () => {
     setIsFabOpen(!isFabOpen);
   };

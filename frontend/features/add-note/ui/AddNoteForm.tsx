@@ -52,7 +52,6 @@ export default function AddNoteForm({
 
   const isSaveHintVisible =
     content.trim() && content !== "<p></p>" ? true : false;
-  console.log(content, isSaveHintVisible);
   return (
     <div className="relative h-full">
       {/* Overlay */}

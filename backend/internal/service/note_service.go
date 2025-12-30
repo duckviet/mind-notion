@@ -235,6 +235,8 @@ func (s *noteService) UpdateNoteTOM(ctx context.Context, id string, tom bool) (*
 	if err := s.repo.Update(ctx, note); err != nil {
 		return nil, ErrInternalServerError
 	}
+	// Format preview for TOM note as well
+	utils.FormatNotePreviews([]*models.Note{note}, utils.DefaultNotePreviewLength)
 	return note, nil
 }
 
@@ -243,5 +245,6 @@ func (s *noteService) ListNotesTOM(ctx context.Context, userID string) ([]*model
 	if err != nil {
 		return nil, ErrInternalServerError
 	}
+	utils.FormatNotePreviews(notes, utils.DefaultNotePreviewLength)
 	return notes, nil
 }

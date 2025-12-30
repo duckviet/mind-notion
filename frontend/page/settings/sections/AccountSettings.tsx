@@ -146,7 +146,7 @@ const AccountSettings = () => {
                     id="name"
                     {...registerProfile("name")}
                     placeholder="John Doe"
-                    className="pl-9 h-10"
+                    className="pl-9 h-10 bg-slate-50/50 border-slate-200"
                   />
                 </div>
                 {profileErrors.name && (
@@ -167,7 +167,7 @@ const AccountSettings = () => {
                     type="email"
                     {...registerProfile("email")}
                     placeholder="john@example.com"
-                    className="pl-9 h-10"
+                    className="pl-9 h-10 bg-slate-50/50 border-slate-200"
                   />
                 </div>
                 {profileErrors.email && (
@@ -188,7 +188,7 @@ const AccountSettings = () => {
                   id="avatar"
                   {...registerProfile("avatar")}
                   placeholder="https://example.com/avatar.jpg"
-                  className="pl-9 h-10"
+                  className="pl-9 h-10 bg-slate-50/50 border-slate-200"
                 />
               </div>
               {profileErrors.avatar && (
@@ -240,7 +240,7 @@ const AccountSettings = () => {
                   type={showCurrentPassword ? "text" : "password"}
                   {...registerPassword("currentPassword")}
                   placeholder="Enter current password"
-                  className="pl-9 pr-10 h-10"
+                  className="bg-slate-50/50 border-slate-200 pl-9 pr-10 h-10"
                 />
                 <button
                   type="button"
@@ -272,7 +272,7 @@ const AccountSettings = () => {
                   type={showNewPassword ? "text" : "password"}
                   {...registerPassword("newPassword")}
                   placeholder="Enter new password"
-                  className="pl-9 pr-10 h-10"
+                  className="bg-slate-50/50 border-slate-200 pl-9 pr-10 h-10"
                 />
                 <button
                   type="button"
@@ -304,7 +304,7 @@ const AccountSettings = () => {
                   type={showConfirmPassword ? "text" : "password"}
                   {...registerPassword("confirmPassword")}
                   placeholder="Confirm new password"
-                  className="pl-9 pr-10 h-10"
+                  className="bg-slate-50/50 border-slate-200 pl-9 pr-10 h-10"
                 />
                 <button
                   type="button"

@@ -50,7 +50,7 @@ const MiscSettings = () => {
       </div>
 
       {/* Preferences */}
-      <Card className="border-none shadow-sm bg-card/50">
+      <Card className="border-none shadow-sm bg-white/80">
         <CardHeader>
           <CardTitle className="text-base font-semibold">Preferences</CardTitle>
           <CardDescription className="text-sm">
@@ -68,6 +68,7 @@ const MiscSettings = () => {
               </p>
             </div>
             <Switch
+              className="bg-gray-400"
               id="notifications"
               checked={notifications}
               onCheckedChange={setNotifications}
@@ -86,6 +87,7 @@ const MiscSettings = () => {
               </p>
             </div>
             <Switch
+              className="bg-gray-400"
               id="autoSave"
               checked={autoSave}
               onCheckedChange={setAutoSave}
@@ -104,6 +106,7 @@ const MiscSettings = () => {
               </p>
             </div>
             <Switch
+              className="bg-gray-400"
               id="analytics"
               checked={analytics}
               onCheckedChange={setAnalytics}
@@ -113,7 +116,7 @@ const MiscSettings = () => {
       </Card>
 
       {/* Data Management */}
-      <Card className="border-none shadow-sm bg-card/50">
+      <Card className="border-none shadow-sm bg-white/80">
         <CardHeader>
           <CardTitle className="text-base font-semibold">
             Data Management
@@ -164,7 +167,7 @@ const MiscSettings = () => {
       </Card>
 
       {/* Danger Zone */}
-      <Card className="border-destructive/50 shadow-sm bg-destructive/5">
+      <Card className="border-none shadow-sm bg-white/80">
         <CardHeader>
           <CardTitle className="text-destructive flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
@@ -175,7 +178,7 @@ const MiscSettings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-destructive/20 bg-background p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg border border-red-500 bg-red-50 p-4">
             <div className="space-y-0.5">
               <Label className="text-destructive font-semibold">
                 Delete Account
@@ -186,9 +189,9 @@ const MiscSettings = () => {
               </p>
             </div>
             <Button
-              variant="destructive"
+              variant="ghost"
               onClick={handleDeleteAccount}
-              className="shrink-0"
+              className="cursor-pointer bg-white hover:bg-red-50 text-red-600 hover:text-red-700 border border-red-500 hover:border-red-600 transition-colors"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete Account

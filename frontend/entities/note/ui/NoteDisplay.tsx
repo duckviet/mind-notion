@@ -3,8 +3,15 @@ import React from "react";
 type Props = {
   content: any;
   className?: string;
+  zoom?: number;
+  width?: number;
 };
-export default function NoteDisplay({ content, className }: Props) {
+export default function NoteDisplay({
+  content,
+  className,
+  zoom,
+  width,
+}: Props) {
   return (
     <p
       className={cn(
@@ -13,10 +20,10 @@ export default function NoteDisplay({ content, className }: Props) {
       )}
       style={{
         userSelect: "none",
-        zoom: "0.75",
+        zoom: zoom ?? "0.75",
         MozTransform: "scale(0.75)",
         MozTransformOrigin: "top left",
-        width: "133.33%",
+        width: width ?? "150%",
         // Force wrapping on nested HTML elements
         wordBreak: "break-word",
         overflowWrap: "break-word",
