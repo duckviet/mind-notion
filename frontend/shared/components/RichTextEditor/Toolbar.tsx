@@ -15,6 +15,7 @@ import {
   Italic,
   Link2,
   List,
+  ListCollapseIcon,
   ListOrdered,
   Quote,
   Redo,
@@ -71,9 +72,7 @@ const Toolbar = ({ editor }: { editor: Editor }) => {
         icon={<Highlighter size={16} />}
         tooltip="Highlight"
       />
-
       <div className="w-px h-6 bg-gray-300 mx-1" />
-
       {/* Headings */}
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -93,9 +92,7 @@ const Toolbar = ({ editor }: { editor: Editor }) => {
         icon={<Heading3 size={16} />}
         tooltip="Heading 3"
       />
-
       <div className="w-px h-6 bg-gray-300 mx-1" />
-
       {/* Lists */}
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -115,9 +112,7 @@ const Toolbar = ({ editor }: { editor: Editor }) => {
         icon={<CheckSquare size={16} />}
         tooltip="Task List"
       />
-
       <div className="w-px h-6 bg-gray-300 mx-1" />
-
       {/* Other */}
       <ToolbarButton
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -143,9 +138,7 @@ const Toolbar = ({ editor }: { editor: Editor }) => {
         icon={<ImageIcon size={16} />}
         tooltip="Add Image"
       />
-
       <div className="w-px h-6 bg-gray-300 mx-1" />
-
       {/* Undo/Redo */}
       <ToolbarButton
         onClick={() => editor.chain().focus().undo().run()}
@@ -160,6 +153,16 @@ const Toolbar = ({ editor }: { editor: Editor }) => {
         icon={<Redo size={16} />}
         tooltip="Redo"
         disabled={!editor.can().redo()}
+      />{" "}
+      <div className="w-px h-6 bg-gray-300 mx-1" />
+      {/* Table of Contents */}
+      <ToolbarButton
+        onClick={() => editor.commands.toggleTableOfContents()}
+        // 3. Truy cập vào storage thay vì dùng isActive()
+        isActive={!!editor.storage.extTableOfContents?.toc}
+        icon={<ListCollapseIcon size={16} />}
+        tooltip="Table of Contents"
+        disabled={typeof editor.commands.toggleTableOfContents !== "function"}
       />
     </motion.div>
   );

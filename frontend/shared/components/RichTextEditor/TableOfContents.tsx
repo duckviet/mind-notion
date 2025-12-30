@@ -90,7 +90,7 @@ const TOCItem = ({
             : "text-muted-foreground"
         )}
         style={{
-          paddingLeft: `${(data.level - 1) * 12 + 4}px`,
+          paddingLeft: `${(data.level - 2) * 12}px`,
         }}
       >
         {hasChildren && (
@@ -159,7 +159,8 @@ export const TableOfContents = ({
 
     editor.state.doc.descendants((node, pos) => {
       if (node.type.name.match(/^heading/)) {
-        const level = parseInt(node.type.name.replace("heading", ""));
+        console.log(pos, node);
+        const level = node?.attrs?.level || 0;
         if (level > maxHeadingLevel) return;
 
         headings.push({
@@ -176,6 +177,7 @@ export const TableOfContents = ({
     return headings;
   }, [editor?.state, maxHeadingLevel]);
 
+  console.log(flatHeadings);
   const tree = useMemo(() => {
     const result = buildHeadingTree(flatHeadings);
     treeRef.current = result;
@@ -312,17 +314,19 @@ export const TableOfContents = ({
 
   if (flatHeadings.length === 0) return null;
 
+  console.log(tree);
+  if (!editor?.storage.extTableOfContents.toc) return null;
+
   return (
-    <div className="w-64 sticky top-10 h-fit bg-white shadow-md rounded-lg p-4  ">
+    <div className="w-64 sticky top-10 h-fit bg-white shadow-md rounded-lg p-3">
       <div className={cn("flex flex-col h-full", className)}>
-        <div className="px-4 pb-2 pt-1">
+        <div className="p-2">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
             Contents
           </div>
-          <div className="h-px bg-border mt-2" />
         </div>
 
-        <nav className="flex-1 overflow-y-auto pr-2 select-none">
+        <nav className="flex-1 overflow-y-auto select-none">
           <ul className="space-y-1">
             {tree.map((node) => (
               <TOCItem
