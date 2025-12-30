@@ -11,6 +11,9 @@ import ExtHeading from "./ExtHeading";
 import ExtMathematics, { migrateMathStrings } from "./ExtMathematics";
 import ExtTableKit from "./ExtTable";
 import { Placeholder } from "@tiptap/extensions";
+import ExtTableOfContents from "./ExtTableOfContents";
+import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
+import { LocalStorageKeys } from "@/shared/configs/localStorageKeys";
 
 function useTiptapPlaceholderCSS() {
   useEffect(() => {
@@ -58,6 +61,10 @@ export const useTiptapEditor = ({
   const isUpdatingRef = useRef(false);
   const lastUserInputRef = useRef<number>(0); // Track last user input time
 
+  const [toc, setToc] = usePersistentState(
+    LocalStorageKeys.FOCUS_EDIT_TOC_COLLAPSED,
+    false
+  );
   // Keep refs updated without causing re-renders
   useEffect(() => {
     onUpdateRef.current = onUpdate;
@@ -88,6 +95,10 @@ export const useTiptapEditor = ({
       ExtHeading,
       ExtMathematics,
       ...ExtTableKit,
+      ExtTableOfContents.configure({
+        initialToc: toc ?? false,
+        onToggle: (newTocValue: boolean) => setToc(newTocValue),
+      }),
       Placeholder.configure({
         placeholder: placeholder,
       }),

@@ -4,7 +4,8 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import Cookies from "js-cookie"; // Dùng cái này để quản lý cookie nhất quán
-import { refreshToken } from "../generated/api";
+import { useAuthStore } from "@/features/auth/store/authStore";
+import authAction from "@/shared/services/actions/auth.action";
 
 interface FailedRequestQueueItem {
   resolve: (value: any) => void;
@@ -30,6 +31,8 @@ export class ClientRequest {
         process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api/v1",
       timeout: 30000,
       headers: { "Content-Type": "application/json" },
+      // Quan trọng: để trình duyệt tự động gửi HttpOnly cookies (access_token, refresh_token)
+      withCredentials: true,
     });
 
     // Request Interceptor: Chỉ đơn giản là gắn token nếu có
@@ -58,6 +61,12 @@ export class ClientRequest {
           originalRequest &&
           !originalRequest._retry
         ) {
+          // Không refresh nếu đã logout (isAuth = false)
+          const { isAuth } = useAuthStore.getState();
+          if (!isAuth) {
+            return Promise.reject(error);
+          }
+
           if (this.isRefreshing) {
             // Nếu đang refresh, xếp các request khác vào hàng đợi
             return new Promise((resolve, reject) => {
@@ -72,12 +81,13 @@ export class ClientRequest {
 
           originalRequest._retry = true;
           this.isRefreshing = true;
-          const refresh_token = Cookies.get("refresh_token");
+          // Bắt đầu quá trình refresh: bật global loading
+          useAuthStore.getState().setRefreshing(true);
 
           try {
-            // Gọi API refresh token
-            // Backend nên tự set-cookie mới cho access_token và refresh_token
-            const newTokens = await refreshToken({ refresh_token });
+            // Gọi API refresh token thông qua authAction
+            // Trình duyệt sẽ tự gửi HttpOnly refresh_token cookie
+            const newTokens = await authAction.refreshToken();
             const { access_token } = newTokens;
 
             // Nếu Backend không tự set cookie access_token, ta set thủ công ở đây:
@@ -99,6 +109,8 @@ export class ClientRequest {
             return Promise.reject(refreshError);
           } finally {
             this.isRefreshing = false;
+            // Kết thúc refresh: tắt global loading
+            useAuthStore.getState().setRefreshing(false);
           }
         }
         return Promise.reject(error);
@@ -116,5 +128,12 @@ export class ClientRequest {
 
   public getAxiosInstance() {
     return this.axiosInstance;
+  }
+
+  // Method để cancel refresh và clear queue khi logout
+  public cancelRefresh() {
+    this.isRefreshing = false;
+    this.processQueue(new Error("Refresh cancelled due to logout"), null);
+    useAuthStore.getState().setRefreshing(false);
   }
 }

@@ -4,6 +4,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
@@ -71,8 +72,32 @@ func healthHandler(c *gin.Context) {
 }
 
 func corsMiddleware() gin.HandlerFunc {
+	productOrigin := os.Getenv("FRONTEND_ORIGIN")
+
+	allowedOrigins := []string{
+		"http://localhost:3000",      // Local Dev
+		productOrigin,        // Production 
+	}
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
+		// In a real deployment, this should come from config (env / config file)
+		origin := c.GetHeader("Origin")
+		
+		// 3. Kiểm tra xem Origin này có nằm trong Whitelist không
+		isAllowed := false
+		for _, o := range allowedOrigins {
+			if o == origin {
+				isAllowed = true
+				break
+			}
+		}
+
+		// 4. Nếu hợp lệ, set Origin đó vào Header
+		if isAllowed {
+			c.Header("Access-Control-Allow-Origin", origin)
+		}
+		
+		c.Header("Vary", "Origin")
+		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
 		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
 
@@ -109,9 +134,10 @@ func authMiddleware(authService service.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		token := extractBearerToken(c)
+		// Ưu tiên Authorization header, fallback sang HttpOnly cookie (access_token)
+		token := extractTokenFromRequest(c)
 		if token == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing or invalid Authorization header"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing or invalid token"})
 			return
 		}
 
