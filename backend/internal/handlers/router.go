@@ -72,41 +72,43 @@ func healthHandler(c *gin.Context) {
 }
 
 func corsMiddleware() gin.HandlerFunc {
-	productOrigin := os.Getenv("FRONTEND_ORIGIN")
+    // 1. Lấy chuỗi từ Env và tách thành Slice
+    originsEnv := os.Getenv("ALLOWED_ORIGINS")
+    if originsEnv == "" {
+        originsEnv = "http://localhost:3000" // Default cho dev
+    }
+    allowedOrigins := strings.Split(originsEnv, ",")
 
-	allowedOrigins := []string{
-		"http://localhost:3000",      // Local Dev
-		productOrigin,        // Production 
-	}
-	return func(c *gin.Context) {
-		// In a real deployment, this should come from config (env / config file)
-		origin := c.GetHeader("Origin")
-		
-		// 3. Kiểm tra xem Origin này có nằm trong Whitelist không
-		isAllowed := false
-		for _, o := range allowedOrigins {
-			if o == origin {
-				isAllowed = true
-				break
-			}
-		}
+    return func(c *gin.Context) {
+        origin := c.GetHeader("Origin")
+        
+        // 2. Kiểm tra xem Origin có trong whitelist không
+        isAllowed := false
+        for _, o := range allowedOrigins {
+            // Dùng strings.TrimSpace để tránh lỗi nếu lỡ tay gõ dấu cách sau dấu phẩy trong env
+            if strings.TrimSpace(o) == origin {
+                isAllowed = true
+                break
+            }
+        }
 
-		// 4. Nếu hợp lệ, set Origin đó vào Header
-		if isAllowed {
-			c.Header("Access-Control-Allow-Origin", origin)
-		}
-		
-		c.Header("Vary", "Origin")
-		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
-		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+        if isAllowed {
+            c.Header("Access-Control-Allow-Origin", origin)
+        }
 
-		if c.Request.Method == http.MethodOptions {
-			c.AbortWithStatus(http.StatusNoContent)
-			return
-		}
-		c.Next()
-	}
+        // Các header quan trọng khác
+        c.Header("Vary", "Origin")
+        c.Header("Access-Control-Allow-Credentials", "true")
+        c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
+        c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept, X-Requested-With")
+
+        // 3. Xử lý Preflight (Quan trọng!)
+        if c.Request.Method == http.MethodOptions {
+            c.AbortWithStatus(http.StatusNoContent)
+            return
+        }
+        c.Next()
+    }
 }
 
 func loggingMiddleware() gin.HandlerFunc {
