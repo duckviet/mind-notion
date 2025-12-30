@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, AlertCircle, Plus } from "lucide-react";
+import { X, AlertCircle, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import Portal from "@/shared/components/PortalModal/PortalModal";
 import { Input } from "@/shared/components/ui/input";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
@@ -25,6 +25,8 @@ import { Button } from "@/shared/components/ui/button";
 import NoteMetadataPanel from "./NoteMetadataPanel";
 import NoteTagsSection from "./NoteTagsSection";
 import CommentSection from "./CommentSection";
+import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
+import { LocalStorageKeys } from "@/shared/configs/localStorageKeys";
 
 interface FocusEditModalProps {
   isOpen: boolean;
@@ -103,7 +105,10 @@ export default function FocusEditModal({
   const [newTag, setNewTag] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
-
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = usePersistentState(
+    LocalStorageKeys.FOCUS_EDIT_SIDEBAR_COLLAPSED,
+    () => false
+  );
   // lưu lại lần cuối đã save để tránh gọi API khi không có thay đổi
   const lastSavedRef = useRef(form);
 
@@ -323,22 +328,60 @@ export default function FocusEditModal({
                     />
                   </div>
 
-                  <div className="w-1/6  rounded-2xl p-4 flex flex-col space-y-10">
-                    <NoteMetadataPanel note={note} />
-                    <NoteTagsSection
-                      tags={form.tags}
-                      newTag={newTag}
-                      onNewTagChange={setNewTag}
-                      onTagAdd={handleTagAdd}
-                      onTagRemove={handleRemove}
-                      disabled={isSaving}
-                    />
-
-                    <CommentSection />
-                    <div className="text-xs text-right mt-auto text-gray-500">
-                      {form.content.length} chars
+                  <motion.aside
+                    initial={false}
+                    animate={{ width: isSidebarCollapsed ? 42 : 320 }}
+                    transition={{ type: "spring", stiffness: 260, damping: 30 }}
+                    className="shrink-0 rounded-2xl p-2 flex flex-col bg-transparent"
+                  >
+                    <div className="flex items-center justify-end">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+                        aria-label={
+                          isSidebarCollapsed
+                            ? "Expand sidebar"
+                            : "Collapse sidebar"
+                        }
+                      >
+                        {isSidebarCollapsed ? (
+                          <ChevronLeft className="w-4 h-4" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4" />
+                        )}
+                      </Button>
                     </div>
-                  </div>
+
+                    <AnimatePresence initial={false}>
+                      {!isSidebarCollapsed && (
+                        <motion.div
+                          key="sidebar-content"
+                          initial={{ opacity: 0, x: 8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 8 }}
+                          transition={{ duration: 0.15 }}
+                          className="flex flex-col space-y-10 mt-4 min-w-0"
+                        >
+                          <NoteMetadataPanel note={note} />
+                          <NoteTagsSection
+                            tags={form.tags}
+                            newTag={newTag}
+                            onNewTagChange={setNewTag}
+                            onTagAdd={handleTagAdd}
+                            onTagRemove={handleRemove}
+                            disabled={isSaving}
+                          />
+                          <CommentSection />{" "}
+                          <div className="text-xs text-right mt-auto text-gray-500">
+                            {" "}
+                            {form.content.length} chars{" "}
+                          </div>{" "}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.aside>
                 </div>
               </div>
             </motion.div>

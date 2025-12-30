@@ -4,6 +4,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
@@ -71,17 +72,43 @@ func healthHandler(c *gin.Context) {
 }
 
 func corsMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
-		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+    // 1. Lấy chuỗi từ Env và tách thành Slice
+    originsEnv := os.Getenv("ALLOWED_ORIGINS")
+    if originsEnv == "" {
+        originsEnv = "http://localhost:3000" // Default cho dev
+    }
+    allowedOrigins := strings.Split(originsEnv, ",")
 
-		if c.Request.Method == http.MethodOptions {
-			c.AbortWithStatus(http.StatusNoContent)
-			return
-		}
-		c.Next()
-	}
+    return func(c *gin.Context) {
+        origin := c.GetHeader("Origin")
+        
+        // 2. Kiểm tra xem Origin có trong whitelist không
+        isAllowed := false
+        for _, o := range allowedOrigins {
+            // Dùng strings.TrimSpace để tránh lỗi nếu lỡ tay gõ dấu cách sau dấu phẩy trong env
+            if strings.TrimSpace(o) == origin {
+                isAllowed = true
+                break
+            }
+        }
+
+        if isAllowed {
+            c.Header("Access-Control-Allow-Origin", origin)
+        }
+
+        // Các header quan trọng khác
+        c.Header("Vary", "Origin")
+        c.Header("Access-Control-Allow-Credentials", "true")
+        c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
+        c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept, X-Requested-With")
+
+        // 3. Xử lý Preflight (Quan trọng!)
+        if c.Request.Method == http.MethodOptions {
+            c.AbortWithStatus(http.StatusNoContent)
+            return
+        }
+        c.Next()
+    }
 }
 
 func loggingMiddleware() gin.HandlerFunc {
@@ -109,9 +136,10 @@ func authMiddleware(authService service.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		token := extractBearerToken(c)
+		// Ưu tiên Authorization header, fallback sang HttpOnly cookie (access_token)
+		token := extractTokenFromRequest(c)
 		if token == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing or invalid Authorization header"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing or invalid token"})
 			return
 		}
 

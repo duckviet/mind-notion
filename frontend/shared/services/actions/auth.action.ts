@@ -48,6 +48,8 @@ const authAction = {
 
   // Hàm tiện ích để dọn dẹp (Dùng chung cho logout và lỗi refresh)
   handleLogoutCleanup() {
+    // Note: cancelRefresh được gọi từ authStore.logout() để tránh circular dependency
+
     // Xóa Access Token (Client xóa được)
     Cookies.remove("access_token");
 
