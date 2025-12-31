@@ -11,12 +11,11 @@ import (
 // Helper functions to convert between domain models and DTOs for events
 
 func eventToDTO(event *models.Event) dto.ResDetailEvent {
-	// Parse ID to int32
-	id, _ := strconv.ParseInt(event.ID, 10, 32)
+	// IDs are stored as strings (UUIDs) in the DB; pass through as-is
 	userId, _ := strconv.ParseInt(event.UserID, 10, 32)
 	
 	res := dto.ResDetailEvent{
-		Id:        int32(id),
+		Id:        event.ID,
 		UserId:    int32(userId),
 		Title:     event.Title,
 		Type:      event.Type,
