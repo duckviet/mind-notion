@@ -1,0 +1,18 @@
+delete:
+  summary: Delete an event
+  operationId: deleteEvent
+  tags:
+    - Event
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  responses:
+    "204":
+      description: Event deleted successfully
+    "404":
+      $ref: "../../components/responses/_index.yaml#/NotFound"
+    "401":
+      $ref: "../../components/responses/_index.yaml#/Unauthorized"

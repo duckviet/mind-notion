@@ -60,6 +60,20 @@ paths:
   /folders/{id}/add-note:
     $ref: "./paths/folder/add-note.yaml"
 
+  # Event Management
+  /events:
+    $ref: "./paths/event/create.yaml"
+  /events/list:
+    $ref: "./paths/event/list.yaml"
+  /events/{id}:
+    $ref: "./paths/event/get.yaml"
+  /events/{id}/update:
+    $ref: "./paths/event/update.yaml"
+  /events/{id}/delete:
+    $ref: "./paths/event/delete.yaml"
+  /events/range:
+    $ref: "./paths/event/list-by-range.yaml"
+
   # Template Management
   /templates:
     $ref: "./paths/template/create.yaml"

@@ -157,6 +157,157 @@ export interface ResListTemplates {
   templates?: ResDetailTemplate[];
 }
 
+export type ReqCreateEventType =
+  (typeof ReqCreateEventType)[keyof typeof ReqCreateEventType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ReqCreateEventType = {
+  task: "task",
+  event: "event",
+  note: "note",
+} as const;
+
+export type ReqCreateEventStatus =
+  (typeof ReqCreateEventStatus)[keyof typeof ReqCreateEventStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ReqCreateEventStatus = {
+  pending: "pending",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+export type ReqCreateEventPriority =
+  (typeof ReqCreateEventPriority)[keyof typeof ReqCreateEventPriority];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ReqCreateEventPriority = {
+  low: "low",
+  normal: "normal",
+  high: "high",
+} as const;
+
+export interface ReqCreateEvent {
+  title: string;
+  description?: string;
+  tags?: string[];
+  type: ReqCreateEventType;
+  start_time: string;
+  end_time?: string;
+  due_date?: string;
+  status?: ReqCreateEventStatus;
+  priority?: ReqCreateEventPriority;
+  category_id?: number;
+  is_all_day?: boolean;
+}
+
+export type ReqUpdateEventStatus =
+  (typeof ReqUpdateEventStatus)[keyof typeof ReqUpdateEventStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ReqUpdateEventStatus = {
+  pending: "pending",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+export type ReqUpdateEventPriority =
+  (typeof ReqUpdateEventPriority)[keyof typeof ReqUpdateEventPriority];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ReqUpdateEventPriority = {
+  low: "low",
+  normal: "normal",
+  high: "high",
+} as const;
+
+export interface ReqUpdateEvent {
+  title?: string;
+  description?: string;
+  tags?: string[];
+  start_time?: string;
+  end_time?: string;
+  due_date?: string;
+  status?: ReqUpdateEventStatus;
+  priority?: ReqUpdateEventPriority;
+  category_id?: number;
+  is_all_day?: boolean;
+}
+
+export interface ReqRemoveEvent {
+  event_id: string;
+}
+
+/**
+ * Event type
+ */
+export type ResDetailEventType =
+  (typeof ResDetailEventType)[keyof typeof ResDetailEventType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ResDetailEventType = {
+  task: "task",
+  event: "event",
+  note: "note",
+} as const;
+
+/**
+ * Status (only for tasks)
+ */
+export type ResDetailEventStatus =
+  (typeof ResDetailEventStatus)[keyof typeof ResDetailEventStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ResDetailEventStatus = {
+  pending: "pending",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+/**
+ * Priority (only for tasks)
+ */
+export type ResDetailEventPriority =
+  (typeof ResDetailEventPriority)[keyof typeof ResDetailEventPriority];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ResDetailEventPriority = {
+  low: "low",
+  normal: "normal",
+  high: "high",
+} as const;
+
+export interface ResDetailEvent {
+  /** Unique event identifier */
+  id: number;
+  /** User who created the event */
+  user_id: number;
+  /** Event title */
+  title: string;
+  /** Event description */
+  description?: string;
+  /** Event tags */
+  tags?: string[];
+  /** Event type */
+  type: ResDetailEventType;
+  /** Event start time */
+  start_time: string;
+  /** Event end time (optional) */
+  end_time?: string;
+  /** Due date (mainly for tasks) */
+  due_date?: string;
+  /** Status (only for tasks) */
+  status?: ResDetailEventStatus;
+  /** Priority (only for tasks) */
+  priority?: ResDetailEventPriority;
+  /** Category ID */
+  category_id?: number;
+  /** Whether event is all-day */
+  is_all_day?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export type BadRequestResponse = {
   error?: string;
 };
@@ -273,6 +424,70 @@ export type ListFolders200 = {
   limit?: number;
   /** Number of folders skipped */
   offset?: number;
+};
+
+export type ListEventsParams = {
+  /**
+   * Filter by event type
+   */
+  type?: ListEventsType;
+  /**
+   * Filter by status (for tasks)
+   */
+  status?: ListEventsStatus;
+};
+
+export type ListEventsType =
+  (typeof ListEventsType)[keyof typeof ListEventsType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ListEventsType = {
+  task: "task",
+  event: "event",
+  note: "note",
+} as const;
+
+export type ListEventsStatus =
+  (typeof ListEventsStatus)[keyof typeof ListEventsStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ListEventsStatus = {
+  pending: "pending",
+  completed: "completed",
+  cancelled: "cancelled",
+} as const;
+
+export type ListEvents200 = {
+  data?: ResDetailEvent[];
+};
+
+export type ListEventsByRangeParams = {
+  /**
+   * Start date/time (ISO 8601)
+   */
+  start_time: string;
+  /**
+   * End date/time (ISO 8601)
+   */
+  end_time: string;
+  /**
+   * Filter by event type
+   */
+  type?: ListEventsByRangeType;
+};
+
+export type ListEventsByRangeType =
+  (typeof ListEventsByRangeType)[keyof typeof ListEventsByRangeType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ListEventsByRangeType = {
+  task: "task",
+  event: "event",
+  note: "note",
+} as const;
+
+export type ListEventsByRange200 = {
+  data?: ResDetailEvent[];
 };
 
 export type ListTemplates200TemplatesItem = {
@@ -2544,6 +2759,691 @@ export const useAddNoteToFolder = <
 
   return useMutation(mutationOptions, queryClient);
 };
+
+/**
+ * @summary Create a new event
+ */
+export const createEvent = (
+  reqCreateEvent: ReqCreateEvent,
+  signal?: AbortSignal,
+) => {
+  return customInstance<ResDetailEvent>({
+    url: `/events`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: reqCreateEvent,
+    signal,
+  });
+};
+
+export const getCreateEventMutationOptions = <
+  TError = BadRequestResponse | UnauthorizedResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createEvent>>,
+    TError,
+    { data: ReqCreateEvent },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createEvent>>,
+  TError,
+  { data: ReqCreateEvent },
+  TContext
+> => {
+  const mutationKey = ["createEvent"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createEvent>>,
+    { data: ReqCreateEvent }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createEvent(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateEventMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createEvent>>
+>;
+export type CreateEventMutationBody = ReqCreateEvent;
+export type CreateEventMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse;
+
+/**
+ * @summary Create a new event
+ */
+export const useCreateEvent = <
+  TError = BadRequestResponse | UnauthorizedResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createEvent>>,
+      TError,
+      { data: ReqCreateEvent },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createEvent>>,
+  TError,
+  { data: ReqCreateEvent },
+  TContext
+> => {
+  const mutationOptions = getCreateEventMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary List all events for the current user
+ */
+export const listEvents = (params?: ListEventsParams, signal?: AbortSignal) => {
+  return customInstance<ListEvents200>({
+    url: `/events/list`,
+    method: "GET",
+    params,
+    signal,
+  });
+};
+
+export const getListEventsQueryKey = (params?: ListEventsParams) => {
+  return [`/events/list`, ...(params ? [params] : [])] as const;
+};
+
+export const getListEventsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listEvents>>,
+  TError = UnauthorizedResponse,
+>(
+  params?: ListEventsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListEventsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listEvents>>> = ({
+    signal,
+  }) => listEvents(params, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listEvents>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListEventsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listEvents>>
+>;
+export type ListEventsQueryError = UnauthorizedResponse;
+
+export function useListEvents<
+  TData = Awaited<ReturnType<typeof listEvents>>,
+  TError = UnauthorizedResponse,
+>(
+  params: undefined | ListEventsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listEvents>>,
+          TError,
+          Awaited<ReturnType<typeof listEvents>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListEvents<
+  TData = Awaited<ReturnType<typeof listEvents>>,
+  TError = UnauthorizedResponse,
+>(
+  params?: ListEventsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listEvents>>,
+          TError,
+          Awaited<ReturnType<typeof listEvents>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListEvents<
+  TData = Awaited<ReturnType<typeof listEvents>>,
+  TError = UnauthorizedResponse,
+>(
+  params?: ListEventsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary List all events for the current user
+ */
+
+export function useListEvents<
+  TData = Awaited<ReturnType<typeof listEvents>>,
+  TError = UnauthorizedResponse,
+>(
+  params?: ListEventsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getListEventsQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Get a specific event by ID
+ */
+export const getEventById = (id: number, signal?: AbortSignal) => {
+  return customInstance<ResDetailEvent>({
+    url: `/events/${id}`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getGetEventByIdQueryKey = (id?: number) => {
+  return [`/events/${id}`] as const;
+};
+
+export const getGetEventByIdQueryOptions = <
+  TData = Awaited<ReturnType<typeof getEventById>>,
+  TError = UnauthorizedResponse | NotFoundResponse,
+>(
+  id: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetEventByIdQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getEventById>>> = ({
+    signal,
+  }) => getEventById(id, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getEventById>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetEventByIdQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getEventById>>
+>;
+export type GetEventByIdQueryError = UnauthorizedResponse | NotFoundResponse;
+
+export function useGetEventById<
+  TData = Awaited<ReturnType<typeof getEventById>>,
+  TError = UnauthorizedResponse | NotFoundResponse,
+>(
+  id: number,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEventById>>,
+          TError,
+          Awaited<ReturnType<typeof getEventById>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetEventById<
+  TData = Awaited<ReturnType<typeof getEventById>>,
+  TError = UnauthorizedResponse | NotFoundResponse,
+>(
+  id: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEventById>>,
+          TError,
+          Awaited<ReturnType<typeof getEventById>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetEventById<
+  TData = Awaited<ReturnType<typeof getEventById>>,
+  TError = UnauthorizedResponse | NotFoundResponse,
+>(
+  id: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get a specific event by ID
+ */
+
+export function useGetEventById<
+  TData = Awaited<ReturnType<typeof getEventById>>,
+  TError = UnauthorizedResponse | NotFoundResponse,
+>(
+  id: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetEventByIdQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Update an event
+ */
+export const updateEvent = (id: number, reqUpdateEvent: ReqUpdateEvent) => {
+  return customInstance<ResDetailEvent>({
+    url: `/events/${id}/update`,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    data: reqUpdateEvent,
+  });
+};
+
+export const getUpdateEventMutationOptions = <
+  TError = UnauthorizedResponse | NotFoundResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateEvent>>,
+    TError,
+    { id: number; data: ReqUpdateEvent },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateEvent>>,
+  TError,
+  { id: number; data: ReqUpdateEvent },
+  TContext
+> => {
+  const mutationKey = ["updateEvent"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateEvent>>,
+    { id: number; data: ReqUpdateEvent }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateEvent(id, data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateEventMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateEvent>>
+>;
+export type UpdateEventMutationBody = ReqUpdateEvent;
+export type UpdateEventMutationError = UnauthorizedResponse | NotFoundResponse;
+
+/**
+ * @summary Update an event
+ */
+export const useUpdateEvent = <
+  TError = UnauthorizedResponse | NotFoundResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateEvent>>,
+      TError,
+      { id: number; data: ReqUpdateEvent },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateEvent>>,
+  TError,
+  { id: number; data: ReqUpdateEvent },
+  TContext
+> => {
+  const mutationOptions = getUpdateEventMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Delete an event
+ */
+export const deleteEvent = (id: number) => {
+  return customInstance<void>({
+    url: `/events/${id}/delete`,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteEventMutationOptions = <
+  TError = UnauthorizedResponse | NotFoundResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteEvent>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteEvent>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteEvent"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteEvent>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteEvent(id);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteEventMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteEvent>>
+>;
+
+export type DeleteEventMutationError = UnauthorizedResponse | NotFoundResponse;
+
+/**
+ * @summary Delete an event
+ */
+export const useDeleteEvent = <
+  TError = UnauthorizedResponse | NotFoundResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteEvent>>,
+      TError,
+      { id: number },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteEvent>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationOptions = getDeleteEventMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary List events within a date/time range
+ */
+export const listEventsByRange = (
+  params: ListEventsByRangeParams,
+  signal?: AbortSignal,
+) => {
+  return customInstance<ListEventsByRange200>({
+    url: `/events/range`,
+    method: "GET",
+    params,
+    signal,
+  });
+};
+
+export const getListEventsByRangeQueryKey = (
+  params?: ListEventsByRangeParams,
+) => {
+  return [`/events/range`, ...(params ? [params] : [])] as const;
+};
+
+export const getListEventsByRangeQueryOptions = <
+  TData = Awaited<ReturnType<typeof listEventsByRange>>,
+  TError = UnauthorizedResponse,
+>(
+  params: ListEventsByRangeParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listEventsByRange>>,
+        TError,
+        TData
+      >
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListEventsByRangeQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listEventsByRange>>
+  > = ({ signal }) => listEventsByRange(params, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listEventsByRange>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListEventsByRangeQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listEventsByRange>>
+>;
+export type ListEventsByRangeQueryError = UnauthorizedResponse;
+
+export function useListEventsByRange<
+  TData = Awaited<ReturnType<typeof listEventsByRange>>,
+  TError = UnauthorizedResponse,
+>(
+  params: ListEventsByRangeParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listEventsByRange>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listEventsByRange>>,
+          TError,
+          Awaited<ReturnType<typeof listEventsByRange>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListEventsByRange<
+  TData = Awaited<ReturnType<typeof listEventsByRange>>,
+  TError = UnauthorizedResponse,
+>(
+  params: ListEventsByRangeParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listEventsByRange>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listEventsByRange>>,
+          TError,
+          Awaited<ReturnType<typeof listEventsByRange>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListEventsByRange<
+  TData = Awaited<ReturnType<typeof listEventsByRange>>,
+  TError = UnauthorizedResponse,
+>(
+  params: ListEventsByRangeParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listEventsByRange>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary List events within a date/time range
+ */
+
+export function useListEventsByRange<
+  TData = Awaited<ReturnType<typeof listEventsByRange>>,
+  TError = UnauthorizedResponse,
+>(
+  params: ListEventsByRangeParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listEventsByRange>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getListEventsByRangeQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
 
 /**
  * @summary Create a new template

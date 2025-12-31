@@ -1,0 +1,40 @@
+get:
+  summary: List events within a date/time range
+  operationId: listEventsByRange
+  tags:
+    - Event
+  parameters:
+    - name: start_time
+      in: query
+      required: true
+      description: Start date/time (ISO 8601)
+      schema:
+        type: string
+        format: date-time
+    - name: end_time
+      in: query
+      required: true
+      description: End date/time (ISO 8601)
+      schema:
+        type: string
+        format: date-time
+    - name: type
+      in: query
+      description: Filter by event type
+      schema:
+        type: string
+        enum: [task, event, note]
+  responses:
+    "200":
+      description: List of events in range
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: ../../components/schemas/Event/Res_DetailEvent.yaml
+    "401":
+      $ref: "../../components/responses/_index.yaml#/Unauthorized"

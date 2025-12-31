@@ -1,0 +1,29 @@
+type: object
+properties:
+  title:
+    type: string
+  description:
+    type: string
+  tags:
+    type: array
+    items:
+      type: string
+  start_time:
+    type: string
+    format: date-time
+  end_time:
+    type: string
+    format: date-time
+  due_date:
+    type: string
+    format: date
+  status:
+    type: string
+    enum: [pending, completed, cancelled]
+  priority:
+    type: string
+    enum: [low, normal, high]
+  category_id:
+    type: integer
+  is_all_day:
+    type: boolean
