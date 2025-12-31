@@ -1,6 +1,6 @@
 import { useGetEventById } from "@/shared/services/generated/api";
 
-export const useEventById = (id: number) => {
+export const useEventById = (id: string) => {
   return useGetEventById(id, {
     query: {
       enabled: !!id,
