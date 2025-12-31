@@ -1,0 +1,22 @@
+post:
+  summary: Create a new event
+  operationId: createEvent
+  tags:
+    - Event
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Event/Req_CreateEvent.yaml
+  responses:
+    "201":
+      description: Event created successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Event/Res_DetailEvent.yaml
+    "400":
+      $ref: "../../components/responses/_index.yaml#/BadRequest"
+    "401":
+      $ref: "../../components/responses/_index.yaml#/Unauthorized"

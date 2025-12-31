@@ -315,7 +315,7 @@ export const TableOfContents = ({
   if (!editor?.storage.extTableOfContents.toc) return null;
 
   return (
-    <div className="w-64 sticky top-10 h-fit bg-white shadow-md rounded-lg p-3">
+    <div className="w-64 sticky top-10 h-fit max-h-[700px] overflow-auto bg-white shadow-md rounded-lg p-3">
       <div className={cn("flex flex-col h-full", className)}>
         <div className="p-2">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">

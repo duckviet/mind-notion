@@ -1,0 +1,6 @@
+type: object
+properties:
+  event_id:
+    type: string
+    example: "1234567890"
+required: [event_id]

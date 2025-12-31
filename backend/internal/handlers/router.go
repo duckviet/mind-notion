@@ -28,6 +28,7 @@ func SetupRouter(
 	noteService service.NoteService,
 	folderService service.FolderService,
 	templateService service.TemplateService,
+	eventService service.EventService,
 	wsHandler *WebSocketHandler,
 	searchHandler *SearchHandler,
 ) *gin.Engine {
@@ -61,6 +62,7 @@ func SetupRouter(
 		NoteAPI:     NoteAPI{noteService: noteService, authService: authService},
 		FolderAPI:   FolderAPI{folderService},
 		TemplateAPI: TemplateAPI{templateService: templateService, authService: authService},
+		EventAPI:    EventAPI{eventService: &eventService, authService: authService},
 	}
 	
 	// Register generated routes

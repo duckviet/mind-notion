@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 
 import {
   MultiZoneDndProvider,
@@ -12,118 +12,85 @@ import {
 import { cn } from "@/lib/utils";
 import { DAYS } from "./CalendarPage";
 import TaskCard from "./TaskCard";
+import { useEventsRange } from "@/features/event/api";
+import type { ResDetailEvent } from "@/features/event/types";
 
 type DayName = (typeof DAYS)[number];
 
-export interface DayTask {
-  id: string;
-  title: string;
-  description?: string;
-  time?: string;
-  category: "meeting" | "focus" | "reminder" | "personal";
-}
+export type DayTask = ResDetailEvent;
 
-const WEEK_TEMPLATE: Record<DayName, DayTask[]> = {
-  monday: [
-    {
-      id: "mon-standup",
-      title: "Team stand-up",
-      description: "Sync with product & design",
-      time: "09:00",
-      category: "meeting",
-    },
-    {
-      id: "mon-review",
-      title: "Review sprint board",
-      description: "Finalize priorities for the week",
-      time: "11:00",
-      category: "focus",
-    },
-  ],
-  tuesday: [
-    {
-      id: "tue-research",
-      title: "Research prototype",
-      description: "Explore drag-n-drop calendar",
-      time: "10:00",
-      category: "focus",
-    },
-    {
-      id: "tue-coaching",
-      title: "Coaching session",
-      description: "Mentor catch-up",
-      time: "15:30",
-      category: "personal",
-    },
-  ],
-  wednesday: [
-    {
-      id: "wed-demo",
-      title: "Feature demo",
-      description: "Show calendar flow",
-      time: "14:00",
-      category: "meeting",
-    },
-  ],
-  thursday: [
-    {
-      id: "thu-retro",
-      title: "Weekly retro",
-      description: "Team retrospective",
-      time: "16:00",
-      category: "meeting",
-    },
-  ],
-  friday: [
-    {
-      id: "fri-focus",
-      title: "Focus block",
-      description: "Ship DayMode UI",
-      time: "09:30",
-      category: "focus",
-    },
-    {
-      id: "fri-coffee",
-      title: "Coffee chat",
-      description: "Catch-up with PM",
-      time: "13:00",
-      category: "personal",
-    },
-  ],
-  saturday: [
-    {
-      id: "sat-gym",
-      title: "Morning workout",
-      description: "45 min cardio",
-      time: "08:30",
-      category: "personal",
-    },
-  ],
-  sunday: [],
+// Get the start and end of current week for API query
+const getWeekRange = () => {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  monday.setHours(0, 0, 0, 0);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  return {
+    start_time: monday.toISOString(),
+    end_time: sunday.toISOString(),
+  };
 };
 
-const buildInitialColumns = () =>
-  Object.entries(WEEK_TEMPLATE).reduce(
-    (acc, [day, tasks]) => ({
-      ...acc,
-      [day]: tasks.map((task) => ({ ...task })),
-    }),
-    {} as Record<DayName, DayTask[]>
-  );
-
-const getZoneId = (day: DayName) => `day-zone-${day}`;
-
-const findDayByTaskId = (
-  taskId: string,
-  columns: Record<DayName, DayTask[]>
-): DayName | undefined =>
-  (DAYS as readonly DayName[]).find((day) =>
-    columns[day].some((task) => task.id === taskId)
-  );
-
 const DayMode = () => {
+  const weekRange = useMemo(() => getWeekRange(), []);
+  const { data: eventsData, isLoading } = useEventsRange(weekRange);
+
+  // Convert API events to day-grouped structure
+  const initialColumns = useMemo(() => {
+    if (!eventsData?.data) {
+      return {
+        monday: [],
+        tuesday: [],
+        wednesday: [],
+        thursday: [],
+        friday: [],
+        saturday: [],
+        sunday: [],
+      } as Record<DayName, DayTask[]>;
+    }
+
+    const grouped: Record<DayName, DayTask[]> = {
+      monday: [],
+      tuesday: [],
+      wednesday: [],
+      thursday: [],
+      friday: [],
+      saturday: [],
+      sunday: [],
+    };
+
+    eventsData.data.forEach((event) => {
+      const startDate = new Date(event.start_time);
+      const dayIndex = startDate.getDay();
+      const dayMap = [
+        "sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+      ];
+      const dayName = dayMap[dayIndex] as DayName;
+      grouped[dayName].push(event);
+    });
+
+    return grouped;
+  }, [eventsData]);
+
   const [columns, setColumns] =
-    useState<Record<DayName, DayTask[]>>(buildInitialColumns);
+    useState<Record<DayName, DayTask[]>>(initialColumns);
+
+  // Update columns when API data changes
+  useEffect(() => {
+    setColumns(initialColumns);
+  }, [initialColumns]);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
@@ -135,13 +102,25 @@ const DayMode = () => {
     const overId = over.id.toString();
 
     setColumns((prev) => {
+      const findDayByTaskId = (
+        taskId: string,
+        columns: Record<DayName, DayTask[]>
+      ): DayName | undefined =>
+        (DAYS as readonly DayName[]).find((day) =>
+          columns[day].some((task) => task.id.toString() === taskId)
+        );
+
+      const getZoneId = (day: DayName) => `day-zone-${day}`;
+
       const sourceDay = findDayByTaskId(activeId, prev);
       if (!sourceDay) {
         return prev;
       }
 
       const sourceTasks = prev[sourceDay];
-      const fromIndex = sourceTasks.findIndex((task) => task.id === activeId);
+      const fromIndex = sourceTasks.findIndex(
+        (task) => task.id.toString() === activeId
+      );
       if (fromIndex === -1) {
         return prev;
       }
@@ -157,7 +136,7 @@ const DayMode = () => {
 
       let destinationIndex = zoneTarget
         ? targetTasks.length
-        : targetTasks.findIndex((task) => task.id === overId);
+        : targetTasks.findIndex((task) => task.id.toString() === overId);
 
       if (destinationIndex < 0) {
         destinationIndex = targetTasks.length;
@@ -194,9 +173,16 @@ const DayMode = () => {
     (id: UniqueIdentifier | null) => {
       if (!id) return null;
       const taskId = id.toString();
+      const findDayByTaskId = (
+        taskId: string,
+        columns: Record<DayName, DayTask[]>
+      ): DayName | undefined =>
+        (DAYS as readonly DayName[]).find((day) =>
+          columns[day].some((task) => task.id.toString() === taskId)
+        );
       const day = findDayByTaskId(taskId, columns);
       if (!day) return null;
-      return columns[day].find((task) => task.id === taskId) ?? null;
+      return columns[day].find((task) => task.id.toString() === taskId) ?? null;
     },
     [columns]
   );
@@ -209,6 +195,8 @@ const DayMode = () => {
     },
     [getTaskById]
   );
+
+  const getZoneId = (day: DayName) => `day-zone-${day}`;
 
   const TIME_IN_DAYS = [
     "09:00",
@@ -227,6 +215,17 @@ const DayMode = () => {
     "22:00",
     "23:00",
   ];
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 p-4">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-muted-foreground">Loading events...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 p-4">
       <MultiZoneDndProvider
@@ -258,7 +257,9 @@ const DayMode = () => {
                 const tasks = columns[day];
                 return (
                   <div key={day} className="flex flex-col gap-4 h-full">
-                    <SortableContext items={tasks.map((task) => task.id)}>
+                    <SortableContext
+                      items={tasks.map((task) => task.id.toString())}
+                    >
                       <DroppableZone
                         id={getZoneId(day)}
                         className="flex h-full flex-col gap-4 rounded-md  p-3 transition-all"
@@ -270,7 +271,7 @@ const DayMode = () => {
                           </div>
                         )}
                         {tasks.map((task) => (
-                          <SortableItem key={task.id} id={task.id}>
+                          <SortableItem key={task.id} id={task.id.toString()}>
                             <TaskCard task={task} />
                           </SortableItem>
                         ))}

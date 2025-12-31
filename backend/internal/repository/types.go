@@ -1,6 +1,15 @@
 package repository
 
-import "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+import (
+	"errors"
+
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+)
+
+// Common repository errors
+var (
+	ErrNotFound = errors.New("record not found")
+)
 
 // ListParams represents common pagination parameters
 type ListParams struct {

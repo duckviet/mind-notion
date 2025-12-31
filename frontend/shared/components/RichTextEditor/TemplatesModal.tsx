@@ -62,7 +62,7 @@ export function TemplatesModal({
   }, [userTemplates]);
 
   return (
-    <Portal>
+    <Portal lockScroll={isOpen}>
       <AnimatePresence>
         {isOpen && (
           <>

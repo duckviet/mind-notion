@@ -64,6 +64,8 @@ type ApiHandleFunctions struct {
 
 	// Routes for the AuthAPI part of the API
 	AuthAPI AuthAPI
+	// Routes for the EventAPI part of the API
+	EventAPI EventAPI
 	// Routes for the FolderAPI part of the API
 	FolderAPI FolderAPI
 	// Routes for the NoteAPI part of the API
@@ -105,6 +107,42 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			http.MethodPost,
 			"/api/v1/auth/register",
 			handleFunctions.AuthAPI.Register,
+		},
+		{
+			"CreateEvent",
+			http.MethodPost,
+			"/api/v1/events",
+			handleFunctions.EventAPI.CreateEvent,
+		},
+		{
+			"DeleteEvent",
+			http.MethodDelete,
+			"/api/v1/events/:id/delete",
+			handleFunctions.EventAPI.DeleteEvent,
+		},
+		{
+			"GetEventById",
+			http.MethodGet,
+			"/api/v1/events/:id",
+			handleFunctions.EventAPI.GetEventById,
+		},
+		{
+			"ListEvents",
+			http.MethodGet,
+			"/api/v1/events/list",
+			handleFunctions.EventAPI.ListEvents,
+		},
+		{
+			"ListEventsByRange",
+			http.MethodGet,
+			"/api/v1/events/range",
+			handleFunctions.EventAPI.ListEventsByRange,
+		},
+		{
+			"UpdateEvent",
+			http.MethodPatch,
+			"/api/v1/events/:id/update",
+			handleFunctions.EventAPI.UpdateEvent,
 		},
 		{
 			"AddNoteToFolder",

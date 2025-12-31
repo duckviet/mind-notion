@@ -39,3 +39,12 @@ Res_DetailTemplate:
   $ref: "./Template/Res_DetailTemplate.yaml"
 Res_ListTemplates:
   $ref: "./Template/Res_ListTemplates.yaml"
+
+Req_CreateEvent:
+  $ref: "./Event/Req_CreateEvent.yaml"
+Req_UpdateEvent:
+  $ref: "./Event/Req_UpdateEvent.yaml"
+Req_RemoveEvent:
+  $ref: "./Event/Req_RemoveEvent.yaml"
+Res_DetailEvent:
+  $ref: "./Event/Res_DetailEvent.yaml"
