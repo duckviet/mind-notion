@@ -279,7 +279,7 @@ export const ResDetailEventPriority = {
 
 export interface ResDetailEvent {
   /** Unique event identifier */
-  id: number;
+  id: string;
   /** User who created the event */
   user_id: number;
   /** Event title */
@@ -2986,7 +2986,7 @@ export function useListEvents<
 /**
  * @summary Get a specific event by ID
  */
-export const getEventById = (id: number, signal?: AbortSignal) => {
+export const getEventById = (id: string, signal?: AbortSignal) => {
   return customInstance<ResDetailEvent>({
     url: `/events/${id}`,
     method: "GET",
@@ -2994,7 +2994,7 @@ export const getEventById = (id: number, signal?: AbortSignal) => {
   });
 };
 
-export const getGetEventByIdQueryKey = (id?: number) => {
+export const getGetEventByIdQueryKey = (id?: string) => {
   return [`/events/${id}`] as const;
 };
 
@@ -3002,7 +3002,7 @@ export const getGetEventByIdQueryOptions = <
   TData = Awaited<ReturnType<typeof getEventById>>,
   TError = UnauthorizedResponse | NotFoundResponse,
 >(
-  id: number,
+  id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
@@ -3038,7 +3038,7 @@ export function useGetEventById<
   TData = Awaited<ReturnType<typeof getEventById>>,
   TError = UnauthorizedResponse | NotFoundResponse,
 >(
-  id: number,
+  id: string,
   options: {
     query: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
@@ -3060,7 +3060,7 @@ export function useGetEventById<
   TData = Awaited<ReturnType<typeof getEventById>>,
   TError = UnauthorizedResponse | NotFoundResponse,
 >(
-  id: number,
+  id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
@@ -3082,7 +3082,7 @@ export function useGetEventById<
   TData = Awaited<ReturnType<typeof getEventById>>,
   TError = UnauthorizedResponse | NotFoundResponse,
 >(
-  id: number,
+  id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
@@ -3100,7 +3100,7 @@ export function useGetEventById<
   TData = Awaited<ReturnType<typeof getEventById>>,
   TError = UnauthorizedResponse | NotFoundResponse,
 >(
-  id: number,
+  id: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
@@ -3125,7 +3125,7 @@ export function useGetEventById<
 /**
  * @summary Update an event
  */
-export const updateEvent = (id: number, reqUpdateEvent: ReqUpdateEvent) => {
+export const updateEvent = (id: string, reqUpdateEvent: ReqUpdateEvent) => {
   return customInstance<ResDetailEvent>({
     url: `/events/${id}/update`,
     method: "PATCH",
@@ -3141,13 +3141,13 @@ export const getUpdateEventMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateEvent>>,
     TError,
-    { id: number; data: ReqUpdateEvent },
+    { id: string; data: ReqUpdateEvent },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateEvent>>,
   TError,
-  { id: number; data: ReqUpdateEvent },
+  { id: string; data: ReqUpdateEvent },
   TContext
 > => {
   const mutationKey = ["updateEvent"];
@@ -3161,7 +3161,7 @@ export const getUpdateEventMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateEvent>>,
-    { id: number; data: ReqUpdateEvent }
+    { id: string; data: ReqUpdateEvent }
   > = (props) => {
     const { id, data } = props ?? {};
 
@@ -3188,7 +3188,7 @@ export const useUpdateEvent = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateEvent>>,
       TError,
-      { id: number; data: ReqUpdateEvent },
+      { id: string; data: ReqUpdateEvent },
       TContext
     >;
   },
@@ -3196,7 +3196,7 @@ export const useUpdateEvent = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateEvent>>,
   TError,
-  { id: number; data: ReqUpdateEvent },
+  { id: string; data: ReqUpdateEvent },
   TContext
 > => {
   const mutationOptions = getUpdateEventMutationOptions(options);
@@ -3207,7 +3207,7 @@ export const useUpdateEvent = <
 /**
  * @summary Delete an event
  */
-export const deleteEvent = (id: number) => {
+export const deleteEvent = (id: string) => {
   return customInstance<void>({
     url: `/events/${id}/delete`,
     method: "DELETE",
@@ -3221,13 +3221,13 @@ export const getDeleteEventMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deleteEvent>>,
     TError,
-    { id: number },
+    { id: string },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof deleteEvent>>,
   TError,
-  { id: number },
+  { id: string },
   TContext
 > => {
   const mutationKey = ["deleteEvent"];
@@ -3241,7 +3241,7 @@ export const getDeleteEventMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof deleteEvent>>,
-    { id: number }
+    { id: string }
   > = (props) => {
     const { id } = props ?? {};
 
@@ -3268,7 +3268,7 @@ export const useDeleteEvent = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteEvent>>,
       TError,
-      { id: number },
+      { id: string },
       TContext
     >;
   },
@@ -3276,7 +3276,7 @@ export const useDeleteEvent = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof deleteEvent>>,
   TError,
-  { id: number },
+  { id: string },
   TContext
 > => {
   const mutationOptions = getDeleteEventMutationOptions(options);

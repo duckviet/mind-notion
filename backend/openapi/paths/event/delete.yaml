@@ -8,7 +8,7 @@ delete:
       in: path
       required: true
       schema:
-        type: integer
+        type: string
   responses:
     "204":
       description: Event deleted successfully

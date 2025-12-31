@@ -28,7 +28,7 @@ function YearDays({
 }) {
   const today = dayjs();
   const [currentMonth, setCurrentMonth] = useState(today.month());
-  const [calendarMode, setCalendarMode] = useState<CalendarMode>("monthly");
+  const [calendarMode, setCalendarMode] = useState<CalendarMode>("weekly");
   const [currentStartWeekDate, setCurrentStartWeekDate] = useState<Dayjs>(
     today.startOf("week").add(1, "day")
   );

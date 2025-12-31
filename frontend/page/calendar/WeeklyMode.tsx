@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 import {
   MultiZoneDndProvider,
@@ -9,11 +10,16 @@ import {
   type DragEndEvent,
   type UniqueIdentifier,
 } from "@/shared/components/dnd";
-import { cn } from "@/lib/utils";
 import { DAYS } from "./CalendarPage";
 import TaskCard from "./TaskCard";
-import { useEventsRange } from "@/features/event/api";
+import {
+  useEventsRange,
+  useCreateEvent,
+  useUpdateEvent,
+} from "@/features/event/api";
+import { EventDialog } from "@/features/event/components";
 import type { ResDetailEvent } from "@/features/event/types";
+import type { ReqCreateEvent, ReqUpdateEvent } from "@/features/event/api";
 
 type DayName = (typeof DAYS)[number];
 
@@ -38,8 +44,18 @@ const getWeekRange = () => {
 };
 
 const DayMode = () => {
+  const queryClient = useQueryClient();
   const weekRange = useMemo(() => getWeekRange(), []);
-  const { data: eventsData, isLoading } = useEventsRange(weekRange);
+  const eventsQuery = useEventsRange(weekRange);
+  const { data: eventsData, isLoading, queryKey } = eventsQuery;
+  const createEvent = useCreateEvent();
+  const updateEvent = useUpdateEvent();
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const [selectedEvent, setSelectedEvent] = useState<
+    ResDetailEvent | undefined
+  >(undefined);
 
   // Convert API events to day-grouped structure
   const initialColumns = useMemo(() => {
@@ -91,6 +107,35 @@ const DayMode = () => {
   useEffect(() => {
     setColumns(initialColumns);
   }, [initialColumns]);
+
+  const openCreate = () => {
+    setSelectedEvent(undefined);
+    setDialogMode("create");
+    setDialogOpen(true);
+  };
+
+  const openEdit = (event: ResDetailEvent) => {
+    setSelectedEvent(event);
+    setDialogMode("edit");
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async (payload: ReqCreateEvent | ReqUpdateEvent) => {
+    if (dialogMode === "create") {
+      await createEvent.mutateAsync(payload as ReqCreateEvent);
+    } else if (selectedEvent?.id) {
+      await updateEvent.mutateAsync({
+        id: selectedEvent.id,
+        data: payload,
+      });
+    }
+    if (queryKey) {
+      await queryClient.invalidateQueries({ queryKey });
+    } else {
+      await queryClient.invalidateQueries({ queryKey: ["/events/range"] });
+    }
+    setDialogOpen(false);
+  };
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
@@ -227,7 +272,16 @@ const DayMode = () => {
   }
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-6 p-4 h-full">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Week</h2>
+        <button
+          className="rounded-md bg-sky-600 px-3 py-2 text-sm font-medium text-white hover:bg-sky-700"
+          onClick={openCreate}
+        >
+          Create Event
+        </button>
+      </div>
       <MultiZoneDndProvider
         onDragEnd={handleDragEnd}
         renderOverlay={renderOverlay}
@@ -241,7 +295,7 @@ const DayMode = () => {
               </div>
             ))}
           </div>
-          <div className="h-full">
+          <div className="flex flex-col w-full">
             <div className="grid grid-cols-7">
               {DAYS.map((day) => (
                 <div key={day} className="font-medium text-sm text-center">
@@ -250,7 +304,7 @@ const DayMode = () => {
               ))}
             </div>
             <div
-              className="grid "
+              className="grid"
               style={{ gridTemplateColumns: "repeat(7, minmax(150px, 1fr))" }}
             >
               {(DAYS as readonly DayName[]).map((day) => {
@@ -272,7 +326,10 @@ const DayMode = () => {
                         )}
                         {tasks.map((task) => (
                           <SortableItem key={task.id} id={task.id.toString()}>
-                            <TaskCard task={task} />
+                            <TaskCard
+                              task={task}
+                              onClick={() => openEdit(task)}
+                            />
                           </SortableItem>
                         ))}
                       </DroppableZone>
@@ -284,6 +341,15 @@ const DayMode = () => {
           </div>
         </div>
       </MultiZoneDndProvider>
+
+      <EventDialog
+        mode={dialogMode}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        initialEvent={selectedEvent}
+        onSubmit={handleSubmit}
+        submitting={createEvent.isPending || updateEvent.isPending}
+      />
     </div>
   );
 };
