@@ -1,7 +1,7 @@
 type: object
 properties:
   id:
-    type: integer
+    type: string
     description: Unique event identifier
   user_id:
     type: integer

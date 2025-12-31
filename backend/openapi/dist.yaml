@@ -681,7 +681,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '200':
           description: Event details
@@ -704,7 +704,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       requestBody:
         required: true
         content:
@@ -733,7 +733,7 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '204':
           description: Event deleted successfully
@@ -1502,7 +1502,7 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
           description: Unique event identifier
         user_id:
           type: integer

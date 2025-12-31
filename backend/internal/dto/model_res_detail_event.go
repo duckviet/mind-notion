@@ -16,7 +16,7 @@ import (
 type ResDetailEvent struct {
 
 	// Unique event identifier
-	Id int32 `json:"id"`
+	Id string `json:"id"`
 
 	// User who created the event
 	UserId int32 `json:"user_id"`
