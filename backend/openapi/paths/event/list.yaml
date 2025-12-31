@@ -1,0 +1,32 @@
+get:
+  summary: List all events for the current user
+  operationId: listEvents
+  tags:
+    - Event
+  parameters:
+    - name: type
+      in: query
+      description: Filter by event type
+      schema:
+        type: string
+        enum: [task, event, note]
+    - name: status
+      in: query
+      description: Filter by status (for tasks)
+      schema:
+        type: string
+        enum: [pending, completed, cancelled]
+  responses:
+    "200":
+      description: List of events
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: ../../components/schemas/Event/Res_DetailEvent.yaml
+    "401":
+      $ref: "../../components/responses/_index.yaml#/Unauthorized"

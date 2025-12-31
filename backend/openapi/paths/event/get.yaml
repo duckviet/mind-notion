@@ -1,0 +1,22 @@
+get:
+  summary: Get a specific event by ID
+  operationId: getEventById
+  tags:
+    - Event
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    "200":
+      description: Event details
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Event/Res_DetailEvent.yaml
+    "404":
+      $ref: "../../components/responses/_index.yaml#/NotFound"
+    "401":
+      $ref: "../../components/responses/_index.yaml#/Unauthorized"

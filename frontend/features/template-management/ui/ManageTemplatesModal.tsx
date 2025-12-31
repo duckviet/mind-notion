@@ -174,7 +174,7 @@ export function ManageTemplatesModal({
   };
 
   return (
-    <Portal>
+    <Portal lockScroll={isOpen || isEditing}>
       <AnimatePresence>
         {isOpen && (
           <Fragment>
