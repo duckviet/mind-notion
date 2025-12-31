@@ -10,17 +10,20 @@ import {
   Code,
   ListTodo,
   Briefcase,
+  Plus,
 } from "lucide-react";
+import { useMemo } from "react";
 
 import type { Template } from "./templates";
 import { defaultTemplates } from "./templates";
 import Portal from "@/shared/components/PortalModal/PortalModal";
+import { useTemplates } from "@/features/template-management/hooks/useTemplates";
 
 type TemplatesModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSelectTemplate: (template: Template) => void;
-  templates?: Template[];
+  onManageTemplates?: () => void;
 };
 
 const iconMap: Record<
@@ -40,13 +43,37 @@ export function TemplatesModal({
   isOpen,
   onClose,
   onSelectTemplate,
-  templates = defaultTemplates,
+  onManageTemplates,
 }: TemplatesModalProps) {
+  const { templates: userTemplates, isLoading } = useTemplates();
+
+  // Combine default templates with user templates
+  const allTemplates = useMemo(() => {
+    const userTemplateMapped: Template[] = (userTemplates || []).map((t) => ({
+      id: t.id,
+      name: t.name,
+      icon: t.icon as Template["icon"],
+      content: t.content,
+      tags: t.tags || [],
+      color: t.color,
+    }));
+
+    return [...defaultTemplates, ...userTemplateMapped];
+  }, [userTemplates]);
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <Portal>
+    <Portal>
+      <AnimatePresence>
+        {isOpen && (
           <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              onClick={onClose}
+            />
             {/* Modal Content */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -62,22 +89,37 @@ export function TemplatesModal({
                     Choose a Template
                   </h2>
                   <p className="mt-1 text-sm text-gray-500">
-                    Select a starting point for your project
+                    {isLoading
+                      ? "Loading templates..."
+                      : `${allTemplates.length} templates available`}
                   </p>
                 </div>
-                <motion.button
-                  whileHover={{ rotate: 90, scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={onClose}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-black transition-colors hover:bg-black hover:text-white"
-                >
-                  <X size={20} />
-                </motion.button>
+                <div className="flex items-center gap-2">
+                  {onManageTemplates && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={onManageTemplates}
+                      className="flex items-center gap-2 rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+                    >
+                      <Plus size={16} />
+                      Create Template
+                    </motion.button>
+                  )}
+                  <motion.button
+                    whileHover={{ rotate: 90, scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={onClose}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-black transition-colors hover:bg-black hover:text-white"
+                  >
+                    <X size={20} />
+                  </motion.button>
+                </div>
               </div>
 
               {/* Grid Content */}
               <div className="grid max-h-[600px] grid-cols-2 gap-4 overflow-y-auto p-8 pt-2 md:grid-cols-3">
-                {templates.map((template, index) => {
+                {allTemplates.map((template, index) => {
                   const Icon = iconMap[template.icon] ?? FileText;
 
                   return (
@@ -123,8 +165,8 @@ export function TemplatesModal({
               </div>
             </motion.div>
           </>
-        </Portal>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </Portal>
   );
 }

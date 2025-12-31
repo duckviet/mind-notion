@@ -17,6 +17,9 @@ var (
 	// Folder errors
 	ErrFolderNotFound = errors.New("folder not found")
 
+	// Template errors
+	ErrTemplateNotFound = errors.New("template not found")
+
 	// General errors
 	ErrInternalServerError = errors.New("internal server error")
 	ErrNotImplemented      = errors.New("not implemented")

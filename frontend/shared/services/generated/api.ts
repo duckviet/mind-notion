@@ -125,6 +125,38 @@ export interface ResDetailNote {
   updated_at: string;
 }
 
+export interface ReqCreateTemple {
+  name: string;
+  icon: string;
+  content: string;
+  tags?: string[];
+  color?: string;
+}
+
+export interface ReqUpdateTemplate {
+  name?: string;
+  icon?: string;
+  content?: string;
+  tags?: string[];
+  color?: string;
+}
+
+export interface ResDetailTemplate {
+  id: string;
+  name: string;
+  icon: string;
+  content: string;
+  tags: string[];
+  color?: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ResListTemplates {
+  templates?: ResDetailTemplate[];
+}
+
 export type BadRequestResponse = {
   error?: string;
 };
@@ -241,6 +273,22 @@ export type ListFolders200 = {
   limit?: number;
   /** Number of folders skipped */
   offset?: number;
+};
+
+export type ListTemplates200TemplatesItem = {
+  id: string;
+  name: string;
+  icon: string;
+  content: string;
+  tags: string[];
+  color?: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ListTemplates200 = {
+  templates?: ListTemplates200TemplatesItem[];
 };
 
 /**
@@ -2493,6 +2541,573 @@ export const useAddNoteToFolder = <
   TContext
 > => {
   const mutationOptions = getAddNoteToFolderMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Create a new template
+ */
+export const createTemplate = (
+  reqCreateTemple: ReqCreateTemple,
+  signal?: AbortSignal,
+) => {
+  return customInstance<ResDetailTemplate>({
+    url: `/templates`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: reqCreateTemple,
+    signal,
+  });
+};
+
+export const getCreateTemplateMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTemplate>>,
+    TError,
+    { data: ReqCreateTemple },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createTemplate>>,
+  TError,
+  { data: ReqCreateTemple },
+  TContext
+> => {
+  const mutationKey = ["createTemplate"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createTemplate>>,
+    { data: ReqCreateTemple }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createTemplate(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createTemplate>>
+>;
+export type CreateTemplateMutationBody = ReqCreateTemple;
+export type CreateTemplateMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Create a new template
+ */
+export const useCreateTemplate = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createTemplate>>,
+      TError,
+      { data: ReqCreateTemple },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createTemplate>>,
+  TError,
+  { data: ReqCreateTemple },
+  TContext
+> => {
+  const mutationOptions = getCreateTemplateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary List all templates for authenticated user
+ */
+export const listTemplates = (signal?: AbortSignal) => {
+  return customInstance<ListTemplates200>({
+    url: `/templates/list`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getListTemplatesQueryKey = () => {
+  return [`/templates/list`] as const;
+};
+
+export const getListTemplatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listTemplates>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>
+  >;
+}) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListTemplatesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listTemplates>>> = ({
+    signal,
+  }) => listTemplates(signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listTemplates>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListTemplatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listTemplates>>
+>;
+export type ListTemplatesQueryError =
+  | UnauthorizedResponse
+  | InternalServerErrorResponse;
+
+export function useListTemplates<
+  TData = Awaited<ReturnType<typeof listTemplates>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof listTemplates>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListTemplates<
+  TData = Awaited<ReturnType<typeof listTemplates>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof listTemplates>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListTemplates<
+  TData = Awaited<ReturnType<typeof listTemplates>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary List all templates for authenticated user
+ */
+
+export function useListTemplates<
+  TData = Awaited<ReturnType<typeof listTemplates>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getListTemplatesQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Get template by ID
+ */
+export const getTemplate = (id: string, signal?: AbortSignal) => {
+  return customInstance<ResDetailTemplate>({
+    url: `/templates/${id}`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getGetTemplateQueryKey = (id?: string) => {
+  return [`/templates/${id}`] as const;
+};
+
+export const getGetTemplateQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTemplate>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTemplateQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getTemplate>>> = ({
+    signal,
+  }) => getTemplate(id, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTemplate>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTemplateQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTemplate>>
+>;
+export type GetTemplateQueryError =
+  | UnauthorizedResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+export function useGetTemplate<
+  TData = Awaited<ReturnType<typeof getTemplate>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTemplate>>,
+          TError,
+          Awaited<ReturnType<typeof getTemplate>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTemplate<
+  TData = Awaited<ReturnType<typeof getTemplate>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTemplate>>,
+          TError,
+          Awaited<ReturnType<typeof getTemplate>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTemplate<
+  TData = Awaited<ReturnType<typeof getTemplate>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get template by ID
+ */
+
+export function useGetTemplate<
+  TData = Awaited<ReturnType<typeof getTemplate>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetTemplateQueryOptions(id, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Update template by ID
+ */
+export const updateTemplate = (
+  id: string,
+  reqUpdateTemplate: ReqUpdateTemplate,
+) => {
+  return customInstance<ResDetailTemplate>({
+    url: `/templates/${id}/update`,
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    data: reqUpdateTemplate,
+  });
+};
+
+export const getUpdateTemplateMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTemplate>>,
+    TError,
+    { id: string; data: ReqUpdateTemplate },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateTemplate>>,
+  TError,
+  { id: string; data: ReqUpdateTemplate },
+  TContext
+> => {
+  const mutationKey = ["updateTemplate"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateTemplate>>,
+    { id: string; data: ReqUpdateTemplate }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateTemplate(id, data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateTemplate>>
+>;
+export type UpdateTemplateMutationBody = ReqUpdateTemplate;
+export type UpdateTemplateMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Update template by ID
+ */
+export const useUpdateTemplate = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateTemplate>>,
+      TError,
+      { id: string; data: ReqUpdateTemplate },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateTemplate>>,
+  TError,
+  { id: string; data: ReqUpdateTemplate },
+  TContext
+> => {
+  const mutationOptions = getUpdateTemplateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Delete template by ID
+ */
+export const deleteTemplate = (id: string) => {
+  return customInstance<void>({
+    url: `/templates/${id}/delete`,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteTemplateMutationOptions = <
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteTemplate>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteTemplate>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteTemplate"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteTemplate>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteTemplate(id);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteTemplate>>
+>;
+
+export type DeleteTemplateMutationError =
+  | UnauthorizedResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Delete template by ID
+ */
+export const useDeleteTemplate = <
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteTemplate>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteTemplate>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteTemplateMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
