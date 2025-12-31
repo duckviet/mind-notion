@@ -60,6 +60,18 @@ paths:
   /folders/{id}/add-note:
     $ref: "./paths/folder/add-note.yaml"
 
+  # Template Management
+  /templates:
+    $ref: "./paths/template/create.yaml"
+  /templates/list:
+    $ref: "./paths/template/list.yaml"
+  /templates/{id}:
+    $ref: "./paths/template/get.yaml"
+  /templates/{id}/update:
+    $ref: "./paths/template/update.yaml"
+  /templates/{id}/delete:
+    $ref: "./paths/template/delete.yaml"
+
 # Phần components giờ đây chỉ chứa các tham chiếu
 components:
   securitySchemes:

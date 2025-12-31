@@ -1,0 +1,22 @@
+delete:
+  summary: Delete template by ID
+  operationId: deleteTemplate
+  tags: [Template]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Template ID
+  responses:
+    "204":
+      description: Template deleted successfully
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

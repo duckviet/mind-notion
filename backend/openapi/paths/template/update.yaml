@@ -1,0 +1,34 @@
+put:
+  summary: Update template by ID
+  operationId: updateTemplate
+  tags: [Template]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Template ID
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Template/Req_UpdateTemplate.yaml
+  responses:
+    "200":
+      description: Template updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Template/Res_DetailTemplate.yaml
+    "400":
+      $ref: ../../components/responses/BadRequest.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

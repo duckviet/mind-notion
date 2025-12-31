@@ -1,0 +1,26 @@
+get:
+  summary: Get template by ID
+  operationId: getTemplate
+  tags: [Template]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Template ID
+  responses:
+    "200":
+      description: Template retrieved successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Template/Res_DetailTemplate.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

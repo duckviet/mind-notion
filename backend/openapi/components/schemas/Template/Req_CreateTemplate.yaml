@@ -1,0 +1,20 @@
+type: object
+properties:
+  name:
+    type: string
+    example: "Meeting Notes Template"
+  icon:
+    type: string
+    example: "Calendar"
+  content:
+    type: string
+    example: "<h2>Meeting Notes</h2><p><strong>Date:</strong></p>"
+  tags:
+    type: array
+    items:
+      type: string
+    example: ["Meeting", "Work"]
+  color:
+    type: string
+    example: "#5a8a7d"
+required: [name, icon, content]

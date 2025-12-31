@@ -82,6 +82,7 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 		&models.Folder{},
 		&models.Note{},
 		&models.Tag{},
+		&models.Template{},
 		&models.FolderNote{},
 		&models.NoteTag{},
 	); err != nil {

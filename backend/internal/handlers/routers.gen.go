@@ -68,6 +68,8 @@ type ApiHandleFunctions struct {
 	FolderAPI FolderAPI
 	// Routes for the NoteAPI part of the API
 	NoteAPI NoteAPI
+	// Routes for the TemplateAPI part of the API
+	TemplateAPI TemplateAPI
 	// Routes for the UserAPI part of the API
 	UserAPI UserAPI
 }
@@ -181,6 +183,36 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			http.MethodPut,
 			"/api/v1/notes/:id/tom",
 			handleFunctions.NoteAPI.UpdateNoteTOM,
+		},
+		{
+			"CreateTemplate",
+			http.MethodPost,
+			"/api/v1/templates",
+			handleFunctions.TemplateAPI.CreateTemplate,
+		},
+		{
+			"DeleteTemplate",
+			http.MethodDelete,
+			"/api/v1/templates/:id/delete",
+			handleFunctions.TemplateAPI.DeleteTemplate,
+		},
+		{
+			"GetTemplate",
+			http.MethodGet,
+			"/api/v1/templates/:id",
+			handleFunctions.TemplateAPI.GetTemplate,
+		},
+		{
+			"ListTemplates",
+			http.MethodGet,
+			"/api/v1/templates/list",
+			handleFunctions.TemplateAPI.ListTemplates,
+		},
+		{
+			"UpdateTemplate",
+			http.MethodPut,
+			"/api/v1/templates/:id/update",
+			handleFunctions.TemplateAPI.UpdateTemplate,
 		},
 		{
 			"DeleteMe",
