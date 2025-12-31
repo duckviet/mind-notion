@@ -621,81 +621,14 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: Meeting Notes Template
-                icon:
-                  type: string
-                  example: Calendar
-                content:
-                  type: string
-                  example: '<h2>Meeting Notes</h2><p><strong>Date:</strong></p>'
-                tags:
-                  type: array
-                  items:
-                    type: string
-                  example:
-                    - Meeting
-                    - Work
-                color:
-                  type: string
-                  example: '#5a8a7d'
-              required:
-                - name
-                - icon
-                - content
+              $ref: '#/components/schemas/Req_CreateTemple'
       responses:
         '201':
           description: Template created successfully
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                    example: '1234567890'
-                  name:
-                    type: string
-                    example: Meeting Notes Template
-                  icon:
-                    type: string
-                    example: Calendar
-                  content:
-                    type: string
-                    example: '<h2>Meeting Notes</h2><p><strong>Date:</strong></p>'
-                  tags:
-                    type: array
-                    items:
-                      type: string
-                    example:
-                      - Meeting
-                      - Work
-                  color:
-                    type: string
-                    example: '#5a8a7d'
-                  user_id:
-                    type: string
-                    example: user-uuid-123
-                  created_at:
-                    type: string
-                    format: date-time
-                    example: '2021-01-01T00:00:00Z'
-                  updated_at:
-                    type: string
-                    format: date-time
-                    example: '2021-01-01T00:00:00Z'
-                required:
-                  - id
-                  - name
-                  - icon
-                  - content
-                  - tags
-                  - user_id
-                  - created_at
-                  - updated_at
+                $ref: '#/components/schemas/Res_DetailTemplate'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -790,7 +723,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/paths/~1templates/post/responses/201/content/application~1json/schema'
+                $ref: '#/components/schemas/Res_DetailTemplate'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -817,34 +750,14 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: Meeting Notes Template
-                icon:
-                  type: string
-                  example: Calendar
-                content:
-                  type: string
-                  example: '<h2>Meeting Notes</h2><p><strong>Date:</strong></p>'
-                tags:
-                  type: array
-                  items:
-                    type: string
-                  example:
-                    - Meeting
-                    - Work
-                color:
-                  type: string
-                  example: '#5a8a7d'
+              $ref: '#/components/schemas/Req_UpdateTemplate'
       responses:
         '200':
           description: Template updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/paths/~1templates/post/responses/201/content/application~1json/schema'
+                $ref: '#/components/schemas/Res_DetailTemplate'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1217,6 +1130,106 @@ components:
         - content_type
         - status
         - top_of_mind
+    Req_CreateTemple:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Meeting Notes Template
+        icon:
+          type: string
+          example: Calendar
+        content:
+          type: string
+          example: '<h2>Meeting Notes</h2><p><strong>Date:</strong></p>'
+        tags:
+          type: array
+          items:
+            type: string
+          example:
+            - Meeting
+            - Work
+        color:
+          type: string
+          example: '#5a8a7d'
+      required:
+        - name
+        - icon
+        - content
+    Req_UpdateTemplate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Meeting Notes Template
+        icon:
+          type: string
+          example: Calendar
+        content:
+          type: string
+          example: '<h2>Meeting Notes</h2><p><strong>Date:</strong></p>'
+        tags:
+          type: array
+          items:
+            type: string
+          example:
+            - Meeting
+            - Work
+        color:
+          type: string
+          example: '#5a8a7d'
+    Res_DetailTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '1234567890'
+        name:
+          type: string
+          example: Meeting Notes Template
+        icon:
+          type: string
+          example: Calendar
+        content:
+          type: string
+          example: '<h2>Meeting Notes</h2><p><strong>Date:</strong></p>'
+        tags:
+          type: array
+          items:
+            type: string
+          example:
+            - Meeting
+            - Work
+        color:
+          type: string
+          example: '#5a8a7d'
+        user_id:
+          type: string
+          example: user-uuid-123
+        created_at:
+          type: string
+          format: date-time
+          example: '2021-01-01T00:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2021-01-01T00:00:00Z'
+      required:
+        - id
+        - name
+        - icon
+        - content
+        - tags
+        - user_id
+        - created_at
+        - updated_at
+    Res_ListTemplates:
+      type: object
+      properties:
+        templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Res_DetailTemplate'
   responses:
     BadRequest:
       description: Bad Request. The request is invalid.

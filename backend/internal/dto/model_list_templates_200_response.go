@@ -11,5 +11,5 @@ package dto
 
 type ListTemplates200Response struct {
 
-	Templates []CreateTemplate201Response `json:"templates,omitempty"`
+	Templates []ListTemplates200ResponseTemplatesInner `json:"templates,omitempty"`
 }

@@ -125,6 +125,38 @@ export interface ResDetailNote {
   updated_at: string;
 }
 
+export interface ReqCreateTemple {
+  name: string;
+  icon: string;
+  content: string;
+  tags?: string[];
+  color?: string;
+}
+
+export interface ReqUpdateTemplate {
+  name?: string;
+  icon?: string;
+  content?: string;
+  tags?: string[];
+  color?: string;
+}
+
+export interface ResDetailTemplate {
+  id: string;
+  name: string;
+  icon: string;
+  content: string;
+  tags: string[];
+  color?: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ResListTemplates {
+  templates?: ResDetailTemplate[];
+}
+
 export type BadRequestResponse = {
   error?: string;
 };
@@ -243,26 +275,6 @@ export type ListFolders200 = {
   offset?: number;
 };
 
-export type CreateTemplateBody = {
-  name: string;
-  icon: string;
-  content: string;
-  tags?: string[];
-  color?: string;
-};
-
-export type CreateTemplate201 = {
-  id: string;
-  name: string;
-  icon: string;
-  content: string;
-  tags: string[];
-  color?: string;
-  user_id: string;
-  created_at: string;
-  updated_at: string;
-};
-
 export type ListTemplates200TemplatesItem = {
   id: string;
   name: string;
@@ -277,14 +289,6 @@ export type ListTemplates200TemplatesItem = {
 
 export type ListTemplates200 = {
   templates?: ListTemplates200TemplatesItem[];
-};
-
-export type UpdateTemplateBody = {
-  name?: string;
-  icon?: string;
-  content?: string;
-  tags?: string[];
-  color?: string;
 };
 
 /**
@@ -2545,14 +2549,14 @@ export const useAddNoteToFolder = <
  * @summary Create a new template
  */
 export const createTemplate = (
-  createTemplateBody: CreateTemplateBody,
+  reqCreateTemple: ReqCreateTemple,
   signal?: AbortSignal,
 ) => {
-  return customInstance<CreateTemplate201>({
+  return customInstance<ResDetailTemplate>({
     url: `/templates`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    data: createTemplateBody,
+    data: reqCreateTemple,
     signal,
   });
 };
@@ -2567,13 +2571,13 @@ export const getCreateTemplateMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createTemplate>>,
     TError,
-    { data: CreateTemplateBody },
+    { data: ReqCreateTemple },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createTemplate>>,
   TError,
-  { data: CreateTemplateBody },
+  { data: ReqCreateTemple },
   TContext
 > => {
   const mutationKey = ["createTemplate"];
@@ -2587,7 +2591,7 @@ export const getCreateTemplateMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createTemplate>>,
-    { data: CreateTemplateBody }
+    { data: ReqCreateTemple }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -2600,7 +2604,7 @@ export const getCreateTemplateMutationOptions = <
 export type CreateTemplateMutationResult = NonNullable<
   Awaited<ReturnType<typeof createTemplate>>
 >;
-export type CreateTemplateMutationBody = CreateTemplateBody;
+export type CreateTemplateMutationBody = ReqCreateTemple;
 export type CreateTemplateMutationError =
   | BadRequestResponse
   | UnauthorizedResponse
@@ -2620,7 +2624,7 @@ export const useCreateTemplate = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof createTemplate>>,
       TError,
-      { data: CreateTemplateBody },
+      { data: ReqCreateTemple },
       TContext
     >;
   },
@@ -2628,7 +2632,7 @@ export const useCreateTemplate = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof createTemplate>>,
   TError,
-  { data: CreateTemplateBody },
+  { data: ReqCreateTemple },
   TContext
 > => {
   const mutationOptions = getCreateTemplateMutationOptions(options);
@@ -2769,7 +2773,7 @@ export function useListTemplates<
  * @summary Get template by ID
  */
 export const getTemplate = (id: string, signal?: AbortSignal) => {
-  return customInstance<Schema>({
+  return customInstance<ResDetailTemplate>({
     url: `/templates/${id}`,
     method: "GET",
     signal,
@@ -2927,13 +2931,13 @@ export function useGetTemplate<
  */
 export const updateTemplate = (
   id: string,
-  updateTemplateBody: UpdateTemplateBody,
+  reqUpdateTemplate: ReqUpdateTemplate,
 ) => {
-  return customInstance<Schema>({
+  return customInstance<ResDetailTemplate>({
     url: `/templates/${id}/update`,
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    data: updateTemplateBody,
+    data: reqUpdateTemplate,
   });
 };
 
@@ -2948,13 +2952,13 @@ export const getUpdateTemplateMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateTemplate>>,
     TError,
-    { id: string; data: UpdateTemplateBody },
+    { id: string; data: ReqUpdateTemplate },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateTemplate>>,
   TError,
-  { id: string; data: UpdateTemplateBody },
+  { id: string; data: ReqUpdateTemplate },
   TContext
 > => {
   const mutationKey = ["updateTemplate"];
@@ -2968,7 +2972,7 @@ export const getUpdateTemplateMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateTemplate>>,
-    { id: string; data: UpdateTemplateBody }
+    { id: string; data: ReqUpdateTemplate }
   > = (props) => {
     const { id, data } = props ?? {};
 
@@ -2981,7 +2985,7 @@ export const getUpdateTemplateMutationOptions = <
 export type UpdateTemplateMutationResult = NonNullable<
   Awaited<ReturnType<typeof updateTemplate>>
 >;
-export type UpdateTemplateMutationBody = UpdateTemplateBody;
+export type UpdateTemplateMutationBody = ReqUpdateTemplate;
 export type UpdateTemplateMutationError =
   | BadRequestResponse
   | UnauthorizedResponse
@@ -3003,7 +3007,7 @@ export const useUpdateTemplate = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateTemplate>>,
       TError,
-      { id: string; data: UpdateTemplateBody },
+      { id: string; data: ReqUpdateTemplate },
       TContext
     >;
   },
@@ -3011,7 +3015,7 @@ export const useUpdateTemplate = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateTemplate>>,
   TError,
-  { id: string; data: UpdateTemplateBody },
+  { id: string; data: ReqUpdateTemplate },
   TContext
 > => {
   const mutationOptions = getUpdateTemplateMutationOptions(options);
