@@ -4,7 +4,6 @@ import { Fragment, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Trash2, Edit2, Save } from "lucide-react";
 import Portal from "@/shared/components/PortalModal/PortalModal";
-import { useTemplates } from "@/shared/hooks/useTemplates";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { cn } from "@/lib/utils";
@@ -14,10 +13,9 @@ import ExtHeading from "../../../shared/components/RichTextEditor/ExtHeading";
 import ExtCodeBlock from "../../../shared/components/RichTextEditor/ExtCodeBlock";
 import ExtListKit from "../../../shared/components/RichTextEditor/ExtListKit";
 import ExtLink from "../../../shared/components/RichTextEditor/ExtLink";
-import { Placeholder } from "@tiptap/extensions";
-import Toolbar from "../../../shared/components/RichTextEditor/Toolbar";
 import { TemplateForm } from "./TemplateForm";
 import { TemplateList } from "./TemplateList";
+import { useTemplates } from "../hooks/useTemplates";
 
 type ManageTemplatesModalProps = {
   isOpen: boolean;
