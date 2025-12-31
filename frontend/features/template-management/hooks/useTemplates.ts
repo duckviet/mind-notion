@@ -4,9 +4,9 @@ import {
   createTemplate as apiCreateTemplate,
   updateTemplate as apiUpdateTemplate,
   deleteTemplate as apiDeleteTemplate,
-  CreateTemplateBody,
-  UpdateTemplateBody,
   getListTemplatesQueryKey,
+  CreateTemplateMutationBody,
+  UpdateTemplateMutationBody,
 } from "@/shared/services/generated/api";
 
 export function useTemplates() {
@@ -22,7 +22,7 @@ export function useTemplates() {
 
   // Create template mutation
   const createMutation = useMutation({
-    mutationFn: (data: CreateTemplateBody) => apiCreateTemplate(data),
+    mutationFn: (data: CreateTemplateMutationBody) => apiCreateTemplate(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: queryKey,
@@ -37,7 +37,7 @@ export function useTemplates() {
       data,
     }: {
       id: string;
-      data: UpdateTemplateBody;
+      data: UpdateTemplateMutationBody;
     }) => await apiUpdateTemplate(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
