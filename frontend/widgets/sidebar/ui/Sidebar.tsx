@@ -7,12 +7,17 @@ import {
   CalendarDaysIcon,
 } from "lucide-react";
 import Link from "next/link";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import authAction from "@/shared/services/actions/auth.action";
 
 const Sidebar = () => {
+  const [mounted, setMounted] = useState(false);
   const { isAuth, logout: clearAuthStore } = useAuthStore();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const SIDEBAR_ITEMS = [
     {
@@ -39,6 +44,8 @@ const Sidebar = () => {
       clearAuthStore();
     }
   }, [clearAuthStore]);
+
+  if (!mounted) return null;
 
   return (
     <div className="h-full w-16 fixed flex-col items-center flex px-4 py-16  left-2 top-0 z-100">

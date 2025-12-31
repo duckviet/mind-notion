@@ -22,8 +22,15 @@ import {
   Strikethrough,
   Undo,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const Toolbar = ({ editor }: { editor: Editor }) => {
+const Toolbar = ({
+  editor,
+  className,
+}: {
+  editor: Editor;
+  className?: string;
+}) => {
   const addLink = () => {
     editor.chain().focus().toggleLink({ href: "https://www.google.com" }).run();
   };
@@ -36,7 +43,10 @@ const Toolbar = ({ editor }: { editor: Editor }) => {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex   gap-1 p-2 bg-gray-50 rounded-lg border border-gray-200 sticky -top-4 z-15 shadow-md"
+      className={cn(
+        "flex gap-1 p-2 bg-gray-50 rounded-lg border border-gray-200 sticky -top-4 z-15 shadow-md",
+        className
+      )}
     >
       {/* Text Formatting */}
       <ToolbarButton

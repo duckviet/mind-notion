@@ -38,14 +38,14 @@ export const SlashCommandMenu = ({
               index === selectedIndex && "bg-gray-100"
             )}
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-800">
+            <div className="flex h-6 w-6 items-center justify-center rounded-md border border-gray-200 bg-gray-50 text-gray-800">
               {command.icon}
             </div>
-            <div className="flex flex-col">
-              <span className="font-medium text-gray-900">{command.label}</span>
-              <span className="text-xs text-gray-500">
-                {command.description}
+            <div className="flex justify-between w-full items-center">
+              <span className="font-medium text-gray-900 text-sm">
+                {command.label}
               </span>
+              {/* <span className="text-xs text-gray-500">K</span> */}
             </div>
           </button>
         ))}

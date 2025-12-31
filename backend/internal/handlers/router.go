@@ -27,6 +27,7 @@ func SetupRouter(
 	userService service.UserService,
 	noteService service.NoteService,
 	folderService service.FolderService,
+	templateService service.TemplateService,
 	wsHandler *WebSocketHandler,
 	searchHandler *SearchHandler,
 ) *gin.Engine {
@@ -55,10 +56,11 @@ func SetupRouter(
 
 	// API handlers
 	apiHandlers := ApiHandleFunctions{
-		AuthAPI:   *NewAuthAPI(authService, cfg),
-		UserAPI:   UserAPI{userService},
-		NoteAPI:   NoteAPI{noteService: noteService, authService: authService},
-		FolderAPI: FolderAPI{folderService},
+		AuthAPI:     *NewAuthAPI(authService, cfg),
+		UserAPI:     UserAPI{userService},
+		NoteAPI:     NoteAPI{noteService: noteService, authService: authService},
+		FolderAPI:   FolderAPI{folderService},
+		TemplateAPI: TemplateAPI{templateService: templateService, authService: authService},
 	}
 	
 	// Register generated routes

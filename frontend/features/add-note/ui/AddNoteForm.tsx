@@ -43,6 +43,9 @@ export default function AddNoteForm({
           console.error("Failed to create note", err);
         } finally {
           setIsSaving(false);
+          setTitle("");
+          setContent("");
+          setIsFocus(false);
         }
       } else {
         // No content; ignore

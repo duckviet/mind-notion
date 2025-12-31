@@ -47,6 +47,7 @@ func New(ctx context.Context) (*App, func(), error) {
 	userRepo := repository.NewUserRepository(db)
 	noteRepo := repository.NewNoteRepository(db)
 	folderRepo := repository.NewFolderRepository(db)
+	templateRepo := repository.NewTemplateRepository(db)
 
 	var (
 		searchService service.SearchService
@@ -76,6 +77,7 @@ func New(ctx context.Context) (*App, func(), error) {
 	userService := service.NewUserService(userRepo, cfg)
 	noteService := service.NewNoteService(noteRepo, cfg, searchService)
 	folderService := service.NewFolderService(folderRepo, cfg)
+	templateService := service.NewTemplateService(templateRepo)
 	authService := service.NewAuthService(userRepo, cfg)
 
 	// Initialize collaboration (websocket) components
@@ -84,7 +86,7 @@ func New(ctx context.Context) (*App, func(), error) {
 	wsHandler := handlers.NewWebSocketHandler(collabService)
 
 	// Initialize handlers
-	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, wsHandler, searchHandler)
+	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, templateService, wsHandler, searchHandler)
 
 	app := &App{
 		router: router,
