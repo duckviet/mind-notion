@@ -5,9 +5,9 @@ backend/vendor/
 bin/
 obj/
 
-*/node_modules/
-*/dist/
-*/.cache/
+**/node_modules/
+**/dist/
+**/.cache/
 
 Dockerfile
 .dockerignore
