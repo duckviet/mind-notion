@@ -48,3 +48,6 @@ Req_RemoveEvent:
   $ref: "./Event/Req_RemoveEvent.yaml"
 Res_DetailEvent:
   $ref: "./Event/Res_DetailEvent.yaml"
+
+Res_UploadedMedia:
+  $ref: "./Media/Res_UploadedMedia.yaml"

@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -16,7 +15,7 @@ import (
 // WebSocketHandler handles WebSocket connections
 type WebSocketHandler struct {
 	collaborationService *service.CollaborationServiceImpl
-	upgrader            websocket.Upgrader
+	upgrader             websocket.Upgrader
 }
 
 // NewWebSocketHandler creates a new WebSocket handler
@@ -55,7 +54,7 @@ func (h *WebSocketHandler) HandleConnections(w http.ResponseWriter, r *http.Requ
 				Name: "",
 			})
 		}
-		 
+
 	} else {
 		// Create new user
 		user, err = h.collaborationService.GetUserUseCase().CreateUser(context.Background(), service.CreateUserRequest{
@@ -107,7 +106,7 @@ func (h *WebSocketHandler) HandleConnections(w http.ResponseWriter, r *http.Requ
 	userLeftMsg := domain.Message{
 		Type: domain.MessageTypeUserLeft,
 		Payload: h.mustMarshal(domain.UserLeftPayload{
-			ID: fmt.Sprintf("%d", client.User.ID),
+			ID: client.User.ID,
 		}),
 	}
 

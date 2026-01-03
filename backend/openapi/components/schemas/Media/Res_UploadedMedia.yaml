@@ -1,0 +1,24 @@
+type: object
+required:
+  - url
+  - key
+  - contentType
+  - size
+properties:
+  url:
+    type: string
+    format: uri
+    description: Public URL of the uploaded image
+  key:
+    type: string
+    description: Object key stored in the R2 bucket
+  contentType:
+    type: string
+    description: MIME type stored alongside the object
+  size:
+    type: integer
+    format: int64
+    description: Final object size in bytes after resizing and recompression
+  originalFormat:
+    type: string
+    description: Original image format detected before processing

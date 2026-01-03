@@ -967,6 +967,41 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /media/upload:
+    post:
+      summary: Upload image to Cloudflare R2
+      description: 'Resizes the image to 1200px width using Lanczos3, re-encodes at quality 80, and uploads to R2.'
+      operationId: uploadMedia
+      tags:
+        - Media
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to upload
+      responses:
+        '201':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Res_UploadedMedia'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   securitySchemes:
     BearerAuth:
@@ -1570,6 +1605,31 @@ components:
         - title
         - type
         - start_time
+    Res_UploadedMedia:
+      type: object
+      required:
+        - url
+        - key
+        - contentType
+        - size
+      properties:
+        url:
+          type: string
+          format: uri
+          description: Public URL of the uploaded image
+        key:
+          type: string
+          description: Object key stored in the R2 bucket
+        contentType:
+          type: string
+          description: MIME type stored alongside the object
+        size:
+          type: integer
+          format: int64
+          description: Final object size in bytes after resizing and recompression
+        originalFormat:
+          type: string
+          description: Original image format detected before processing
   responses:
     BadRequest:
       description: Bad Request. The request is invalid.

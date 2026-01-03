@@ -20,3 +20,11 @@ redis:
   port: "6380"
   password: ""
   db: 0
+
+cdn:
+  account_id: your-cdn-account-id
+  access_key_id: your-cdn-access-key-id
+  secret_access_key: your-cdn-secret-access-key
+  region: us-west-1
+  bucket_name: your-cdn-bucket-name
+  public_base_url: ""

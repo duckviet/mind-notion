@@ -308,6 +308,19 @@ export interface ResDetailEvent {
   updated_at?: string;
 }
 
+export interface ResUploadedMedia {
+  /** Public URL of the uploaded image */
+  url: string;
+  /** Object key stored in the R2 bucket */
+  key: string;
+  /** MIME type stored alongside the object */
+  contentType: string;
+  /** Final object size in bytes after resizing and recompression */
+  size: number;
+  /** Original image format detected before processing */
+  originalFormat?: string;
+}
+
 export type BadRequestResponse = {
   error?: string;
 };
@@ -504,6 +517,11 @@ export type ListTemplates200TemplatesItem = {
 
 export type ListTemplates200 = {
   templates?: ListTemplates200TemplatesItem[];
+};
+
+export type UploadMediaBody = {
+  /** Image file to upload */
+  file: Blob;
 };
 
 /**
@@ -4008,6 +4026,105 @@ export const useDeleteTemplate = <
   TContext
 > => {
   const mutationOptions = getDeleteTemplateMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * Resizes the image to 1200px width using Lanczos3, re-encodes at quality 80, and uploads to R2.
+ * @summary Upload image to Cloudflare R2
+ */
+export const uploadMedia = (
+  uploadMediaBody: UploadMediaBody,
+  signal?: AbortSignal,
+) => {
+  const formData = new FormData();
+  formData.append(`file`, uploadMediaBody.file);
+
+  return customInstance<ResUploadedMedia>({
+    url: `/media/upload`,
+    method: "POST",
+    headers: { "Content-Type": "multipart/form-data" },
+    data: formData,
+    signal,
+  });
+};
+
+export const getUploadMediaMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof uploadMedia>>,
+    TError,
+    { data: UploadMediaBody },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof uploadMedia>>,
+  TError,
+  { data: UploadMediaBody },
+  TContext
+> => {
+  const mutationKey = ["uploadMedia"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof uploadMedia>>,
+    { data: UploadMediaBody }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return uploadMedia(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UploadMediaMutationResult = NonNullable<
+  Awaited<ReturnType<typeof uploadMedia>>
+>;
+export type UploadMediaMutationBody = UploadMediaBody;
+export type UploadMediaMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Upload image to Cloudflare R2
+ */
+export const useUploadMedia = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof uploadMedia>>,
+      TError,
+      { data: UploadMediaBody },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof uploadMedia>>,
+  TError,
+  { data: UploadMediaBody },
+  TContext
+> => {
+  const mutationOptions = getUploadMediaMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
