@@ -1,0 +1,6 @@
+.git
+.github
+backend/vendor
+node_modules
+*.exe
+*.log
