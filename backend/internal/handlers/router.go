@@ -29,6 +29,7 @@ func SetupRouter(
 	folderService service.FolderService,
 	templateService service.TemplateService,
 	eventService service.EventService,
+	mediaService service.MediaService,
 	wsHandler *WebSocketHandler,
 	searchHandler *SearchHandler,
 ) *gin.Engine {
@@ -63,8 +64,9 @@ func SetupRouter(
 		FolderAPI:   FolderAPI{folderService},
 		TemplateAPI: TemplateAPI{templateService: templateService, authService: authService},
 		EventAPI:    EventAPI{eventService: &eventService, authService: authService},
+		MediaAPI:    *NewMediaAPI(mediaService),
 	}
-	
+
 	// Register generated routes
 	NewRouterWithGinEngine(router, apiHandlers)
 
@@ -76,43 +78,43 @@ func healthHandler(c *gin.Context) {
 }
 
 func corsMiddleware() gin.HandlerFunc {
-    // 1. Lấy chuỗi từ Env và tách thành Slice
-    originsEnv := os.Getenv("ALLOWED_ORIGINS")
-    if originsEnv == "" {
-        originsEnv = "http://localhost:3000" // Default cho dev
-    }
-    allowedOrigins := strings.Split(originsEnv, ",")
+	// 1. Lấy chuỗi từ Env và tách thành Slice
+	originsEnv := os.Getenv("ALLOWED_ORIGINS")
+	if originsEnv == "" {
+		originsEnv = "http://localhost:3000" // Default cho dev
+	}
+	allowedOrigins := strings.Split(originsEnv, ",")
 
-    return func(c *gin.Context) {
-        origin := c.GetHeader("Origin")
-        
-        // 2. Kiểm tra xem Origin có trong whitelist không
-        isAllowed := false
-        for _, o := range allowedOrigins {
-            // Dùng strings.TrimSpace để tránh lỗi nếu lỡ tay gõ dấu cách sau dấu phẩy trong env
-            if strings.TrimSpace(o) == origin {
-                isAllowed = true
-                break
-            }
-        }
+	return func(c *gin.Context) {
+		origin := c.GetHeader("Origin")
 
-        if isAllowed {
-            c.Header("Access-Control-Allow-Origin", origin)
-        }
+		// 2. Kiểm tra xem Origin có trong whitelist không
+		isAllowed := false
+		for _, o := range allowedOrigins {
+			// Dùng strings.TrimSpace để tránh lỗi nếu lỡ tay gõ dấu cách sau dấu phẩy trong env
+			if strings.TrimSpace(o) == origin {
+				isAllowed = true
+				break
+			}
+		}
 
-        // Các header quan trọng khác
-        c.Header("Vary", "Origin")
-        c.Header("Access-Control-Allow-Credentials", "true")
-        c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
-        c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept, X-Requested-With")
+		if isAllowed {
+			c.Header("Access-Control-Allow-Origin", origin)
+		}
 
-        // 3. Xử lý Preflight (Quan trọng!)
-        if c.Request.Method == http.MethodOptions {
-            c.AbortWithStatus(http.StatusNoContent)
-            return
-        }
-        c.Next()
-    }
+		// Các header quan trọng khác
+		c.Header("Vary", "Origin")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept, X-Requested-With")
+
+		// 3. Xử lý Preflight (Quan trọng!)
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+		c.Next()
+	}
 }
 
 func loggingMiddleware() gin.HandlerFunc {

@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { EditorContent, type Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
 import { useTiptapEditor } from "./useTiptapEditor";
-import Toolbar from "./Toolbar";
 import { SlashCommandMenu } from "./SplashCommand";
 import Portal from "@/shared/components/PortalModal/PortalModal";
 import { TemplatesModal } from "./TemplatesModal";
@@ -14,6 +13,7 @@ import { useSlashMenu } from "./hooks/useSlashMenu";
 import { useTemplateModals } from "./hooks/useTemplateModals";
 import { useEditorKeyboard } from "./hooks/useEditorKeyboard";
 import { BASE_SLASH_COMMANDS, createTemplateCommand } from "./slashCommands";
+import { Toolbar } from "./Toolbar";
 
 interface TiptapProps {
   toolbar?: boolean;
