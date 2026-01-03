@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useUploadMedia } from "@/shared/services/generated/api";
 import ToolbarButton from "./ToolbarButton";
+import TableSizeDropdown from "./TableSizeDropdown";
 import { getToolbarGroups } from "./ToolbarConfig";
 
 const Toolbar = ({
@@ -61,19 +62,23 @@ const Toolbar = ({
       {groups.map((group, groupIdx) => (
         <React.Fragment key={group.name}>
           <div className="flex items-center gap-1">
-            {group.items.map((item, itemIdx) => (
-              <ToolbarButton
-                key={itemIdx}
-                onClick={item.onClick}
-                isActive={item.isActive()}
-                disabled={
-                  item.disabled?.() ||
-                  (item.tooltip === "Add Image" && isUploading)
-                }
-                icon={item.icon}
-                tooltip={item.tooltip}
-              />
-            ))}
+            {group.items.map((item, itemIdx) =>
+              item.isDropdown ? (
+                <TableSizeDropdown key={itemIdx} editor={editor} />
+              ) : (
+                <ToolbarButton
+                  key={itemIdx}
+                  onClick={item.onClick}
+                  isActive={item.isActive()}
+                  disabled={
+                    item.disabled?.() ||
+                    (item.tooltip === "Add Image" && isUploading)
+                  }
+                  icon={item.icon}
+                  tooltip={item.tooltip}
+                />
+              )
+            )}
           </div>
           {groupIdx < groups.length - 1 && (
             <div className="w-px h-6 bg-gray-300 mx-1" />

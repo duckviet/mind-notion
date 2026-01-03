@@ -1,7 +1,6 @@
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import React, { useEffect, useMemo, useRef } from "react";
-import { EditorView } from "@tiptap/pm/view";
 
 import { cn } from "@/lib/utils";
 import { Placeholder } from "@tiptap/extensions";
@@ -19,8 +18,8 @@ import {
   ExtTableKit,
   ExtTableOfContents,
 } from "./Extensions";
+
 import { migrateMathStrings } from "@tiptap/extension-mathematics";
-import { useTiptapPlaceholderCSS } from "./hooks/useTitapPlaceholderCSS";
 
 interface UseTiptapEditorProps {
   content?: string;
@@ -37,9 +36,6 @@ export const useTiptapEditor = ({
   editable = true,
   onKeyDown,
 }: UseTiptapEditorProps) => {
-  // Inject the placeholder CSS
-  useTiptapPlaceholderCSS();
-
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const onUpdateRef = useRef(onUpdate);
   const onKeyDownRef = useRef(onKeyDown);
@@ -111,9 +107,15 @@ export const useTiptapEditor = ({
       editorProps: {
         attributes: {
           class: cn(
-            "h-full focus:outline-none",
+            "tiptap ProseMirror h-full min-h-[150px] pr-4 focus:outline-none",
             !editable && "pointer-events-none select-text cursor-default"
           ),
+        },
+        handleKeyDown: (_view, event) => {
+          onKeyDownRef.current?.(
+            event as unknown as React.KeyboardEvent<HTMLDivElement>
+          );
+          return false;
         },
       },
     },
@@ -148,38 +150,32 @@ export const useTiptapEditor = ({
     };
   }, [editor]); // Remove onUpdate from deps, use ref instead
 
-  /** Sync when parent changes - only when content actually differs */
   useEffect(() => {
-    if (!editor || content === undefined || isUpdatingRef.current) return;
-
-    // Don't sync if user just made changes recently (within last 500ms)
-    // This prevents race condition where debounced update triggers parent update
-    // which then tries to sync back and overwrites user input
-    const timeSinceLastInput = Date.now() - lastUserInputRef.current;
-    if (timeSinceLastInput < 500) {
-      contentRef.current = content;
+    // Thêm kiểm tra editor.isDestroyed và editor.view
+    if (
+      !editor ||
+      editor.isDestroyed ||
+      !editor.view?.dom ||
+      content === undefined ||
+      isUpdatingRef.current
+    ) {
       return;
     }
 
-    const current = editor.getHTML();
-    // Only update if content is truly different to avoid unnecessary updates
-    if (current !== content) {
+    const currentHTML = editor.getHTML();
+
+    if (content !== currentHTML && !editor.isFocused) {
       isUpdatingRef.current = true;
-      // Defer setContent to avoid flushSync conflict during React render
+
+      // Sử dụng queueMicrotask để đảm bảo thực thi sau khi React render xong
       queueMicrotask(() => {
-        if (editor && !editor.isDestroyed) {
+        if (editor && !editor.isDestroyed && editor.view?.dom) {
           editor.commands.setContent(content, { emitUpdate: false });
-          // Reset flag after update completes
-          requestAnimationFrame(() => {
-            isUpdatingRef.current = false;
-          });
-        } else {
-          isUpdatingRef.current = false;
         }
+        isUpdatingRef.current = false;
       });
     }
-    contentRef.current = content;
-  }, [editor, content]);
+  }, [content, editor]);
 
   /** Cleanup */
   useEffect(() => () => editor?.destroy(), [editor]);

@@ -28,6 +28,7 @@ interface ToolbarGroup {
     isActive: () => boolean;
     disabled?: () => boolean;
     onClick: () => void;
+    isDropdown?: boolean;
   }[];
 }
 
@@ -111,6 +112,13 @@ export const getToolbarGroups = (
   {
     name: "insert",
     items: [
+      {
+        icon: null,
+        tooltip: "Table",
+        isActive: () => editor.isActive("table"),
+        onClick: () => {}, // Handled by component
+        isDropdown: true,
+      },
       {
         icon: <Quote size={16} />,
         tooltip: "Quote",

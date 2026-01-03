@@ -107,6 +107,10 @@ a {
   color: var(--accent-600);
 }
 
+th {
+  border: 1px solid #dbdbd1;
+}
+
 /* Glass morphism utility classes */
 .glass-bg {
   background: var(--glass-bg);
@@ -191,4 +195,69 @@ div {
 
 .ProseMirror .react-renderer.node-codeBlock {
   background-color: #121822 !important;
+}
+
+.table-wrapper {
+  /* Cho phép nút Delete hiển thị tràn ra ngoài lề trên của wrapper */
+  overflow: visible !important;
+}
+/* Chỉ cho phép cuộn ngang ở thẻ table thực tế nếu cần */
+.table-wrapper table {
+  display: block;
+  overflow-x: auto;
+}
+
+/* Tiptap tables and placeholder */
+.tiptap.ProseMirror table {
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  /* overflow: hidden; */
+}
+
+.tiptap.ProseMirror td,
+.tiptap.ProseMirror th {
+  min-width: 1em;
+  border: 1px solid #dbdbd1;
+  padding: 8px 12px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.tiptap.ProseMirror th {
+  font-weight: 600;
+  text-align: left;
+  background-color: #f9fafb;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.tiptap.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #3b82f6;
+  pointer-events: none;
+}
+
+.tiptap.ProseMirror .selectedCell:after {
+  z-index: 2;
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(200, 200, 255, 0.4);
+  pointer-events: none;
 }

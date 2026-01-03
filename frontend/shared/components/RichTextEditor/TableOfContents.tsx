@@ -248,7 +248,7 @@ export const TableOfContents = ({
 
     const dom = editor.view.dom;
     const headingElements = Array.from(dom.querySelectorAll("h1, h2, h3"));
-
+    if (!headingElements || headingElements.length === 0) return;
     const observerMap = new Map<Element, Heading>();
     flatHeadings.forEach((h) => {
       const el = headingElements[h.index];
