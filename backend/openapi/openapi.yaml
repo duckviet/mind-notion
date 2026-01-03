@@ -86,6 +86,10 @@ paths:
   /templates/{id}/delete:
     $ref: "./paths/template/delete.yaml"
 
+  # Media Management
+  /media/upload:
+    $ref: "./paths/media/upload.yaml"
+
 # Phần components giờ đây chỉ chứa các tham chiếu
 components:
   securitySchemes:

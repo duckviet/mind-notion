@@ -1,0 +1,32 @@
+post:
+  summary: Upload image to Cloudflare R2
+  description: Resizes the image to 1200px width using Lanczos3, re-encodes at quality 80, and uploads to R2.
+  operationId: uploadMedia
+  tags: [Media]
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          required: [file]
+          properties:
+            file:
+              type: string
+              format: binary
+              description: Image file to upload
+  responses:
+    "201":
+      description: Image uploaded successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Media/Res_UploadedMedia.yaml
+    "400":
+      $ref: ../../components/responses/BadRequest.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

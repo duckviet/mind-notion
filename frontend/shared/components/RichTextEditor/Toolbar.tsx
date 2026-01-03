@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
-import React from "react";
+import React, { useRef } from "react";
 import ToolbarButton from "./ToolbarButton";
-import { Editor, useEditor } from "@tiptap/react";
+import { Editor } from "@tiptap/react";
 import {
   Bold,
   CheckSquare,
@@ -23,6 +23,8 @@ import {
   Undo,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { useUploadMedia } from "@/shared/services/generated/api";
 
 const Toolbar = ({
   editor,
@@ -31,12 +33,49 @@ const Toolbar = ({
   editor: Editor;
   className?: string;
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { mutateAsync: uploadMedia, isPending: isUploading } = useUploadMedia({
+    mutation: {
+      onError: () => toast.error("Failed to upload image"),
+    },
+  });
+
   const addLink = () => {
     editor.chain().focus().toggleLink({ href: "https://www.google.com" }).run();
   };
 
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      event.target.value = "";
+      return;
+    }
+
+    const toastId = toast.loading("Uploading image...");
+
+    try {
+      const res = await uploadMedia({ data: { file } });
+      editor
+        .chain()
+        .focus()
+        .setImage({ src: res.url, alt: file.name, title: file.name })
+        .run();
+      toast.success("Image uploaded", { id: toastId });
+    } catch {
+      toast.error("Failed to upload image", { id: toastId });
+    } finally {
+      event.target.value = "";
+    }
+  };
+
   const addImage = () => {
-    editor.chain().focus().setImage({ src: "https://www.google.com" }).run();
+    fileInputRef.current?.click();
   };
 
   return (
@@ -147,6 +186,7 @@ const Toolbar = ({
         isActive={false}
         icon={<ImageIcon size={16} />}
         tooltip="Add Image"
+        disabled={isUploading}
       />
       <div className="w-px h-6 bg-gray-300 mx-1" />
       {/* Undo/Redo */}
@@ -173,6 +213,13 @@ const Toolbar = ({
         icon={<ListCollapseIcon size={16} />}
         tooltip="Table of Contents"
         disabled={typeof editor.commands.toggleTableOfContents !== "function"}
+      />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
       />
     </motion.div>
   );

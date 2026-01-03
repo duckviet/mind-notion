@@ -82,13 +82,18 @@ func New(ctx context.Context) (*App, func(), error) {
 	eventService := service.NewEventService(eventRepo)
 	authService := service.NewAuthService(userRepo, cfg)
 
+	mediaService, err := service.NewMediaService(ctx, cfg.CDN)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to initialize media service: %w", err)
+	}
+
 	// Initialize collaboration (websocket) components
 	clientRepo := domain.NewInMemoryClientRepository()
 	collabService := service.NewCollaborationService(userRepo, noteRepo, clientRepo, userService, noteService)
 	wsHandler := handlers.NewWebSocketHandler(collabService)
 
 	// Initialize handlers
-	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, templateService, *eventService, wsHandler, searchHandler)
+	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, templateService, *eventService, mediaService, wsHandler, searchHandler)
 
 	app := &App{
 		router: router,

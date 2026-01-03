@@ -38,7 +38,7 @@ func (r *InMemoryClientRepository) Remove(conn *websocket.Conn) {
 func (r *InMemoryClientRepository) Get(conn *websocket.Conn) (*Client, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	client, exists := r.clients[conn]
 	if !exists {
 		return nil, fmt.Errorf("client not found")
@@ -50,7 +50,7 @@ func (r *InMemoryClientRepository) Get(conn *websocket.Conn) (*Client, error) {
 func (r *InMemoryClientRepository) GetAll() []*Client {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	clients := make([]*Client, 0, len(r.clients))
 	for _, client := range r.clients {
 		clients = append(clients, client)
@@ -62,11 +62,11 @@ func (r *InMemoryClientRepository) GetAll() []*Client {
 func (r *InMemoryClientRepository) GetByUserID(userID string) (*Client, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	
+
 	for _, client := range r.clients {
 		if client.User.ID == userID {
 			return client, nil
 		}
 	}
-	return nil, fmt.Errorf("client not found for user: %d", userID)
+	return nil, fmt.Errorf("client not found for user: %s", userID)
 }

@@ -4,37 +4,23 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { EditorView } from "@tiptap/pm/view";
 
 import { cn } from "@/lib/utils";
-import ExtLink from "./ExtLink";
-import ExtListKit from "./ExtListKit";
-import ExtCodeBlock from "./ExtCodeBlock";
-import ExtHeading from "./ExtHeading";
-import ExtMathematics, { migrateMathStrings } from "./ExtMathematics";
-import ExtTableKit from "./ExtTable";
 import { Placeholder } from "@tiptap/extensions";
-import ExtTableOfContents from "./ExtTableOfContents";
 import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
 import { LocalStorageKeys } from "@/shared/configs/localStorageKeys";
-
-function useTiptapPlaceholderCSS() {
-  useEffect(() => {
-    const css = `
-      .tiptap p.is-editor-empty:first-child::before {
-        color: #adb5bd;
-        content: attr(data-placeholder);
-        float: left;
-        height: 0;
-        pointer-events: none;
-      }
-    `;
-    const styleTag = document.createElement("style");
-    styleTag.setAttribute("data-tiptap-custom-placeholder", "true");
-    styleTag.innerHTML = css;
-    document.head.appendChild(styleTag);
-    return () => {
-      document.head.removeChild(styleTag);
-    };
-  }, []);
-}
+import ExtImage from "./Extensions/ExtImage";
+import { toast } from "sonner";
+import { useUploadMedia } from "@/shared/services/generated/api";
+import {
+  ExtCustomCodeBlock,
+  ExtHeading,
+  ExtImageUpload,
+  ExtListKit,
+  ExtMathematics,
+  ExtTableKit,
+  ExtTableOfContents,
+} from "./Extensions";
+import { migrateMathStrings } from "@tiptap/extension-mathematics";
+import { useTiptapPlaceholderCSS } from "./hooks/useTitapPlaceholderCSS";
 
 interface UseTiptapEditorProps {
   content?: string;
@@ -65,15 +51,18 @@ export const useTiptapEditor = ({
     LocalStorageKeys.FOCUS_EDIT_TOC_COLLAPSED,
     false
   );
+  const { mutateAsync: uploadMedia } = useUploadMedia({
+    mutation: {
+      onError: () => toast.error("Failed to upload image"),
+    },
+  });
   // Keep refs updated without causing re-renders
   useEffect(() => {
     onUpdateRef.current = onUpdate;
   }, [onUpdate]);
-
   useEffect(() => {
     onKeyDownRef.current = onKeyDown;
   }, [onKeyDown]);
-
   useEffect(() => {
     contentRef.current = content;
   }, [content]);
@@ -89,9 +78,8 @@ export const useTiptapEditor = ({
         heading: false,
         link: false,
       }),
-      ExtLink,
       ...ExtListKit,
-      ExtCodeBlock,
+      ExtCustomCodeBlock,
       ExtHeading,
       ExtMathematics,
       ...ExtTableKit,
@@ -101,6 +89,13 @@ export const useTiptapEditor = ({
       }),
       Placeholder.configure({
         placeholder: placeholder,
+      }),
+      ExtImage,
+      ExtImageUpload.configure({
+        uploadFn: async (file: File) => {
+          const res = await uploadMedia({ data: { file } });
+          return res.url;
+        },
       }),
     ],
     [placeholder]
@@ -120,18 +115,9 @@ export const useTiptapEditor = ({
             !editable && "pointer-events-none select-text cursor-default"
           ),
         },
-        handleDOMEvents: {
-          keydown: (_: EditorView, event: KeyboardEvent) => {
-            if (onKeyDownRef.current)
-              onKeyDownRef.current(
-                event as unknown as React.KeyboardEvent<HTMLDivElement>
-              );
-            return event.defaultPrevented;
-          },
-        },
       },
     },
-    [editable, extensions] // Also depend on extensions for placeholder changes
+    [editable, extensions]
   );
 
   /** Handle editor updates (with debounce) */

@@ -68,6 +68,8 @@ type ApiHandleFunctions struct {
 	EventAPI EventAPI
 	// Routes for the FolderAPI part of the API
 	FolderAPI FolderAPI
+	// Routes for the MediaAPI part of the API
+	MediaAPI MediaAPI
 	// Routes for the NoteAPI part of the API
 	NoteAPI NoteAPI
 	// Routes for the TemplateAPI part of the API
@@ -179,6 +181,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			http.MethodPut,
 			"/api/v1/folders/:id/update",
 			handleFunctions.FolderAPI.UpdateFolder,
+		},
+		{
+			"UploadMedia",
+			http.MethodPost,
+			"/api/v1/media/upload",
+			handleFunctions.MediaAPI.UploadMedia,
 		},
 		{
 			"CreateNote",

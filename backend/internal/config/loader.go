@@ -94,4 +94,12 @@ func setDefaults(v *viper.Viper) {
 	// Cohere defaults
 	v.SetDefault("cohere.api_key", "")
 	v.SetDefault("cohere.model", "embed-multilingual-v3.0")
+
+	// CDN defaults
+	v.SetDefault("cdn.account_id", "")
+	v.SetDefault("cdn.access_key_id", "")
+	v.SetDefault("cdn.secret_access_key", "")
+	v.SetDefault("cdn.region", "")
+	v.SetDefault("cdn.bucket_name", "")
+	v.SetDefault("cdn.public_base_url", "")
 }

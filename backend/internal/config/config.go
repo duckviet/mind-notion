@@ -16,6 +16,7 @@ type Config struct {
     Redis    RedisConfig    `mapstructure:"redis" validate:"required"`
     Pinecone PineconeConfig `mapstructure:"pinecone"`
     Cohere   CohereConfig   `mapstructure:"cohere"`
+    CDN      CDNConfig      `mapstructure:"cdn" validate:"required"`
 }
 
 // Nested structs - chỉ cần tag cho field, prefix tự động
@@ -56,6 +57,15 @@ type PineconeConfig struct {
 type CohereConfig struct {
     APIKey string `mapstructure:"api_key" validate:"omitempty,min=1"`         // COHERE_API_KEY
     Model  string `mapstructure:"model" validate:"omitempty,min=1"`            // COHERE_MODEL
+}
+
+type CDNConfig struct {
+    AccountID       string `mapstructure:"account_id" validate:"required,min=1"`
+    AccessKeyID     string `mapstructure:"access_key_id" validate:"required,min=1"`
+    SecretAccessKey string `mapstructure:"secret_access_key" validate:"required,min=1"`
+    Region          string `mapstructure:"region" validate:"required,min=1"`
+    BucketName      string `mapstructure:"bucket_name" validate:"required,min=1"`
+    PublicBaseURL   string `mapstructure:"public_base_url" validate:"omitempty,url"`
 }
 
 // Validate method - cải thiện để không panic nếu API key rỗng
