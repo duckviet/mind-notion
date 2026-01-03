@@ -5,75 +5,67 @@ import {
   TableHeader,
 } from "@tiptap/extension-table";
 
-// Bộ mở rộng Table được tuỳ biến giao diện bằng Tailwind CSS
-const ExtTable = Table.extend({
-  renderHTML({
-    HTMLAttributes,
-  }: {
-    HTMLAttributes: React.HTMLAttributes<HTMLTableElement>;
-  }) {
-    return [
-      "table",
-      {
-        ...HTMLAttributes,
-        class:
-          "min-w-full border border-gray-300 rounded-lg my-4 overflow-hidden",
-      },
-      ["tbody", 0],
-    ];
-  },
-});
-
-const ExtTableRow = TableRow.extend({
-  renderHTML({
-    HTMLAttributes,
-  }: {
-    HTMLAttributes: React.HTMLAttributes<HTMLTableRowElement>;
-  }) {
-    return [
-      "tr",
-      {
-        ...HTMLAttributes,
-        class: "border-b last:border-0",
-      },
-      0,
-    ];
-  },
-});
-
-const ExtTableCell = TableCell.extend({
-  renderHTML({
-    HTMLAttributes,
-  }: {
-    HTMLAttributes: React.HTMLAttributes<HTMLTableCellElement>;
-  }) {
+// 1. Tùy chỉnh Table Cell để hỗ trợ border và padding đẹp hơn
+export const ExtTableCell = TableCell.extend({
+  renderHTML({ HTMLAttributes }) {
     return [
       "td",
       {
         ...HTMLAttributes,
-        class: "px-4 py-2 border border-gray-200 align-top",
+        class:
+          "border border-gray-300 p-2 min-w-[100px] relative group vertical-align-top",
       },
       0,
     ];
   },
 });
 
-const ExtTableHeader = TableHeader.extend({
-  renderHTML({
-    HTMLAttributes,
-  }: {
-    HTMLAttributes: React.HTMLAttributes<HTMLTableSectionElement>;
-  }) {
+// 2. Tùy chỉnh Table Header (th)
+export const ExtTableHeader = TableHeader.extend({
+  renderHTML({ HTMLAttributes }) {
     return [
-      "thead",
+      "th",
       {
         ...HTMLAttributes,
-        class: "bg-gray-50",
+        class:
+          "border border-red-300 p-2 bg-gray-100 font-bold text-left min-w-[100px] relative group",
       },
       0,
     ];
   },
 });
+
+export const ExtTable = Table.configure({
+  resizable: true,
+  lastColumnResizable: true,
+  allowTableNodeSelection: true,
+}).extend({
+  renderHTML({ HTMLAttributes }) {
+    const wrapperAttrs = {
+      class:
+        "table-wrapper my-6 overflow-x-auto border border-gray-200 rounded-lg group relative",
+      "data-type": "table-container",
+    };
+
+    const tableAttrs = {
+      ...HTMLAttributes,
+      class: "border-collapse table-fixed w-full border-none",
+    };
+
+    return ["div", wrapperAttrs, ["table", tableAttrs, ["tbody", 0]]];
+  },
+});
+
+export const ExtTableRow = TableRow.extend({
+  renderHTML({ HTMLAttributes }) {
+    return ["tr", { ...HTMLAttributes, class: "border-b border-gray-300" }, 0];
+  },
+});
+
+// const addRow = () => editor.chain().focus().addRowAfter().run();
+// const addCol = () => editor.chain().focus().addColumnAfter().run();
+// const deleteTable = () => editor.chain().focus().deleteTable().run();
+// const mergeCells = () => editor.chain().focus().mergeCells().run();
 
 const ExtTableKit = [ExtTable, ExtTableRow, ExtTableCell, ExtTableHeader];
 
