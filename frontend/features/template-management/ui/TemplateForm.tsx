@@ -5,7 +5,7 @@ import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect } from "react";
 import type { TemplateFormData } from "../types/template";
-import Toolbar from "@/shared/components/RichTextEditor/Toolbar";
+import { Toolbar } from "@/shared/components/RichTextEditor/Toolbar";
 
 type TemplateFormProps = {
   editor: Editor;
