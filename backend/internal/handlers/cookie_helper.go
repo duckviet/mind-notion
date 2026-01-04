@@ -21,11 +21,19 @@ func setAuthCookies(c *gin.Context, cfg *config.Config, accessToken, refreshToke
 		sameSite = http.SameSiteNoneMode
 	}
 
+	// Domain for cookies - required for SameSite=None in cross-origin requests
+	cookieDomain := ""
+	if isProduction && cfg.Server.Host != "" {
+		// Extract domain from host (e.g., "herokuapp.com" from "mind-notion-xxxxx.herokuapp.com")
+		cookieDomain = cfg.Server.Host
+	}
+
 	// Access token cookie: 1 hour expiry
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "access_token",
 		Value:    accessToken,
 		Path:     "/",
+		Domain:   cookieDomain,
 		MaxAge:   3600, // 1 hour in seconds
 		HttpOnly: true,
 		Secure:   isProduction,
@@ -37,6 +45,7 @@ func setAuthCookies(c *gin.Context, cfg *config.Config, accessToken, refreshToke
 		Name:     "refresh_token",
 		Value:    refreshToken,
 		Path:     "/",
+		Domain:   cookieDomain,
 		MaxAge:   7 * 24 * 3600, // 7 days in seconds
 		HttpOnly: true,
 		Secure:   isProduction,
@@ -53,11 +62,18 @@ func clearAuthCookies(c *gin.Context, cfg *config.Config) {
 		sameSite = http.SameSiteNoneMode
 	}
 
+	// Domain for cookies - required for SameSite=None in cross-origin requests
+	cookieDomain := ""
+	if isProduction && cfg.Server.Host != "" {
+		cookieDomain = cfg.Server.Host
+	}
+
 	// Clear access token
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "access_token",
 		Value:    "",
 		Path:     "/",
+		Domain:   cookieDomain,
 		MaxAge:   -1, // Expire immediately
 		HttpOnly: true,
 		Secure:   isProduction,
@@ -69,6 +85,7 @@ func clearAuthCookies(c *gin.Context, cfg *config.Config) {
 		Name:     "refresh_token",
 		Value:    "",
 		Path:     "/",
+		Domain:   cookieDomain,
 		MaxAge:   -1,
 		HttpOnly: true,
 		Secure:   isProduction,
