@@ -1,0 +1,61 @@
+get:
+  summary: List comments for a note
+  operationId: listComments
+  tags: [Comment]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: note_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+  responses:
+    "200":
+      description: Comments retrieved successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              comments:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "comment-123"
+                    note_id:
+                      type: string
+                      example: "note-456"
+                    user_id:
+                      type: string
+                      example: "user-789"
+                    user_name:
+                      type: string
+                      example: "John Doe"
+                    user_avatar:
+                      type: string
+                      example: "https://example.com/avatar.png"
+                    content:
+                      type: string
+                      example: "This is a comment"
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: "2021-01-01T00:00:00Z"
+                    updated_at:
+                      type: string
+                      format: date-time
+                      example: "2021-01-01T00:00:00Z"
+              total:
+                type: integer
+                description: Total number of comments
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

@@ -1,0 +1,13 @@
+type: object
+properties:
+  comments:
+    type: array
+    items:
+      $ref: ./Comment.yaml
+  total:
+    type: integer
+    example: 10
+
+required:
+  - comments
+  - total
