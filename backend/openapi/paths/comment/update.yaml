@@ -1,0 +1,42 @@
+put:
+  summary: Update a comment
+  operationId: updateComment
+  tags: [Comment]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: note_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+    - name: comment_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Comment ID
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Comment/Req_UpdateComment.yaml
+  responses:
+    "200":
+      description: Comment updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Comment/Comment.yaml
+    "400":
+      $ref: ../../components/responses/BadRequest.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "403":
+      $ref: ../../components/responses/Forbidden.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

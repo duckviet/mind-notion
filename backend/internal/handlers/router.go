@@ -30,6 +30,7 @@ func SetupRouter(
 	templateService service.TemplateService,
 	eventService service.EventService,
 	mediaService service.MediaService,
+	commentService service.CommentService,
 	wsHandler *WebSocketHandler,
 	searchHandler *SearchHandler,
 ) *gin.Engine {
@@ -65,6 +66,7 @@ func SetupRouter(
 		TemplateAPI: TemplateAPI{templateService: templateService, authService: authService},
 		EventAPI:    EventAPI{eventService: &eventService, authService: authService},
 		MediaAPI:    *NewMediaAPI(mediaService),
+		CommentAPI:  *NewCommentAPI(commentService),
 	}
 
 	// Register generated routes

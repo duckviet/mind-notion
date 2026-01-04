@@ -6,3 +6,5 @@ NotFound:
   $ref: "./NotFound.yaml"
 InternalServerError:
   $ref: "./InternalServerError.yaml"
+Forbidden:
+  $ref: "./Forbidden.yaml"

@@ -64,6 +64,8 @@ type ApiHandleFunctions struct {
 
 	// Routes for the AuthAPI part of the API
 	AuthAPI AuthAPI
+	// Routes for the CommentAPI part of the API
+	CommentAPI CommentAPI
 	// Routes for the EventAPI part of the API
 	EventAPI EventAPI
 	// Routes for the FolderAPI part of the API
@@ -109,6 +111,30 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			http.MethodPost,
 			"/api/v1/auth/register",
 			handleFunctions.AuthAPI.Register,
+		},
+		{
+			"CreateComment",
+			http.MethodPost,
+			"/api/v1/notes/:note_id/comments",
+			handleFunctions.CommentAPI.CreateComment,
+		},
+		{
+			"DeleteComment",
+			http.MethodDelete,
+			"/api/v1/notes/:note_id/comments/:comment_id/delete",
+			handleFunctions.CommentAPI.DeleteComment,
+		},
+		{
+			"ListComments",
+			http.MethodGet,
+			"/api/v1/notes/:note_id/comments/list",
+			handleFunctions.CommentAPI.ListComments,
+		},
+		{
+			"UpdateComment",
+			http.MethodPut,
+			"/api/v1/notes/:note_id/comments/:comment_id",
+			handleFunctions.CommentAPI.UpdateComment,
 		},
 		{
 			"CreateEvent",
@@ -197,13 +223,13 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 		{
 			"DeleteNote",
 			http.MethodDelete,
-			"/api/v1/notes/:id/delete",
+			"/api/v1/notes/:note_id/delete",
 			handleFunctions.NoteAPI.DeleteNote,
 		},
 		{
 			"GetNote",
 			http.MethodGet,
-			"/api/v1/notes/:id",
+			"/api/v1/notes/:note_id",
 			handleFunctions.NoteAPI.GetNote,
 		},
 		{
@@ -221,13 +247,13 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 		{
 			"UpdateNote",
 			http.MethodPut,
-			"/api/v1/notes/:id/update",
+			"/api/v1/notes/:note_id/update",
 			handleFunctions.NoteAPI.UpdateNote,
 		},
 		{
 			"UpdateNoteTOM",
 			http.MethodPut,
-			"/api/v1/notes/:id/tom",
+			"/api/v1/notes/:note_id/tom",
 			handleFunctions.NoteAPI.UpdateNoteTOM,
 		},
 		{

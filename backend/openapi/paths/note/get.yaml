@@ -5,7 +5,7 @@ get:
   security:
     - BearerAuth: []
   parameters:
-    - name: id
+    - name: note_id
       in: path
       required: true
       schema:
