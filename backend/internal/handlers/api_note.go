@@ -72,7 +72,7 @@ func (api *NoteAPI) CreateNote(c *gin.Context) {
 // Delete /api/v1/notes/:id/delete
 // Delete note by ID 
 func (api *NoteAPI) DeleteNote(c *gin.Context) {
-    idStr := c.Param("id")
+    idStr := c.Param("note_id")
  
 
     if err := api.noteService.DeleteNote(c.Request.Context(), idStr); err != nil {
@@ -85,7 +85,7 @@ func (api *NoteAPI) DeleteNote(c *gin.Context) {
 // Get /api/v1/notes/:id
 // Get note by ID 
 func (api *NoteAPI) GetNote(c *gin.Context) {
-    idStr := c.Param("id")
+    idStr := c.Param("note_id")
  
     note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
     if err != nil {
@@ -143,7 +143,7 @@ func (api *NoteAPI) ListNotes(c *gin.Context) {
 // Put /api/v1/notes/:id/update
 // Update note by ID 
 func (api *NoteAPI) UpdateNote(c *gin.Context) {
-    idStr := c.Param("id")
+    idStr := c.Param("note_id")
 
     var body struct {
         Title       string   `json:"title"`
@@ -191,7 +191,7 @@ func (api *NoteAPI) UpdateNote(c *gin.Context) {
 // Put /api/v1/notes/:id?tom={tom}
 // Update note top of mind by ID
 func (api *NoteAPI) UpdateNoteTOM(c *gin.Context) {
-    idStr := c.Param("id")
+    idStr := c.Param("note_id")
     tomStr := c.Query("tom")
     tom := tomStr == "true"
     fmt.Println("UpdateNoteTOM request:", tomStr, tom)

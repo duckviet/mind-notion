@@ -1,0 +1,30 @@
+delete:
+  summary: Delete a comment
+  operationId: deleteComment
+  tags: [Comment]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: note_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+    - name: comment_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Comment ID
+  responses:
+    "204":
+      description: Comment deleted successfully
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "403":
+      $ref: ../../components/responses/Forbidden.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

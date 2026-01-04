@@ -125,6 +125,33 @@ export interface ResDetailNote {
   updated_at: string;
 }
 
+export interface Comment {
+  id: string;
+  note_id: string;
+  user_id: string;
+  user_name: string;
+  user_avatar?: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReqCreateComment {
+  /**
+   * @minLength 1
+   * @maxLength 1000
+   */
+  content: string;
+}
+
+export interface ReqUpdateComment {
+  /**
+   * @minLength 1
+   * @maxLength 1000
+   */
+  content: string;
+}
+
 export interface ReqCreateTemple {
   name: string;
   icon: string;
@@ -337,6 +364,10 @@ export type InternalServerErrorResponse = {
   error?: string;
 };
 
+export type ForbiddenResponse = {
+  error?: string;
+};
+
 /**
  * Maximum number of results to return.
  */
@@ -409,6 +440,23 @@ export type UpdateNoteTOMParams = {
 export type UpdateNoteTOM200 = {
   id?: string;
   top_of_mind?: boolean;
+};
+
+export type ListComments200CommentsItem = {
+  id?: string;
+  note_id?: string;
+  user_id?: string;
+  user_name?: string;
+  user_avatar?: string;
+  content?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ListComments200 = {
+  comments?: ListComments200CommentsItem[];
+  /** Total number of comments */
+  total?: number;
 };
 
 export type ListFoldersParams = {
@@ -2105,6 +2153,455 @@ export function useListNotesTOM<
 
   return query;
 }
+
+/**
+ * @summary Create a comment on a note
+ */
+export const createComment = (
+  noteId: string,
+  reqCreateComment: ReqCreateComment,
+  signal?: AbortSignal,
+) => {
+  return customInstance<Comment>({
+    url: `/notes/${noteId}/comments`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: reqCreateComment,
+    signal,
+  });
+};
+
+export const getCreateCommentMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createComment>>,
+    TError,
+    { noteId: string; data: ReqCreateComment },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createComment>>,
+  TError,
+  { noteId: string; data: ReqCreateComment },
+  TContext
+> => {
+  const mutationKey = ["createComment"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createComment>>,
+    { noteId: string; data: ReqCreateComment }
+  > = (props) => {
+    const { noteId, data } = props ?? {};
+
+    return createComment(noteId, data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createComment>>
+>;
+export type CreateCommentMutationBody = ReqCreateComment;
+export type CreateCommentMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Create a comment on a note
+ */
+export const useCreateComment = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createComment>>,
+      TError,
+      { noteId: string; data: ReqCreateComment },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createComment>>,
+  TError,
+  { noteId: string; data: ReqCreateComment },
+  TContext
+> => {
+  const mutationOptions = getCreateCommentMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary List comments for a note
+ */
+export const listComments = (noteId: string, signal?: AbortSignal) => {
+  return customInstance<ListComments200>({
+    url: `/notes/${noteId}/comments/list`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getListCommentsQueryKey = (noteId?: string) => {
+  return [`/notes/${noteId}/comments/list`] as const;
+};
+
+export const getListCommentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listComments>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listComments>>, TError, TData>
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListCommentsQueryKey(noteId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listComments>>> = ({
+    signal,
+  }) => listComments(noteId, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!noteId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listComments>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListCommentsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listComments>>
+>;
+export type ListCommentsQueryError =
+  | UnauthorizedResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+export function useListComments<
+  TData = Awaited<ReturnType<typeof listComments>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listComments>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listComments>>,
+          TError,
+          Awaited<ReturnType<typeof listComments>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListComments<
+  TData = Awaited<ReturnType<typeof listComments>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listComments>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listComments>>,
+          TError,
+          Awaited<ReturnType<typeof listComments>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListComments<
+  TData = Awaited<ReturnType<typeof listComments>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listComments>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary List comments for a note
+ */
+
+export function useListComments<
+  TData = Awaited<ReturnType<typeof listComments>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listComments>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getListCommentsQueryOptions(noteId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * @summary Update a comment
+ */
+export const updateComment = (
+  noteId: string,
+  commentId: string,
+  reqUpdateComment: ReqUpdateComment,
+) => {
+  return customInstance<Comment>({
+    url: `/notes/${noteId}/comments/${commentId}`,
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    data: reqUpdateComment,
+  });
+};
+
+export const getUpdateCommentMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateComment>>,
+    TError,
+    { noteId: string; commentId: string; data: ReqUpdateComment },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateComment>>,
+  TError,
+  { noteId: string; commentId: string; data: ReqUpdateComment },
+  TContext
+> => {
+  const mutationKey = ["updateComment"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateComment>>,
+    { noteId: string; commentId: string; data: ReqUpdateComment }
+  > = (props) => {
+    const { noteId, commentId, data } = props ?? {};
+
+    return updateComment(noteId, commentId, data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateComment>>
+>;
+export type UpdateCommentMutationBody = ReqUpdateComment;
+export type UpdateCommentMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | ForbiddenResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Update a comment
+ */
+export const useUpdateComment = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateComment>>,
+      TError,
+      { noteId: string; commentId: string; data: ReqUpdateComment },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateComment>>,
+  TError,
+  { noteId: string; commentId: string; data: ReqUpdateComment },
+  TContext
+> => {
+  const mutationOptions = getUpdateCommentMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Delete a comment
+ */
+export const deleteComment = (noteId: string, commentId: string) => {
+  return customInstance<void>({
+    url: `/notes/${noteId}/comments/${commentId}/delete`,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteCommentMutationOptions = <
+  TError =
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteComment>>,
+    TError,
+    { noteId: string; commentId: string },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteComment>>,
+  TError,
+  { noteId: string; commentId: string },
+  TContext
+> => {
+  const mutationKey = ["deleteComment"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteComment>>,
+    { noteId: string; commentId: string }
+  > = (props) => {
+    const { noteId, commentId } = props ?? {};
+
+    return deleteComment(noteId, commentId);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteCommentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteComment>>
+>;
+
+export type DeleteCommentMutationError =
+  | UnauthorizedResponse
+  | ForbiddenResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Delete a comment
+ */
+export const useDeleteComment = <
+  TError =
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteComment>>,
+      TError,
+      { noteId: string; commentId: string },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteComment>>,
+  TError,
+  { noteId: string; commentId: string },
+  TContext
+> => {
+  const mutationOptions = getDeleteCommentMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
 
 /**
  * @summary Create a new folder

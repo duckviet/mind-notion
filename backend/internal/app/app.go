@@ -49,6 +49,7 @@ func New(ctx context.Context) (*App, func(), error) {
 	folderRepo := repository.NewFolderRepository(db)
 	templateRepo := repository.NewTemplateRepository(db)
 	eventRepo := repository.NewEventRepository(db)
+	commentRepo := repository.NewCommentRepository(db)
 
 	var (
 		searchService service.SearchService
@@ -81,6 +82,7 @@ func New(ctx context.Context) (*App, func(), error) {
 	templateService := service.NewTemplateService(templateRepo)
 	eventService := service.NewEventService(eventRepo)
 	authService := service.NewAuthService(userRepo, cfg)
+	commentService := service.NewCommentService(commentRepo, noteRepo, userRepo)
 
 	mediaService, err := service.NewMediaService(ctx, cfg.CDN)
 	if err != nil {
@@ -93,7 +95,7 @@ func New(ctx context.Context) (*App, func(), error) {
 	wsHandler := handlers.NewWebSocketHandler(collabService)
 
 	// Initialize handlers
-	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, templateService, *eventService, mediaService, wsHandler, searchHandler)
+	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, templateService, *eventService, mediaService, commentService, wsHandler, searchHandler)
 
 	app := &App{
 		router: router,

@@ -114,7 +114,7 @@ export default function FocusEditModalContent({
                 onTagRemove={onTagRemove}
                 disabled={isSaving}
               />
-              <CommentSection />
+              {note?.id && <CommentSection noteId={note.id} />}
               <div className="text-xs text-right mt-auto text-gray-500">
                 {form.content.length} chars
               </div>

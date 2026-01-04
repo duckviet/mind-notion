@@ -31,6 +31,13 @@ Req_RemoveNote:
 Res_DetailNote:
   $ref: "./Note/Res_DetailNote.yaml"
 
+Comment:
+  $ref: "./Comment/Comment.yaml"
+Req_CreateComment:
+  $ref: "./Comment/Req_CreateComment.yaml"
+Req_UpdateComment:
+  $ref: "./Comment/Req_UpdateComment.yaml"
+
 Req_CreateTemple:
   $ref: "./Template/Req_CreateTemplate.yaml"
 Req_UpdateTemplate:

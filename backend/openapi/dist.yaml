@@ -263,7 +263,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  '/notes/{id}':
+  '/notes/{note_id}':
     get:
       summary: Get note by ID
       operationId: getNote
@@ -272,7 +272,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: id
+        - name: note_id
           in: path
           required: true
           schema:
@@ -291,7 +291,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  '/notes/{id}/update':
+  '/notes/{note_id}/update':
     put:
       summary: Update note by ID
       operationId: updateNote
@@ -300,7 +300,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: id
+        - name: note_id
           in: path
           required: true
           schema:
@@ -327,7 +327,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  '/notes/{id}/delete':
+  '/notes/{note_id}/delete':
     delete:
       summary: Delete note by ID
       operationId: deleteNote
@@ -336,7 +336,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: id
+        - name: note_id
           in: path
           required: true
           schema:
@@ -351,7 +351,7 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-  '/notes/{id}/tom':
+  '/notes/{note_id}/tom':
     put:
       summary: Update note top of mind by ID
       operationId: updateNoteTOM
@@ -360,7 +360,7 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: id
+        - name: note_id
           in: path
           required: true
           schema:
@@ -414,6 +414,181 @@ paths:
                   $ref: '#/components/schemas/Res_DetailNote'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/notes/{note_id}/comments':
+    post:
+      summary: Create a comment on a note
+      operationId: createComment
+      tags:
+        - Comment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Note ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Req_CreateComment'
+      responses:
+        '201':
+          description: Comment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/notes/{note_id}/comments/list':
+    get:
+      summary: List comments for a note
+      operationId: listComments
+      tags:
+        - Comment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Note ID
+      responses:
+        '200':
+          description: Comments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: comment-123
+                        note_id:
+                          type: string
+                          example: note-456
+                        user_id:
+                          type: string
+                          example: user-789
+                        user_name:
+                          type: string
+                          example: John Doe
+                        user_avatar:
+                          type: string
+                          example: 'https://example.com/avatar.png'
+                        content:
+                          type: string
+                          example: This is a comment
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: '2021-01-01T00:00:00Z'
+                        updated_at:
+                          type: string
+                          format: date-time
+                          example: '2021-01-01T00:00:00Z'
+                  total:
+                    type: integer
+                    description: Total number of comments
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/notes/{note_id}/comments/{comment_id}':
+    put:
+      summary: Update a comment
+      operationId: updateComment
+      tags:
+        - Comment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Note ID
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Comment ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Req_UpdateComment'
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/notes/{note_id}/comments/{comment_id}/delete':
+    delete:
+      summary: Delete a comment
+      operationId: deleteComment
+      tags:
+        - Comment
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Note ID
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Comment ID
+      responses:
+        '204':
+          description: Comment deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
   /folders/create:
@@ -1342,6 +1517,63 @@ components:
         - content_type
         - status
         - top_of_mind
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          example: comment-123
+        note_id:
+          type: string
+          example: note-456
+        user_id:
+          type: string
+          example: user-789
+        user_name:
+          type: string
+          example: John Doe
+        user_avatar:
+          type: string
+          example: 'https://example.com/avatar.png'
+        content:
+          type: string
+          example: This is a comment
+        created_at:
+          type: string
+          format: date-time
+          example: '2021-01-01T00:00:00Z'
+        updated_at:
+          type: string
+          format: date-time
+          example: '2021-01-01T00:00:00Z'
+      required:
+        - id
+        - note_id
+        - user_id
+        - user_name
+        - content
+        - created_at
+        - updated_at
+    Req_CreateComment:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          example: This is my comment
+      required:
+        - content
+    Req_UpdateComment:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          example: Updated comment content
+      required:
+        - content
     Req_CreateTemple:
       type: object
       properties:
@@ -1671,6 +1903,16 @@ components:
               error:
                 type: string
                 example: Internal server error.
+    Forbidden:
+      description: Forbidden - You don't have permission to access this resource
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: Forbidden
   parameters:
     LimitParam:
       name: limit
