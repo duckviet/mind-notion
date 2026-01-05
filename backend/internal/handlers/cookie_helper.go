@@ -1,11 +1,39 @@
 package handlers
 
 import (
+	"net"
 	"net/http"
+	"strings"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
 	"github.com/gin-gonic/gin"
 )
+
+// resolveCookieDomain decides the cookie Domain for production cross-site usage.
+// - In release: use request host (without port) if it's not localhost or an IP.
+// - In non-release: leave empty (host-only cookie for dev).
+func resolveCookieDomain(c *gin.Context, cfg *config.Config) string {
+	if cfg.Server.Mode != "release" {
+		return ""
+	}
+
+	host := c.Request.Host
+	if host == "" {
+		host = cfg.Server.Host
+	}
+	if host == "" {
+		return ""
+	}
+
+	host = strings.Split(host, ":")[0]
+	if host == "" {
+		return ""
+	}
+	if host == "localhost" || net.ParseIP(host) != nil {
+		return ""
+	}
+	return host
+}
 
 // setAuthCookies sets HttpOnly cookies for access and refresh tokens
 // This follows security best practices from large-scale web applications
@@ -21,12 +49,8 @@ func setAuthCookies(c *gin.Context, cfg *config.Config, accessToken, refreshToke
 		sameSite = http.SameSiteNoneMode
 	}
 
-	// Domain for cookies - required for SameSite=None in cross-origin requests
-	cookieDomain := ""
-	if isProduction && cfg.Server.Host != "" {
-		// Extract domain from host (e.g., "herokuapp.com" from "mind-notion-xxxxx.herokuapp.com")
-		cookieDomain = cfg.Server.Host
-	}
+	// Domain for cookies - derived from request host to avoid localhost/IP issues
+	cookieDomain := resolveCookieDomain(c, cfg)
 
 	// Access token cookie: 1 hour expiry
 	http.SetCookie(c.Writer, &http.Cookie{
@@ -62,11 +86,8 @@ func clearAuthCookies(c *gin.Context, cfg *config.Config) {
 		sameSite = http.SameSiteNoneMode
 	}
 
-	// Domain for cookies - required for SameSite=None in cross-origin requests
-	cookieDomain := ""
-	if isProduction && cfg.Server.Host != "" {
-		cookieDomain = cfg.Server.Host
-	}
+	// Domain for cookies - match the same logic as setAuthCookies
+	cookieDomain := resolveCookieDomain(c, cfg)
 
 	// Clear access token
 	http.SetCookie(c.Writer, &http.Cookie{
