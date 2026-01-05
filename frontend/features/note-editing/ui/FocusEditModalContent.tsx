@@ -103,7 +103,7 @@ export default function FocusEditModalContent({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 8 }}
               transition={{ duration: 0.15 }}
-              className="flex flex-col space-y-10 mt-4 min-w-0"
+              className="flex flex-col space-y-10 mt-4 min-w-0 mr-2"
             >
               <NoteMetadataPanel note={note} />
               <NoteTagsSection
