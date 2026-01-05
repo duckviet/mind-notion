@@ -1,0 +1,382 @@
+/* Mind Notion Floating Popup Styles */
+
+#mind-notion-popup {
+  all: initial;
+  * {
+    all: unset;
+  }
+}
+
+.mind-notion-floating {
+  position: fixed !important;
+  top: 80px !important;
+  right: 20px !important;
+  width: 380px !important;
+  max-height: 80vh !important;
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
+  z-index: 2147483647 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  color: #1e293b !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* Header */
+.mn-popup-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 16px !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  cursor: grab !important;
+  user-select: none !important;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+  color: white !important;
+}
+
+.mn-popup-header:active {
+  cursor: grabbing !important;
+}
+
+.mn-logo {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+}
+
+.mn-logo svg {
+  width: 24px !important;
+  height: 24px !important;
+  stroke: currentColor !important;
+  fill: none !important;
+}
+
+.mn-close-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: background 0.2s !important;
+}
+
+.mn-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+.mn-close-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke: white !important;
+  fill: none !important;
+}
+
+/* Body */
+.mn-popup-body {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 16px !important;
+  background: #f8fafc !important;
+}
+
+.mn-popup-body::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.mn-popup-body::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.mn-popup-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 3px !important;
+}
+
+/* Auth View */
+.mn-auth-view {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.mn-auth-header {
+  text-align: center !important;
+}
+
+.mn-auth-header h2 {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  margin-bottom: 4px !important;
+  display: block !important;
+}
+
+.mn-auth-header p {
+  font-size: 14px !important;
+  color: #64748b !important;
+  display: block !important;
+}
+
+/* Form */
+.mn-auth-form,
+.mn-app-view {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.mn-form-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.mn-form-group label {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #475569 !important;
+  display: block !important;
+}
+
+.mn-form-group input,
+.mn-form-group textarea {
+  width: 100% !important;
+  padding: 10px 12px !important;
+  font-size: 14px !important;
+  font-family: inherit !important;
+  color: #1e293b !important;
+  background: white !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  outline: none !important;
+  transition: all 0.2s !important;
+  box-sizing: border-box !important;
+  display: block !important;
+}
+
+.mn-form-group input:focus,
+.mn-form-group textarea:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+.mn-form-group textarea {
+  resize: vertical !important;
+  min-height: 120px !important;
+  line-height: 1.6 !important;
+}
+
+/* Character Count */
+.mn-char-count {
+  text-align: right !important;
+  font-size: 12px !important;
+  color: #94a3b8 !important;
+}
+
+/* Buttons */
+.mn-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  padding: 12px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  font-family: inherit !important;
+  border: none !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  box-sizing: border-box !important;
+}
+
+.mn-btn-primary {
+  color: white !important;
+  background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+  box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3) !important;
+}
+
+.mn-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(99, 102, 241, 0.4) !important;
+}
+
+.mn-btn-primary:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.mn-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke: currentColor !important;
+  fill: none !important;
+}
+
+/* Auth Footer */
+.mn-auth-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding-top: 12px !important;
+  border-top: 1px solid #e2e8f0 !important;
+  font-size: 13px !important;
+  color: #64748b !important;
+}
+
+.mn-link-btn {
+  padding: 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  font-family: inherit !important;
+  color: #6366f1 !important;
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: color 0.2s !important;
+  text-decoration: underline !important;
+}
+
+.mn-link-btn:hover {
+  color: #4f46e5 !important;
+}
+
+/* User Info */
+.mn-user-info {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px !important;
+  background: white !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  margin-bottom: 8px !important;
+}
+
+.mn-user-avatar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: linear-gradient(135deg, #e0e7ff, #c7d2fe) !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+}
+
+.mn-user-avatar svg {
+  width: 20px !important;
+  height: 20px !important;
+  stroke: #6366f1 !important;
+  fill: none !important;
+}
+
+.mn-user-details {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+
+.mn-user-name {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+}
+
+.mn-user-email {
+  font-size: 12px !important;
+  color: #94a3b8 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: block !important;
+}
+
+.mn-logout-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  color: #64748b !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  flex-shrink: 0 !important;
+}
+
+.mn-logout-btn:hover {
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+}
+
+.mn-logout-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke: currentColor !important;
+  fill: none !important;
+}
+
+/* Message */
+.mn-message {
+  padding: 10px 12px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+  border-radius: 8px !important;
+  opacity: 0 !important;
+  transform: translateY(-10px) !important;
+  transition: all 0.2s !important;
+  display: block !important;
+  margin-top: 8px !important;
+}
+
+.mn-message-show {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+.mn-message-success {
+  background: #d1fae5 !important;
+  color: #10b981 !important;
+}
+
+.mn-message-warning {
+  background: #fef3c7 !important;
+  color: #f59e0b !important;
+}
+
+.mn-message-error {
+  background: #fee2e2 !important;
+  color: #ef4444 !important;
+}
+
+/* Loading State */
+.mn-btn-loading {
+  pointer-events: none !important;
+  opacity: 0.7 !important;
+}
