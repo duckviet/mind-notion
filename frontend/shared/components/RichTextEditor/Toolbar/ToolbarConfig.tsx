@@ -18,6 +18,7 @@ import {
   Undo,
   Redo,
   ListCollapseIcon,
+  Columns2,
 } from "lucide-react";
 
 interface ToolbarGroup {
@@ -142,6 +143,12 @@ export const getToolbarGroups = (
         tooltip: "Add Image",
         isActive: () => false,
         onClick: options.onAddImage,
+      },
+      {
+        icon: <Columns2 size={16} />,
+        tooltip: "Split View",
+        isActive: () => editor.isActive("splitView"),
+        onClick: () => editor.commands.insertSplitView(),
       },
     ],
   },
