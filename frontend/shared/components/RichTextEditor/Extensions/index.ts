@@ -7,3 +7,4 @@ export { default as ExtMathematics } from "./ExtMathematics";
 export { default as ExtTableOfContents } from "./ExtTableOfContents";
 export { default as ExtTableKit } from "./ExtTable";
 export { default as ExtImageUpload } from "./ExtImageUpload";
+export { default as ExtSplitView, SplitViewColumn } from "./ExtSplitView";

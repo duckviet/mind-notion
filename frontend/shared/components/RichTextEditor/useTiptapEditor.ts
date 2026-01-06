@@ -17,6 +17,8 @@ import {
   ExtMathematics,
   ExtTableKit,
   ExtTableOfContents,
+  ExtSplitView,
+  SplitViewColumn,
 } from "./Extensions";
 
 import { migrateMathStrings } from "@tiptap/extension-mathematics";
@@ -93,6 +95,8 @@ export const useTiptapEditor = ({
           return res.url;
         },
       }),
+      ExtSplitView,
+      SplitViewColumn,
     ],
     [placeholder]
   );
