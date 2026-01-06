@@ -261,3 +261,72 @@ div {
   background: rgba(200, 200, 255, 0.4);
   pointer-events: none;
 }
+
+/* Split View Extension Styles */
+.split-view-wrapper {
+  position: relative;
+}
+
+.split-view-container {
+  position: relative;
+}
+
+/* Target the actual DOM structure with the wrapper div */
+.split-view-columns {
+  display: block !important;
+  width: 100% !important;
+}
+
+.split-view-columns > [data-node-view-content-react] {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  align-items: stretch;
+}
+
+/* Column styling - using CSS custom properties from parent */
+.split-view-column {
+  min-height: 80px;
+  height: 100%;
+  padding: 12px;
+  overflow: auto;
+  flex-shrink: 0;
+}
+
+.split-view-column:first-child {
+  width: var(--split-left-width, 50%);
+}
+
+.split-view-column:last-child {
+  width: var(--split-right-width, 50%);
+}
+
+/* Column content */
+.split-view-column p {
+  margin: 0;
+}
+
+.split-view-column p:not(:last-child) {
+  margin-bottom: 0.5rem;
+}
+
+.split-view-column img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.375rem;
+}
+
+/* Placeholder styling */
+.split-view-column > p.is-empty:first-child::before {
+  content: "Type here...";
+  color: #9ca3af;
+  font-style: italic;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* Resizer hover effect */
+.split-view-resizer:hover .h-12 {
+  transform: scaleY(1.15);
+}
