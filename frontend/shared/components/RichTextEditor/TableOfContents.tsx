@@ -244,7 +244,7 @@ export const TableOfContents = ({
   }, [activeId, getAncestorIds]);
 
   useEffect(() => {
-    if (!editor || flatHeadings.length === 0) return;
+    if (!editor || flatHeadings.length === 0 || !editor.view?.dom) return;
 
     const dom = editor.view.dom;
     const headingElements = Array.from(dom.querySelectorAll("h1, h2, h3"));

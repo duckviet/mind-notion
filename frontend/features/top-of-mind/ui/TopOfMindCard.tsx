@@ -13,20 +13,31 @@ import { CardContent, CardTitle } from "@/shared/components/ui/card";
 type TopOfMindCardProps = {
   note: ResDetailNote;
   onUnpin: () => void;
+  onFocusEdit?: () => void;
 };
 
-const TopOfMindCard: React.FC<TopOfMindCardProps> = ({ note, onUnpin }) => {
+const TopOfMindCard: React.FC<TopOfMindCardProps> = ({
+  note,
+  onUnpin,
+  onFocusEdit,
+}) => {
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <Card className="w-42 h-32 overflow-hidden  rounded-xl bg-white py-2 px-4 ">
-          <div className="w-full">
-            <CardTitle className="line-clamp-2 mb-1">{note.title}</CardTitle>
-          </div>{" "}
-          <CardContent className="p-0">
-            <NoteDisplay content={note.content} zoom={0.5} />
-          </CardContent>
-        </Card>
+        <div
+          onDoubleClick={onFocusEdit}
+          className="cursor-pointer"
+          style={{ userSelect: "none", msUserSelect: "none" }}
+        >
+          <Card className="w-42 h-32 overflow-hidden rounded-xl bg-white py-2 px-4">
+            <div className="w-full">
+              <CardTitle className="line-clamp-2 mb-1">{note.title}</CardTitle>
+            </div>
+            <CardContent className="p-0">
+              <NoteDisplay content={note.content} zoom={0.5} />
+            </CardContent>
+          </Card>
+        </div>
       </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem onClick={onUnpin}>Unpin</ContextMenuItem>

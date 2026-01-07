@@ -1,4 +1,5 @@
 import { Editor } from "@tiptap/react";
+import { is } from "date-fns/locale";
 import {
   Bold,
   Italic,
@@ -21,16 +22,20 @@ import {
   Columns2,
 } from "lucide-react";
 
+interface ToolbarItem {
+  icon: React.ReactNode;
+  label?: string;
+  tooltip: string;
+  isActive: () => boolean;
+  disabled?: () => boolean;
+  onClick: () => void;
+  isDropdown?: boolean;
+  variants?: ToolbarItem[];
+}
+
 interface ToolbarGroup {
   name: string;
-  items: {
-    icon: React.ReactNode;
-    tooltip: string;
-    isActive: () => boolean;
-    disabled?: () => boolean;
-    onClick: () => void;
-    isDropdown?: boolean;
-  }[];
+  items: ToolbarItem[];
 }
 
 export const getToolbarGroups = (
@@ -149,6 +154,26 @@ export const getToolbarGroups = (
         tooltip: "Split View",
         isActive: () => editor.isActive("splitView"),
         onClick: () => editor.commands.insertSplitView(),
+        variants: [
+          {
+            icon: <Columns2 size={16} />,
+            label: "Insert Split View",
+            tooltip: "Insert Split View",
+            isActive: () => editor.isActive("splitView"),
+            onClick: () => editor.commands.insertSplitView(),
+          },
+          {
+            icon: <Columns2 className="[stroke-dasharray:2_4]" size={16} />,
+            label: "Toggle Split View Border",
+            tooltip: "Toggle Split View Border",
+            isActive: () => editor.isActive("splitView"),
+            onClick: () => {
+              editor.commands.insertSplitView({
+                border: false,
+              });
+            },
+          },
+        ],
       },
     ],
   },

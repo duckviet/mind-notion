@@ -7,6 +7,13 @@ import { useUploadMedia } from "@/shared/services/generated/api";
 import ToolbarButton from "./ToolbarButton";
 import TableSizeDropdown from "./TableSizeDropdown";
 import { getToolbarGroups } from "./ToolbarConfig";
+import { Dropdown } from "react-day-picker";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../../ui/hover-card";
+import { Button } from "../../ui/button";
 
 const Toolbar = ({
   editor,
@@ -66,17 +73,56 @@ const Toolbar = ({
               item.isDropdown ? (
                 <TableSizeDropdown key={itemIdx} editor={editor} />
               ) : (
-                <ToolbarButton
-                  key={itemIdx}
-                  onClick={item.onClick}
-                  isActive={item.isActive()}
-                  disabled={
-                    item.disabled?.() ||
-                    (item.tooltip === "Add Image" && isUploading)
-                  }
-                  icon={item.icon}
-                  tooltip={item.tooltip}
-                />
+                <React.Fragment key={itemIdx}>
+                  {item.variants && item.variants.length > 0 ? (
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <div className="inline-block cursor-pointer">
+                          {" "}
+                          <ToolbarButton
+                            key={itemIdx}
+                            onClick={item.onClick}
+                            isActive={item.isActive()}
+                            disabled={
+                              item.disabled?.() ||
+                              (item.tooltip === "Add Image" && isUploading)
+                            }
+                            icon={item.icon}
+                            tooltip={""}
+                          />
+                        </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="bg-white flex gap-2 flex-col border-none p-2">
+                        {item?.variants?.map((variant, variantIdx) => (
+                          <ToolbarButton
+                            key={variantIdx}
+                            onClick={variant.onClick}
+                            isActive={variant.isActive()}
+                            disabled={
+                              variant.disabled?.() ||
+                              (variant.tooltip === "Add Image" && isUploading)
+                            }
+                            icon={variant.icon}
+                            label={variant.label}
+                            tooltip={variant.tooltip}
+                          />
+                        ))}
+                      </HoverCardContent>
+                    </HoverCard>
+                  ) : (
+                    <ToolbarButton
+                      key={itemIdx}
+                      onClick={item.onClick}
+                      isActive={item.isActive()}
+                      disabled={
+                        item.disabled?.() ||
+                        (item.tooltip === "Add Image" && isUploading)
+                      }
+                      icon={item.icon}
+                      tooltip={item.tooltip}
+                    />
+                  )}
+                </React.Fragment>
               )
             )}
           </div>

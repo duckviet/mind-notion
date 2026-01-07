@@ -16,7 +16,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
   const [isHovered, setIsHovered] = useState(false);
 
   const leftWidth = (node.attrs.leftWidth as number) || 50;
-
+  const border = node.attrs.border !== false;
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -49,7 +49,8 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
   return (
     <NodeViewWrapper
       className={cn(
-        "split-view-wrapper relative my-4 rounded-lg border transition-all duration-200",
+        "split-view-wrapper relative my-4 rounded-lg  transition-all duration-200",
+        border ? "border" : "border-none bg-gray-50/30",
         selected ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200",
         isDragging && "select-none",
         isHovered && !selected && "border-gray-300"
@@ -73,6 +74,18 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
             ({leftWidth}% / {100 - leftWidth}%)
           </span>
         </div>
+
+        <div className="h-4 w-px bg-gray-200 mx-1" />
+        <button
+          onClick={() => updateAttributes({ border: !border })}
+          className="p-1 text-gray-400 hover:bg-blue-50 rounded transition-colors"
+          title="Toogle split view border"
+        >
+          <Columns2
+            className={cn("h-3.5 w-3.5", border && "[stroke-dasharray:2_4]")}
+          />{" "}
+        </button>
+
         <div className="h-4 w-px bg-gray-200 mx-1" />
         <button
           onClick={deleteNode}
@@ -100,7 +113,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
         {/* Resizer handle */}
         <div
           className={cn(
-            "split-view-resizer absolute top-0 bottom-0 w-4 -ml-2 cursor-col-resize z-20 flex items-center justify-center group",
+            "split-view-resizer absolute top-0 bottom-0 w-4 -ml-2 cursor-col-resize z-10 flex items-center justify-center group",
             isDragging && "bg-blue-100/50"
           )}
           style={{ left: `${leftWidth}%` }}
