@@ -8,9 +8,16 @@ type Props = {
   onDelete?: (id: string) => void;
   onUpdate?: (id: string, note: ResDetailNote) => void;
   onUnpin?: (id: string, tom: boolean) => void;
+  onFocusEdit?: (id: string) => void;
 };
 
-const TopOfMind = ({ notes, onDelete, onUpdate, onUnpin }: Props) => {
+const TopOfMind = ({
+  notes,
+  onDelete,
+  onUpdate,
+  onUnpin,
+  onFocusEdit,
+}: Props) => {
   return (
     <DroppableZone
       id="top-of-mind-zone"
@@ -35,6 +42,7 @@ const TopOfMind = ({ notes, onDelete, onUpdate, onUnpin }: Props) => {
               <TopOfMindCard
                 note={note}
                 onUnpin={() => onUnpin?.(note.id, false)}
+                onFocusEdit={() => onFocusEdit?.(note.id)}
               />
             </DraggableItem>
             // </SortableItem>

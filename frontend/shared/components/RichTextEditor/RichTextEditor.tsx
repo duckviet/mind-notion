@@ -117,7 +117,7 @@ const Tiptap = ({
   return (
     <div className="flex flex-col gap-2">
       {toolbar && <Toolbar editor={editor} />}
-      <div className="relative flex gap-6">
+      <div className="relative flex gap-6 cursor-text">
         <div className="flex-1">
           <EditorContent
             ref={ref}

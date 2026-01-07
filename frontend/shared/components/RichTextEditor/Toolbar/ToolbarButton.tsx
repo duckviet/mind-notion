@@ -6,6 +6,7 @@ export type ToolbarButtonProps = {
   icon: React.ReactNode;
   tooltip: string;
   disabled?: boolean;
+  label?: string;
 };
 
 export default function ToolbarButton({
@@ -14,16 +15,17 @@ export default function ToolbarButton({
   icon,
   tooltip,
   disabled = false,
+  label,
 }: ToolbarButtonProps) {
   return (
     <motion.button
-      whileHover={{ scale: disabled ? 1 : 1.1 }}
+      whileHover={{ scale: disabled ? 1 : label ? 1 : 1.1 }}
       whileTap={{ scale: disabled ? 1 : 0.95 }}
       onClick={onClick}
       disabled={disabled}
       title={tooltip}
-      className={`p-2 rounded transition-colors ${
-        isActive
+      className={`p-2 rounded inline-flex items-center space-x-2 transition-colors ${
+        isActive && !label
           ? "bg-[#a55252] text-white"
           : disabled
             ? "text-gray-300 cursor-not-allowed"
@@ -31,6 +33,7 @@ export default function ToolbarButton({
       }`}
     >
       {icon}
+      {label && <span className="text-sm">{label}</span>}
     </motion.button>
   );
 }
