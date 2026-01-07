@@ -1,12 +1,17 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "./authStore";
 import { getMe } from "@/shared/services/generated/api";
 
+const REFRESH_TIMEOUT = 1200;
 export default function AutoLogin({ children }: { children: React.ReactNode }) {
   const { setUser, login, logout, isRefreshing, isAuth } = useAuthStore();
   const mounted = useRef(false);
+  const [canPopup, setCanPopup] = useState(false);
+
+  // Dùng ref để ghi nhớ thời điểm bắt đầu hiển thị popup
+  const showStartTime = useRef<number | null>(null);
 
   useEffect(() => {
     if (mounted.current) return;
@@ -14,15 +19,11 @@ export default function AutoLogin({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       try {
-        // Gọi API lấy thông tin user.
-        // Nếu access token hết hạn, Axios Interceptor sẽ tự refresh âm thầm
-        // bằng HttpOnly refresh_token cookie.
         const user = await getMe();
         setUser(user);
         login();
       } catch (error) {
         console.error("Auto login failed", error);
-        // Nếu backend trả 401 và refresh cũng fail, coi như chưa đăng nhập
         logout();
       }
     };
@@ -30,13 +31,39 @@ export default function AutoLogin({ children }: { children: React.ReactNode }) {
     initAuth();
   }, [setUser, login, logout]);
 
-  const canPopup = isRefreshing && !isAuth;
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (isRefreshing && isAuth) {
+      // 1. Nếu đang refresh, hiện popup ngay lập tức
+      setCanPopup(true);
+      if (!showStartTime.current) {
+        showStartTime.current = Date.now();
+      }
+    } else if (!isRefreshing) {
+      // 2. Nếu đã refresh xong, kiểm tra xem đã đủ REFRESH_TIMEOUT chưa
+      const currentTime = Date.now();
+      const timeElapsed = showStartTime.current
+        ? currentTime - showStartTime.current
+        : 0;
+      const remainingTime = Math.max(0, REFRESH_TIMEOUT - timeElapsed);
+
+      timer = setTimeout(() => {
+        setCanPopup(false);
+        showStartTime.current = null;
+      }, remainingTime);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isRefreshing, isAuth]);
 
   return (
     <>
       {canPopup && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-4 rounded-lg bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-[9999] flex justify-center bg-black/50 backdrop-blur-sm">
+          <div className="flex h-fit mt-2 flex-col items-center gap-4 rounded-lg bg-white p-6 shadow-xl">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             <p className="text-sm font-medium text-gray-700">
               Phiên đăng nhập hết hạn, đang tự động kết nối lại...
