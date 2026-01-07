@@ -1,18 +1,37 @@
 // AuthPage.tsx
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { LoginForm } from "@/features/auth/ui/LoginForm";
 import { RegisterForm } from "@/features/auth/ui/RegisterForm";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuthStore } from "@/features/auth";
 
 export default function AuthPage() {
+  const { isAuth, isRefreshing } = useAuthStore();
   const [isLogin, setIsLogin] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Lấy callbackUrl từ Middleware (nếu bạn đã set ở middleware)
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
+
+  useEffect(() => {
+    // Nếu đã auth thì không cho ở lại trang này
+    if (isAuth) {
+      router.replace(callbackUrl); // Dùng replace để tránh lưu lịch sử trang login
+    }
+  }, [isAuth, router, callbackUrl]);
+
+  // Nếu đang refresh (AutoLogin đang chạy) hoặc đã auth,
+  // không render gì cả để tránh hiện Form Login rồi biến mất (Flicker)
+  if (isAuth) {
+    return null;
+  }
 
   const handleSuccess = () => {
-    router.push("/");
+    router.push(callbackUrl);
   };
 
   return (
