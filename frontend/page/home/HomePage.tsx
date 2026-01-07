@@ -11,6 +11,13 @@ const MasonryGrid = dynamic(
   () => import("@/widgets/content-grid").then((m) => m.MasonryGrid),
   { ssr: false }
 );
+const FocusEditModal = dynamic(
+  () =>
+    import("@/features/note-editing").then((mod) => ({
+      default: mod.FocusEditModal,
+    })),
+  { ssr: false }
+);
 import NoteCard from "@/entities/note/ui/NoteCard";
 import ArticleCard from "@/entities/web-article/ui/ArticleCard";
 import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
@@ -62,7 +69,8 @@ function HomePageContent() {
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { isModalOpen } = useModal();
+  const [focusEditNoteId, setFocusEditNoteId] = useState<string | null>(null);
+  const { isModalOpen, openModal, closeModal } = useModal();
 
   const [debouncedQuery] = useDebounce(query, 300);
   const {
@@ -212,6 +220,16 @@ function HomePageContent() {
     }
   };
 
+  const handleFocusEdit = (id: string) => {
+    setFocusEditNoteId(id);
+    openModal();
+  };
+
+  const handleCloseFocusEdit = () => {
+    setFocusEditNoteId(null);
+    closeModal();
+  };
+
   return (
     <MultiZoneDndProvider
       disabled={isModalOpen}
@@ -251,6 +269,7 @@ function HomePageContent() {
               <TopOfMind
                 notes={topOfMindNotesData || []}
                 onUnpin={handleUpdateTopOfMindNote}
+                onFocusEdit={handleFocusEdit}
               />
             )}
           </SortableContext>
@@ -303,6 +322,7 @@ function HomePageContent() {
                             onDelete={handleDeleteRequest}
                             onUpdateNote={handleUpdate}
                             onPin={handleUpdateTopOfMindNote}
+                            onFocusEdit={handleFocusEdit}
                           />
                         ) : (
                           <ArticleCard
@@ -336,6 +356,15 @@ function HomePageContent() {
             }
           }}
         />
+
+        {focusEditNoteId && (
+          <FocusEditModal
+            isOpen={!!focusEditNoteId}
+            onClose={handleCloseFocusEdit}
+            noteId={focusEditNoteId}
+            onSave={(data) => handleUpdate(focusEditNoteId, data)}
+          />
+        )}
       </div>
     </MultiZoneDndProvider>
   );

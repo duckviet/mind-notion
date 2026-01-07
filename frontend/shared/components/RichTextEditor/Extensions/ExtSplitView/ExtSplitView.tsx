@@ -12,11 +12,19 @@ declare module "@tiptap/core" {
       /**
        * Insert a split view
        */
-      insertSplitView: (options?: { leftWidth?: number }) => ReturnType;
+      insertSplitView: (options?: {
+        leftWidth?: number;
+        border?: boolean;
+      }) => ReturnType;
       /**
        * Update split view ratio
        */
       updateSplitViewRatio: (leftWidth: number) => ReturnType;
+
+      /**
+       * Toogle border display
+       */
+      toogleBorderDisplay: (isBorder: boolean) => ReturnType;
     };
   }
 }
@@ -48,6 +56,18 @@ const ExtSplitView = Node.create<SplitViewOptions>({
         renderHTML: (attributes) => {
           return {
             "data-left-width": attributes.leftWidth,
+          };
+        },
+      },
+      border: {
+        default: true,
+        parseHTML: (element) => {
+          const attr = element.getAttribute("data-border");
+          return attr === "false" ? false : true;
+        },
+        renderHTML: (attributes) => {
+          return {
+            "data-border": attributes.border,
           };
         },
       },
@@ -86,6 +106,7 @@ const ExtSplitView = Node.create<SplitViewOptions>({
             type: this.name,
             attrs: {
               leftWidth: options?.leftWidth ?? 50,
+              border: options?.border ?? true,
             },
             content: [
               {
@@ -105,6 +126,11 @@ const ExtSplitView = Node.create<SplitViewOptions>({
         (leftWidth) =>
         ({ commands }) => {
           return commands.updateAttributes(this.name, { leftWidth });
+        },
+      toogleBorderDisplay:
+        (isBorder) =>
+        ({ commands }) => {
+          return commands.updateAttributes(this.name, { border: isBorder });
         },
     };
   },

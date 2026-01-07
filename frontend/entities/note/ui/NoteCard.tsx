@@ -1,18 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import dynamic from "next/dynamic";
 
 import { PreviewOverlay } from "@/shared/components/PreviewOverlay";
-import { useModal } from "@/shared/contexts/ModalContext";
-
-// Dynamic import to prevent SSR issues
-const FocusEditModal = dynamic(
-  () =>
-    import("@/features/note-editing").then((mod) => ({
-      default: mod.FocusEditModal,
-    })),
-  { ssr: false }
-);
 import {
   ContextMenu,
   ContextMenuContent,
@@ -35,6 +24,7 @@ type Props = {
   onDelete?: (id: string) => void | Promise<void>;
   onUpdateNote?: (id: string, data: ReqUpdateNote) => void;
   onPin?: (id: string, tom: boolean) => void;
+  onFocusEdit?: (id: string) => void;
 };
 
 export default function NoteCard({
@@ -42,16 +32,9 @@ export default function NoteCard({
   onDelete,
   onUpdateNote,
   onPin,
+  onFocusEdit,
 }: Props) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [isFocusEditOpen, setIsFocusEditOpen] = useState(false);
-  const { openModal, closeModal } = useModal();
-
-  const handleSaveNote = (data: ReqUpdateNote) => {
-    if (onUpdateNote) {
-      onUpdateNote(match.id, data);
-    }
-  };
 
   const handleDelete = async () => {
     if (onDelete) {
@@ -64,8 +47,7 @@ export default function NoteCard({
   };
 
   const handleFocusEdit = () => {
-    setIsFocusEditOpen(true);
-    openModal();
+    onFocusEdit?.(match.id);
   };
 
   const handlePin = (tom: boolean) => {
@@ -147,17 +129,6 @@ export default function NoteCard({
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
         item={match}
-      />
-
-      {/* Focus Edit Modal */}
-      <FocusEditModal
-        isOpen={isFocusEditOpen}
-        onClose={() => {
-          setIsFocusEditOpen(false);
-          closeModal();
-        }}
-        noteId={match.id}
-        onSave={handleSaveNote}
       />
     </ContextMenu>
   );

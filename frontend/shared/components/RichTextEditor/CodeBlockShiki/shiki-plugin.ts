@@ -114,7 +114,7 @@ function getDecorations({
         if (themes) {
           style = styleToHtml(token.htmlStyle || {});
         } else {
-          style = styleToHtml({ color: token.color || "inherit" });
+          style = styleToHtml({ color: token.color || "white" });
         }
 
         const decoration = Decoration.inline(from, to, {
