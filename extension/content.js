@@ -56,15 +56,18 @@
     // Position popup (top-right corner)
     positionPopup();
 
-    // Show appropriate view
+    // Show appropriate view - only show if authenticated
     if (authResult.authenticated && authResult.user) {
       showAppView(authResult.user, selectedText);
+      // Setup drag functionality
+      setupDragging();
     } else {
-      showLoginView();
+      // Not authenticated - remove popup and open default popup
+      floatingPopup.remove();
+      floatingPopup = null;
+      // Open default popup for login
+      chrome.runtime.sendMessage({ action: "openPopup" });
     }
-
-    // Setup drag functionality
-    setupDragging();
   }
 
   /**
@@ -155,89 +158,6 @@
   }
 
   /**
-   * Show login view
-   */
-  function showLoginView() {
-    const body = floatingPopup.querySelector("#mn-popup-body");
-    body.innerHTML = `
-      <div class="mn-auth-view">
-        <div class="mn-auth-header">
-          <h2>Welcome Back</h2>
-          <p>Sign in to save your notes</p>
-        </div>
-        <form class="mn-auth-form" id="mn-login-form">
-          <div class="mn-form-group">
-            <label>Username</label>
-            <input type="text" name="username" placeholder="Enter username" required autocomplete="username">
-          </div>
-          <div class="mn-form-group">
-            <label>Password</label>
-            <input type="password" name="password" placeholder="Enter password" required autocomplete="current-password">
-          </div>
-          <button type="submit" class="mn-btn mn-btn-primary">Sign In</button>
-        </form>
-        <div class="mn-auth-footer">
-          <span>Don't have an account?</span>
-          <button type="button" class="mn-link-btn" id="mn-show-register">Sign Up</button>
-        </div>
-        <div class="mn-message" id="mn-message"></div>
-      </div>
-    `;
-
-    // Setup event listeners
-    const form = body.querySelector("#mn-login-form");
-    const showRegisterBtn = body.querySelector("#mn-show-register");
-
-    form.addEventListener("submit", handleLogin);
-    showRegisterBtn.addEventListener("click", showRegisterView);
-  }
-
-  /**
-   * Show register view
-   */
-  function showRegisterView() {
-    const body = floatingPopup.querySelector("#mn-popup-body");
-    body.innerHTML = `
-      <div class="mn-auth-view">
-        <div class="mn-auth-header">
-          <h2>Create Account</h2>
-          <p>Sign up to start saving notes</p>
-        </div>
-        <form class="mn-auth-form" id="mn-register-form">
-          <div class="mn-form-group">
-            <label>Full Name</label>
-            <input type="text" name="name" placeholder="Enter your name" required>
-          </div>
-          <div class="mn-form-group">
-            <label>Username</label>
-            <input type="text" name="username" placeholder="Choose a username" required autocomplete="username">
-          </div>
-          <div class="mn-form-group">
-            <label>Email</label>
-            <input type="email" name="email" placeholder="Enter your email" required autocomplete="email">
-          </div>
-          <div class="mn-form-group">
-            <label>Password</label>
-            <input type="password" name="password" placeholder="Create a password" required minlength="6" autocomplete="new-password">
-          </div>
-          <button type="submit" class="mn-btn mn-btn-primary">Create Account</button>
-        </form>
-        <div class="mn-auth-footer">
-          <span>Already have an account?</span>
-          <button type="button" class="mn-link-btn" id="mn-show-login">Sign In</button>
-        </div>
-        <div class="mn-message" id="mn-message"></div>
-      </div>
-    `;
-
-    const form = body.querySelector("#mn-register-form");
-    const showLoginBtn = body.querySelector("#mn-show-login");
-
-    form.addEventListener("submit", handleRegister);
-    showLoginBtn.addEventListener("click", showLoginView);
-  }
-
-  /**
    * Show app view (logged in)
    */
   function showAppView(user, selectedText = "") {
@@ -322,87 +242,6 @@
         }
       }
     });
-  }
-
-  /**
-   * Handle login
-   */
-  async function handleLogin(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const username = formData.get("username");
-    const password = formData.get("password");
-
-    setLoading(true);
-
-    try {
-      const response = await chrome.runtime.sendMessage({
-        action: "login",
-        data: { username, password },
-      });
-
-      if (response.success) {
-        showMessage("success", "Logged in successfully!");
-        setTimeout(() => {
-          showAppView(response.user);
-        }, 500);
-      } else {
-        showMessage("error", response.error || "Login failed");
-      }
-    } catch (error) {
-      showMessage("error", error.message || "Login failed");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  /**
-   * Handle register
-   */
-  async function handleRegister(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const name = formData.get("name");
-    const username = formData.get("username");
-    const email = formData.get("email");
-    const password = formData.get("password");
-
-    setLoading(true);
-
-    try {
-      const response = await chrome.runtime.sendMessage({
-        action: "register",
-        data: { name, username, email, password },
-      });
-
-      if (response.success) {
-        showMessage("success", "Account created!");
-        setTimeout(() => {
-          showAppView(response.user);
-        }, 500);
-      } else {
-        showMessage("error", response.error || "Registration failed");
-      }
-    } catch (error) {
-      showMessage("error", error.message || "Registration failed");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  /**
-   * Handle logout
-   */
-  async function handleLogout() {
-    try {
-      await chrome.runtime.sendMessage({ action: "logout" });
-      showMessage("success", "Logged out");
-      setTimeout(() => {
-        showLoginView();
-      }, 500);
-    } catch (error) {
-      showMessage("error", "Logout failed");
-    }
   }
 
   /**
