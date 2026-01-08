@@ -118,6 +118,10 @@ async function handleMessage(request) {
     case "getSelectedText":
       return handleGetSelectedText();
 
+    case "openPopup":
+      // Open the default extension popup for login
+      return handleOpenPopup();
+
     default:
       throw new Error("Unknown action");
   }
@@ -219,6 +223,20 @@ async function handleGetSelectedText() {
     return { success: true, text: results[0]?.result || "" };
   } catch (error) {
     return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Open default popup for login
+ */
+async function handleOpenPopup() {
+  try {
+    await chrome.action.openPopup();
+    return { success: true };
+  } catch (error) {
+    // Fallback: show notification
+    showNotification("warning", "Please login via extension icon");
+    return { success: false, error: "Could not open popup" };
   }
 }
 
