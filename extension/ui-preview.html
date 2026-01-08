@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mind Notion UI Preview</title>
+    <link rel="stylesheet" href="content.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 40px;
+        font-family: "SF Pro Display", "Inter", -apple-system,
+          BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: radial-gradient(circle at 20% 20%, #e0e7ff, #f8fafc 45%),
+          radial-gradient(circle at 80% 0%, #bfdbfe, transparent 35%), #f8fafc;
+        color: #0f172a;
+      }
+      h1 {
+        margin-bottom: 24px;
+        font-size: 24px;
+        letter-spacing: -0.01em;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 24px;
+        align-items: start;
+      }
+      .note {
+        color: #475569;
+        margin-bottom: 24px;
+      }
+      /* Prevent position fixed in preview so we can show multiple cards */
+      #mind-notion-popup {
+        position: static;
+      }
+      .mind-notion-floating {
+        position: relative !important;
+        inset: auto !important;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Mind Notion UI Preview (Mock Data)</h1>
+    <p class="note">
+      Use this page to view the login, register, and app states without Chrome
+      APIs.
+    </p>
+    <div class="grid">
+      <div id="mind-notion-popup" class="mind-notion-floating">
+        <div class="mn-popup-header" id="mn-drag-handle">
+          <div class="mn-logo">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+            <span>Mind Notion</span>
+          </div>
+        </div>
+        <div class="mn-popup-body" id="mn-popup-body">
+          <div class="mn-auth-view">
+            <div class="mn-auth-header">
+              <h2>Welcome Back</h2>
+              <p>Sign in to save your notes</p>
+            </div>
+            <form class="mn-auth-form">
+              <div class="mn-form-group">
+                <label>Username</label>
+                <input type="text" placeholder="Enter username" />
+              </div>
+              <div class="mn-form-group">
+                <label>Password</label>
+                <input type="password" placeholder="Enter password" />
+              </div>
+              <button type="button" class="mn-btn mn-btn-primary">
+                Sign In
+              </button>
+            </form>
+            <div class="mn-auth-footer">
+              <span>Don't have an account?</span>
+              <button type="button" class="mn-link-btn">Sign Up</button>
+            </div>
+            <div class="mn-message">Sample error message</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mind-notion-floating">
+        <div class="mn-popup-header">
+          <div class="mn-logo">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+            <span>Mind Notion</span>
+          </div>
+        </div>
+        <div class="mn-popup-body">
+          <div class="mn-auth-view">
+            <div class="mn-auth-header">
+              <h2>Create Account</h2>
+              <p>Sign up to start saving notes</p>
+            </div>
+            <form class="mn-auth-form">
+              <div class="mn-form-group">
+                <label>Full Name</label>
+                <input type="text" placeholder="Enter your name" />
+              </div>
+              <div class="mn-form-group">
+                <label>Username</label>
+                <input type="text" placeholder="Choose a username" />
+              </div>
+              <div class="mn-form-group">
+                <label>Email</label>
+                <input type="email" placeholder="Enter your email" />
+              </div>
+              <div class="mn-form-group">
+                <label>Password</label>
+                <input type="password" placeholder="Create a password" />
+              </div>
+              <button type="button" class="mn-btn mn-btn-primary">
+                Create Account
+              </button>
+            </form>
+            <div class="mn-auth-footer">
+              <span>Already have an account?</span>
+              <button type="button" class="mn-link-btn">Sign In</button>
+            </div>
+            <div class="mn-message mn-message-success">
+              Sample success message
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mind-notion-floating">
+        <div class="mn-popup-body">
+        <!-- Close Button (Absolute) -->
+        <button class="mn-app-close-btn" id="mn-app-close-btn" title="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+        <!-- Note Form Container -->
+        <div class="mn-note-form-container">
+          <!-- Title Input -->
+          <input
+            type="text"
+            id="mn-note-title"
+            class="mn-note-title"
+            placeholder="Add a new note"
+            value=""
+          />
+
+          <!-- Content Textarea -->
+          <textarea 
+            id="mn-note-content" 
+            class="mn-note-content"
+            placeholder="Type your message here..."
+          >${selectedText}</textarea>
+
+          <!-- Save Hint -->
+          <div class="mn-save-hint" id="mn-save-hint" style="display: none;">
+            <span>Press Ctrl + Enter to save</span>
+          </div>
+
+          <!-- Character Count -->
+          <div class="mn-char-count">
+            <span id="mn-char-count">${selectedText.length} characters</span>
+          </div>
+        </div>
+
+        <!-- Message -->
+        <div class="mn-message" id="mn-message"></div>
+        </div>
+         
+        </div>
+      </div>      
+            <div class="mn-form-group">
+              <label>Note Content</label>
+              <textarea rows="10">
+Mock selected text goes here. Paste anything you want to test styling, wrapping, and scroll.</textarea
+              >
+              <div class="mn-char-count">
+                <span>128 characters</span>
+              </div>
+            </div>
+
+            <button class="mn-btn mn-btn-primary mn-btn-save">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"
+                />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              Save Note
+            </button>
+
+            <div class="mn-message mn-message-success">Saved successfully!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

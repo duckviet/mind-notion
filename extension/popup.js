@@ -36,9 +36,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   let currentTab = null;
   let currentUser = null;
 
-  // Initialize
-  await init();
-
   /**
    * Initialize popup
    */
@@ -64,7 +61,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       showLoginView();
     }
   }
-
+  // Initialize
+  await init();
   /**
    * Setup event listeners
    */
