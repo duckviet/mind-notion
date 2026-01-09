@@ -36,7 +36,7 @@ export function useAutoSave(
   const updateNoteMutation = useUpdateNote(
     {
       mutation: {
-        onMutate: async ({ id, data }) => {
+        onMutate: async ({ noteId, data }) => {
           setIsSaving(true);
           await queryClient.cancelQueries({ queryKey });
 
@@ -91,7 +91,7 @@ export function useAutoSave(
       };
 
       lastSavedRef.current = form;
-      updateNoteMutation.mutate({ id: noteId, data: payload });
+      updateNoteMutation.mutate({ noteId: noteId, data: payload });
     }, 1500);
 
     return () => clearTimeout(timer);
