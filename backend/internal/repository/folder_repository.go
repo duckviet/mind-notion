@@ -12,11 +12,9 @@ type FolderRepository interface {
 	Create(ctx context.Context, folder *models.Folder) error
 	GetByID(ctx context.Context, id string) (*models.Folder, error)
 	Update(ctx context.Context, folder *models.Folder) error
-    Delete(ctx context.Context, id string) error
+	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, params FolderListParams) ([]*models.Folder, int64, error)
 	GetByUserID(ctx context.Context, userID string, params FolderListParams) ([]*models.Folder, int64, error)
-	AddNoteToFolder(ctx context.Context, folderID, noteID string) error
-	RemoveNoteFromFolder(ctx context.Context, folderID, noteID string) error
 }
 
 // folderRepository implements FolderRepository
@@ -118,18 +116,4 @@ func (r *folderRepository) GetByUserID(ctx context.Context, userID string, param
 	return folders, total, err
 }
 
-// AddNoteToFolder adds a note to a folder
-func (r *folderRepository) AddNoteToFolder(ctx context.Context, folderID, noteID string) error {
-	folderNote := &models.FolderNote{
-		FolderID: folderID,
-		NoteID:   noteID,
-	}
-	return r.db.WithContext(ctx).Create(folderNote).Error
-}
 
-// RemoveNoteFromFolder removes a note from a folder
-func (r *folderRepository) RemoveNoteFromFolder(ctx context.Context, folderID, noteID string) error {
-	return r.db.WithContext(ctx).
-		Where("folder_id = ? AND note_id = ?", folderID, noteID).
-		Delete(&models.FolderNote{}).Error
-}

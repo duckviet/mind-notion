@@ -16,6 +16,7 @@ export type ListParams = {
   limit?: number;
   offset?: number;
   query?: string;
+  folder_id?: string;
 };
 
 export function useNotes(
@@ -23,7 +24,7 @@ export function useNotes(
 ) {
   const stableParams = useMemo(
     () => params,
-    [params.limit, params.offset, params.query]
+    [params.limit, params.offset, params.query, params.folder_id]
   );
   const queryClient = useQueryClient();
   const queryKey = getListNotesQueryKey(stableParams);

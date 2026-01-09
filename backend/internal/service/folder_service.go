@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 
@@ -25,30 +26,32 @@ type FolderService interface {
 
 // folderService implements FolderService
 type folderService struct {
-	repo   repository.FolderRepository
-	config *config.Config
+	repo     repository.FolderRepository
+	noteRepo repository.NoteRepository
+	config   *config.Config
 }
 
 // CreateFolderRequest represents the request to create a folder
 type CreateFolderRequest struct {
-	Name     string `json:"name" validate:"required,min=1,max=100"`
-	IsPublic bool   `json:"is_public"`
-	UserID   string   `json:"user_id" validate:"required"`
-	ParentID *string  `json:"parent_id,omitempty"`
+	Name     string  `json:"name" validate:"required,min=1,max=100"`
+	IsPublic bool    `json:"is_public"`
+	UserID   string  `json:"user_id" validate:"required"`
+	ParentID *string `json:"parent_id,omitempty"`
 }
 
 // UpdateFolderRequest represents the request to update a folder
 type UpdateFolderRequest struct {
-	Name     string `json:"name,omitempty" validate:"omitempty,min=1,max=100"`
-	IsPublic *bool  `json:"is_public,omitempty"`
-	ParentID *string  `json:"parent_id,omitempty"`
+	Name     string  `json:"name,omitempty" validate:"omitempty,min=1,max=100"`
+	IsPublic *bool   `json:"is_public,omitempty"`
+	ParentID *string `json:"parent_id,omitempty"`
 }
 
 // NewFolderService creates a new folder service
-func NewFolderService(repo repository.FolderRepository, config *config.Config) FolderService {
+func NewFolderService(repo repository.FolderRepository, noteRepo repository.NoteRepository, config *config.Config) FolderService {
 	return &folderService{
-		repo:   repo,
-		config: config,
+		repo:     repo,
+		noteRepo: noteRepo,
+		config:   config,
 	}
 }
 
@@ -82,6 +85,8 @@ func (s *folderService) CreateFolder(ctx context.Context, req CreateFolderReques
 // GetFolderByID retrieves a folder by ID
 func (s *folderService) GetFolderByID(ctx context.Context, id string) (*models.Folder, error) {
 	folder, err := s.repo.GetByID(ctx, id)
+	fmt.Printf("Folder ID: %s", id)
+	fmt.Printf("Retrieved Folder: %+v", folder)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrFolderNotFound
@@ -166,18 +171,53 @@ func (s *folderService) GetFoldersByUserID(ctx context.Context, userID string, p
 	return folders, total, nil
 }
 
-// AddNoteToFolder adds a note to a folder
+// AddNoteToFolder adds a note to a folder by updating the note's folder_id
 func (s *folderService) AddNoteToFolder(ctx context.Context, folderID, noteID string) error {
-	if err := s.repo.AddNoteToFolder(ctx, folderID, noteID); err != nil {
+	// Check if folder exists
+	_, err := s.repo.GetByID(ctx, folderID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrFolderNotFound
+		}
 		return ErrInternalServerError
 	}
+
+	// Get the note
+	note, err := s.noteRepo.GetByID(ctx, noteID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNoteNotFound
+		}
+		return ErrInternalServerError
+	}
+
+	// Update note's folder_id
+	note.FolderID = &folderID
+	if err := s.noteRepo.Update(ctx, note); err != nil {
+		return ErrInternalServerError
+	}
+
 	return nil
 }
 
-// RemoveNoteFromFolder removes a note from a folder
+// RemoveNoteFromFolder removes a note from a folder by setting folder_id to null
 func (s *folderService) RemoveNoteFromFolder(ctx context.Context, folderID, noteID string) error {
-	if err := s.repo.RemoveNoteFromFolder(ctx, folderID, noteID); err != nil {
+	// Get the note
+	note, err := s.noteRepo.GetByID(ctx, noteID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNoteNotFound
+		}
 		return ErrInternalServerError
 	}
+
+	// Only remove if note is in the specified folder
+	if note.FolderID != nil && *note.FolderID == folderID {
+		note.FolderID = nil
+		if err := s.noteRepo.Update(ctx, note); err != nil {
+			return ErrInternalServerError
+		}
+	}
+
 	return nil
 }
