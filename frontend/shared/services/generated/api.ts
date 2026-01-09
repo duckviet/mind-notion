@@ -93,6 +93,8 @@ export interface ReqCreateNote {
   content: string;
   thumbnail: string;
   tags: string[];
+  /** @nullable */
+  folder_id?: string | null;
   is_public: boolean;
 }
 
@@ -104,6 +106,8 @@ export interface ReqUpdateNote {
   status: string;
   thumbnail: string;
   tags: string[];
+  /** @nullable */
+  folder_id?: string | null;
   is_public: boolean;
 }
 
@@ -120,6 +124,8 @@ export interface ResDetailNote {
   top_of_mind: boolean;
   thumbnail: string;
   tags: string[];
+  /** @nullable */
+  folder_id?: string | null;
   is_public: boolean;
   created_at: string;
   updated_at: string;
@@ -1600,16 +1606,16 @@ export function useListNotes<
 /**
  * @summary Get note by ID
  */
-export const getNote = (id: string, signal?: AbortSignal) => {
+export const getNote = (noteId: string, signal?: AbortSignal) => {
   return customInstance<ResDetailNote>({
-    url: `/notes/${id}`,
+    url: `/notes/${noteId}`,
     method: "GET",
     signal,
   });
 };
 
-export const getGetNoteQueryKey = (id?: string) => {
-  return [`/notes/${id}`] as const;
+export const getGetNoteQueryKey = (noteId?: string) => {
+  return [`/notes/${noteId}`] as const;
 };
 
 export const getGetNoteQueryOptions = <
@@ -1619,7 +1625,7 @@ export const getGetNoteQueryOptions = <
     | NotFoundResponse
     | InternalServerErrorResponse,
 >(
-  id: string,
+  noteId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>
@@ -1628,16 +1634,16 @@ export const getGetNoteQueryOptions = <
 ) => {
   const { query: queryOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetNoteQueryKey(id);
+  const queryKey = queryOptions?.queryKey ?? getGetNoteQueryKey(noteId);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getNote>>> = ({
     signal,
-  }) => getNote(id, signal);
+  }) => getNote(noteId, signal);
 
   return {
     queryKey,
     queryFn,
-    enabled: !!id,
+    enabled: !!noteId,
     ...queryOptions,
   } as UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData> & {
     queryKey: DataTag<QueryKey, TData, TError>;
@@ -1659,7 +1665,7 @@ export function useGetNote<
     | NotFoundResponse
     | InternalServerErrorResponse,
 >(
-  id: string,
+  noteId: string,
   options: {
     query: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>
@@ -1684,7 +1690,7 @@ export function useGetNote<
     | NotFoundResponse
     | InternalServerErrorResponse,
 >(
-  id: string,
+  noteId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>
@@ -1709,7 +1715,7 @@ export function useGetNote<
     | NotFoundResponse
     | InternalServerErrorResponse,
 >(
-  id: string,
+  noteId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>
@@ -1730,7 +1736,7 @@ export function useGetNote<
     | NotFoundResponse
     | InternalServerErrorResponse,
 >(
-  id: string,
+  noteId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>
@@ -1740,7 +1746,7 @@ export function useGetNote<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getGetNoteQueryOptions(id, options);
+  const queryOptions = getGetNoteQueryOptions(noteId, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,
@@ -1755,9 +1761,9 @@ export function useGetNote<
 /**
  * @summary Update note by ID
  */
-export const updateNote = (id: string, reqUpdateNote: ReqUpdateNote) => {
+export const updateNote = (noteId: string, reqUpdateNote: ReqUpdateNote) => {
   return customInstance<ResDetailNote>({
-    url: `/notes/${id}/update`,
+    url: `/notes/${noteId}/update`,
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     data: reqUpdateNote,
@@ -1775,13 +1781,13 @@ export const getUpdateNoteMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateNote>>,
     TError,
-    { id: string; data: ReqUpdateNote },
+    { noteId: string; data: ReqUpdateNote },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateNote>>,
   TError,
-  { id: string; data: ReqUpdateNote },
+  { noteId: string; data: ReqUpdateNote },
   TContext
 > => {
   const mutationKey = ["updateNote"];
@@ -1795,11 +1801,11 @@ export const getUpdateNoteMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateNote>>,
-    { id: string; data: ReqUpdateNote }
+    { noteId: string; data: ReqUpdateNote }
   > = (props) => {
-    const { id, data } = props ?? {};
+    const { noteId, data } = props ?? {};
 
-    return updateNote(id, data);
+    return updateNote(noteId, data);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1830,7 +1836,7 @@ export const useUpdateNote = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateNote>>,
       TError,
-      { id: string; data: ReqUpdateNote },
+      { noteId: string; data: ReqUpdateNote },
       TContext
     >;
   },
@@ -1838,7 +1844,7 @@ export const useUpdateNote = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateNote>>,
   TError,
-  { id: string; data: ReqUpdateNote },
+  { noteId: string; data: ReqUpdateNote },
   TContext
 > => {
   const mutationOptions = getUpdateNoteMutationOptions(options);
@@ -1849,8 +1855,11 @@ export const useUpdateNote = <
 /**
  * @summary Delete note by ID
  */
-export const deleteNote = (id: string) => {
-  return customInstance<void>({ url: `/notes/${id}/delete`, method: "DELETE" });
+export const deleteNote = (noteId: string) => {
+  return customInstance<void>({
+    url: `/notes/${noteId}/delete`,
+    method: "DELETE",
+  });
 };
 
 export const getDeleteNoteMutationOptions = <
@@ -1863,13 +1872,13 @@ export const getDeleteNoteMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deleteNote>>,
     TError,
-    { id: string },
+    { noteId: string },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof deleteNote>>,
   TError,
-  { id: string },
+  { noteId: string },
   TContext
 > => {
   const mutationKey = ["deleteNote"];
@@ -1883,11 +1892,11 @@ export const getDeleteNoteMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof deleteNote>>,
-    { id: string }
+    { noteId: string }
   > = (props) => {
-    const { id } = props ?? {};
+    const { noteId } = props ?? {};
 
-    return deleteNote(id);
+    return deleteNote(noteId);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -1916,7 +1925,7 @@ export const useDeleteNote = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteNote>>,
       TError,
-      { id: string },
+      { noteId: string },
       TContext
     >;
   },
@@ -1924,7 +1933,7 @@ export const useDeleteNote = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof deleteNote>>,
   TError,
-  { id: string },
+  { noteId: string },
   TContext
 > => {
   const mutationOptions = getDeleteNoteMutationOptions(options);
@@ -1935,9 +1944,9 @@ export const useDeleteNote = <
 /**
  * @summary Update note top of mind by ID
  */
-export const updateNoteTOM = (id: string, params: UpdateNoteTOMParams) => {
+export const updateNoteTOM = (noteId: string, params: UpdateNoteTOMParams) => {
   return customInstance<UpdateNoteTOM200>({
-    url: `/notes/${id}/tom`,
+    url: `/notes/${noteId}/tom`,
     method: "PUT",
     params,
   });
@@ -1954,13 +1963,13 @@ export const getUpdateNoteTOMMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateNoteTOM>>,
     TError,
-    { id: string; params: UpdateNoteTOMParams },
+    { noteId: string; params: UpdateNoteTOMParams },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateNoteTOM>>,
   TError,
-  { id: string; params: UpdateNoteTOMParams },
+  { noteId: string; params: UpdateNoteTOMParams },
   TContext
 > => {
   const mutationKey = ["updateNoteTOM"];
@@ -1974,11 +1983,11 @@ export const getUpdateNoteTOMMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateNoteTOM>>,
-    { id: string; params: UpdateNoteTOMParams }
+    { noteId: string; params: UpdateNoteTOMParams }
   > = (props) => {
-    const { id, params } = props ?? {};
+    const { noteId, params } = props ?? {};
 
-    return updateNoteTOM(id, params);
+    return updateNoteTOM(noteId, params);
   };
 
   return { mutationFn, ...mutationOptions };
@@ -2009,7 +2018,7 @@ export const useUpdateNoteTOM = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateNoteTOM>>,
       TError,
-      { id: string; params: UpdateNoteTOMParams },
+      { noteId: string; params: UpdateNoteTOMParams },
       TContext
     >;
   },
@@ -2017,7 +2026,7 @@ export const useUpdateNoteTOM = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateNoteTOM>>,
   TError,
-  { id: string; params: UpdateNoteTOMParams },
+  { noteId: string; params: UpdateNoteTOMParams },
   TContext
 > => {
   const mutationOptions = getUpdateNoteTOMMutationOptions(options);

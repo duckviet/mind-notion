@@ -31,6 +31,8 @@ type ResDetailNote struct {
 
 	Tags []string `json:"tags"`
 
+	FolderId *string `json:"folder_id,omitempty"`
+
 	IsPublic bool `json:"is_public"`
 
 	CreatedAt time.Time `json:"created_at"`

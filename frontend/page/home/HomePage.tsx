@@ -309,7 +309,6 @@ function HomePageContent() {
                       )}
                     </div>
                     {/* Notes & Articles */}
-
                     {notes.map((note) => (
                       <DraggableItem
                         className="h-fit mb-6 break-inside-avoid"

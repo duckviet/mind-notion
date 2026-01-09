@@ -40,7 +40,7 @@ func (r *noteRepository) GetByID(ctx context.Context, id string) (*models.Note, 
 	err := r.db.WithContext(ctx).
 		Preload("User").
 		Preload("Tags").
-		Preload("Folders").
+		Preload("Folder").
 		Where("id = ?", id).
 		First(&note).Error
 	return &note, err
@@ -71,8 +71,7 @@ func (r *noteRepository) List(ctx context.Context, params NoteListParams) ([]*mo
 		query = query.Where("status = ?", *params.Status)
 	}
 	if params.FolderID != nil {
-		query = query.Joins("JOIN folder_notes ON notes.id = folder_notes.note_id").
-			Where("folder_notes.folder_id = ?", *params.FolderID)
+		query = query.Where("folder_id = ?", *params.FolderID)
 	}
 	if params.IsPublic != nil {
 		query = query.Where("is_public = ?", *params.IsPublic)
@@ -86,7 +85,7 @@ func (r *noteRepository) List(ctx context.Context, params NoteListParams) ([]*mo
 	// Apply pagination and get results
 	offset := (params.Page - 1) * params.Limit
 	err := query.
-		Preload("User").Preload("Tags").
+		Preload("User").Preload("Tags").Preload("Folder").
 		Offset(offset).Limit(params.Limit).
 		Find(&notes).Error
 
@@ -107,8 +106,7 @@ func (r *noteRepository) GetByUserID(ctx context.Context, userID string, params 
 		query = query.Where("status = ?", *params.Status)
 	}
 	if params.FolderID != nil {
-		query = query.Joins("JOIN folder_notes ON notes.id = folder_notes.note_id").
-			Where("folder_notes.folder_id = ?", *params.FolderID)
+		query = query.Where("folder_id = ?", *params.FolderID)
 	}
 
 	// Count total (with all filters applied)
@@ -118,7 +116,7 @@ func (r *noteRepository) GetByUserID(ctx context.Context, userID string, params 
 
 	// Apply pagination and get results
 	offset := (params.Page - 1) * params.Limit
-	err := query.Preload("Tags").Preload("Folders").
+	err := query.Preload("Tags").Preload("Folder").
 		Offset(offset).Limit(params.Limit).Find(&notes).Error
 
 	return notes, total, err
@@ -139,7 +137,7 @@ func (r *noteRepository) ListTOM(ctx context.Context, userID string) ([]*models.
 		Model(&models.Note{}).
 		Where("top_of_mind = ? AND user_id = ?", true, userID).
 		Preload("Tags").
-		Preload("Folders").
+		Preload("Folder").
 		Order("updated_at DESC"). // Sort by most recently updated
 		Find(&notes).Error
 	return notes, err
