@@ -78,7 +78,7 @@ func New(ctx context.Context) (*App, func(), error) {
 	// Initialize services
 	userService := service.NewUserService(userRepo, cfg)
 	noteService := service.NewNoteService(noteRepo, cfg, searchService)
-	folderService := service.NewFolderService(folderRepo, cfg)
+	folderService := service.NewFolderService(folderRepo, noteRepo, cfg)
 	templateService := service.NewTemplateService(templateRepo)
 	eventService := service.NewEventService(eventRepo)
 	authService := service.NewAuthService(userRepo, cfg)

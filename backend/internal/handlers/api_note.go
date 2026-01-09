@@ -45,6 +45,7 @@ func (api *NoteAPI) CreateNote(c *gin.Context) {
         Status      string   `json:"status"`
         Thumbnail   string   `json:"thumbnail"`
         Tags        []string `json:"tags"`
+        FolderID    *string  `json:"folder_id"`
         IsPublic    bool     `json:"is_public"`
     }
     if err := c.ShouldBindJSON(&body); err != nil {
@@ -58,6 +59,7 @@ func (api *NoteAPI) CreateNote(c *gin.Context) {
         ContentType: body.ContentType,
         Status:      body.Status,
         Thumbnail:   body.Thumbnail,
+        FolderID:    body.FolderID,
         IsPublic:    body.IsPublic,
         UserID:      u.ID,
     })
@@ -109,6 +111,7 @@ func (api *NoteAPI) ListNotes(c *gin.Context) {
     limitStr := c.Query("limit")
     offsetStr := c.Query("offset")
     query := c.Query("query")
+    folderID := c.Query("folder_id")
 
     limit := 20
     if limitStr != "" {
@@ -132,6 +135,9 @@ func (api *NoteAPI) ListNotes(c *gin.Context) {
     userVal, _ := c.Get("user")
     u := userVal.(*dbmodels.User)
     params := repository.NoteListParams{Page: page, Limit: limit, Query: &query}
+    if folderID != "" {
+        params.FolderID = &folderID
+    }
     notes, total, err := api.noteService.GetNotesByUserID(c.Request.Context(), u.ID, params)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -152,6 +158,7 @@ func (api *NoteAPI) UpdateNote(c *gin.Context) {
         Status      string   `json:"status"`
         Thumbnail   string   `json:"thumbnail"`
         Tags        []string `json:"tags"`
+        FolderID    *string  `json:"folder_id"`
         IsPublic    *bool    `json:"is_public"`
     }
     if err := c.ShouldBindJSON(&body); err != nil {
@@ -178,6 +185,7 @@ func (api *NoteAPI) UpdateNote(c *gin.Context) {
         ContentType: body.ContentType,
         Status:      body.Status,
         Thumbnail:   body.Thumbnail,
+        FolderID:    body.FolderID,
         TagIDs:      []uint{}, // TODO: Convert string tags to tag IDs
         IsPublic:    body.IsPublic,
     })

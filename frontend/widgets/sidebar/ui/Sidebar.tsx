@@ -5,6 +5,7 @@ import {
   UserIcon,
   LogOutIcon,
   CalendarDaysIcon,
+  FolderOpen,
 } from "lucide-react";
 import Link from "next/link";
 import React, { useCallback, useEffect, useState } from "react";
@@ -29,6 +30,11 @@ const Sidebar = () => {
       label: "Home",
       icon: <HomeIcon className="w-6 h-6" />,
       href: "/",
+    },
+    {
+      label: "Folder",
+      icon: <FolderOpen className="w-6 h-6" />,
+      href: "/folder",
     },
     {
       label: "Settings",

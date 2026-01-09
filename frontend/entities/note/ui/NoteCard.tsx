@@ -7,11 +7,15 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuShortcut,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/shared/components/ui/context-menu";
-import { Trash2Icon, Eye, Edit3, Brain } from "lucide-react";
+import { Trash2Icon, Eye, Edit3, Brain, FolderInput } from "lucide-react";
 
 import NoteDisplay from "./NoteDisplay";
+import FolderTreeSelector from "./FolderTreeSelector";
 import { Card } from "@/shared/components/Card";
 import { ReqUpdateNote, ResDetailNote } from "@/shared/services/generated/api";
 
@@ -53,6 +57,12 @@ export default function NoteCard({
   const handlePin = (tom: boolean) => {
     if (onPin) {
       onPin(match.id, tom);
+    }
+  };
+
+  const handleFolderSelect = (folderId: string | null) => {
+    if (onUpdateNote) {
+      // onUpdateNote(match.id, { folder_id: folderId });
     }
   };
 
@@ -107,6 +117,18 @@ export default function NoteCard({
             <Edit3 className="w-4 h-4 " />
           </ContextMenuShortcut>
         </ContextMenuItem>
+        <ContextMenuSub>
+          <ContextMenuSubTrigger className="cursor-pointer">
+            <FolderInput className="w-4 h-4 mr-2" />
+            <span className="text-sm">Add to Folder</span>
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="min-h-32 w-80 p-2 bg-white border-gray-200 shadow-xl">
+            <FolderTreeSelector
+              onSelect={handleFolderSelect}
+              currentFolderId={match.folder_id ?? undefined}
+            />
+          </ContextMenuSubContent>
+        </ContextMenuSub>
         <ContextMenuItem onClick={handleDelete} className="focus:bg-gray-200 ">
           <p className="text-sm ">Delete</p>
           <ContextMenuShortcut>

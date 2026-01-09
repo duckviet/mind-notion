@@ -36,25 +36,27 @@ type noteService struct {
 
 // CreateNoteRequest represents the request to create a note
 type CreateNoteRequest struct {
-	Title       string `json:"title" validate:"required,min=1,max=200"`
-	Content     string `json:"content"`
-	ContentType string `json:"content_type" validate:"omitempty,oneof=text markdown html"`
-	Status      string `json:"status" validate:"omitempty,oneof=draft published archived"`
-	Thumbnail   string `json:"thumbnail,omitempty"`
-	IsPublic    bool   `json:"is_public"`
-	UserID      string `json:"user_id" validate:"required"`
-	TagIDs      []uint `json:"tag_ids,omitempty"`
+	Title       string  `json:"title" validate:"required,min=1,max=200"`
+	Content     string  `json:"content"`
+	ContentType string  `json:"content_type" validate:"omitempty,oneof=text markdown html"`
+	Status      string  `json:"status" validate:"omitempty,oneof=draft published archived"`
+	Thumbnail   string  `json:"thumbnail,omitempty"`
+	FolderID    *string `json:"folder_id,omitempty"`
+	IsPublic    bool    `json:"is_public"`
+	UserID      string  `json:"user_id" validate:"required"`
+	TagIDs      []uint  `json:"tag_ids,omitempty"`
 }
 
 // UpdateNoteRequest represents the request to update a note
 type UpdateNoteRequest struct {
-	Title       string `json:"title,omitempty" validate:"omitempty,min=1,max=200"`
-	Content     string `json:"content,omitempty"`
-	ContentType string `json:"content_type,omitempty" validate:"omitempty,oneof=text markdown html"`
-	Status      string `json:"status,omitempty" validate:"omitempty,oneof=draft published archived"`
-	Thumbnail   string `json:"thumbnail,omitempty"`
-	IsPublic    *bool  `json:"is_public,omitempty"`
-	TagIDs      []uint `json:"tag_ids,omitempty"`
+	Title       string  `json:"title,omitempty" validate:"omitempty,min=1,max=200"`
+	Content     string  `json:"content,omitempty"`
+	ContentType string  `json:"content_type,omitempty" validate:"omitempty,oneof=text markdown html"`
+	Status      string  `json:"status,omitempty" validate:"omitempty,oneof=draft published archived"`
+	Thumbnail   string  `json:"thumbnail,omitempty"`
+	FolderID    *string `json:"folder_id,omitempty"`
+	IsPublic    *bool   `json:"is_public,omitempty"`
+	TagIDs      []uint  `json:"tag_ids,omitempty"`
 }
 
 // NewNoteService creates a new note service
@@ -83,6 +85,7 @@ func (s *noteService) CreateNote(ctx context.Context, req CreateNoteRequest) (*m
 		Status:      models.NoteStatus(req.Status),
 		TopOfMind:   false,
 		Thumbnail:   req.Thumbnail,
+		FolderID:    req.FolderID,
 		IsPublic:    req.IsPublic,
 		UserID:      req.UserID,
 	}
@@ -138,6 +141,9 @@ func (s *noteService) UpdateNote(ctx context.Context, id string, req UpdateNoteR
 	}
 	if req.Thumbnail != "" {
 		note.Thumbnail = req.Thumbnail
+	}
+	if req.FolderID != nil {
+		note.FolderID = req.FolderID
 	}
 	if req.IsPublic != nil {
 		note.IsPublic = *req.IsPublic

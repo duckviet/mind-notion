@@ -10,6 +10,12 @@
 package handlers
 
 import (
+	"errors"
+	"net/http"
+	"strconv"
+
+	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -19,44 +25,339 @@ type FolderAPI struct {
 }
 
 // Post /api/v1/folders/:id/add-note
-// Add note to folder 
+// Add note to folder
 func (api *FolderAPI) AddNoteToFolder(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	folderID := c.Param("id")
+
+	// Get authenticated user
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	u := userVal.(*dbmodels.User)
+
+	// Verify folder ownership
+	folder, err := api.folderService.GetFolderByID(c.Request.Context(), folderID)
+	if err != nil {
+		if errors.Is(err, service.ErrFolderNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if folder.UserID != u.ID {
+		c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+		return
+	}
+
+	// Bind request body
+	var body struct {
+		NoteID   string `json:"note_id" binding:"required"`
+		FolderID string `json:"folder_id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
+		return
+	}
+
+	if err := api.folderService.AddNoteToFolder(c.Request.Context(), folderID, body.NoteID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Return updated folder
+	updatedFolder, err := api.folderService.GetFolderByID(c.Request.Context(), folderID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, toFolderResponse(updatedFolder))
 }
 
 // Post /api/v1/folders/create
-// Create a new folder 
+// Create a new folder
 func (api *FolderAPI) CreateFolder(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	// Get authenticated user
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	u := userVal.(*dbmodels.User)
+
+	// Bind request body
+	var body struct {
+		Name     string `json:"name" binding:"required"`
+		ParentID string `json:"parent_id"`
+		IsPublic bool   `json:"is_public"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
+		return
+	}
+
+	// Prepare parent ID
+	var parentID *string
+	if body.ParentID != "" {
+		parentID = &body.ParentID
+	}
+
+	folder, err := api.folderService.CreateFolder(c.Request.Context(), service.CreateFolderRequest{
+		Name:     body.Name,
+		IsPublic: body.IsPublic,
+		UserID:   u.ID,
+		ParentID: parentID,
+	})
+	if err != nil {
+		if errors.Is(err, service.ErrFolderNotFound) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "parent folder not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, toFolderResponse(folder))
 }
 
 // Delete /api/v1/folders/:id/delete
-// Delete folder by ID 
+// Delete folder by ID
 func (api *FolderAPI) DeleteFolder(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	folderID := c.Param("id")
+
+	// Get authenticated user
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	u := userVal.(*dbmodels.User)
+
+	// Verify folder ownership
+	folder, err := api.folderService.GetFolderByID(c.Request.Context(), folderID)
+	if err != nil {
+		if errors.Is(err, service.ErrFolderNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if folder.UserID != u.ID {
+		c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+		return
+	}
+
+	if err := api.folderService.DeleteFolder(c.Request.Context(), folderID); err != nil {
+		if errors.Is(err, service.ErrFolderNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 // Get /api/v1/folders/:id
-// Get folder by ID 
+// Get folder by ID
 func (api *FolderAPI) GetFolder(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	folderID := c.Param("id")
+
+	// Get authenticated user
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	u := userVal.(*dbmodels.User)
+
+	folder, err := api.folderService.GetFolderByID(c.Request.Context(), folderID)
+	if err != nil {
+		if errors.Is(err, service.ErrFolderNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Check ownership or public access
+	if folder.UserID != u.ID && !folder.IsPublic {
+		c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, toFolderResponse(folder))
 }
 
 // Get /api/v1/folders/list
-// List user's folders 
+// List user's folders
 func (api *FolderAPI) ListFolders(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	// Get authenticated user
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	u := userVal.(*dbmodels.User)
+
+	// Parse query parameters
+	limitStr := c.Query("limit")
+	offsetStr := c.Query("offset")
+	parentID := c.Query("parent_id")
+
+	limit := 20
+	if limitStr != "" {
+		if v, err := strconv.Atoi(limitStr); err == nil && v > 0 {
+			limit = v
+		}
+	}
+
+	offset := 0
+	if offsetStr != "" {
+		if v, err := strconv.Atoi(offsetStr); err == nil && v >= 0 {
+			offset = v
+		}
+	}
+
+	page := 1
+	if limit > 0 {
+		page = (offset / limit) + 1
+	}
+
+	// Prepare params
+	params := repository.FolderListParams{
+		Page:  page,
+		Limit: limit,
+	}
+	if parentID != "" {
+		params.ParentID = &parentID
+	}
+
+	folders, total, err := api.folderService.GetFoldersByUserID(c.Request.Context(), u.ID, params)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert to response
+	folderResponses := make([]FolderResponse, len(folders))
+	for i, folder := range folders {
+		folderResponses[i] = toFolderResponse(folder)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"folders": folderResponses,
+		"total":   total,
+		"limit":   limit,
+		"offset":  offset,
+	})
 }
 
 // Put /api/v1/folders/:id/update
-// Update folder by ID 
+// Update folder by ID
 func (api *FolderAPI) UpdateFolder(c *gin.Context) {
-	// Your handler implementation
-	c.JSON(200, gin.H{"status": "OK"})
+	folderID := c.Param("id")
+
+	// Get authenticated user
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	u := userVal.(*dbmodels.User)
+
+	// Verify folder ownership
+	existingFolder, err := api.folderService.GetFolderByID(c.Request.Context(), folderID)
+	if err != nil {
+		if errors.Is(err, service.ErrFolderNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if existingFolder.UserID != u.ID {
+		c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+		return
+	}
+
+	// Bind request body
+	var body struct {
+		Name     string `json:"name"`
+		ParentID string `json:"parent_id"`
+		IsPublic *bool  `json:"is_public"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
+		return
+	}
+
+	// Prepare update request
+	updateReq := service.UpdateFolderRequest{
+		Name:     body.Name,
+		IsPublic: body.IsPublic,
+	}
+	if body.ParentID != "" {
+		updateReq.ParentID = &body.ParentID
+	}
+
+	folder, err := api.folderService.UpdateFolder(c.Request.Context(), folderID, updateReq)
+	if err != nil {
+		if errors.Is(err, service.ErrFolderNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, toFolderResponse(folder))
+}
+
+// FolderResponse represents the API response for a folder
+type FolderResponse struct {
+	ID              string   `json:"id"`
+	Name            string   `json:"name"`
+	ParentID        string   `json:"parent_id"`
+	IsPublic        bool     `json:"is_public"`
+	Notes           []string `json:"notes"`
+	ChildrenFolders []string `json:"children_folders"`
+	CreatedAt       string   `json:"created_at"`
+	UpdatedAt       string   `json:"updated_at"`
+}
+
+// toFolderResponse converts a folder model to API response
+func toFolderResponse(folder *dbmodels.Folder) FolderResponse {
+	noteIDs := make([]string, len(folder.Notes))
+	for i, note := range folder.Notes {
+		noteIDs[i] = note.ID
+	}
+
+	childrenIDs := make([]string, len(folder.Children))
+	for i, child := range folder.Children {
+		childrenIDs[i] = child.ID
+	}
+
+	parentID := ""
+	if folder.ParentID != nil {
+		parentID = *folder.ParentID
+	}
+
+	return FolderResponse{
+		ID:              folder.ID,
+		Name:            folder.Name,
+		ParentID:        parentID,
+		IsPublic:        folder.IsPublic,
+		Notes:           noteIDs,
+		ChildrenFolders: childrenIDs,
+		CreatedAt:       folder.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		UpdatedAt:       folder.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+	}
 }
 

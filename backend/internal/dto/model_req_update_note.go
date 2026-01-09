@@ -25,5 +25,7 @@ type ReqUpdateNote struct {
 
 	Tags []string `json:"tags"`
 
+	FolderId *string `json:"folder_id,omitempty"`
+
 	IsPublic bool `json:"is_public"`
 }

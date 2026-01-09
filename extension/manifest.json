@@ -26,15 +26,15 @@
   "commands": {
     "_execute_action": {
       "suggested_key": {
-        "default": "Ctrl+Shift+S",
-        "mac": "Command+Shift+S"
+        "default": "Alt+Shift+M",
+        "mac": "Alt+Shift+M"
       },
       "description": "Toggle Mind Notion floating popup"
     },
     "toggle-floating-popup": {
       "suggested_key": {
-        "default": "Ctrl+Shift+Q",
-        "mac": "Command+Shift+Q"
+        "default": "Alt+M",
+        "mac": "Alt+M"
       },
       "description": "Toggle floating popup on page"
     }

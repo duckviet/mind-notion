@@ -1402,6 +1402,10 @@ components:
           example:
             - tag1
             - tag2
+        folder_id:
+          type: string
+          nullable: true
+          example: folder-uuid-123
         is_public:
           type: boolean
           example: false
@@ -1442,6 +1446,10 @@ components:
           example:
             - tag1
             - tag2
+        folder_id:
+          type: string
+          nullable: true
+          example: folder-uuid-123
         is_public:
           type: boolean
           example: false
@@ -1494,6 +1502,10 @@ components:
           example:
             - tag1
             - tag2
+        folder_id:
+          type: string
+          nullable: true
+          example: folder-uuid-123
         is_public:
           type: boolean
           example: false
