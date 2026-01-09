@@ -85,7 +85,7 @@ export default function FocusEditModal({
     };
 
     onSave?.(payload);
-    updateNoteMutation.mutate({ id: noteId, data: payload });
+    updateNoteMutation.mutate({ noteId: noteId, data: payload });
     toast.success("Saved");
   };
 
