@@ -40,6 +40,58 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true; // Keep message channel open for async response
 });
 
+// Keyboard shortcut - Toggle floating popup
+chrome.commands.onCommand.addListener(async (command) => {
+  if (command !== "toggle-floating-popup") return;
+
+  try {
+    const [activeTab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+
+    if (!activeTab?.id) {
+      throw new Error("No active tab found");
+    }
+
+    // Try to send message to content script
+    try {
+      await chrome.tabs.sendMessage(activeTab.id, { action: "togglePopup" });
+      return;
+    } catch (e) {
+      // Content script not injected yet, try to inject it
+      if (
+        e.message.includes("Could not establish connection") ||
+        e.message.includes("Receiving end does not exist")
+      ) {
+        console.log("[Mind Notion] Injecting content script...");
+
+        // Inject content.js and content.css
+        await chrome.scripting.executeScript({
+          target: { tabId: activeTab.id },
+          files: ["content.js"],
+        });
+
+        await chrome.scripting.insertCSS({
+          target: { tabId: activeTab.id },
+          files: ["content.css"],
+        });
+
+        // Wait a bit for scripts to load, then send message
+        await new Promise((resolve) => setTimeout(resolve, 300));
+
+        await chrome.tabs.sendMessage(activeTab.id, { action: "togglePopup" });
+        console.log("[Mind Notion] Floating popup opened");
+        return;
+      }
+      throw e;
+    }
+  } catch (error) {
+    console.error("[Mind Notion] Toggle popup failed:", error);
+    showNotification("error", "Could not open popup. Please refresh the page.");
+  }
+});
+
 /**
  * Handle messages from popup
  */
@@ -65,6 +117,10 @@ async function handleMessage(request) {
 
     case "getSelectedText":
       return handleGetSelectedText();
+
+    case "openPopup":
+      // Open the default extension popup for login
+      return handleOpenPopup();
 
     default:
       throw new Error("Unknown action");
@@ -167,6 +223,20 @@ async function handleGetSelectedText() {
     return { success: true, text: results[0]?.result || "" };
   } catch (error) {
     return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Open default popup for login
+ */
+async function handleOpenPopup() {
+  try {
+    await chrome.action.openPopup();
+    return { success: true };
+  } catch (error) {
+    // Fallback: show notification
+    showNotification("warning", "Please login via extension icon");
+    return { success: false, error: "Could not open popup" };
   }
 }
 
