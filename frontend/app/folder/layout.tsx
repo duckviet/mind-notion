@@ -19,6 +19,7 @@ import {
 function FolderLayoutContent({ children }: { children: ReactNode }) {
   const { items } = useBreadcrumb();
 
+  console.log(items);
   return (
     <div className="min-h-screen ">
       {/* Header with Breadcrumb */}
