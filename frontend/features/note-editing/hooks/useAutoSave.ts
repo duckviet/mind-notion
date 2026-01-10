@@ -42,10 +42,25 @@ export function useAutoSave(
 
           const previous = queryClient.getQueryData<ResDetailNote>(queryKey);
 
-          queryClient.setQueryData<ResDetailNote>(
-            queryKey,
-            (old) => old && { ...old, ...data }
-          );
+          queryClient.setQueryData<ResDetailNote>(queryKey, (old) => {
+            if (!old) {
+              return {
+                title: data.title ?? "Untitled",
+                content: data.content ?? "",
+                content_type: data.content_type ?? "text",
+                status: data.status ?? "draft",
+                thumbnail: data.thumbnail ?? "",
+                tags: data.tags ?? [],
+                is_public: data.is_public ?? false,
+                top_of_mind: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                ...data,
+              };
+            }
+
+            return { ...old, ...data };
+          });
 
           return { previous };
         },
