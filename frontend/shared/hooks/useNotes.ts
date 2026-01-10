@@ -20,7 +20,7 @@ export type ListParams = {
 };
 
 export function useNotes(
-  params: ListParams = { limit: 50, offset: 0, query: "" }
+  params: ListParams = { limit: 50, offset: 0, query: "", folder_id: "" }
 ) {
   const stableParams = useMemo(
     () => params,

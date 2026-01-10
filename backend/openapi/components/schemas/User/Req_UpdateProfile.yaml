@@ -11,5 +11,3 @@ properties:
     type: string
     format: uri
     example: "https://example.com/avatar.png"
-
-required: [name, email, avatar]

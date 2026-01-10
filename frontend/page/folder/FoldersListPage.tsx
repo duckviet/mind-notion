@@ -9,12 +9,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/shared/components/ui/context-menu";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -24,6 +18,8 @@ import {
 import { Card } from "@/shared/components/Card";
 import { FolderCard } from "@/shared/components/Folder";
 import { Button } from "@/shared/components/ui/button";
+import { updateFolder } from "@/shared/services/generated/api";
+import { toast } from "sonner";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -41,17 +37,16 @@ const GridSkeleton = ({ items = 6 }: { items?: number }) => (
   </div>
 );
 
-function FoldersListPageContent() {
+function FoldersListPageContent({ parentId }: { parentId?: string }) {
   const router = useRouter();
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-  const { isModalOpen, openModal, closeModal } = useModal();
 
   const { folders, isLoading, error, deleteFolder, createFolder, refetch } =
-    useFolders({ limit: 50, offset: 0 });
+    useFolders({ limit: 50, offset: 0, parent_id: parentId || "" });
 
   const handleDeleteRequest = (id: string) => {
     setDeleteTargetId(id);
@@ -87,13 +82,26 @@ function FoldersListPageContent() {
       setFolderName("");
       setIsCreateModalOpen(false);
       refetch();
-      router.push(`/folder/${newFolder.id}`);
     } catch (error) {
       console.error("Failed to create folder:", error);
     } finally {
       setIsCreating(false);
     }
   };
+  const handleMoveToFolder = useCallback(
+    async (id: string, folderId: string | null) => {
+      try {
+        await updateFolder(id, {
+          parent_id: folderId || "",
+        });
+        toast.success("Folder moved successfully");
+        refetch();
+      } catch (error) {
+        console.error("Failed to move folder:", error);
+      }
+    },
+    [refetch]
+  );
 
   if (error) {
     return (
@@ -115,12 +123,11 @@ function FoldersListPageContent() {
   }
 
   return (
-    <div className="p-6">
+    <div className="mb-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Folders</h1>
-          <p className="text-gray-500 mt-1">Organize your notes into folders</p>
         </div>
         <Button
           onClick={handleCreateFolder}
@@ -145,7 +152,7 @@ function FoldersListPageContent() {
           }}
         />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="flex w-full gap-6">
           {folders.map((folder) => (
             <FolderCard
               key={folder.id}
@@ -156,6 +163,11 @@ function FoldersListPageContent() {
               updatedAt={folder.updated_at}
               isPublic={folder.is_public}
               onDelete={handleDeleteRequest}
+              onMoveToFolder={(toFolderId) => {
+                console.log("Move folder", folder.id, toFolderId);
+
+                handleMoveToFolder(folder.id, toFolderId);
+              }}
             />
           ))}
         </div>

@@ -13,19 +13,19 @@ type ReqUpdateNote struct {
 
 	Id string `json:"id"`
 
-	Title string `json:"title"`
+	Title string `json:"title,omitempty"`
 
-	Content string `json:"content"`
+	Content string `json:"content,omitempty"`
 
-	ContentType string `json:"content_type"`
+	ContentType string `json:"content_type,omitempty"`
 
-	Status string `json:"status"`
+	Status string `json:"status,omitempty"`
 
-	Thumbnail string `json:"thumbnail"`
+	Thumbnail string `json:"thumbnail,omitempty"`
 
-	Tags []string `json:"tags"`
+	Tags []string `json:"tags,omitempty"`
 
 	FolderId *string `json:"folder_id,omitempty"`
 
-	IsPublic bool `json:"is_public"`
+	IsPublic bool `json:"is_public,omitempty"`
 }

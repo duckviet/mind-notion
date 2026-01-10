@@ -9,4 +9,3 @@ properties:
   is_public:
     type: boolean
     example: false
-required: [name, parent_id, is_public]

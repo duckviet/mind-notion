@@ -24,8 +24,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           y: { duration: 0.2 },
         }}
         className={cn(
-          "relative   p-6  ",
-          "flex flex-col w-full cursor-pointer",
+          "relative",
+          "flex flex-col w-full cursor-pointer outline-none focus:outline-none",
           // "focus:outline-none focus:ring-2 focus:ring-accent-blue focus:ring-offset-2",
           "transition-all duration-200 ease-out",
           className

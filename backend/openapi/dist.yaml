@@ -1274,10 +1274,6 @@ components:
           type: string
           format: uri
           example: 'https://example.com/avatar.png'
-      required:
-        - name
-        - email
-        - avatar
     Req_CreateFolder:
       type: object
       properties:
@@ -1306,10 +1302,6 @@ components:
         is_public:
           type: boolean
           example: false
-      required:
-        - name
-        - parent_id
-        - is_public
     Req_AddNote:
       type: object
       properties:
@@ -1455,13 +1447,6 @@ components:
           example: false
       required:
         - id
-        - title
-        - content
-        - content_type
-        - status
-        - thumbnail
-        - tags
-        - is_public
     Req_RemoveNote:
       type: object
       properties:

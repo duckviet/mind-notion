@@ -11,9 +11,9 @@ package dto
 
 type ReqUpdateFolder struct {
 
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
-	ParentId string `json:"parent_id"`
+	ParentId string `json:"parent_id,omitempty"`
 
-	IsPublic bool `json:"is_public"`
+	IsPublic bool `json:"is_public,omitempty"`
 }

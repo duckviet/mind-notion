@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDebounce } from "use-debounce";
-import { ReqUpdateNote } from "@/shared/services/generated/api";
+import { ReqUpdateNote, updateFolder } from "@/shared/services/generated/api";
 import {
   BreadcrumbItemType,
   useBreadcrumb,
@@ -44,6 +44,8 @@ import NoteCard from "@/entities/note/ui/NoteCard";
 import { AnimateCardProvider } from "@/entities/note/ui/AnimateCardProvider";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import { FolderCard } from "@/shared/components/Folder";
+import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
+import FoldersListPage from "./FoldersListPage";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -106,6 +108,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     notes: notesData,
     isLoading: isNotesLoading,
     error: notesError,
+    createNote,
     deleteNote,
     updateNote,
     refetch: refetchNotes,
@@ -116,7 +119,6 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     folder_id: folderId,
   });
 
-  console.log(folderId, notesData);
   const notes = useMemo(() => {
     return (notesData || []).map((note) => ({
       ...note,
@@ -163,6 +165,20 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     refetchNotes();
   }, [closeModal, refetchNotes]);
 
+  const handleMoveToFolder = useCallback(
+    async (id: string, folderId: string | null) => {
+      try {
+        await updateFolder(id, {
+          parent_id: folderId || "",
+        });
+        refetch();
+      } catch (error) {
+        console.error("Failed to move folder:", error);
+      }
+    },
+    [refetch]
+  );
+
   const isLoading = isFolderLoading || isNotesLoading;
   const error = folderError || notesError;
 
@@ -200,7 +216,6 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     );
   }
 
-  console.log(notes);
   return (
     <div className="p-6">
       {/* Folder Header */}
@@ -254,33 +269,14 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
       {/* Notes Grid */}
       {isNotesLoading ? (
         <GridSkeleton items={6} />
-      ) : notes.length === 0 ? (
-        <EmptyState
-          type={query ? "no-results" : "new"}
-          title={query ? "No notes found" : "No notes in this folder"}
-          description={
-            query
-              ? "No notes match your search. Try a different query."
-              : "Add notes to this folder to get started."
-          }
-        />
       ) : (
         <AnimateCardProvider>
+          <FoldersListPage />
+
           <MasonryGrid data={notes}>
-            {folders.map((folder) => (
-              <FolderCard
-                key={folder.id}
-                id={folder.id}
-                name={folder.name}
-                notesCount={folder.notes?.length || 0}
-                subFoldersCount={folder.children_folders?.length || 0}
-                updatedAt={folder.updated_at}
-                isPublic={folder.is_public}
-                onDelete={handleDeleteRequest}
-              />
-            ))}
+            <AddNoteForm folder_id={folderId} onCreate={createNote} />
             {notes.map((note) => (
-              <div key={note.id} className="break-inside-avoid mb-6">
+              <div key={note.id} className="break-inside-avoid ">
                 <NoteCard
                   match={note}
                   onDelete={handleDeleteRequest}

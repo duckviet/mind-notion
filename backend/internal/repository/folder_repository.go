@@ -47,7 +47,16 @@ func (r *folderRepository) GetByID(ctx context.Context, id string) (*models.Fold
 
 // Update updates a folder
 func (r *folderRepository) Update(ctx context.Context, folder *models.Folder) error {
-	return r.db.WithContext(ctx).Save(folder).Error
+	// Use map to explicitly set NULL values (GORM's Updates ignores nil pointers)
+	// Use Table().Where() instead of Model() to avoid GORM using associations
+	updates := map[string]interface{}{
+		"name":       folder.Name,
+		"is_public":  folder.IsPublic,
+		"parent_id":  folder.ParentID, // This will set NULL when ParentID is nil
+		"updated_at": folder.UpdatedAt,
+	}
+	result := r.db.WithContext(ctx).Table("folders").Where("id = ?", folder.ID).Updates(updates)
+	return result.Error
 }
 
 // Delete deletes a folder

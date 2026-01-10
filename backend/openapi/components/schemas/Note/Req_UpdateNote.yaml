@@ -31,4 +31,4 @@ properties:
   is_public:
     type: boolean
     example: false
-required: [id, title, content, content_type, status, thumbnail, tags, is_public]
+required: [id]

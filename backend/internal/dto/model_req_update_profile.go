@@ -11,9 +11,9 @@ package dto
 
 type ReqUpdateProfile struct {
 
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 
-	Email string `json:"email"`
+	Email string `json:"email,omitempty"`
 
-	Avatar string `json:"avatar"`
+	Avatar string `json:"avatar,omitempty"`
 }

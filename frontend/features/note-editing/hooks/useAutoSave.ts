@@ -42,15 +42,9 @@ export function useAutoSave(
 
           const previous = queryClient.getQueryData<ResDetailNote>(queryKey);
 
-          queryClient.setQueryData<ResDetailNote>(queryKey, (old) =>
-            old
-              ? { ...old, ...data }
-              : {
-                  top_of_mind: false,
-                  created_at: "",
-                  updated_at: "",
-                  ...data,
-                }
+          queryClient.setQueryData<ResDetailNote>(
+            queryKey,
+            (old) => old && { ...old, ...data }
           );
 
           return { previous };

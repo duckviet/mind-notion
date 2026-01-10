@@ -39,6 +39,7 @@ import { TopOfMind } from "@/features/top-of-mind";
 import { DragEndEvent } from "@dnd-kit/core";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import { useDebounce } from "use-debounce";
+import { FoldersListPage } from "../folder";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -81,7 +82,7 @@ function HomePageContent() {
     createNote,
     updateNote,
     refetch,
-  } = useNotes({ limit: 50, offset: 0, query: debouncedQuery });
+  } = useNotes({ limit: 50, offset: 0, query: debouncedQuery, folder_id: "" });
 
   const {
     data: topOfMindNotesData,
@@ -287,6 +288,7 @@ function HomePageContent() {
               }
             />
           ) : ( */}
+          <FoldersListPage />
           <DroppableZone
             id="grid-zone"
             activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
