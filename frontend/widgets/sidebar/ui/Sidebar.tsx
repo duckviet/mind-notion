@@ -22,11 +22,6 @@ const Sidebar = () => {
 
   const SIDEBAR_ITEMS = [
     {
-      label: "Calendar",
-      icon: <CalendarDaysIcon className="w-6 h-6" />,
-      href: "/calendar",
-    },
-    {
       label: "Home",
       icon: <HomeIcon className="w-6 h-6" />,
       href: "/",
@@ -35,6 +30,11 @@ const Sidebar = () => {
       label: "Folder",
       icon: <FolderOpen className="w-6 h-6" />,
       href: "/folder",
+    },
+    {
+      label: "Calendar",
+      icon: <CalendarDaysIcon className="w-6 h-6" />,
+      href: "/calendar",
     },
     {
       label: "Settings",
@@ -59,13 +59,7 @@ const Sidebar = () => {
       <div></div>
       <div className="flex-1 flex flex-col gap-6 justify-end">
         {/* User shortcut */}
-        <Link
-          href="/auth"
-          className="flex items-center justify-center"
-          aria-label="Login"
-        >
-          <UserIcon className="w-6 h-6 text-[color:var(--accent-600)]" />
-        </Link>
+
         {SIDEBAR_ITEMS.map((item) => (
           <Link key={item.label} href={item.href}>
             {item.icon}

@@ -3,99 +3,7 @@ import { useFolders } from "@/shared/hooks/useFolders";
 import { ResDetailFolder } from "@/shared/services/generated/api";
 import { Folder, FolderOpen, ChevronRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AnimateCardProvider } from "./AnimateCardProvider";
-
-// 1. Định nghĩa lại type cho chính xác
-type FolderWithChildren = ResDetailFolder & {
-  children?: FolderWithChildren[]; // Đổi tên thành 'children' cho chuẩn React pattern, hoặc giữ children_folders nhưng phải thống nhất
-};
-
-interface FolderTreeNodeProps {
-  folder: FolderWithChildren;
-  level: number;
-  onSelect: (folderId: string) => void;
-  selectedFolderId?: string;
-}
-
-function FolderTreeNode({
-  folder,
-  level,
-  onSelect,
-  selectedFolderId,
-}: FolderTreeNodeProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  // Kiểm tra children có tồn tại và có phần tử không
-  const hasChildren = folder.children && folder.children.length > 0;
-  const isSelected = selectedFolderId === folder.id;
-
-  const handleToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsExpanded(!isExpanded);
-  };
-
-  const handleSelect = () => {
-    onSelect(folder.id);
-  };
-
-  return (
-    <div>
-      <div
-        className={cn(
-          "flex items-center gap-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-100 transition-colors pr-2",
-          isSelected && "bg-blue-50 hover:bg-blue-100"
-        )}
-        style={{ paddingLeft: `${level * 16 + 8}px` }} // Tăng padding để dễ nhìn cấp độ
-        onClick={handleSelect}
-      >
-        {hasChildren ? (
-          <button
-            onClick={handleToggle}
-            className="p-0.5 hover:bg-gray-200 rounded shrink-0"
-          >
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-gray-500" />
-            )}
-          </button>
-        ) : (
-          <span className="w-5 shrink-0" /> // Placeholder để căn lề
-        )}
-
-        {isExpanded ? (
-          <FolderOpen className="w-4 h-4 text-blue-600 shrink-0" />
-        ) : (
-          <Folder className="w-4 h-4 text-gray-600 shrink-0" />
-        )}
-
-        <span
-          className={cn(
-            "text-sm truncate select-none",
-            isSelected ? "font-medium text-blue-700" : "text-gray-700"
-          )}
-        >
-          {folder.name}
-        </span>
-      </div>
-
-      {/* 2. Bỏ comment và render đệ quy */}
-      {isExpanded && hasChildren && (
-        <div>
-          {folder.children!.map((child) => (
-            <FolderTreeNode
-              key={child.id}
-              folder={child}
-              level={level + 1}
-              onSelect={onSelect}
-              selectedFolderId={selectedFolderId}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+import FolderTreeNode, { FolderWithChildren } from "./FolderTreeNode";
 
 interface FolderTreeSelectorProps {
   onSelect?: (folderId: string | null) => void;
@@ -185,6 +93,7 @@ export default function FolderTreeSelector({
       <div className="py-1">
         {rootFolders.map((folder) => (
           <FolderTreeNode
+            currentFolderId={currentFolderId}
             key={folder.id}
             folder={folder}
             level={0}

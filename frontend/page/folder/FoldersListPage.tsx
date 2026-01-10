@@ -141,16 +141,6 @@ function FoldersListPageContent({ parentId }: { parentId?: string }) {
       {/* Folders Grid */}
       {isLoading ? (
         <GridSkeleton items={8} />
-      ) : folders.length === 0 ? (
-        <EmptyState
-          type="new"
-          title="No folders yet"
-          description="Create your first folder to organize your notes."
-          action={{
-            label: "Create Folder",
-            onClick: handleCreateFolder,
-          }}
-        />
       ) : (
         <div className="flex w-full gap-6">
           {folders.map((folder) => (
@@ -239,10 +229,10 @@ function FoldersListPageContent({ parentId }: { parentId?: string }) {
   );
 }
 
-export default function FoldersListPage() {
+export default function FoldersListPage({ parentId }: { parentId?: string }) {
   return (
     <ModalProvider>
-      <FoldersListPageContent />
+      <FoldersListPageContent parentId={parentId} />
     </ModalProvider>
   );
 }
