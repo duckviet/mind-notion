@@ -46,6 +46,11 @@ import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import { FolderCard } from "@/shared/components/Folder";
 import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
 import FoldersListPage from "./FoldersListPage";
+import {
+  DragEndEvent,
+  DraggableItem,
+  MultiZoneDndProvider,
+} from "@/shared/components/dnd";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -79,7 +84,6 @@ interface FolderPageContentProps {
 }
 
 function FolderPageContent({ folderId }: FolderPageContentProps) {
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -196,6 +200,27 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     return date.toLocaleDateString();
   };
 
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    console.log("event", event);
+    if (!over) return;
+
+    const activeId = active.id.toString();
+    const overId = over.id.toString();
+
+    if (overId.startsWith("folder-")) {
+      // Dropped onto a folder
+      const folderId = overId.replace("folder-", "");
+      console.log(`Dropped note ${activeId} onto folder ${folderId}`);
+      // Remove from top of mind if it was there
+      const activeNote = notes.filter((n) => n.id === activeId)[0];
+      if (activeNote) {
+        handleUpdate(activeId, { ...activeNote, folder_id: folderId });
+      }
+    }
+  };
+
   if (folderError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
@@ -270,23 +295,49 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
       {isNotesLoading ? (
         <GridSkeleton items={6} />
       ) : (
-        <AnimateCardProvider>
-          <FoldersListPage parentId={folderId} />
-
-          <MasonryGrid data={notes}>
-            <AddNoteForm folder_id={folderId} onCreate={createNote} />
-            {notes.map((note) => (
-              <div key={note.id} className="break-inside-avoid ">
+        <MultiZoneDndProvider
+          disabled={isModalOpen}
+          onDragEnd={handleDragEnd}
+          renderOverlay={(activeId) => {
+            const noteId = activeId?.toString();
+            const note = notes.find((n) => n.id === noteId) || null;
+            return note ? (
+              <div
+                className="opacity-80 w-full min-w-[300px]"
+                style={{ rotate: "5deg" }}
+              >
                 <NoteCard
-                  match={note}
-                  onDelete={handleDeleteRequest}
-                  onUpdateNote={handleUpdate}
-                  onFocusEdit={handleFocusEdit}
+                  match={{ ...note, score: 1.0 }}
+                  onUpdateNote={() => {}}
                 />
               </div>
-            ))}
-          </MasonryGrid>
-        </AnimateCardProvider>
+            ) : null;
+          }}
+        >
+          <AnimateCardProvider>
+            <FoldersListPage parentId={folderId} />
+
+            <MasonryGrid data={notes}>
+              <AddNoteForm folder_id={folderId} onCreate={createNote} />
+              {notes.map((note) => (
+                <DraggableItem
+                  className="h-fit mb-6 break-inside-avoid"
+                  key={note.id}
+                  id={note.id}
+                >
+                  <div key={note.id} className="break-inside-avoid ">
+                    <NoteCard
+                      match={note}
+                      onDelete={handleDeleteRequest}
+                      onUpdateNote={handleUpdate}
+                      onFocusEdit={handleFocusEdit}
+                    />
+                  </div>
+                </DraggableItem>
+              ))}
+            </MasonryGrid>
+          </AnimateCardProvider>
+        </MultiZoneDndProvider>
       )}
 
       {/* Delete Confirmation Dialog */}

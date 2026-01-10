@@ -168,16 +168,17 @@ export const useTiptapEditor = ({
 
     const currentHTML = editor.getHTML();
 
-    if (content !== currentHTML && !editor.isFocused) {
+    // Update content regardless of focus state
+    if (content !== currentHTML) {
       isUpdatingRef.current = true;
 
-      // Sử dụng queueMicrotask để đảm bảo thực thi sau khi React render xong
-      queueMicrotask(() => {
+      // Sử dụng setTimeout để đảm bảo thực thi sau khi React render xong
+      setTimeout(() => {
         if (editor && !editor.isDestroyed && editor.view?.dom) {
           editor.commands.setContent(content, { emitUpdate: false });
         }
         isUpdatingRef.current = false;
-      });
+      }, 0);
     }
   }, [content, editor]);
 

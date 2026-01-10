@@ -1,14 +1,8 @@
 import React, { useState, KeyboardEvent } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { cn } from "@/lib/utils";
-import { Textarea } from "@/shared/components/ui/textarea";
 import { Card } from "@/shared/components/Card";
-import {
-  createNote,
-  getListNotesQueryKey,
-  ReqCreateNote,
-} from "@/shared/services/generated/api";
+import { ReqCreateNote } from "@/shared/services/generated/api";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 export default function AddNoteForm({
   folder_id,
@@ -21,7 +15,6 @@ export default function AddNoteForm({
   const [content, setContent] = useState<string>(""); // Note content
   const [isFocus, setIsFocus] = useState<boolean>(false); // Focus state
   const [isSaving, setIsSaving] = useState<boolean>(false); // Saving state
-  const queryClient = useQueryClient();
 
   // Handle Ctrl + Enter for saving
   const handleEnter = async (e: KeyboardEvent<HTMLDivElement>) => {
@@ -29,7 +22,7 @@ export default function AddNoteForm({
       if (content.trim() && !isSaving) {
         setIsSaving(true);
         try {
-          onCreate({
+          await onCreate({
             title,
             content,
             content_type: "text",
@@ -46,9 +39,6 @@ export default function AddNoteForm({
           console.error("Failed to create note", err);
         } finally {
           setIsSaving(false);
-          setTitle("");
-          setContent("");
-          setIsFocus(false);
         }
       } else {
         // No content; ignore
@@ -56,10 +46,12 @@ export default function AddNoteForm({
     }
   };
 
+  console.log(content);
+
   const isSaveHintVisible =
     content.trim() && content !== "<p></p>" ? true : false;
   return (
-    <div className="relative h-full break-inside-avoid ">
+    <div className="relative h-full break-inside-avoid mb-6">
       {/* Overlay */}
       {isFocus && <div className="fixed inset-0 bg-gray-300/40 z-30" />}
 
