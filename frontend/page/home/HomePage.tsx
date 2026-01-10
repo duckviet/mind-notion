@@ -140,6 +140,8 @@ function HomePageContent() {
     const activeId = active.id.toString();
     const overId = over.id.toString();
 
+    console.log("Drag End - activeId:", activeId, "overId:", overId);
+
     // Lấy parent HTML element của activeId
     // const activeElement = document.querySelector(`[data-id="${activeId}"]`);
     // const parentElement = activeElement ? activeElement.parentElement : null;
@@ -171,6 +173,17 @@ function HomePageContent() {
         handleUpdateTopOfMindNote(activeId, false);
       }
       return;
+    }
+
+    if (overId.startsWith("folder-")) {
+      // Dropped onto a folder
+      const folderId = overId.replace("folder-", "");
+      console.log(`Dropped note ${activeId} onto folder ${folderId}`);
+      // Remove from top of mind if it was there
+      const activeNote = notes.filter((n) => n.id === activeId)[0];
+      if (activeNote) {
+        handleUpdate(activeId, { ...activeNote, folder_id: folderId });
+      }
     }
   };
 

@@ -271,7 +271,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
         <GridSkeleton items={6} />
       ) : (
         <AnimateCardProvider>
-          <FoldersListPage />
+          <FoldersListPage parentId={folderId} />
 
           <MasonryGrid data={notes}>
             <AddNoteForm folder_id={folderId} onCreate={createNote} />
