@@ -62,7 +62,7 @@ export default function NoteCard({
 
   const handleFolderSelect = (folderId: string | null) => {
     if (onUpdateNote) {
-      // onUpdateNote(match.id, { folder_id: folderId });
+      onUpdateNote(match.id, { id: match.id, folder_id: folderId });
     }
   };
 
@@ -87,7 +87,7 @@ export default function NoteCard({
         >
           <Card
             // role="article"
-            className="rounded-2xl bg-white w-full"
+            className="rounded-2xl bg-white w-full p-6"
             aria-label={`Note card: ${match.title}`}
           >
             <div className="flex justify-between items-center w-full mb-4">

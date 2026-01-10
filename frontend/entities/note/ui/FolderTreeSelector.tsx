@@ -1,11 +1,17 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useFolders } from "@/shared/hooks/useFolders";
 import { ResDetailFolder } from "@/shared/services/generated/api";
 import { Folder, FolderOpen, ChevronRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AnimateCardProvider } from "./AnimateCardProvider";
+
+// 1. Định nghĩa lại type cho chính xác
+type FolderWithChildren = ResDetailFolder & {
+  children?: FolderWithChildren[]; // Đổi tên thành 'children' cho chuẩn React pattern, hoặc giữ children_folders nhưng phải thống nhất
+};
 
 interface FolderTreeNodeProps {
-  folder: ResDetailFolder;
+  folder: FolderWithChildren;
   level: number;
   onSelect: (folderId: string) => void;
   selectedFolderId?: string;
@@ -18,8 +24,9 @@ function FolderTreeNode({
   selectedFolderId,
 }: FolderTreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const hasChildren =
-    folder.children_folders && folder.children_folders.length > 0;
+
+  // Kiểm tra children có tồn tại và có phần tử không
+  const hasChildren = folder.children && folder.children.length > 0;
   const isSelected = selectedFolderId === folder.id;
 
   const handleToggle = (e: React.MouseEvent) => {
@@ -35,43 +42,47 @@ function FolderTreeNode({
     <div>
       <div
         className={cn(
-          "flex items-center gap-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-100 transition-colors",
+          "flex items-center gap-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-100 transition-colors pr-2",
           isSelected && "bg-blue-50 hover:bg-blue-100"
         )}
-        style={{ paddingLeft: `${level * 4 + 4}px` }}
+        style={{ paddingLeft: `${level * 16 + 8}px` }} // Tăng padding để dễ nhìn cấp độ
         onClick={handleSelect}
       >
         {hasChildren ? (
           <button
             onClick={handleToggle}
-            className="p-0.5 hover:bg-gray-200 rounded"
+            className="p-0.5 hover:bg-gray-200 rounded shrink-0"
           >
             {isExpanded ? (
-              <ChevronDown className="w-3.5 h-3.5 text-gray-600" />
+              <ChevronDown className="w-4 h-4 text-gray-500" />
             ) : (
-              <ChevronRight className="w-3.5 h-3.5 text-gray-600" />
+              <ChevronRight className="w-4 h-4 text-gray-500" />
             )}
           </button>
         ) : (
-          <span className="w-4" />
+          <span className="w-5 shrink-0" /> // Placeholder để căn lề
         )}
+
         {isExpanded ? (
-          <FolderOpen className="w-4 h-4 text-blue-600" />
+          <FolderOpen className="w-4 h-4 text-blue-600 shrink-0" />
         ) : (
-          <Folder className="w-4 h-4 text-gray-600" />
+          <Folder className="w-4 h-4 text-gray-600 shrink-0" />
         )}
+
         <span
           className={cn(
-            "text-sm flex-1",
+            "text-sm truncate select-none",
             isSelected ? "font-medium text-blue-700" : "text-gray-700"
           )}
         >
           {folder.name}
         </span>
       </div>
-      {/* {isExpanded && hasChildren && (
+
+      {/* 2. Bỏ comment và render đệ quy */}
+      {isExpanded && hasChildren && (
         <div>
-          {folder.children_folders?.map((child) => (
+          {folder.children!.map((child) => (
             <FolderTreeNode
               key={child.id}
               folder={child}
@@ -81,13 +92,13 @@ function FolderTreeNode({
             />
           ))}
         </div>
-      )} */}
+      )}
     </div>
   );
 }
 
 interface FolderTreeSelectorProps {
-  onSelect: (folderId: string | null) => void;
+  onSelect?: (folderId: string | null) => void;
   currentFolderId?: string;
 }
 
@@ -100,14 +111,36 @@ export default function FolderTreeSelector({
     currentFolderId
   );
 
+  // 3. Sử dụng useMemo để tính toán cây thư mục một lần khi folders thay đổi
+  const rootFolders = useMemo(() => {
+    if (!folders) return [];
+
+    const folderMap: Record<string, FolderWithChildren> = {};
+
+    // Bước 1: Tạo map và khởi tạo mảng children rỗng cho tất cả folder
+    folders.forEach((folder) => {
+      folderMap[folder.id] = { ...folder, children: [] };
+    });
+
+    const roots: FolderWithChildren[] = [];
+
+    // Bước 2: Duyệt qua map để lắp ráp cây
+    folders.forEach((folder) => {
+      const currentFolder = folderMap[folder.id];
+      // API của bạn trả về parent_id rỗng ("") nếu là root
+      if (folder.parent_id && folderMap[folder.parent_id]) {
+        folderMap[folder.parent_id].children?.push(currentFolder);
+      } else {
+        roots.push(currentFolder);
+      }
+    });
+
+    return roots;
+  }, [folders]);
+
   const handleSelect = (folderId: string) => {
     setSelectedFolderId(folderId);
-    onSelect(folderId);
-  };
-
-  const handleRemoveFromFolder = () => {
-    setSelectedFolderId(undefined);
-    onSelect(null);
+    onSelect && onSelect(folderId);
   };
 
   if (isLoading) {
@@ -127,38 +160,39 @@ export default function FolderTreeSelector({
   }
 
   return (
-    <div className="max-h-[400px] overflow-y-auto">
+    <div className="max-h-[400px] overflow-y-auto   rounded-md bg-white">
       {/* Option to remove from folder */}
-      {currentFolderId && (
-        <div
+      <div
+        className={cn(
+          "flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors border-b border-gray-200 sticky top-0 bg-white z-10",
+          !selectedFolderId && "bg-blue-50 hover:bg-blue-100"
+        )}
+        onClick={() => onSelect && onSelect(null)}
+      >
+        <div className="w-5" /> {/* Spacer cho thẳng hàng icon */}
+        <Folder className="w-4 h-4 text-gray-400" />
+        <span
           className={cn(
-            "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer hover:bg-gray-100 transition-colors mb-2 border-b",
-            !selectedFolderId && "bg-blue-50 hover:bg-blue-100"
+            "text-sm",
+            !selectedFolderId ? "font-medium text-blue-700" : "text-gray-600"
           )}
-          onClick={handleRemoveFromFolder}
         >
-          <Folder className="w-4 h-4 text-gray-400" />
-          <span
-            className={cn(
-              "text-sm",
-              !selectedFolderId ? "font-medium text-blue-700" : "text-gray-600"
-            )}
-          >
-            Remove from folder
-          </span>
-        </div>
-      )}
+          Root (No parent)
+        </span>
+      </div>
 
-      {/* Folder tree */}
-      {folders.map((folder) => (
-        <FolderTreeNode
-          key={folder.id}
-          folder={folder}
-          level={0}
-          onSelect={handleSelect}
-          selectedFolderId={selectedFolderId}
-        />
-      ))}
+      {/* Folder tree rendering */}
+      <div className="py-1">
+        {rootFolders.map((folder) => (
+          <FolderTreeNode
+            key={folder.id}
+            folder={folder}
+            level={0}
+            onSelect={handleSelect}
+            selectedFolderId={selectedFolderId}
+          />
+        ))}
+      </div>
     </div>
   );
 }

@@ -30,7 +30,6 @@ export function useFolders(
   );
   const queryClient = useQueryClient();
   const queryKey = getListFoldersQueryKey(stableParams);
-  console.log(stableParams, queryKey);
   const foldersQuery = useGeneratedListFolders(stableParams, {
     query: {
       retry: false,
@@ -49,7 +48,10 @@ export function useFolders(
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: ReqUpdateFolder }) =>
       await apiUpdateFolder(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKey }),
+    onSuccess: () => {
+      // Invalidate all folder queries since parent change affects multiple lists
+      queryClient.invalidateQueries({ queryKey: ["listFolders"] });
+    },
   });
 
   const deleteMutation = useMutation({

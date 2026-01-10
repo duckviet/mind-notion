@@ -125,8 +125,15 @@ func (s *folderService) UpdateFolder(ctx context.Context, id string, req UpdateF
 		folder.IsPublic = *req.IsPublic
 	}
 	if req.ParentID != nil {
-		folder.ParentID = req.ParentID
+		fmt.Printf("[Service] req.ParentID value: '%s'\n", *req.ParentID)
+		if *req.ParentID == "" {
+			fmt.Println("[Service] Setting folder.ParentID to nil")
+			folder.ParentID = nil
+		} else {
+			folder.ParentID = req.ParentID
+		}
 	}
+	fmt.Printf("[Service] folder.ParentID before update: %v\n", folder.ParentID)
 
 	if err := s.repo.Update(ctx, folder); err != nil {
 		return nil, ErrInternalServerError
