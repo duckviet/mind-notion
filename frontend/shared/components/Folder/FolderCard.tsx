@@ -54,7 +54,10 @@ const FolderCard = ({
     return date.toLocaleDateString();
   };
   return (
-    <DroppableZone id={`folder-${id}`}>
+    <DroppableZone
+      id={`folder-${id}`}
+      activeClassName="ring-2 ring-blue-300/20 ring-offset-1 ring-offset-blue-300/20 rounded-2xl"
+    >
       <ContextMenu>
         <ContextMenuTrigger asChild className="outline-none">
           <Link href={`/folder/${id}`}>
