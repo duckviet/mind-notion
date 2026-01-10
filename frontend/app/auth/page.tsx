@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { LoginForm } from "@/features/auth/ui/LoginForm";
 import { RegisterForm } from "@/features/auth/ui/RegisterForm";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,16 +11,13 @@ function AuthPageContent() {
   const { isAuth } = useAuthStore();
   const [isLogin, setIsLogin] = useState(true);
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   useEffect(() => {
     // Nếu đã auth thì không cho ở lại trang này
     if (isAuth) {
-      router.replace(callbackUrl); // Dùng replace để tránh lưu lịch sử trang login
+      router.replace("/"); // Dùng replace để tránh lưu lịch sử trang login
     }
-  }, [isAuth, router, callbackUrl]);
+  }, [isAuth, router]);
 
   // Nếu đang refresh (AutoLogin đang chạy) hoặc đã auth,
   // không render gì cả để tránh hiện Form Login rồi biến mất (Flicker)
@@ -28,7 +25,7 @@ function AuthPageContent() {
     return null;
   }
   const handleSuccess = () => {
-    router.push(callbackUrl);
+    router.push("/");
   };
 
   return (

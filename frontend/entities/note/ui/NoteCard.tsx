@@ -103,19 +103,15 @@ export default function NoteCard({
       </ContextMenuTrigger>
       <ContextMenuContent className="bg-white border-gray-200 shadow-xl">
         <ContextMenuItem onSelect={handlePreview} className="hover:bg-gray-200">
+          <Eye className="w-4 h-4 " />
           <p className="text-sm">Preview</p>
-          <ContextMenuShortcut>
-            <Eye className="w-4 h-4 " />
-          </ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuItem
           onSelect={handleFocusEdit}
           className="focus:bg-gray-200"
         >
+          <Edit3 className="w-4 h-4 " />
           <p className="text-sm">Focus Edit</p>
-          <ContextMenuShortcut>
-            <Edit3 className="w-4 h-4 " />
-          </ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuSub>
           <ContextMenuSubTrigger className="cursor-pointer">
@@ -130,19 +126,15 @@ export default function NoteCard({
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuItem onClick={handleDelete} className="focus:bg-gray-200 ">
+          <Trash2Icon className="w-3 h-3" />
           <p className="text-sm ">Delete</p>
-          <ContextMenuShortcut>
-            <Trash2Icon className="w-3 h-3" />
-          </ContextMenuShortcut>
         </ContextMenuItem>
         <ContextMenuItem
           onClick={() => handlePin(true)}
           className="focus:bg-glass-hover"
         >
+          <Brain className="w-3 h-3" />
           <p className="text-sm">Pin</p>
-          <ContextMenuShortcut>
-            <Brain className="w-3 h-3" />
-          </ContextMenuShortcut>
         </ContextMenuItem>
       </ContextMenuContent>
 
