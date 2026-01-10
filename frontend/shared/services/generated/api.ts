@@ -49,9 +49,9 @@ export interface User {
 }
 
 export interface ReqUpdateProfile {
-  name: string;
-  email: string;
-  avatar: string;
+  name?: string;
+  email?: string;
+  avatar?: string;
 }
 
 export interface ReqCreateFolder {
@@ -61,9 +61,9 @@ export interface ReqCreateFolder {
 }
 
 export interface ReqUpdateFolder {
-  name: string;
-  parent_id: string;
-  is_public: boolean;
+  name?: string;
+  parent_id?: string;
+  is_public?: boolean;
 }
 
 export interface ReqAddNote {
@@ -100,15 +100,15 @@ export interface ReqCreateNote {
 
 export interface ReqUpdateNote {
   id: string;
-  title: string;
-  content: string;
-  content_type: string;
-  status: string;
-  thumbnail: string;
-  tags: string[];
+  title?: string;
+  content?: string;
+  content_type?: string;
+  status?: string;
+  thumbnail?: string;
+  tags?: string[];
   /** @nullable */
   folder_id?: string | null;
-  is_public: boolean;
+  is_public?: boolean;
 }
 
 export interface ReqRemoveNote {

@@ -11,8 +11,10 @@ import {
 } from "@/shared/services/generated/api";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 export default function AddNoteForm({
+  folder_id,
   onCreate,
 }: {
+  folder_id?: string | null;
   onCreate: (data: ReqCreateNote) => void;
 }) {
   const [title, setTitle] = useState<string>(""); // Note title
@@ -35,6 +37,7 @@ export default function AddNoteForm({
             thumbnail: "",
             tags: [],
             is_public: false,
+            folder_id,
           });
           setTitle("");
           setContent("");
@@ -56,14 +59,14 @@ export default function AddNoteForm({
   const isSaveHintVisible =
     content.trim() && content !== "<p></p>" ? true : false;
   return (
-    <div className="relative h-full">
+    <div className="relative h-full break-inside-avoid ">
       {/* Overlay */}
       {isFocus && <div className="fixed inset-0 bg-gray-300/40 z-30" />}
 
       {/* Card Container */}
       <Card
         className={cn(
-          "relative bg-white rounded-2xl transition-all duration-200 h-full",
+          "relative p-6 bg-white rounded-2xl transition-all duration-200 h-full",
           isFocus ? "z-40" : "hover:shadow-lg"
         )}
       >

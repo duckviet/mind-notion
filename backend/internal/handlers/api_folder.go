@@ -209,7 +209,6 @@ func (api *FolderAPI) ListFolders(c *gin.Context) {
 	// Parse query parameters
 	limitStr := c.Query("limit")
 	offsetStr := c.Query("offset")
-	parentID := c.Query("parent_id")
 
 	limit := 20
 	if limitStr != "" {
@@ -235,8 +234,9 @@ func (api *FolderAPI) ListFolders(c *gin.Context) {
 		Page:  page,
 		Limit: limit,
 	}
-	if parentID != "" {
-		params.ParentID = &parentID
+	// Check if parent_id query param exists (even if empty)
+	if parentID, exists := c.GetQuery("parent_id"); exists {
+		params.ParentID = &parentID // "" means root folders, "uuid" means children of that folder
 	}
 
 	folders, total, err := api.folderService.GetFoldersByUserID(c.Request.Context(), u.ID, params)
@@ -289,22 +289,21 @@ func (api *FolderAPI) UpdateFolder(c *gin.Context) {
 
 	// Bind request body
 	var body struct {
-		Name     string `json:"name"`
-		ParentID string `json:"parent_id"`
-		IsPublic *bool  `json:"is_public"`
+		Name     string  `json:"name"`
+		ParentID *string `json:"parent_id"`
+		IsPublic *bool   `json:"is_public"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
 		return
 	}
 
+
 	// Prepare update request
 	updateReq := service.UpdateFolderRequest{
 		Name:     body.Name,
 		IsPublic: body.IsPublic,
-	}
-	if body.ParentID != "" {
-		updateReq.ParentID = &body.ParentID
+		ParentID: body.ParentID,
 	}
 
 	folder, err := api.folderService.UpdateFolder(c.Request.Context(), folderID, updateReq)
@@ -360,4 +359,3 @@ func toFolderResponse(folder *dbmodels.Folder) FolderResponse {
 		UpdatedAt:       folder.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
 }
-
