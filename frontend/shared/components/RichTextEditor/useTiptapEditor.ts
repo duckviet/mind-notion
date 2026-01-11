@@ -1,7 +1,6 @@
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import React, { useEffect, useMemo, useRef } from "react";
-
+import { useEffect, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Placeholder } from "@tiptap/extensions";
 import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
@@ -20,7 +19,6 @@ import {
   ExtSplitView,
   SplitViewColumn,
 } from "./Extensions";
-
 import { migrateMathStrings } from "@tiptap/extension-mathematics";
 
 interface UseTiptapEditorProps {
@@ -41,31 +39,26 @@ export const useTiptapEditor = ({
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const onUpdateRef = useRef(onUpdate);
   const onKeyDownRef = useRef(onKeyDown);
-  const contentRef = useRef(content);
-  const isUpdatingRef = useRef(false);
-  const lastUserInputRef = useRef<number>(0); // Track last user input time
 
   const [toc, setToc] = usePersistentState(
     LocalStorageKeys.FOCUS_EDIT_TOC_COLLAPSED,
     false
   );
+
   const { mutateAsync: uploadMedia } = useUploadMedia({
     mutation: {
       onError: () => toast.error("Failed to upload image"),
     },
   });
-  // Keep refs updated without causing re-renders
+
   useEffect(() => {
     onUpdateRef.current = onUpdate;
   }, [onUpdate]);
+
   useEffect(() => {
     onKeyDownRef.current = onKeyDown;
   }, [onKeyDown]);
-  useEffect(() => {
-    contentRef.current = content;
-  }, [content]);
 
-  // Memoize extensions to prevent recreation
   const extensions = useMemo(
     () => [
       StarterKit.configure({
@@ -85,9 +78,7 @@ export const useTiptapEditor = ({
         initialToc: toc ?? false,
         onToggle: (newTocValue: boolean) => setToc(newTocValue),
       }),
-      Placeholder.configure({
-        placeholder: placeholder,
-      }),
+      Placeholder.configure({ placeholder }),
       ExtImage,
       ExtImageUpload.configure({
         uploadFn: async (file: File) => {
@@ -98,13 +89,13 @@ export const useTiptapEditor = ({
       ExtSplitView,
       SplitViewColumn,
     ],
-    [placeholder]
+    [placeholder, toc, setToc, uploadMedia]
   );
 
   const editor = useEditor(
     {
       extensions,
-      content: contentRef.current,
+      content, // Chỉ dùng cho initial value
       immediatelyRender: false,
       editable,
       injectCSS: false,
@@ -126,16 +117,26 @@ export const useTiptapEditor = ({
     [editable, extensions]
   );
 
-  /** Handle editor updates (with debounce) */
+  // Update editor content when content prop changes
   useEffect(() => {
     if (!editor) return;
+
+    const currentContent = editor.getHTML();
+    if (content && currentContent !== content) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor]);
+
+  // Handle editor updates with debounce
+  useEffect(() => {
+    if (!editor) return;
+
     let lastContent = editor.getHTML();
 
     const handleUpdate = () => {
       const html = editor.getHTML();
       if (html !== lastContent) {
         lastContent = html;
-        lastUserInputRef.current = Date.now(); // Track when user made changes
         onUpdateRef.current?.(html);
       }
     };
@@ -152,38 +153,11 @@ export const useTiptapEditor = ({
       if (debounceRef.current) clearTimeout(debounceRef.current);
       editor.off("update", debouncedUpdate);
     };
-  }, [editor]); // Remove onUpdate from deps, use ref instead
+  }, [editor]);
 
   useEffect(() => {
-    // Thêm kiểm tra editor.isDestroyed và editor.view
-    if (
-      !editor ||
-      editor.isDestroyed ||
-      !editor.view?.dom ||
-      content === undefined ||
-      isUpdatingRef.current
-    ) {
-      return;
-    }
-
-    const currentHTML = editor.getHTML();
-
-    // Update content regardless of focus state
-    if (content !== currentHTML) {
-      isUpdatingRef.current = true;
-
-      // Sử dụng setTimeout để đảm bảo thực thi sau khi React render xong
-      setTimeout(() => {
-        if (editor && !editor.isDestroyed && editor.view?.dom) {
-          editor.commands.setContent(content, { emitUpdate: false });
-        }
-        isUpdatingRef.current = false;
-      }, 0);
-    }
-  }, [content, editor]);
-
-  /** Cleanup */
-  useEffect(() => () => editor?.destroy(), [editor]);
+    return () => editor?.destroy();
+  }, [editor]);
 
   return editor;
 };
