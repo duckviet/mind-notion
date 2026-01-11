@@ -242,6 +242,7 @@ function HomePageContent() {
   const handleCloseFocusEdit = () => {
     setFocusEditNoteId(null);
     closeModal();
+    refetch();
   };
 
   return (
@@ -376,7 +377,7 @@ function HomePageContent() {
             isOpen={!!focusEditNoteId}
             onClose={handleCloseFocusEdit}
             noteId={focusEditNoteId}
-            onSave={(data) => handleUpdate(focusEditNoteId, data)}
+            onSave={() => {}}
           />
         )}
       </div>
