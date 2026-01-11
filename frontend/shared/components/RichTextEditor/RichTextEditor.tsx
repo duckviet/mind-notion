@@ -28,6 +28,8 @@ interface TiptapProps {
   showTOC?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
+  // Thêm editorKey để force remount khi cần
+  editorKey?: string;
 }
 
 const Tiptap = ({
@@ -43,10 +45,10 @@ const Tiptap = ({
   showTOC = false,
   onFocus,
   onBlur,
+  editorKey,
 }: TiptapProps) => {
   const editorRef = useRef<Editor | null>(null);
 
-  // Initialize template modals
   const {
     isTemplatesModalOpen,
     isManageTemplatesOpen,
@@ -57,13 +59,11 @@ const Tiptap = ({
     applyTemplate,
   } = useTemplateModals(editorRef.current);
 
-  // Build slash commands with template command
   const slashCommands = useMemo(
     () => [...BASE_SLASH_COMMANDS, createTemplateCommand(openTemplatesModal)],
     [openTemplatesModal]
   );
 
-  // Initialize slash menu
   const {
     slashMenu,
     closeSlashMenu,
@@ -72,7 +72,6 @@ const Tiptap = ({
     moveSelection,
   } = useSlashMenu(editorRef.current, slashCommands, editable);
 
-  // Initialize keyboard handling
   const { handleKeyDown } = useEditorKeyboard({
     editor: editorRef.current,
     editable,
@@ -86,7 +85,6 @@ const Tiptap = ({
     onKeyDown,
   });
 
-  // Initialize editor
   const editor = useTiptapEditor({
     content,
     placeholder,
@@ -95,7 +93,6 @@ const Tiptap = ({
     onKeyDown: handleKeyDown,
   });
 
-  // Store editor reference
   useEffect(() => {
     editorRef.current = editor;
     if (editor && onEditorReady) {
@@ -115,7 +112,7 @@ const Tiptap = ({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2" key={editorKey}>
       {toolbar && <Toolbar editor={editor} />}
       <div className="relative flex gap-6 cursor-text">
         <div className="flex-1">

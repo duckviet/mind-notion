@@ -7,20 +7,13 @@ import {
   ResDetailNote,
   useUpdateNote,
 } from "@/shared/services/generated/api";
+import { isEqual } from "lodash";
 
 type FormState = {
   title: string;
   content: string;
   tags: string[];
 };
-
-function isFormChanged(current: FormState, lastSaved: FormState): boolean {
-  return (
-    current.title !== lastSaved.title ||
-    current.content !== lastSaved.content ||
-    JSON.stringify(current.tags) !== JSON.stringify(lastSaved.tags)
-  );
-}
 
 export function useAutoSave(
   noteId: string,
@@ -30,38 +23,16 @@ export function useAutoSave(
   setIsSaving: (value: boolean) => void
 ) {
   const queryClient = useQueryClient();
-  const lastSavedRef = useRef(form);
+  const lastSavedRef = useRef<FormState>(form);
   const queryKey = getGetNoteQueryKey(noteId);
 
   const updateNoteMutation = useUpdateNote(
     {
       mutation: {
-        onMutate: async ({ noteId, data }) => {
+        onMutate: async () => {
           setIsSaving(true);
           await queryClient.cancelQueries({ queryKey });
-
           const previous = queryClient.getQueryData<ResDetailNote>(queryKey);
-
-          queryClient.setQueryData<ResDetailNote>(queryKey, (old) => {
-            if (!old) {
-              return {
-                title: data.title ?? "Untitled",
-                content: data.content ?? "",
-                content_type: data.content_type ?? "text",
-                status: data.status ?? "draft",
-                thumbnail: data.thumbnail ?? "",
-                tags: data.tags ?? [],
-                is_public: data.is_public ?? false,
-                top_of_mind: false,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                ...data,
-              };
-            }
-
-            return { ...old, ...data };
-          });
-
           return { previous };
         },
         onError: (_err, _vars, context) => {
@@ -70,8 +41,24 @@ export function useAutoSave(
           }
           toast.error("Failed to auto-save note");
         },
-        onSuccess: (serverNote) => {
-          queryClient.setQueryData(queryKey, serverNote);
+        onSuccess: (serverNote, { data }) => {
+          queryClient.setQueryData<ResDetailNote>(queryKey, (old) =>
+            old
+              ? {
+                  ...old,
+                  title: data.title ?? old.title,
+                  content: data.content ?? old.content,
+                  tags: data.tags ?? old.tags,
+                  updated_at: serverNote.updated_at,
+                }
+              : serverNote
+          );
+
+          lastSavedRef.current = {
+            title: data.title ?? "",
+            content: data.content ?? "",
+            tags: data.tags ?? [],
+          };
         },
         onSettled: () => {
           setIsSaving(false);
@@ -82,12 +69,12 @@ export function useAutoSave(
   );
 
   useEffect(() => {
+    if (!noteId || !form.title.trim() || isSaving) return;
+
+    const changed = !isEqual(form, lastSavedRef.current);
+    if (!changed) return;
+
     const timer = setTimeout(() => {
-      if (!noteId || !form.title.trim() || isSaving) return;
-
-      const changed = isFormChanged(form, lastSavedRef.current);
-      if (!changed) return;
-
       const payload: ReqUpdateNote = {
         id: noteId,
         title: form.title,
@@ -95,19 +82,25 @@ export function useAutoSave(
         content_type: "text",
         status: note?.status ?? "draft",
         thumbnail: note?.thumbnail ?? "",
+        folder_id: note?.folder_id ?? null,
         tags: form.tags,
         is_public: note?.is_public ?? false,
       };
 
-      lastSavedRef.current = form;
-      updateNoteMutation.mutate({ noteId: noteId, data: payload });
+      updateNoteMutation.mutate({ noteId, data: payload });
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [form, noteId, note?.status, note?.thumbnail, note?.is_public, isSaving]);
-
-  return {
+  }, [
+    form,
+    noteId,
+    note?.status,
+    note?.thumbnail,
+    note?.folder_id,
+    note?.is_public,
+    isSaving,
     updateNoteMutation,
-    lastSavedRef,
-  };
+  ]);
+
+  return { updateNoteMutation, lastSavedRef };
 }

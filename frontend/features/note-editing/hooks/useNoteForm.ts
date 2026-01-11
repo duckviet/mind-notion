@@ -14,14 +14,6 @@ function validateTitle(title: string): string {
   return "";
 }
 
-function isFormUnchanged(next: FormState, current: FormState): boolean {
-  return (
-    next.title === current.title &&
-    next.content === current.content &&
-    JSON.stringify(next.tags) === JSON.stringify(current.tags)
-  );
-}
-
 export function useNoteForm(isOpen: boolean, note: ResDetailNote | undefined) {
   const [form, setForm] = useState<FormState>({
     title: "",
@@ -32,21 +24,31 @@ export function useNoteForm(isOpen: boolean, note: ResDetailNote | undefined) {
   const [error, setError] = useState("");
   const titleRef = useRef<HTMLInputElement>(null);
 
-  // Initialize form when modal opens
-  useEffect(() => {
-    if (!isOpen || !note) return;
+  // Track noteId đã được khởi tạo
+  const initializedNoteIdRef = useRef<string | null>(null);
 
-    const next = {
+  // Chỉ sync từ note khi:
+  // 1. Modal mới mở VÀ noteId thay đổi
+  // 2. KHÔNG sync lại khi note update từ auto-save
+  useEffect(() => {
+    if (!isOpen) {
+      initializedNoteIdRef.current = null;
+      return;
+    }
+
+    if (!note?.id) return;
+
+    // Chỉ khởi tạo 1 lần cho mỗi noteId
+    if (initializedNoteIdRef.current === note.id) return;
+
+    setForm({
       title: note.title ?? "",
       content: note.content ?? "",
       tags: note.tags ?? [],
-    };
-
-    if (!isFormUnchanged(next, form)) {
-      setForm(next);
-      setError("");
-    }
-  }, [isOpen, note]);
+    });
+    setError("");
+    initializedNoteIdRef.current = note.id;
+  }, [isOpen, note?.id, note?.title, note?.content, note?.tags]);
 
   // Focus title on open
   useEffect(() => {
