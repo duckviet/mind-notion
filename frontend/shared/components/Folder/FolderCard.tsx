@@ -58,7 +58,7 @@ const FolderCard = ({
       <ContextMenu>
         <ContextMenuTrigger asChild className="outline-none">
           <Link href={`/folder/${id}`}>
-            <Card className="group-hover:shadow-md">
+            <Card>
               <div className="h-[200px] w-[250px] mb-4 relative pt-6 ">
                 {/* Folder tab background */}
                 <div className="absolute top-0 left-0 w-full h-full z-0">
