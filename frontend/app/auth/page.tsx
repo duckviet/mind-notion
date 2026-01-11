@@ -18,7 +18,7 @@ function AuthPageContent() {
     // Nếu đã auth thì redirect về callbackUrl
     if (isAuth) {
       // Sử dụng window.location để force full page reload và đảm bảo middleware chạy lại
-      window.location.href = callbackUrl;
+      router.replace(callbackUrl);
     }
   }, [isAuth, callbackUrl]);
 
