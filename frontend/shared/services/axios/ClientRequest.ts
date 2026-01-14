@@ -45,7 +45,7 @@ export class ClientRequest {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => Promise.reject(error),
     );
 
     // Response Interceptor: Xử lý 401 & Refresh Token
@@ -105,7 +105,10 @@ export class ClientRequest {
             // Xử lý logout nếu refresh thất bại
             Cookies.remove("access_token");
             Cookies.remove("refresh_token");
-            window.location.href = "/auth"; // Force reload về login
+            // Call logout để clear auth state
+            useAuthStore.getState().logout();
+            // Redirect về login page
+            window.location.href = "/auth";
             return Promise.reject(refreshError);
           } finally {
             this.isRefreshing = false;
@@ -114,7 +117,7 @@ export class ClientRequest {
           }
         }
         return Promise.reject(error);
-      }
+      },
     );
   }
 
