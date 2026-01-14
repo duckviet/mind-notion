@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoginForm } from "@/features/auth/ui/LoginForm";
 import { RegisterForm } from "@/features/auth/ui/RegisterForm";
@@ -8,23 +8,28 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/features/auth";
 
 function AuthPageContent() {
-  const { isAuth } = useAuthStore();
+  const { isAuth, isRefreshing, user } = useAuthStore();
   const [isLogin, setIsLogin] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const redirectingRef = useRef(false);
 
   useEffect(() => {
-    // Nếu đã auth thì redirect về callbackUrl
-    if (isAuth) {
-      // Sử dụng window.location để force full page reload và đảm bảo middleware chạy lại
+    // Chỉ redirect khi:
+    // 1. Đã auth (isAuth = true)
+    // 2. Không đang refresh
+    // 3. Đã có thông tin user (nghĩa là AutoLogin hoặc refresh đã chạy xong)
+    // 4. Chưa bắt đầu redirect
+    if (isAuth && !isRefreshing && user && !redirectingRef.current) {
+      redirectingRef.current = true;
       router.replace(callbackUrl);
     }
-  }, [isAuth, callbackUrl]);
+  }, [isAuth, isRefreshing, user, callbackUrl, router]);
 
-  // Nếu đang refresh (AutoLogin đang chạy) hoặc đã auth,
+  // Nếu đang refresh hoặc (đã auth và có user),
   // không render gì cả để tránh hiện Form Login rồi biến mất (Flicker)
-  if (isAuth) {
+  if (isAuth && user) {
     return null;
   }
   const handleSuccess = () => {
