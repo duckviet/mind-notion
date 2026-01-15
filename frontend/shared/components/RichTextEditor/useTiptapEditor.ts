@@ -20,6 +20,8 @@ import {
   SplitViewColumn,
 } from "./Extensions";
 import { migrateMathStrings } from "@tiptap/extension-mathematics";
+import ExtBlockQuote from "./Extensions/ExtQuote";
+import ExtHighLight from "./Extensions/ExtHighLight";
 
 interface UseTiptapEditorProps {
   content?: string;
@@ -73,6 +75,8 @@ export const useTiptapEditor = ({
       ExtCustomCodeBlock,
       ExtHeading,
       ExtMathematics,
+      ExtBlockQuote,
+      ExtHighLight,
       ...ExtTableKit,
       ExtTableOfContents.configure({
         initialToc: toc ?? false,

@@ -6,7 +6,8 @@ import { getMe } from "@/shared/services/generated/api";
 
 const REFRESH_TIMEOUT = 1200;
 export default function AutoLogin({ children }: { children: React.ReactNode }) {
-  const { setUser, login, logout, isRefreshing, isAuth } = useAuthStore();
+  const { setUser, login, logout, isRefreshing, isAuth, setInitialized } =
+    useAuthStore();
   const mounted = useRef(false);
   const [canPopup, setCanPopup] = useState(false);
 
@@ -24,15 +25,21 @@ export default function AutoLogin({ children }: { children: React.ReactNode }) {
         console.log("[AutoLogin] getMe() success, user:", user);
         setUser(user);
         login();
+        setInitialized(true); // Đánh dấu đã init xong và thành công
         console.log("[AutoLogin] setUser() and login() called");
-      } catch (error) {
+      } catch (error: any) {
         console.error("[AutoLogin] Auto login failed", error);
-        logout();
+        console.error("[AutoLogin] Error details:", {
+          message: error?.message,
+          response: error?.response,
+          status: error?.response?.status,
+        });
+        logout(); // logout() sẽ set isInitialized = true
       }
     };
 
     initAuth();
-  }, [setUser, login, logout]);
+  }, [setUser, login, logout, setInitialized]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
