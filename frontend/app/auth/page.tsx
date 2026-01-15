@@ -15,6 +15,15 @@ function AuthPageContent() {
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   const redirectingRef = useRef(false);
 
+  // Debug logging
+  console.log("[Auth Page] Current state:", {
+    isAuth,
+    isRefreshing,
+    hasUser: !!user,
+    callbackUrl,
+    redirecting: redirectingRef.current,
+  });
+
   useEffect(() => {
     // Chỉ redirect khi:
     // 1. Đã auth (isAuth = true)
@@ -23,9 +32,28 @@ function AuthPageContent() {
     // 4. Chưa bắt đầu redirect
     if (isAuth && !isRefreshing && user && !redirectingRef.current) {
       redirectingRef.current = true;
-      router.replace(callbackUrl);
+      console.log("[Auth Page] Redirecting to:", callbackUrl);
+      // Sử dụng window.location.replace để đảm bảo redirect trong production
+      // router.replace có thể bị skip trong production build do React optimization
+      window.location.replace(callbackUrl);
     }
-  }, [isAuth, isRefreshing, user, callbackUrl, router]);
+  }, [isAuth, isRefreshing, user, callbackUrl]);
+
+  // Fallback: Nếu sau 500ms vẫn có user và isAuth nhưng chưa redirect (có thể do bug),
+  // thì force redirect
+  useEffect(() => {
+    if (isAuth && user && !isRefreshing) {
+      const timer = setTimeout(() => {
+        if (!redirectingRef.current) {
+          console.log("[Auth Page] Fallback redirect to:", callbackUrl);
+          redirectingRef.current = true;
+          window.location.replace(callbackUrl);
+        }
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isAuth, user, isRefreshing, callbackUrl]);
 
   // Nếu đang refresh hoặc (đã auth và có user),
   // không render gì cả để tránh hiện Form Login rồi biến mất (Flicker)

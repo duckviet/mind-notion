@@ -60,6 +60,7 @@ const authAction = {
     if (typeof localStorage !== "undefined") {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
+      localStorage.removeItem("auth-storage");
     }
 
     // Refresh Token (HttpOnly) Client KHÔNG xóa được bằng JS.

@@ -170,7 +170,7 @@ function YearDays({
 
   return (
     <div className="space-y-4 rounded-md p-4 h-full min-h-screen flex flex-col items-center">
-      <div className="grid grid-cols-3 items-center justify-between w-full px-6">
+      <div className="flex items-center justify-between w-full px-6">
         <div className="flex items-center gap-2">
           <Button
             className="bg-white cursor-pointer hover:opacity-70"
