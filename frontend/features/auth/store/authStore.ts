@@ -6,6 +6,7 @@ type AuthState = {
   isAuth: boolean | null;
   user: User | null;
   isRefreshing: boolean;
+  isInitialized: boolean; // Đã chạy AutoLogin xong chưa
 };
 
 type AuthAction = {
@@ -15,12 +16,14 @@ type AuthAction = {
   removeUser: () => void;
   fetchMe: () => void;
   setRefreshing: (status: boolean) => void;
+  setInitialized: (status: boolean) => void;
 };
 
 const initialState: AuthState = {
   isAuth: null,
   user: null,
   isRefreshing: false,
+  isInitialized: false,
 };
 
 type AuthStore = AuthState & AuthAction;
@@ -36,7 +39,7 @@ export const useAuthStore = create<AuthStore>()(
       logout() {
         console.log("[AuthStore] logout() called");
         // Reset state trước
-        set({ isAuth: false, user: null, isRefreshing: false });
+        set({ isAuth: false, user: null, isRefreshing: false, isInitialized: true });
 
         // Cancel refresh nếu đang diễn ra (dùng dynamic import để tránh circular dependency)
         import("@/shared/services/axios/ClientRequest")
@@ -60,6 +63,10 @@ export const useAuthStore = create<AuthStore>()(
       setRefreshing: (status: boolean) => {
         console.log("[AuthStore] setRefreshing() called with:", status);
         set({ isRefreshing: status });
+      },
+      setInitialized: (status: boolean) => {
+        console.log("[AuthStore] setInitialized() called with:", status);
+        set({ isInitialized: status });
       },
     }),
     {
