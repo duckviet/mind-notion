@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/features/auth";
 
 function AuthPageContent() {
-  const { isAuth, isRefreshing, user } = useAuthStore();
+  const { isAuth, isRefreshing, user, isInitialized } = useAuthStore();
   const [isLogin, setIsLogin] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,44 +20,49 @@ function AuthPageContent() {
     isAuth,
     isRefreshing,
     hasUser: !!user,
+    isInitialized,
     callbackUrl,
     redirecting: redirectingRef.current,
   });
 
   useEffect(() => {
     // Chỉ redirect khi:
-    // 1. Đã auth (isAuth = true)
-    // 2. Không đang refresh
-    // 3. Đã có thông tin user (nghĩa là AutoLogin hoặc refresh đã chạy xong)
-    // 4. Chưa bắt đầu redirect
-    if (isAuth && !isRefreshing && user && !redirectingRef.current) {
+    // 1. AutoLogin đã chạy xong (isInitialized = true)
+    // 2. Đã auth (isAuth = true)
+    // 3. Không đang refresh
+    // 4. Đã có thông tin user
+    // 5. Chưa bắt đầu redirect
+    if (
+      isInitialized &&
+      isAuth &&
+      !isRefreshing &&
+      user &&
+      !redirectingRef.current
+    ) {
       redirectingRef.current = true;
       console.log("[Auth Page] Redirecting to:", callbackUrl);
-      // Sử dụng window.location.replace để đảm bảo redirect trong production
-      // router.replace có thể bị skip trong production build do React optimization
       window.location.replace(callbackUrl);
     }
-  }, [isAuth, isRefreshing, user, callbackUrl]);
+  }, [isInitialized, isAuth, isRefreshing, user, callbackUrl]);
 
-  // Fallback: Nếu sau 500ms vẫn có user và isAuth nhưng chưa redirect (có thể do bug),
-  // thì force redirect
+  // Fallback: Nếu sau 1000ms vẫn có user và isAuth và isInitialized nhưng chưa redirect
   useEffect(() => {
-    if (isAuth && user && !isRefreshing) {
+    if (isInitialized && isAuth && user && !isRefreshing) {
       const timer = setTimeout(() => {
         if (!redirectingRef.current) {
           console.log("[Auth Page] Fallback redirect to:", callbackUrl);
           redirectingRef.current = true;
           window.location.replace(callbackUrl);
         }
-      }, 500);
+      }, 1000);
 
       return () => clearTimeout(timer);
     }
-  }, [isAuth, user, isRefreshing, callbackUrl]);
+  }, [isInitialized, isAuth, user, isRefreshing, callbackUrl]);
 
   // Nếu đang refresh hoặc (đã auth và có user),
   // không render gì cả để tránh hiện Form Login rồi biến mất (Flicker)
-  if (isAuth && user) {
+  if (isAuth && user && isInitialized) {
     return null;
   }
   const handleSuccess = () => {
