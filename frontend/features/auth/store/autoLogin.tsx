@@ -19,11 +19,14 @@ export default function AutoLogin({ children }: { children: React.ReactNode }) {
 
     const initAuth = async () => {
       try {
+        console.log("[AutoLogin] Calling getMe()...");
         const user = await getMe();
+        console.log("[AutoLogin] getMe() success, user:", user);
         setUser(user);
         login();
+        console.log("[AutoLogin] setUser() and login() called");
       } catch (error) {
-        console.error("Auto login failed", error);
+        console.error("[AutoLogin] Auto login failed", error);
         logout();
       }
     };

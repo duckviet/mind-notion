@@ -30,9 +30,11 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       ...initialState,
       login() {
+        console.log("[AuthStore] login() called");
         set({ isAuth: true });
       },
       logout() {
+        console.log("[AuthStore] logout() called");
         // Reset state trước
         set({ isAuth: false, user: null, isRefreshing: false });
 
@@ -47,6 +49,7 @@ export const useAuthStore = create<AuthStore>()(
           });
       },
       setUser(user: User) {
+        console.log("[AuthStore] setUser() called with:", user);
         set({ user });
       },
       removeUser: () => set({ user: null }),
@@ -54,7 +57,10 @@ export const useAuthStore = create<AuthStore>()(
         const user = await getMe();
         set({ user });
       },
-      setRefreshing: (status: boolean) => set({ isRefreshing: status }),
+      setRefreshing: (status: boolean) => {
+        console.log("[AuthStore] setRefreshing() called with:", status);
+        set({ isRefreshing: status });
+      },
     }),
     {
       name: "auth-storage",
