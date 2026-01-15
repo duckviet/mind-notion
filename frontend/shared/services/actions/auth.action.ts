@@ -67,7 +67,7 @@ const authAction = {
     // Tuy nhiên, endpoint /logout của Backend đã gửi header để xóa nó rồi (MaxAge=-1).
 
     // Redirect về login (Dùng window.location để force reload trắng trang, đảm bảo sạch state)
-    window.location.href = "/auth";
+    window.location.href = "/auth?logout=true";
   },
 };
 

@@ -16,7 +16,8 @@ function isTokenExpired(token: string): boolean {
 }
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
+  const isJustLoggedOut = searchParams.get("logout") === "true";
 
   const accessToken = request.cookies.get("access_token")?.value;
   const refreshToken = request.cookies.get("refresh_token")?.value;
@@ -36,7 +37,14 @@ export function middleware(request: NextRequest) {
 
   const publicPaths = ["/auth"];
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
-
+  if (
+    isPublicPath &&
+    isAuthenticated &&
+    pathname === "/auth" &&
+    !isJustLoggedOut
+  ) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
   // 1. Nếu chưa đăng nhập mà vào Private Route -> Đá về Login
   if (!isPublicPath && !isAuthenticated) {
     const url = request.nextUrl.clone();
