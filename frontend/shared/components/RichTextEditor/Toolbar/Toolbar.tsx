@@ -28,7 +28,7 @@ const Toolbar = ({
   });
 
   const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file || !file.type.startsWith("image/")) {
@@ -54,7 +54,7 @@ const Toolbar = ({
       getToolbarGroups(editor, {
         onAddImage: () => fileInputRef.current?.click(),
       }),
-    [editor]
+    [editor],
   );
 
   return (
@@ -62,8 +62,8 @@ const Toolbar = ({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "flex flex-wrap items-center gap-1 p-2 bg-gray-50 rounded-lg border border-gray-200 shadow-md",
-        className
+        "flex flex-wrap items-center gap-1 p-2 bg-surface-lowered text-primary rounded-lg   shadow-md",
+        className,
       )}
     >
       {groups.map((group, groupIdx) => (
@@ -123,7 +123,7 @@ const Toolbar = ({
                     />
                   )}
                 </React.Fragment>
-              )
+              ),
             )}
           </div>
           {groupIdx < groups.length - 1 && (

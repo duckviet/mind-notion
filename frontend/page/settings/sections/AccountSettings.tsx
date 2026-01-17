@@ -110,21 +110,23 @@ const AccountSettings = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight">Account</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-2xl font-bold tracking-tight text-text-primary">
+          Account
+        </h2>
+        <p className="text-text-secondary">
           Manage your personal information and account security.
         </p>
       </div>
 
       {/* Profile Section */}
-      <Card className="border-none shadow-sm bg-white">
+      <Card className="border border-border shadow-sm bg-surface">
         <CardHeader className="pb-6">
           <div className="flex items-center gap-4">
             <div>
-              <CardTitle className="text-lg font-semibold">
+              <CardTitle className="text-lg font-semibold text-text-primary">
                 Public Profile
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-text-secondary">
                 This information will be visible to other users.
               </CardDescription>
             </div>
@@ -137,16 +139,19 @@ const AccountSettings = () => {
           >
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium">
+                <Label
+                  htmlFor="name"
+                  className="text-sm font-medium text-text-primary"
+                >
                   Full Name
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                   <Input
                     id="name"
                     {...registerProfile("name")}
                     placeholder="John Doe"
-                    className="pl-9 h-10 bg-slate-50/50 border-slate-200"
+                    className="pl-9 h-10 bg-transparent border-border"
                   />
                 </div>
                 {profileErrors.name && (
@@ -157,17 +162,20 @@ const AccountSettings = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-text-primary"
+                >
                   Email Address
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                   <Input
                     id="email"
                     type="email"
                     {...registerProfile("email")}
                     placeholder="john@example.com"
-                    className="pl-9 h-10 bg-slate-50/50 border-slate-200"
+                    className="pl-9 h-10 bg-transparent border-border"
                   />
                 </div>
                 {profileErrors.email && (
@@ -179,16 +187,19 @@ const AccountSettings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="avatar" className="text-sm font-medium">
+              <Label
+                htmlFor="avatar"
+                className="text-sm font-medium text-text-primary"
+              >
                 Avatar URL
               </Label>
               <div className="relative">
-                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                 <Input
                   id="avatar"
                   {...registerProfile("avatar")}
                   placeholder="https://example.com/avatar.jpg"
-                  className="pl-9 h-10 bg-slate-50/50 border-slate-200"
+                  className="pl-9 h-10 bg-transparent border-border"
                 />
               </div>
               {profileErrors.avatar && (
@@ -196,12 +207,12 @@ const AccountSettings = () => {
                   {profileErrors.avatar.message}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-text-muted">
                 We recommend using a square image (e.g., 400x400px).
               </p>
             </div>
 
-            <div className="flex items-center justify-end pt-4 border-t">
+            <div className="flex items-center justify-end pt-4 border-t border-border">
               <Button
                 type="submit"
                 disabled={!isDirty || updateMeMutation.isPending}
@@ -215,12 +226,12 @@ const AccountSettings = () => {
       </Card>
 
       {/* Security Section */}
-      <Card className="border-none shadow-sm bg-white">
+      <Card className="border border-border shadow-sm bg-surface">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold">
+          <CardTitle className="text-lg font-semibold text-text-primary">
             Change Password
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-text-secondary">
             Ensure your account is using a long, random password to stay secure.
           </CardDescription>
         </CardHeader>
@@ -230,22 +241,25 @@ const AccountSettings = () => {
             className="space-y-5"
           >
             <div className="space-y-2">
-              <Label htmlFor="currentPassword" className="text-sm">
+              <Label
+                htmlFor="currentPassword"
+                className="text-sm text-text-primary"
+              >
                 Current Password
               </Label>
               <div className="relative">
-                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                 <Input
                   id="currentPassword"
                   type={showCurrentPassword ? "text" : "password"}
                   {...registerPassword("currentPassword")}
                   placeholder="Enter current password"
-                  className="bg-slate-50/50 border-slate-200 pl-9 pr-10 h-10"
+                  className="bg-transparent border-border pl-9 pr-10 h-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
                 >
                   {showCurrentPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -262,22 +276,25 @@ const AccountSettings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="newPassword" className="text-sm">
+              <Label
+                htmlFor="newPassword"
+                className="text-sm text-text-primary"
+              >
                 New Password
               </Label>
               <div className="relative">
-                <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                 <Input
                   id="newPassword"
                   type={showNewPassword ? "text" : "password"}
                   {...registerPassword("newPassword")}
                   placeholder="Enter new password"
-                  className="bg-slate-50/50 border-slate-200 pl-9 pr-10 h-10"
+                  className="bg-transparent border-border pl-9 pr-10 h-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
                 >
                   {showNewPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -294,22 +311,25 @@ const AccountSettings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm">
+              <Label
+                htmlFor="confirmPassword"
+                className="text-sm text-text-primary"
+              >
                 Confirm New Password
               </Label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 border-b-2 border-muted-foreground" />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 border-b-2 border-text-muted" />
                 <Input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   {...registerPassword("confirmPassword")}
                   placeholder="Confirm new password"
-                  className="bg-slate-50/50 border-slate-200 pl-9 pr-10 h-10"
+                  className="bg-transparent border-border pl-9 pr-10 h-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-4 w-4" />

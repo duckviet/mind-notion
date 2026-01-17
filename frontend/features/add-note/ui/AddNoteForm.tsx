@@ -53,12 +53,12 @@ export default function AddNoteForm({
   return (
     <div className="relative h-full break-inside-avoid mb-6">
       {/* Overlay */}
-      {isFocus && <div className="fixed inset-0 bg-gray-300/40 z-30" />}
+      {isFocus && <div className="fixed inset-0 bg-background/40 z-30" />}
 
       {/* Card Container */}
       <Card
         className={cn(
-          "relative p-6 bg-white rounded-2xl transition-all duration-200 h-full",
+          "relative p-6 bg-surface rounded-2xl transition-all duration-200 h-full",
           isFocus ? "z-40" : "hover:shadow-lg",
         )}
       >

@@ -52,8 +52,8 @@ export default function FocusEditModalContent({
   });
 
   return (
-    <div className="flex-1 flex overflow-hidden w-full gap-4 justify-center bg-[#f0f2f5] p-2 rounded-[16px]">
-      <div className="flex-1 overflow-y-auto space-y-4 rounded-2xl bg-white w-full">
+    <div className="flex-1 flex overflow-hidden w-full gap-4 justify-center bg-background p-2 rounded-[16px]">
+      <div className="flex-1 overflow-y-auto space-y-4 rounded-2xl bg-surface border border-border w-full">
         <div className="p-6 pb-0">
           <input
             ref={titleRef}
@@ -61,7 +61,7 @@ export default function FocusEditModalContent({
             value={form.title}
             onChange={onTitleChange}
             placeholder="Your note title..."
-            className="w-full text-4xl font-semibold text-black outline-none mb-3"
+            className="w-full text-4xl font-semibold text-text-primary bg-transparent outline-none mb-3"
             maxLength={200}
           />
           {error && (
@@ -100,6 +100,7 @@ export default function FocusEditModalContent({
             size="icon"
             onClick={() => reactToPrintFn()}
             aria-label="Print note"
+            className="hover:bg-hover-overlay"
           >
             <Printer className="w-4 h-4" />
           </Button>
@@ -107,6 +108,7 @@ export default function FocusEditModalContent({
             type="button"
             variant="ghost"
             size="icon"
+            className="hover:bg-hover-overlay"
             onClick={onToggleSidebar}
             aria-label={
               isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"

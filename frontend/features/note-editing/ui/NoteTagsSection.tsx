@@ -19,7 +19,7 @@ const NoteTagsSection = ({
   return (
     <div>
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-gray-500 text-lg font-medium">
+        <span className="text-text-secondary text-lg font-medium">
           Tags ({tags.length})
         </span>
       </div>
@@ -27,7 +27,7 @@ const NoteTagsSection = ({
         {tags.map((t) => (
           <div
             key={t}
-            className="bg-gray-200 rounded px-2 py-1 text-sm cursor-pointer hover:bg-red-100"
+            className="bg-surface-elevated rounded px-2 py-1 text-sm cursor-pointer hover:bg-destructive/10"
             onClick={() => onTagRemove(t)}
           >
             #{t} <X className="w-3 h-3 inline" />
@@ -41,7 +41,7 @@ const NoteTagsSection = ({
         placeholder="New tag..."
         maxLength={50}
         disabled={disabled}
-        className="border-none bg-white focus-visible:ring-none shadow-none"
+        className="bg-transparent border border-border focus-visible:ring-1 focus-visible:ring-ring shadow-sm"
       />
     </div>
   );

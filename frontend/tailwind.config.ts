@@ -8,40 +8,88 @@ const config: Config = {
     "./shared/**/*.{js,ts,jsx,tsx,mdx}",
     "./page/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class",
   theme: {
     extend: {
       fontFamily: {
         sans: [
-          "SF Pro Display",
+          "var(--app-font-family)",
           "Inter",
+          "SF Pro Display",
           "-apple-system",
           "BlinkMacSystemFont",
           "sans-serif",
         ],
+        mono: ["SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "monospace"],
       },
       colors: {
-        // MyMind Design System Colors
+        /* Modern & Minimal Theme Colors */
+        background: "var(--background)",
+        surface: {
+          DEFAULT: "var(--surface)",
+          elevated: "var(--surface-elevated)",
+          lowered: "var(--surface-lowered)",
+        },
+        border: {
+          DEFAULT: "var(--border)",
+          subtle: "var(--border-subtle)",
+        },
+        foreground: "var(--foreground)",
+        muted: {
+          DEFAULT: "var(--muted-foreground)",
+          foreground: "var(--muted-foreground)",
+        },
+
+        /* Text Colors */
+        text: {
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
+          inverse: "var(--text-inverse)",
+        },
+
+        /* Accent Colors (Dynamic based on user preference) */
+        accent: {
+          DEFAULT: "rgb(var(--accent-rgb) / <alpha-value>)",
+          50: "var(--accent-50)",
+          100: "var(--accent-100)",
+          500: "var(--accent-500)",
+          600: "var(--accent-600)",
+          700: "var(--accent-700)",
+          foreground: "#ffffff",
+        },
+        /* Interactive State Colors */
+        hover: "var(--hover-overlay)",
+        active: "var(--active-overlay)",
+
+        /* Semantic Colors */
+        primary: {
+          DEFAULT: "var(--accent-600)",
+          foreground: "#ffffff",
+        },
+        secondary: {
+          DEFAULT: "var(--surface-elevated)",
+          foreground: "var(--text-primary)",
+        },
+        destructive: {
+          DEFAULT: "#ef4444",
+          foreground: "#ffffff",
+        },
+
+        /* Legacy colors for compatibility */
         glass: {
           bg: "rgba(255, 255, 255, 0.85)",
           border: "rgba(148, 163, 184, 0.2)",
           hover: "rgba(255, 255, 255, 0.95)",
         },
-        background: {
-          gradient: "linear-gradient(135deg, #f0f4ff 0%, #e2e8ff 100%)",
-          primary: "#f0f4ff",
-          secondary: "#e2e8ff",
-        },
-        text: {
-          primary: "#1e293b",
-          secondary: "#64748b",
-          muted: "#94a3b8",
-        },
-        accent: {
-          blue: "#667eea",
-          purple: "#764ba2",
-        },
       },
       boxShadow: {
+        sm: "var(--shadow-sm)",
+        DEFAULT: "var(--shadow-md)",
+        md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
+
+        /* Glass effects */
         "glass-sm": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
         "glass-md":
           "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06)",
@@ -50,6 +98,9 @@ const config: Config = {
         "glass-xl":
           "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
         "glass-hover": "0 8px 32px rgba(102, 126, 234, 0.15)",
+
+        /* Focus ring */
+        focus: "var(--focus-ring)",
       },
       backdropBlur: {
         glass: "12px",
@@ -58,6 +109,9 @@ const config: Config = {
       borderRadius: {
         glass: "12px",
         search: "24px",
+        lg: "12px",
+        md: "8px",
+        sm: "6px",
       },
       animation: {
         "card-hover": "cardHover 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
@@ -65,6 +119,7 @@ const config: Config = {
         "fade-in": "fadeIn 0.3s ease-in-out",
         "slide-up": "slideUp 0.3s ease-out",
         "scale-in": "scaleIn 0.2s ease-out",
+        in: "fadeIn 0.5s ease-in-out",
       },
       keyframes: {
         cardHover: {
@@ -95,9 +150,9 @@ const config: Config = {
       typography: {
         DEFAULT: {
           css: {
-            "--tw-prose-headings": "#1e293b",
-            "--tw-prose-body": "#64748b",
-            "--tw-prose-links": "#667eea",
+            "--tw-prose-headings": "var(--text-primary)",
+            "--tw-prose-body": "var(--text-secondary)",
+            "--tw-prose-links": "var(--accent-600)",
           },
         },
       },

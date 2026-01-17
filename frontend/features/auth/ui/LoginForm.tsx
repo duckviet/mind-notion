@@ -56,12 +56,12 @@ export const LoginForm = ({
   };
 
   return (
-    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl shadow-slate-200/50">
+    <Card className="w-full backdrop-blur-sm bg-surface/80 border-0 shadow-xl shadow-shadow-lg">
       <CardHeader className="space-y-1 pb-6">
-        <CardTitle className="text-2xl font-bold text-center text-slate-800">
+        <CardTitle className="text-2xl font-bold text-center text-text-primary">
           Welcome Back
         </CardTitle>
-        <CardDescription className="text-center text-slate-500">
+        <CardDescription className="text-center text-text-secondary">
           Enter your credentials to access your account
         </CardDescription>
       </CardHeader>
@@ -82,19 +82,21 @@ export const LoginForm = ({
           <div className="space-y-2">
             <Label
               htmlFor="username"
-              className="text-sm font-medium text-slate-700"
+              className="text-sm font-medium text-text-primary"
             >
               Username or Email
             </Label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
               <Input
                 id="username"
                 type="text"
                 placeholder="Enter your username or email"
                 {...register("username")}
-                className={`pl-10 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all ${
-                  errors.username ? "border-red-400 focus:border-red-500" : ""
+                className={`pl-10 h-11 bg-surface-elevated border-border focus:bg-surface focus:border-accent focus:ring-accent/20 transition-all ${
+                  errors.username
+                    ? "border-destructive focus:border-destructive"
+                    : ""
                 }`}
               />
             </div>
@@ -109,25 +111,27 @@ export const LoginForm = ({
           <div className="space-y-2">
             <Label
               htmlFor="password"
-              className="text-sm font-medium text-slate-700"
+              className="text-sm font-medium text-text-primary"
             >
               Password
             </Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 {...register("password")}
-                className={`pl-10 pr-10 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all ${
-                  errors.password ? "border-red-400 focus:border-red-500" : ""
+                className={`pl-10 pr-10 h-11 bg-surface-elevated border-border focus:bg-surface focus:border-accent focus:ring-accent/20 transition-all ${
+                  errors.password
+                    ? "border-destructive focus:border-destructive"
+                    : ""
                 }`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -137,8 +141,8 @@ export const LoginForm = ({
               </button>
             </div>
             {errors.password && (
-              <p className="text-sm text-red-500 flex items-center gap-1">
-                <span className="inline-block w-1 h-1 bg-red-500 rounded-full" />
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <span className="inline-block w-1 h-1 bg-destructive rounded-full" />
                 {errors.password.message}
               </p>
             )}
@@ -147,7 +151,7 @@ export const LoginForm = ({
           <Button
             type="submit"
             variant="default"
-            className="w-full h-11 bg-[#306af0] text-white border-slate-200 hover:bg-slate-100 hover:border-slate-300 hover:text-slate-700 cursor-pointer transition-all"
+            className="w-full h-11 bg-accent text-white border-transparent hover:bg-accent-600 hover:text-white cursor-pointer transition-all"
             disabled={loginMutation.isPending}
           >
             {loginMutation.isPending ? (
@@ -162,10 +166,10 @@ export const LoginForm = ({
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
+              <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-400">
+              <span className="bg-surface px-2 text-text-muted">
                 New to our platform?
               </span>
             </div>
@@ -175,7 +179,7 @@ export const LoginForm = ({
             type="button"
             variant="outline"
             onClick={onSwitchToRegister}
-            className="w-full h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 transition-all"
+            className="w-full h-11 border-border hover:bg-surface-elevated hover:border-border text-text-primary transition-all"
           >
             Create an account
           </Button>

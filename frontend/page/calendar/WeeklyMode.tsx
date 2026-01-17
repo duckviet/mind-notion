@@ -161,10 +161,10 @@ const DayMode = () => {
 
       const findDayByTaskId = (
         taskId: string,
-        columns: Record<DayName, DayTask[]>
+        columns: Record<DayName, DayTask[]>,
       ): DayName | undefined =>
         (DAYS as readonly DayName[]).find((day) =>
-          columns[day].some((task) => task.id.toString() === taskId)
+          columns[day].some((task) => task.id.toString() === taskId),
         );
 
       const getZoneId = (day: DayName) => `day-zone-${day}`;
@@ -176,14 +176,14 @@ const DayMode = () => {
 
       const sourceTasks = columns[sourceDay];
       const fromIndex = sourceTasks.findIndex(
-        (task) => task.id.toString() === activeId
+        (task) => task.id.toString() === activeId,
       );
       if (fromIndex === -1) {
         return;
       }
 
       const zoneTarget = (DAYS as readonly DayName[]).find(
-        (day) => getZoneId(day) === overId
+        (day) => getZoneId(day) === overId,
       );
 
       const destinationDay =
@@ -259,18 +259,16 @@ const DayMode = () => {
           originalStartTime.getHours(),
           originalStartTime.getMinutes(),
           originalStartTime.getSeconds(),
-          originalStartTime.getMilliseconds()
+          originalStartTime.getMilliseconds(),
         );
 
-        const newEndTime = originalEndTime
-          ? new Date(targetDate)
-          : undefined;
+        const newEndTime = originalEndTime ? new Date(targetDate) : undefined;
         if (newEndTime && originalEndTime) {
           newEndTime.setHours(
             originalEndTime.getHours(),
             originalEndTime.getMinutes(),
             originalEndTime.getSeconds(),
-            originalEndTime.getMilliseconds()
+            originalEndTime.getMilliseconds(),
           );
         }
 
@@ -294,7 +292,7 @@ const DayMode = () => {
         }
       }
     },
-    [columns, weekRange.start_time, updateEvent]
+    [columns, weekRange.start_time, updateEvent],
   );
 
   const getTaskById = useCallback(
@@ -303,16 +301,16 @@ const DayMode = () => {
       const taskId = id.toString();
       const findDayByTaskId = (
         taskId: string,
-        columns: Record<DayName, DayTask[]>
+        columns: Record<DayName, DayTask[]>,
       ): DayName | undefined =>
         (DAYS as readonly DayName[]).find((day) =>
-          columns[day].some((task) => task.id.toString() === taskId)
+          columns[day].some((task) => task.id.toString() === taskId),
         );
       const day = findDayByTaskId(taskId, columns);
       if (!day) return null;
       return columns[day].find((task) => task.id.toString() === taskId) ?? null;
     },
-    [columns]
+    [columns],
   );
 
   const renderOverlay = useCallback(
@@ -321,7 +319,7 @@ const DayMode = () => {
       if (!task) return null;
       return <TaskCard task={task} />;
     },
-    [getTaskById]
+    [getTaskById],
   );
 
   const getZoneId = (day: DayName) => `day-zone-${day}`;
@@ -396,7 +394,7 @@ const DayMode = () => {
         const hasOverlap = column.some(
           (existingEvent) =>
             event.startTime < existingEvent.endTime &&
-            event.endTime > existingEvent.startTime
+            event.endTime > existingEvent.startTime,
         );
         if (!hasOverlap) {
           column.push(event);
@@ -441,10 +439,10 @@ const DayMode = () => {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header with Create button */}
-      <div className="flex-shrink-0 px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Week</h2>
+      <div className="flex-shrink-0 px-6 py-4 bg-surface border-b border-border flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-text-primary">Week</h2>
         <button
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-600 transition-colors"
           onClick={openCreate}
         >
           Create Event
@@ -455,15 +453,19 @@ const DayMode = () => {
         onDragEnd={handleDragEnd}
         renderOverlay={renderOverlay}
       >
-        <div className="flex flex-1 overflow-hidden border-t border-gray-200">
+        <div className="flex flex-1 overflow-hidden border-t border-border">
           {/* Time column */}
-          <div className="flex-shrink-0 w-20 bg-white border-r border-gray-200">
-            <div className="h-16 border-b border-gray-200" /> {/* Spacer for day headers */}
-            <div className="relative" style={{ height: `${HOUR_HEIGHT * 24}px` }}>
+          <div className="flex-shrink-0 w-20 bg-surface border-r border-border">
+            <div className="h-16 border-b border-border" />{" "}
+            {/* Spacer for day headers */}
+            <div
+              className="relative"
+              style={{ height: `${HOUR_HEIGHT * 24}px` }}
+            >
               {TIME_IN_DAYS.map((time, idx) => (
                 <div
                   key={time}
-                  className="absolute text-xs text-gray-500 text-right pr-3 w-full"
+                  className="absolute text-xs text-text-secondary text-right pr-3 w-full"
                   style={{ top: `${idx * HOUR_HEIGHT - 8}px` }}
                 >
                   {time}
@@ -473,13 +475,13 @@ const DayMode = () => {
           </div>
 
           {/* Calendar grid */}
-          <div className="flex-1 overflow-auto bg-white">
+          <div className="flex-1 overflow-auto bg-surface">
             {/* Day headers */}
-            <div className="sticky top-0 z-30 bg-white border-b border-gray-200 grid grid-cols-7">
+            <div className="sticky top-0 z-30 bg-surface border-b border-border grid grid-cols-7">
               {DAYS.map((day) => (
                 <div
                   key={day}
-                  className="h-16 flex items-center justify-center font-semibold text-sm capitalize border-l first:border-l-0 border-gray-200"
+                  className="h-16 flex items-center justify-center font-semibold text-sm capitalize border-l first:border-l-0 border-border"
                 >
                   {day}
                 </div>
@@ -487,12 +489,15 @@ const DayMode = () => {
             </div>
 
             {/* Time grid with events */}
-            <div className="relative grid grid-cols-7" style={{ height: `${HOUR_HEIGHT * 24}px` }}>
+            <div
+              className="relative grid grid-cols-7"
+              style={{ height: `${HOUR_HEIGHT * 24}px` }}
+            >
               {/* Hour grid lines */}
               {TIME_IN_DAYS.map((time, idx) => (
                 <div
                   key={`grid-${time}`}
-                  className="col-span-7 border-t border-gray-200 absolute w-full pointer-events-none"
+                  className="col-span-7 border-t border-border absolute w-full pointer-events-none"
                   style={{ top: `${idx * HOUR_HEIGHT}px` }}
                 />
               ))}
@@ -508,8 +513,8 @@ const DayMode = () => {
                     style={{ top: `${position}px` }}
                   >
                     <div className="relative">
-                      <div className="absolute -left-1 w-3 h-3 -mt-1.5 bg-red-500 rounded-full border-2 border-white" />
-                      <div className="border-t-2 border-red-500" />
+                      <div className="absolute -left-1 w-3 h-3 -mt-1.5 bg-destructive rounded-full border-2 border-surface" />
+                      <div className="border-t-2 border-destructive" />
                     </div>
                   </div>
                 );
@@ -522,7 +527,7 @@ const DayMode = () => {
                 return (
                   <div
                     key={day}
-                    className="relative border-l first:border-l-0 border-gray-200"
+                    className="relative border-l first:border-l-0 border-border"
                     style={{ height: `${HOUR_HEIGHT * 24}px` }}
                   >
                     <SortableContext
@@ -531,7 +536,7 @@ const DayMode = () => {
                       <DroppableZone
                         id={getZoneId(day)}
                         className="absolute inset-0"
-                        activeClassName="bg-blue-50"
+                        activeClassName="bg-accent/10"
                       >
                         {/* Positioned events */}
                         {tasks.map((task) => {
@@ -540,7 +545,8 @@ const DayMode = () => {
 
                           const { top, height, columnIndex, totalColumns } =
                             layout;
-                          const width = totalColumns > 1 ? 100 / totalColumns : 100;
+                          const width =
+                            totalColumns > 1 ? 100 / totalColumns : 100;
                           const left = columnIndex * width;
 
                           return (
@@ -552,12 +558,12 @@ const DayMode = () => {
                                 height: `${height}px`,
                                 left: `${left}%`,
                                 width: `${width}%`,
-                                padding: '0 2px',
+                                padding: "0 2px",
                               }}
                             >
                               <SortableItem
                                 id={task.id.toString()}
-                                style={{ height: '100%' }}
+                                style={{ height: "100%" }}
                               >
                                 <TaskCard
                                   task={task}

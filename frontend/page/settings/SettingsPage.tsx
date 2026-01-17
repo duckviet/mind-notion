@@ -34,14 +34,14 @@ const SettingsPage = () => {
   return (
     <div className="flex h-full min-h-[calc(100vh-4rem)] w-full">
       {/* Mobile Tabs (Visible only on small screens) */}
-      <div className="md:hidden w-full border-b   p-4">
+      <div className="md:hidden w-full border-b border-border p-4 bg-surface">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/50">
+          <TabsList className="grid w-full grid-cols-3 h-auto p-1.5 bg-background border border-border-subtle">
             {menuItems.slice(0, 3).map((item) => (
               <TabsTrigger
                 key={item.id}
                 value={item.id}
-                className="gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                className="gap-1.5 data-[state=active]:bg-accent data-[state=active]:text-white data-[state=active]:shadow-sm rounded-lg"
               >
                 <item.icon className="h-4 w-4" />
                 <span className="text-xs">{item.label}</span>
@@ -49,16 +49,16 @@ const SettingsPage = () => {
             ))}
           </TabsList>
           {/* For mobile overflow, simplified logic */}
-          <div className="flex gap-2 mt-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex gap-2 mt-3 overflow-x-auto pb-2 scrollbar-hide">
             {menuItems.slice(3).map((item) => (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap",
+                  "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all whitespace-nowrap",
                   activeTab === item.id
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-muted text-muted-foreground border-transparent hover:bg-muted/80"
+                    ? "bg-accent text-white border-accent"
+                    : "bg-surface text-text-secondary border-border hover:border-accent hover:text-accent",
                 )}
               >
                 <item.icon className="h-3 w-3" />
@@ -83,8 +83,8 @@ const SettingsPage = () => {
 
         {/* Navigation Sidebar (right, sticky) */}
         <aside className="w-72 sticky top-12 right-6 self-start">
-          <Card className="border-none shadow-sm bg-white/80">
-            <CardHeader className="text-2xl font-bold tracking-tight text-foreground">
+          <Card className="border border-border shadow-md bg-surface">
+            <CardHeader className="text-2xl font-bold tracking-tight text-text-primary">
               Settings
             </CardHeader>
             <CardContent className="px-3">
@@ -97,24 +97,24 @@ const SettingsPage = () => {
                       key={item.id}
                       onClick={() => setActiveTab(item.id)}
                       className={cn(
-                        "group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+                        "group relative flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                         isActive
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                          ? "text-text-primary"
+                          : "text-text-muted hover:text-text-primary",
                       )}
                     >
+                      {isActive && (
+                        <div className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 bg-primary rounded-e-full" />
+                      )}
                       <Icon
                         className={cn(
                           "h-4 w-4",
                           isActive
-                            ? "text-primary-foreground"
-                            : "text-muted-foreground group-hover:text-accent-foreground"
+                            ? "text-text-primary"
+                            : "text-text-muted group-hover:text-text-primary",
                         )}
                       />
                       {item.label}
-                      {isActive && (
-                        <div className="absolute left-0 top-1/2 h-4 w-1 -translate-y-1/2 rounded-r-full bg-primary-foreground/20" />
-                      )}
                     </button>
                   );
                 })}

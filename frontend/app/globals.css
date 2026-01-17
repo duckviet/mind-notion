@@ -1,113 +1,317 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* ============================================
+   THEME SYSTEM - Modern & Minimal Design
+   ============================================ */
+
 :root {
+  /* Typography */
   --app-font-family:
     "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
 
-  /* Light Mode (Khớp với hình) */
-  --background: #eef0f3; /* Màu nền xám nhạt như trong ảnh */
-  --surface: #ffffff; /* Màu các card trắng */
-  --border: #e2e8f0; /* Border rất mảnh */
-  --foreground: #1a202c; /* Chữ chính */
+  /* Light Mode - Modern & Clean */
+  --background: #f0f2f5;
+  --surface: #ffffff;
+  --surface-elevated: #d4dae6;
+  --surface-lowered: #d5d7dc;
+  --border: #e5e7eb;
+  --border-subtle: #f3f4f6;
+  --foreground: #0f172a;
   --muted-foreground: #64748b;
 
-  /* Glassmorphism dựa trên hình */
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-hover: rgba(255, 255, 255, 0.9);
+  /* Shadows - Soft & Subtle */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
 
-  /* Accent (Màu xanh nhấn nhẹ) */
-  --accent-100: #e0e7ff;
+  /* Text Colors */
+  --text-primary: #0f172a;
+  --text-secondary: #384353;
+  --text-muted: #7a8492;
+  --text-inverse: #ffffff;
+
+  /* Accent Colors - Blue (Default) */
+  --accent-50: #eff6ff;
+  --accent-100: #dbeafe;
   --accent-500: #3b82f6;
   --accent-600: #2563eb;
+  --accent-700: #1d4ed8;
 
-  --text-primary: #1e293b;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  /* Interactive States */
+  --hover-overlay: rgba(89, 89, 89, 0.301);
+  --active-overlay: rgba(89, 89, 89, 0.232);
+  --focus-ring: 0 0 0 3px rgba(59, 130, 246, 0);
 
   color-scheme: light;
 }
 
+/* Dark Mode - Modern & Refined (Slack/Discord Style) */
 html.dark {
-  /* Dark Mode phong cách sâu sắc (Deep Navy/Black) */
-  --background: #0f172a; /* Xanh đen sâu */
-  --surface: #1e293b; /* Card trong darkmode */
-  --border: #334155;
-  --foreground: #f1f5f9;
-  --muted-foreground: #94a3b8;
+  --background: #0c0c0c;
+  --surface: #292929;
+  --surface-elevated: #1a1b1f;
+  --surface-lowered: #c9c9c9;
+  --border: #3a3d4a;
+  --border-subtle: #525869;
+  --foreground: #f8f9fa;
+  --muted-foreground: #b0b3ba;
 
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  /* Softer shadows for dark mode */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md:
+    0 4px 8px -2px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg:
+    0 10px 20px -5px rgba(0, 0, 0, 0.6), 0 4px 8px -2px rgba(0, 0, 0, 0.5);
 
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --text-inverse: #1a1d29;
+
+  /* Vibrant accents for dark mode */
+  --accent-50: #2d3139;
+  --accent-100: #3a3f4a;
+  --accent-500: #4a9eff;
+  --accent-600: #3b82f6;
+  --accent-700: #2563eb;
+
+  --hover-overlay: rgba(95, 95, 95, 0.232);
+  --active-overlay: rgba(255, 255, 255, 0.12);
+  --focus-ring: 0 0 0 3px rgba(74, 158, 255, 0);
 
   color-scheme: dark;
 }
 
+/* Black Mode - Soft OLED with Better Readability */
 html.black {
-  --background: #050505;
-  --surface: #0a0a0a;
-  --border: #111827;
-  --foreground: #e5e7eb;
-  --muted-foreground: #9ca3af;
-  --text-primary: #f8fafc;
+  --background: #0d0d0f;
+  --surface: #1a1b1e;
+  --surface-elevated: #242529;
+  --surface-lowered: #d5d7dc;
+  --border: #35363a;
+  --border-subtle: #1f2023;
+  --foreground: #ffffff;
+  --muted-foreground: #b4b5b9;
+
+  /* Subtle light shadows for black mode */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.6);
+  --shadow-md:
+    0 4px 8px -2px rgba(0, 0, 0, 0.7), 0 2px 4px -1px rgba(0, 0, 0, 0.6);
+  --shadow-lg:
+    0 10px 20px -5px rgba(0, 0, 0, 0.8), 0 4px 8px -2px rgba(0, 0, 0, 0.7);
+
+  --text-primary: #ffffff;
   --text-secondary: #e5e7eb;
   --text-muted: #9ca3af;
+  --text-inverse: #0d0d0f;
+
+  --accent-50: #1a1b1e;
+  --accent-100: #2a2b2e;
+  --accent-500: #4a9eff;
+  --accent-600: #3b82f6;
+  --accent-700: #2563eb;
+
+  --hover-overlay: rgba(255, 255, 255, 0.1);
+  --active-overlay: rgba(255, 255, 255, 0.15);
+  --focus-ring: 0 0 0 3px rgba(74, 158, 255, 0.35);
+
   color-scheme: dark;
 }
 
+/* ============================================
+   ACCENT COLOR VARIANTS
+   ============================================ */
+
+/* Neutral/Gray Accent */
+[data-accent="neutral"] {
+  --accent-50: #f9fafb;
+  --accent-100: #f3f4f6;
+  --accent-500: #6b7280;
+  --accent-600: #4b5563;
+  --accent-700: #374151;
+}
+
+html.dark[data-accent="neutral"],
+html.black[data-accent="neutral"] {
+  --accent-50: #313439;
+  --accent-100: #3f4247;
+  --accent-500: #9ca3af;
+  --accent-600: #6b7280;
+  --accent-700: #4b5563;
+}
+
+/* Blue Accent (Default) */
+[data-accent="blue"] {
+  --accent-50: #eff6ff;
+  --accent-100: #dbeafe;
+  --accent-500: #3b82f6;
+  --accent-600: #2563eb;
+  --accent-700: #1d4ed8;
+}
+
+html.dark[data-accent="blue"],
+html.black[data-accent="blue"] {
+  --accent-50: #2d3139;
+  --accent-100: #3a3f4a;
+  --accent-500: #4a9eff;
+  --accent-600: #3b82f6;
+  --accent-700: #2563eb;
+}
+
+/* Purple Accent */
 [data-accent="purple"] {
-  --accent-100: #ede9fe;
-  --accent-500: #7c3aed;
-  --accent-600: #6d28d9;
+  --accent-50: #faf5ff;
+  --accent-100: #f3e8ff;
+  --accent-500: #a855f7;
+  --accent-600: #9333ea;
+  --accent-700: #7e22ce;
 }
 
+html.dark[data-accent="purple"],
+html.black[data-accent="purple"] {
+  --accent-50: #2d2538;
+  --accent-100: #3a2f47;
+  --accent-500: #c084fc;
+  --accent-600: #a855f7;
+  --accent-700: #9333ea;
+}
+
+/* Green Accent */
 [data-accent="green"] {
+  --accent-50: #f0fdf4;
   --accent-100: #dcfce7;
-  --accent-500: #16a34a;
-  --accent-600: #15803d;
+  --accent-500: #22c55e;
+  --accent-600: #16a34a;
+  --accent-700: #15803d;
 }
 
-[data-accent="red"] {
-  --accent-100: #fee2e2;
-  --accent-500: #dc2626;
-  --accent-600: #b91c1c;
+html.dark[data-accent="green"],
+html.black[data-accent="green"] {
+  --accent-50: #1f2d26;
+  --accent-100: #2a3d33;
+  --accent-500: #34d399;
+  --accent-600: #10b981;
+  --accent-700: #059669;
 }
 
-[data-accent="orange"] {
-  --accent-100: #ffedd5;
-  --accent-500: #ea580c;
-  --accent-600: #c2410c;
-}
+/* ============================================
+   TAILWIND THEME INTEGRATION
+   ============================================ */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-lowered: var(--surface-lowered);
+
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+
+  --color-accent: var(--accent-600);
+  --color-accent-50: var(--accent-50);
+  --color-accent-100: var(--accent-100);
+  --color-accent-500: var(--accent-500);
+  --color-accent-600: var(--accent-600);
+  --color-accent-700: var(--accent-700);
+
+  --color-primary: var(--accent-600);
+  --color-primary-foreground: #ffffff;
+
+  --color-hover-overlay: var(--hover-overlay);
+  --color-active-overlay: var(--active-overlay);
+
   --font-sans: var(--app-font-family);
   --font-mono: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
 }
 
-/* MyMind Background Gradient */
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
 body {
   background: var(--background);
   background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--app-font-family);
   min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle gradient for light mode only */
+/* html:not(.dark):not(.black) body {
+  background: linear-gradient(to bottom, #f8f9fb 0%, #ffffff 100%);
+} */
+
+/* Density variations */
+[data-density="compact"] body {
+  font-size: 0.925rem;
+  letter-spacing: -0.01em;
   line-height: 1.5;
 }
 
-html:not(.dark):not(.black) body {
-  background: linear-gradient(135deg, #f0f2f5 50%, #f0f2f5 100%);
+[data-density="comfortable"] body {
+  font-size: 1rem;
+  line-height: 1.7;
 }
 
-[data-density="compact"] body {
-  font-size: 0.96rem;
-  letter-spacing: -0.003em;
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin: 0;
 }
+
+h1 {
+  font-size: 2.25rem;
+}
+h2 {
+  font-size: 1.875rem;
+}
+h3 {
+  font-size: 1.5rem;
+}
+h4 {
+  font-size: 1.25rem;
+}
+h5 {
+  font-size: 1.125rem;
+}
+h6 {
+  font-size: 1rem;
+}
+
+p,
+span,
+div {
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   INTERACTIVE ELEMENTS
+   ============================================ */
 
 a,
 button,
@@ -119,54 +323,91 @@ select {
 
 a {
   color: var(--accent-600);
+  text-decoration: none;
+  transition: color 0.15s ease;
 }
 
-th {
-  border: 1px solid #dbdbd1;
+a:hover {
+  color: var(--accent-700);
 }
 
-/* Glass morphism utility classes */
-.glass-bg {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--glass-border);
-}
-
-.glass-hover {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-hover:hover {
-  background: var(--glass-hover);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15);
-}
-
-/* Typography improvements */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.025em;
-  color: var(--text-primary);
-}
-
-p,
-span,
-div {
-  line-height: 1.5;
-  color: var(--text-secondary);
+button {
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 /* Focus styles for accessibility */
-.focus-ring {
-  outline: 2px solid var(--accent-blue);
-  outline-offset: 2px;
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
+
+.focus-ring {
+  box-shadow: var(--focus-ring);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Modern card styles */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-elevated {
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-md);
+}
+
+/* Glassmorphism effects (subtle) */
+.glass-bg {
+  background: var(--surface);
+  backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--border-subtle);
+}
+
+html.dark .glass-bg {
+  background: rgba(35, 37, 48, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.black .glass-bg {
+  background: rgba(26, 27, 30, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Hover states */
+.hover-lift {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-bg:hover {
+  background: var(--hover-overlay);
+}
+
+.active-bg:active {
+  background: var(--active-overlay);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
@@ -184,57 +425,98 @@ div {
   }
 }
 
-/* Custom scrollbar */
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--accent-600);
+  color: var(--text-inverse);
+  padding: 8px 16px;
+  z-index: 100;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR - Modern & Minimal
+   ============================================ */
+
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
-  border-radius: 4px;
+  background: var(--border);
+  border-radius: 5px;
+  border: 2px solid var(--background);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
+  background: var(--muted-foreground);
 }
 
+html.dark ::-webkit-scrollbar-thumb,
+html.black ::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border: 2px solid var(--background);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* ============================================
+   TIPTAP EDITOR STYLES
+   ============================================ */
+
+/* Code blocks */
 .ProseMirror .react-renderer.node-codeBlock {
   border-radius: 8px;
+  background-color: #1e1e2e !important;
+  overflow: hidden;
 }
 
-.ProseMirror .react-renderer.node-codeBlock {
-  background-color: #121822 !important;
+html.dark .ProseMirror .react-renderer.node-codeBlock,
+html.black .ProseMirror .react-renderer.node-codeBlock {
+  background-color: #0d1117 !important;
 }
 
+/* Table wrapper */
 .table-wrapper {
-  /* Cho phép nút Delete hiển thị tràn ra ngoài lề trên của wrapper */
   overflow: visible !important;
+  margin: 1.5rem 0;
 }
-/* Chỉ cho phép cuộn ngang ở thẻ table thực tế nếu cần */
+
 .table-wrapper table {
   display: block;
   overflow-x: auto;
 }
 
-/* Tiptap tables and placeholder */
+/* Tables */
 .tiptap.ProseMirror table {
   margin: 1.5rem 0;
   border-collapse: collapse;
   table-layout: fixed;
   width: 100%;
-  /* overflow: hidden; */
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .tiptap.ProseMirror td,
 .tiptap.ProseMirror th {
   min-width: 1em;
-  border: 1px solid #dbdbd1;
-  padding: 8px 12px;
+  border: 1px solid var(--border);
+  padding: 10px 14px;
   vertical-align: top;
   box-sizing: border-box;
   position: relative;
@@ -243,27 +525,39 @@ div {
 .tiptap.ProseMirror th {
   font-weight: 600;
   text-align: left;
-  background-color: #f9fafb;
+  background-color: var(--accent-50);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--accent-100);
 }
 
+html.dark .tiptap.ProseMirror th,
+html.black .tiptap.ProseMirror th {
+  background-color: var(--surface-elevated);
+  border-bottom-color: var(--border);
+}
+
+/* Placeholder */
 .tiptap p.is-editor-empty:first-child::before {
-  color: #adb5bd;
+  color: var(--text-muted);
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
+  font-style: italic;
 }
 
+/* Column resize handle */
 .tiptap.ProseMirror .column-resize-handle {
   position: absolute;
   right: -2px;
   top: 0;
   bottom: 0;
   width: 4px;
-  background-color: #3b82f6;
+  background-color: var(--accent-600);
   pointer-events: none;
 }
 
+/* Selected cell */
 .tiptap.ProseMirror .selectedCell:after {
   z-index: 2;
   content: "";
@@ -272,20 +566,25 @@ div {
   right: 0;
   top: 0;
   bottom: 0;
-  background: rgba(200, 200, 255, 0.4);
+  background: var(--accent-100);
+  opacity: 0.2;
   pointer-events: none;
 }
 
-/* Split View Extension Styles */
+/* ============================================
+   SPLIT VIEW EXTENSION
+   ============================================ */
+
 .split-view-wrapper {
   position: relative;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .split-view-container {
   position: relative;
 }
 
-/* Target the actual DOM structure with the wrapper div */
 .split-view-columns {
   display: block !important;
   width: 100% !important;
@@ -296,19 +595,22 @@ div {
   flex-direction: row !important;
   width: 100% !important;
   align-items: stretch;
+  gap: 1px;
+  background: var(--border);
 }
 
-/* Column styling - using CSS custom properties from parent */
 .split-view-column {
-  min-height: 80px;
+  min-height: 120px;
   height: 100%;
-  padding: 12px;
+  padding: 16px;
   overflow: auto;
   flex-shrink: 0;
+  background: var(--surface);
 }
 
 .split-view-column:first-child {
   width: var(--split-left-width, 50%);
+  border-right: 1px solid var(--border);
 }
 
 .split-view-column:last-child {
@@ -318,22 +620,23 @@ div {
 /* Column content */
 .split-view-column p {
   margin: 0;
+  color: var(--text-secondary);
 }
 
 .split-view-column p:not(:last-child) {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .split-view-column img {
   max-width: 100%;
   height: auto;
-  border-radius: 0.375rem;
+  border-radius: 6px;
 }
 
-/* Placeholder styling */
+/* Placeholder */
 .split-view-column > p.is-empty:first-child::before {
   content: "Type here...";
-  color: #9ca3af;
+  color: var(--text-muted);
   font-style: italic;
   pointer-events: none;
   float: left;
@@ -341,6 +644,14 @@ div {
 }
 
 /* Resizer hover effect */
+.split-view-resizer {
+  transition: all 0.2s ease;
+}
+
+.split-view-resizer:hover {
+  background: var(--accent-100);
+}
+
 .split-view-resizer:hover .h-12 {
-  transform: scaleY(1.15);
+  transform: scaleY(1.2);
 }

@@ -30,7 +30,7 @@ function YearDays({
   const [currentMonth, setCurrentMonth] = useState(today.month());
   const [calendarMode, setCalendarMode] = useState<CalendarMode>("weekly");
   const [currentStartWeekDate, setCurrentStartWeekDate] = useState<Dayjs>(
-    today.startOf("week").add(1, "day")
+    today.startOf("week").add(1, "day"),
   );
 
   const todayRef = useRef<HTMLDivElement>(null);
@@ -43,7 +43,7 @@ function YearDays({
 
   const allDays = useMemo(
     () => Array.from({ length: totalDays }, (_, i) => startDate.add(i, "day")),
-    [startDate, totalDays]
+    [startDate, totalDays],
   );
 
   const calendarByMonth = useMemo(() => {
@@ -73,7 +73,7 @@ function YearDays({
     });
 
     return MONTHS.map(
-      (month) => [month, grouped[month] ?? []] as [string, CalendarDay[]]
+      (month) => [month, grouped[month] ?? []] as [string, CalendarDay[]],
     );
   }, [allDays, calendarByMonth]);
 
@@ -133,7 +133,7 @@ function YearDays({
     const numDays = endDay.diff(startDay, "day");
     if (numDays < 0) return [];
     return Array.from({ length: numDays + 1 }, (_, i) =>
-      startDay.add(i, "day")
+      startDay.add(i, "day"),
     );
   };
 
@@ -173,26 +173,26 @@ function YearDays({
       <div className="flex items-center justify-between w-full px-6">
         <div className="flex items-center gap-2">
           <Button
-            className="bg-white cursor-pointer hover:opacity-70"
+            className="bg-surface cursor-pointer hover:bg-accent-100 text-primary"
             onClick={handlePrevButton}
           >
             <ArrowLeftIcon className="w-4 h-4" />
           </Button>
           <Button
-            className="bg-white cursor-pointer hover:opacity-70"
+            className="bg-surface cursor-pointer hover:bg-accent-100 text-primary"
             onClick={handleNextButton}
           >
             <ArrowRightIcon className="w-4 h-4" />
           </Button>
           <Button
-            className="bg-white cursor-pointer hover:opacity-70"
+            className="bg-surface cursor-pointer hover:bg-accent-100 text-primary"
             onClick={handleTodayClick}
           >
             Today
           </Button>
         </div>
 
-        <h3 className="text-center font-bold text-4xl">
+        <h3 className="text-center font-bold text-4xl text-primary">
           {calendarMode === "monthly" && `${MONTHS[currentMonth]}, `}
           {calendarMode === "weekly" && weekRange.length
             ? `${weekRange[0].format("DD/MM")} - ${weekRange[weekRange.length - 1].format("DD/MM")}, `
@@ -204,10 +204,8 @@ function YearDays({
           <Button
             onClick={() => setCalendarMode("yearly")}
             className={cn(
-              "bg-white cursor-pointer hover:opacity-70",
-              calendarMode === "yearly"
-                ? "bg-foreground/50 text-white"
-                : "bg-white"
+              "bg-surface cursor-pointer hover:bg-hover-overlay text-primary",
+              calendarMode === "yearly" ? "bg-accent-500/20 " : "bg-surface",
             )}
           >
             Yearly
@@ -215,10 +213,8 @@ function YearDays({
           <Button
             onClick={() => setCalendarMode("monthly")}
             className={cn(
-              "bg-white cursor-pointer hover:opacity-70",
-              calendarMode === "monthly"
-                ? "bg-foreground/50 text-white"
-                : "bg-white"
+              "bg-surface cursor-pointer hover:bg-hover-overlay text-primary",
+              calendarMode === "monthly" ? "bg-accent-500/20 " : "bg-surface",
             )}
           >
             Monthly
@@ -226,10 +222,8 @@ function YearDays({
           <Button
             onClick={() => setCalendarMode("weekly")}
             className={cn(
-              "bg-white cursor-pointer hover:opacity-70",
-              calendarMode === "weekly"
-                ? "bg-foreground/50 text-white"
-                : "bg-white"
+              "bg-surface cursor-pointer hover:bg-hover-overlay text-primary",
+              calendarMode === "weekly" ? "bg-accent-500/20 " : "bg-surface",
             )}
           >
             Weekly

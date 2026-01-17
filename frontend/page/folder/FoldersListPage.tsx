@@ -19,7 +19,7 @@ import { toast } from "sonner";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
-    className={`animate-pulse rounded-md bg-slate-200/80 ${className ?? ""}`}
+    className={`animate-pulse rounded-md bg-surface-elevated/50 ${className ?? ""}`}
   />
 );
 
@@ -95,21 +95,21 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
         console.error("Failed to move folder:", error);
       }
     },
-    [refetch]
+    [refetch],
   );
 
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-text-primary mb-2">
           Failed to load folders
         </h2>
-        <p className="text-gray-500 mb-4">
+        <p className="text-text-secondary mb-4">
           Something went wrong. Please try again.
         </p>
         <button
           onClick={() => refetch()}
-          className="text-blue-600 hover:text-blue-700"
+          className="text-accent hover:text-accent-600"
         >
           Retry
         </button>
@@ -123,11 +123,11 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Folders</h1>
+            <h1 className="text-2xl font-bold text-text-primary">Folders</h1>
           </div>
           <Button
             onClick={handleCreateFolder}
-            className="inline-flex bg-white items-center gap-2 px-4 py-2 rounded-lg  transition-colors hover:bg-white/90 hover:shadow-md cursor-pointer"
+            className="inline-flex bg-surface text-primary items-center gap-2 px-4 py-2 rounded-lg transition-colors hover:bg-surface-elevated hover:shadow-md cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>New Folder</span>
@@ -174,7 +174,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
 
         {/* Create Folder Dialog */}
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="sm:max-w-[400px] bg-white border-none">
+          <DialogContent className="sm:max-w-[400px] bg-surface border-none">
             <DialogHeader>
               <DialogTitle>Create New Folder</DialogTitle>
             </DialogHeader>
@@ -182,7 +182,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
               <div className="grid gap-2">
                 <label
                   htmlFor="folder-name"
-                  className="text-sm font-medium text-gray-700"
+                  className="text-sm font-medium text-text-primary"
                 >
                   Folder Name
                 </label>
@@ -197,7 +197,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
                       handleCreateFolderSubmit();
                     }
                   }}
-                  className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-3 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                   autoFocus
                 />
               </div>
@@ -206,7 +206,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-3 py-2 text-sm font-medium text-text-primary bg-surface border border-border rounded-lg hover:bg-surface-elevated"
               >
                 Cancel
               </button>
@@ -214,7 +214,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
                 type="button"
                 onClick={handleCreateFolderSubmit}
                 disabled={!folderName.trim() || isCreating}
-                className="px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-2 text-sm font-medium text-white bg-accent rounded-lg hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isCreating ? "Creating..." : "Create"}
               </button>

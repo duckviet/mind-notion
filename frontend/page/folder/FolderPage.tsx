@@ -23,7 +23,12 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useDebounce } from "use-debounce";
-import { ReqUpdateNote, updateFolder } from "@/shared/services/generated/api";
+import {
+  ReqUpdateNote,
+  updateFolder,
+  updateNoteTOM,
+  useListNotesTOM,
+} from "@/shared/services/generated/api";
 import {
   BreadcrumbItemType,
   useBreadcrumb,
@@ -31,14 +36,14 @@ import {
 
 const MasonryGrid = dynamic(
   () => import("@/widgets/content-grid").then((m) => m.MasonryGrid),
-  { ssr: false }
+  { ssr: false },
 );
 const FocusEditModal = dynamic(
   () =>
     import("@/features/note-editing").then((mod) => ({
       default: mod.FocusEditModal,
     })),
-  { ssr: false }
+  { ssr: false },
 );
 import NoteCard from "@/entities/note/ui/NoteCard";
 import { AnimateCardProvider } from "@/entities/note/ui/AnimateCardProvider";
@@ -51,10 +56,12 @@ import {
   DraggableItem,
   MultiZoneDndProvider,
 } from "@/shared/components/dnd";
+import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
+import { TopOfMind } from "@/features/top-of-mind";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
-    className={`animate-pulse rounded-md bg-slate-200/80 ${className ?? ""}`}
+    className={`animate-pulse rounded-md bg-surface-elevated/50 ${className ?? ""}`}
   />
 );
 
@@ -123,6 +130,17 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     folder_id: folderId,
   });
 
+  const {
+    data: topOfMindNotesData,
+    isLoading: isLoadingTopOfMindNotes,
+    error: errorTopOfMindNotes,
+    refetch: refetchTopOfMindNotes,
+  } = useListNotesTOM({
+    query: {
+      retry: false,
+    },
+  });
+
   const notes = useMemo(() => {
     return (notesData || []).map((note) => ({
       ...note,
@@ -146,7 +164,22 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
       setDeleteTargetId(null);
     }
   };
-
+  const handleUpdateTopOfMindNote = async (id: string, tom: boolean) => {
+    try {
+      // Strip "tom-" prefix if present (used for drag-and-drop identification)
+      const normalizedId = id.startsWith("tom-") ? id.slice(4) : id;
+      const noteId = normalizedId.startsWith("floating-")
+        ? normalizedId.slice("floating-".length)
+        : normalizedId;
+      await updateNoteTOM(noteId, {
+        tom,
+      });
+      refetchTopOfMindNotes();
+      refetch();
+    } catch (error) {
+      console.error("Failed to update top of mind note:", error);
+    }
+  };
   const handleUpdate = async (id: string, data: ReqUpdateNote) => {
     try {
       await updateNote({ id, data });
@@ -160,7 +193,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
       setFocusEditNoteId(noteId);
       openModal();
     },
-    [openModal]
+    [openModal],
   );
 
   const handleCloseFocusEdit = useCallback(() => {
@@ -180,7 +213,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
         console.error("Failed to move folder:", error);
       }
     },
-    [refetch]
+    [refetch],
   );
 
   const isLoading = isFolderLoading || isNotesLoading;
@@ -224,15 +257,15 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
   if (folderError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <h2 className="text-xl font-semibold text-text-primary mb-2">
           Folder not found
         </h2>
-        <p className="text-gray-500 mb-4">
+        <p className="text-text-secondary mb-4">
           The folder you're looking for doesn't exist or has been deleted.
         </p>
         {/* <Link
           href="/"
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700"
+          className="inline-flex items-center gap-2 text-accent hover:text-accent-600"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Home
@@ -251,25 +284,25 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
           {/* Folder Title */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gray-100 rounded-xl">
-                <FolderOpen className="w-6 h-6 text-gray-700" />
+              <div className="p-2 bg-surface-elevated rounded-xl">
+                <FolderOpen className="w-6 h-6 text-text-primary" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-text-primary">
                 {folder.name}
               </h1>
               {folder.is_public && (
-                <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                <span className="px-2 py-1 text-xs font-medium bg-accent-100 text-accent-700 rounded-full">
                   Public
                 </span>
               )}
             </div>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <MoreHorizontal className="w-5 h-5 text-gray-500" />
+            <button className="p-2 hover:bg-surface-elevated rounded-lg transition-colors">
+              <MoreHorizontal className="w-5 h-5 text-text-muted" />
             </button>
           </div>
 
           {/* Folder Stats */}
-          <div className="flex flex-wrap gap-6 text-sm text-gray-500">
+          <div className="flex flex-wrap gap-6 text-sm text-text-secondary">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4" />
               <span>{folder.notes?.length || 0} notes</span>
@@ -315,6 +348,15 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
           }}
         >
           <AnimateCardProvider>
+            <DragAwareTomModal isTomVisible={false}>
+              <TopOfMind
+                droppableId="top-of-mind-zone-floating"
+                draggableIdPrefix="floating-"
+                notes={topOfMindNotesData || []}
+                onUnpin={handleUpdateTopOfMindNote}
+                onFocusEdit={handleFocusEdit}
+              />
+            </DragAwareTomModal>
             <FoldersListPage parentId={folderId} />
 
             <MasonryGrid data={notes}>

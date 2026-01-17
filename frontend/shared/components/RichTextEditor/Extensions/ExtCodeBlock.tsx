@@ -25,7 +25,7 @@ const languageList = Object.entries(langMap)
 const CodeBlockComponent = (props: any) => {
   const { node, updateAttributes, extension } = props;
   const [language, setLanguage] = useState(
-    node.attrs.language || extension.options.defaultLanguage || "plaintext"
+    node.attrs.language || extension.options.defaultLanguage || "plaintext",
   );
   const selectRef = useRef<HTMLButtonElement>(null);
   const [isCopied, setIsCopied] = useState(false);
@@ -62,7 +62,7 @@ const CodeBlockComponent = (props: any) => {
     >
       <div
         contentEditable={false}
-        className="sticky top-10 z-10 items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
       >
         <div className="w-full p-2 flex justify-end">
           <Select
@@ -74,17 +74,17 @@ const CodeBlockComponent = (props: any) => {
           >
             <SelectTrigger
               ref={selectRef}
-              className="h-6 w-fit px-2 rounded bg-white border-none"
+              className="h-6 w-fit px-2 rounded bg-white text-primary border-none"
             >
               <SelectValue placeholder="Code Language" />
             </SelectTrigger>
-            <SelectContent className="z-100 bg-white border-none shadow-md">
+            <SelectContent className="z-100 bg-white  border-none shadow-md">
               {[
                 { value: "plaintext", label: "plaintext" },
                 ...languageList,
               ].map(({ label, value }) => (
                 <SelectItem
-                  className="hover:bg-gray-400/50"
+                  className="hover:bg-gray-400/50 text-primary"
                   value={value}
                   key={value}
                 >
@@ -140,9 +140,9 @@ const CustomCodeBlock = CodeBlockShiki.extend({
   },
 
   renderHTML({ HTMLAttributes, node }: any) {
-    const language = node.attrs.language || "plaintext"; // ✅ Fallback với default
+    const language = node.attrs.language || "plaintext";
     const className =
-      "p-4 rounded-lg bg-gray-50 font-mono border border-gray-200 text-sm overflow-x-auto";
+      "p-4 rounded-lg bg-surface-lowered font-mono text-sm overflow-x-auto";
     const finalClass =
       (HTMLAttributes?.class ? `${HTMLAttributes.class} ` : "") + className;
 

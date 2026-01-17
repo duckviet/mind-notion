@@ -68,15 +68,15 @@ export const RegisterForm = ({
   };
 
   const inputBaseClass =
-    "pl-10 h-11 bg-slate-50/50 border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-blue-500/20 transition-all";
+    "pl-10 h-11 bg-surface-elevated border-border focus:bg-surface focus:border-accent focus:ring-accent/20 transition-all";
 
   return (
-    <Card className="w-full backdrop-blur-sm bg-white/80 border-0 shadow-xl shadow-slate-200/50">
+    <Card className="w-full backdrop-blur-sm bg-surface/80 border-0 shadow-xl shadow-shadow-lg">
       <CardHeader className="space-y-1 pb-6">
-        <CardTitle className="text-2xl font-bold text-center text-slate-800">
+        <CardTitle className="text-2xl font-bold text-center text-text-primary">
           Create Account
         </CardTitle>
-        <CardDescription className="text-center text-slate-500">
+        <CardDescription className="text-center text-text-secondary">
           Sign up to start organizing your thoughts
         </CardDescription>
       </CardHeader>
@@ -85,7 +85,7 @@ export const RegisterForm = ({
           {registerMutation.error && (
             <Alert
               variant="destructive"
-              className="bg-red-50 border-red-200 text-red-700"
+              className="bg-destructive/10 border-destructive/30 text-destructive"
             >
               <AlertDescription>
                 {registerMutation.error.message ||
@@ -95,55 +95,59 @@ export const RegisterForm = ({
           )}
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-slate-700">
+            <Label className="text-sm font-medium text-text-primary">
               Username
             </Label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
               <Input
                 type="text"
                 placeholder="Choose a username"
                 {...register("username")}
-                className={`${inputBaseClass} ${errors.username ? "border-red-400" : ""}`}
+                className={`${inputBaseClass} ${errors.username ? "border-destructive" : ""}`}
               />
             </div>
             {errors.username && (
-              <p className="text-sm text-red-500">{errors.username.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.username.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-slate-700">Email</Label>
+            <Label className="text-sm font-medium text-text-primary">
+              Email
+            </Label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
               <Input
                 type="email"
                 placeholder="Enter your email"
                 {...register("email")}
-                className={`${inputBaseClass} ${errors.email ? "border-red-400" : ""}`}
+                className={`${inputBaseClass} ${errors.email ? "border-destructive" : ""}`}
               />
             </div>
             {errors.email && (
-              <p className="text-sm text-red-500">{errors.email.message}</p>
+              <p className="text-sm text-destructive">{errors.email.message}</p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-slate-700">
+            <Label className="text-sm font-medium text-text-primary">
               Password
             </Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
               <Input
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
                 {...register("password")}
-                className={`${inputBaseClass} pr-10 ${errors.password ? "border-red-400" : ""}`}
+                className={`${inputBaseClass} pr-10 ${errors.password ? "border-destructive" : ""}`}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -153,26 +157,28 @@ export const RegisterForm = ({
               </button>
             </div>
             {errors.password && (
-              <p className="text-sm text-red-500">{errors.password.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.password.message}
+              </p>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium text-slate-700">
+            <Label className="text-sm font-medium text-text-primary">
               Confirm Password
             </Label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
               <Input
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
                 {...register("confirmPassword")}
-                className={`${inputBaseClass} pr-10 ${errors.confirmPassword ? "border-red-400" : ""}`}
+                className={`${inputBaseClass} pr-10 ${errors.confirmPassword ? "border-destructive" : ""}`}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
               >
                 {showConfirmPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -182,7 +188,7 @@ export const RegisterForm = ({
               </button>
             </div>
             {errors.confirmPassword && (
-              <p className="text-sm text-red-500">
+              <p className="text-sm text-destructive">
                 {errors.confirmPassword.message}
               </p>
             )}
@@ -190,7 +196,7 @@ export const RegisterForm = ({
 
           <Button
             type="submit"
-            className="w-full h-11 bg-[#306af0] text-white border-slate-200 hover:bg-slate-100 hover:border-slate-300 hover:text-slate-700 cursor-pointer transition-all"
+            className="w-full h-11 bg-accent text-white border-transparent hover:bg-accent-600 hover:text-white cursor-pointer transition-all"
             disabled={registerMutation.isPending}
           >
             {registerMutation.isPending ? (
@@ -205,10 +211,10 @@ export const RegisterForm = ({
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200" />
+              <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-slate-400">
+              <span className="bg-surface px-2 text-text-muted">
                 Already have an account?
               </span>
             </div>
@@ -218,7 +224,7 @@ export const RegisterForm = ({
             type="button"
             variant="outline"
             onClick={onSwitchToLogin}
-            className="w-full h-11 border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 transition-all"
+            className="w-full h-11 border-border hover:bg-surface-elevated hover:border-border text-text-primary transition-all"
           >
             Sign in instead
           </Button>

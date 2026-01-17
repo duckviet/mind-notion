@@ -65,13 +65,15 @@ const PersonalSettings = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight">Profile</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-2xl font-bold tracking-tight text-text-primary">
+          Profile
+        </h2>
+        <p className="text-text-secondary">
           Manage your personal information and how you appear to others.
         </p>
       </div>
 
-      <Card className="border-none shadow-sm bg-white max-w-3xl">
+      <Card className="border border-border shadow-sm bg-surface max-w-3xl">
         <CardHeader className="pb-6">
           <div className="flex items-center gap-4">
             {/* <Avatar className="h-16 w-16 border-2 border-border">
@@ -81,10 +83,10 @@ const PersonalSettings = () => {
               </Avatar>
             </Avatar> */}
             <div>
-              <CardTitle className="text-lg font-semibold">
+              <CardTitle className="text-lg font-semibold text-text-primary">
                 Public Profile
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-text-secondary">
                 This information will be visible to other users.
               </CardDescription>
             </div>
@@ -94,16 +96,19 @@ const PersonalSettings = () => {
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium">
+                <Label
+                  htmlFor="name"
+                  className="text-sm font-medium text-text-primary"
+                >
                   Full Name
                 </Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                   <Input
                     id="name"
                     {...register("name")}
                     placeholder="John Doe"
-                    className="pl-9 h-10"
+                    className="pl-9 h-10 bg-surface-elevated border-border"
                   />
                 </div>
                 {errors.name && (
@@ -114,17 +119,20 @@ const PersonalSettings = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-text-primary"
+                >
                   Email Address
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                   <Input
                     id="email"
                     type="email"
                     {...register("email")}
                     placeholder="john@example.com"
-                    className="pl-9 h-10"
+                    className="pl-9 h-10 bg-surface-elevated border-border"
                   />
                 </div>
                 {errors.email && (
@@ -136,16 +144,19 @@ const PersonalSettings = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="avatar" className="text-sm font-medium">
+              <Label
+                htmlFor="avatar"
+                className="text-sm font-medium text-text-primary"
+              >
                 Avatar URL
               </Label>
               <div className="relative">
-                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
                 <Input
                   id="avatar"
                   {...register("avatar")}
                   placeholder="https://example.com/avatar.jpg"
-                  className="pl-9 h-10"
+                  className="pl-9 h-10 bg-surface-elevated border-border"
                 />
               </div>
               {errors.avatar && (
@@ -153,12 +164,12 @@ const PersonalSettings = () => {
                   {errors.avatar.message}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-text-muted">
                 We recommend using a square image (e.g., 400x400px).
               </p>
             </div>
 
-            <div className="flex items-center justify-end pt-4 border-t">
+            <div className="flex items-center justify-end pt-4 border-t border-border">
               <Button
                 type="submit"
                 disabled={!isDirty || updateMeMutation.isPending}

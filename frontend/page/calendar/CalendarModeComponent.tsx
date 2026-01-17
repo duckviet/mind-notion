@@ -89,19 +89,19 @@ function CalendarModeComponent({
                 : undefined
             }
             className={cn(
-              "p-2 h-30 bg-white rounded-md relative flex items-center cursor-pointer transition hover:bg-gray-200",
+              "p-2 h-30 bg-surface rounded-md relative flex items-center cursor-pointer transition hover:bg-surface-elevated",
               highlightDate && highlightDate === day.date
-                ? "bg-yellow-100 border-yellow-300 shadow-md ring ring-yellow-200 animate-pulse"
-                : ""
+                ? "bg-accent-100 border-accent-300 shadow-md ring ring-accent-200 animate-pulse"
+                : "",
             )}
             // onClick={() => handleOpenDialog(day)}
           >
-            <div className="text-sm text-gray-600 mr-2 left-3 top-3 absolute">
+            <div className="text-sm text-text-secondary mr-2 left-3 top-3 absolute">
               {mode === "weekly" ? day.date : day.date.split("/")[0]}
             </div>
             <div className="h-6 w-full">
               {day.holiday === "H" && (
-                <div className="px-3 mx-auto   shadow-sm border border-gray-300 text-center font-medium rounded-md text-gray-600">
+                <div className="px-3 mx-auto shadow-sm border border-border text-center font-medium rounded-md text-text-secondary">
                   {mode === "yearly" ? "Hol." : "Holiday"}
                 </div>
               )}

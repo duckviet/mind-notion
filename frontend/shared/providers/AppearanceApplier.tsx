@@ -4,18 +4,6 @@ import { useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useSettingsStore } from "@/shared/stores/settingsStore";
 
-const accentPalette: Record<
-  string,
-  { primary: string; strong: string; subtle: string }
-> = {
-  neutral: { primary: "#adadad", strong: "#5e5e5e", subtle: "#e3e3e3" },
-  blue: { primary: "#2563eb", strong: "#1d4ed8", subtle: "#dbeafe" },
-  purple: { primary: "#7c3aed", strong: "#6d28d9", subtle: "#ede9fe" },
-  green: { primary: "#16a34a", strong: "#15803d", subtle: "#dcfce7" },
-  red: { primary: "#dc2626", strong: "#b91c1c", subtle: "#fee2e2" },
-  orange: { primary: "#ea580c", strong: "#c2410c", subtle: "#ffedd5" },
-};
-
 const fontStacks: Record<string, string> = {
   inter:
     '"Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -26,7 +14,10 @@ const fontStacks: Record<string, string> = {
 
 /**
  * Syncs user appearance preferences (accent, font, density) to document-level
- * CSS variables and data attributes so the entire app can respond.
+ * data attributes so the entire app can respond via CSS.
+ *
+ * Note: Accent colors are defined in globals.css using [data-accent="..."] selectors.
+ * This component only sets the data-accent attribute - no inline style overrides.
  */
 export function AppearanceApplier() {
   const { resolvedTheme } = useTheme();
@@ -34,11 +25,8 @@ export function AppearanceApplier() {
 
   useEffect(() => {
     const root = document.documentElement;
-    const palette = accentPalette[primaryColor];
+    // Only set data attribute - let CSS handle the colors
     root.dataset.accent = primaryColor;
-    root.style.setProperty("--accent-500", palette.primary);
-    root.style.setProperty("--accent-600", palette.strong);
-    root.style.setProperty("--accent-100", palette.subtle);
   }, [primaryColor]);
 
   useEffect(() => {

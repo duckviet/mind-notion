@@ -4,13 +4,7 @@ import { persist } from "zustand/middleware";
 export type Theme = "light" | "dark" | "black" | "auto";
 export type ViewMode = "default" | "compact";
 export type FontFamily = "inter" | "geist" | "system";
-export type PrimaryColor =
-  | "neutral"
-  | "blue"
-  | "purple"
-  | "green"
-  | "red"
-  | "orange";
+export type PrimaryColor = "neutral" | "blue" | "purple" | "green";
 
 interface SettingsState {
   theme: Theme;
@@ -37,6 +31,6 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: "settings-storage",
-    }
-  )
+    },
+  ),
 );
