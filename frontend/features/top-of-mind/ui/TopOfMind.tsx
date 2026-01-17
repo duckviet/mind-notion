@@ -9,6 +9,9 @@ type Props = {
   onUpdate?: (id: string, note: ResDetailNote) => void;
   onUnpin?: (id: string, tom: boolean) => void;
   onFocusEdit?: (id: string) => void;
+  dragDisabled?: boolean;
+  droppableId?: string;
+  draggableIdPrefix?: string;
 };
 
 const TopOfMind = ({
@@ -17,10 +20,13 @@ const TopOfMind = ({
   onUpdate,
   onUnpin,
   onFocusEdit,
+  dragDisabled = false,
+  droppableId = "top-of-mind-zone",
+  draggableIdPrefix = "",
 }: Props) => {
   return (
     <DroppableZone
-      id="top-of-mind-zone"
+      id={droppableId}
       activeClassName="ring-2 ring-blue-300/20 ring-offset-1 ring-offset-blue-300/20 rounded-2xl"
     >
       <div
@@ -29,7 +35,7 @@ const TopOfMind = ({
           scrollBehavior: "smooth",
           scrollbarGutter: "stable",
         }}
-        className="flex gap-3 justify-center items-center bg-[#dee2ea] w-full rounded-2xl my-4 p-4 h-[154px] transition-all overflow-x-auto"
+        className="flex gap-3  items-center bg-[#dee2ea] w-full rounded-2xl my-4 p-4 h-[154px] transition-all overflow-x-auto"
       >
         {notes.length === 0 ? (
           <div className="text-text-muted text-sm">
@@ -38,7 +44,11 @@ const TopOfMind = ({
         ) : (
           notes.map((note) => (
             // <SortableItem key={note.id} id={note.id}>
-            <DraggableItem key={note.id} id={note.id}>
+            <DraggableItem
+              key={note.id}
+              id={`${draggableIdPrefix}${note.id}`}
+              disabled={dragDisabled}
+            >
               <TopOfMindCard
                 note={note}
                 onUnpin={() => onUnpin?.(note.id, false)}

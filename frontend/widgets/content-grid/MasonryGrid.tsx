@@ -68,7 +68,7 @@ export default function MasonryGrid({
       >
         {isLoading ? (
           React.Children.map(children, (child: any) =>
-            React.isValidElement(child) ? child : null
+            React.isValidElement(child) ? child : null,
           )
         ) : (
           <AnimatePresence mode="popLayout">{children}</AnimatePresence>
