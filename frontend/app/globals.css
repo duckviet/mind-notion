@@ -3,33 +3,47 @@
 
 :root {
   --app-font-family:
-    "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  --background: #f0f4ff;
-  --surface: #ffffff;
-  --border: #e2e8f0;
-  --foreground: #0f172a;
-  --muted-foreground: #475569;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(148, 163, 184, 0.2);
-  --glass-hover: rgba(255, 255, 255, 0.95);
-  --text-primary: #0f172a;
+    "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Light Mode (Khớp với hình) */
+  --background: #eef0f3; /* Màu nền xám nhạt như trong ảnh */
+  --surface: #ffffff; /* Màu các card trắng */
+  --border: #e2e8f0; /* Border rất mảnh */
+  --foreground: #1a202c; /* Chữ chính */
+  --muted-foreground: #64748b;
+
+  /* Glassmorphism dựa trên hình */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-hover: rgba(255, 255, 255, 0.9);
+
+  /* Accent (Màu xanh nhấn nhẹ) */
+  --accent-100: #e0e7ff;
+  --accent-500: #3b82f6;
+  --accent-600: #2563eb;
+
+  --text-primary: #1e293b;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
-  --accent-100: #dbeafe;
-  --accent-500: #2563eb;
-  --accent-600: #1d4ed8;
+
   color-scheme: light;
 }
 
 html.dark {
-  --background: #0b1220;
-  --surface: #0f172a;
-  --border: #1f2937;
-  --foreground: #e2e8f0;
+  /* Dark Mode phong cách sâu sắc (Deep Navy/Black) */
+  --background: #0f172a; /* Xanh đen sâu */
+  --surface: #1e293b; /* Card trong darkmode */
+  --border: #334155;
+  --foreground: #f1f5f9;
   --muted-foreground: #94a3b8;
-  --text-primary: #e2e8f0;
+
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+
+  --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
+
   color-scheme: dark;
 }
 

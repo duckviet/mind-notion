@@ -89,7 +89,7 @@ const AppearanceSettings = () => {
       </div>
 
       {/* Theme Section */}
-      <Card className="border-none shadow-sm bg-white/80">
+      <Card className=" shadow-sm bg-background">
         <CardHeader>
           <CardTitle className="text-base font-semibold">Theme</CardTitle>
           <CardDescription className="text-sm">
@@ -110,7 +110,7 @@ const AppearanceSettings = () => {
                     "group relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 p-4 transition-all hover:scale-[1.02]",
                     isSelected
                       ? "border-primary/50 bg-primary/5 shadow-sm"
-                      : "bg-slate-50/50 border-slate-300"
+                      : "bg-slate-50/50 border-slate-300",
                   )}
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
@@ -133,7 +133,7 @@ const AppearanceSettings = () => {
 
       {/* Primary Color & Font Family Section */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-none shadow-sm bg-white/80">
+        <Card className=" shadow-sm ">
           <CardHeader>
             <CardTitle className="text-base font-semibold">
               Primary Color
@@ -154,7 +154,7 @@ const AppearanceSettings = () => {
                       "relative flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
                       color.color,
                       isSelected &&
-                        "ring-2 ring-offset-2 ring-primary ring-offset-background"
+                        "ring-2 ring-offset-2 ring-primary ring-offset-background",
                     )}
                     title={color.label}
                   >
@@ -166,7 +166,7 @@ const AppearanceSettings = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-white/80">
+        <Card className=" shadow-sm ">
           <CardHeader>
             <CardTitle className="text-base font-semibold">
               Typography
@@ -187,7 +187,7 @@ const AppearanceSettings = () => {
                       "relative flex flex-col items-center justify-center rounded-lg border-2 p-3 transition-all hover:bg-muted/50",
                       isSelected
                         ? "border-primary/50 bg-primary/5 shadow-sm"
-                        : "bg-slate-50/50 border-slate-300"
+                        : "bg-slate-50/50 border-slate-300",
                     )}
                   >
                     <span
@@ -210,7 +210,7 @@ const AppearanceSettings = () => {
       </div>
 
       {/* View Mode Section */}
-      <Card className="border-none shadow-sm bg-white/80">
+      <Card className=" shadow-sm ">
         <CardHeader>
           <CardTitle className="text-base font-semibold">
             Layout Density
@@ -229,7 +229,7 @@ const AppearanceSettings = () => {
                   onClick={() => setViewMode(mode.value)}
                   className={cn(
                     "relative flex items-start gap-4 rounded-xl border-2 p-4 text-left transition-all hover:border-primary/50",
-                    isSelected ? "border-primary" : "border-border"
+                    isSelected ? "border-primary" : "border-border",
                   )}
                 >
                   <div className="h-4 w-4 rounded-full border-2 border-primary mt-1 flex items-center justify-center">
@@ -249,7 +249,7 @@ const AppearanceSettings = () => {
       </Card>
 
       {/* Live Preview */}
-      <Card className="border-none shadow-sm bg-white/80">
+      <Card className=" shadow-sm ">
         <CardHeader>
           <CardTitle className="text-base font-semibold">
             Live Preview
