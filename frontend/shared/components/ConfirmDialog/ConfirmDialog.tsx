@@ -38,7 +38,7 @@ export function ConfirmDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const loading = useMemo(
     () => isConfirming ?? isSubmitting,
-    [isConfirming, isSubmitting]
+    [isConfirming, isSubmitting],
   );
 
   useEffect(() => {
@@ -69,11 +69,13 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-sm bg-white border-none">
+      <DialogContent className="sm:max-w-sm bg-surface border-none">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{title}</DialogTitle>
+          <DialogTitle className="text-2xl text-text-primary">
+            {title}
+          </DialogTitle>
           {description ? (
-            <DialogDescription className="text-sm">
+            <DialogDescription className="text-sm text-text-secondary">
               {description}
             </DialogDescription>
           ) : null}
@@ -90,7 +92,7 @@ export function ConfirmDialog({
             variant={confirmVariant}
             onClick={handleConfirm}
             disabled={loading}
-            className="bg-red-500 text-white"
+            className="bg-destructive text-white"
           >
             {loading ? "Working..." : confirmLabel}
           </Button>

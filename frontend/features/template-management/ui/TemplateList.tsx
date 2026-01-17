@@ -19,12 +19,12 @@ export function TemplateList({
   onDelete,
 }: TemplateListProps) {
   if (isLoading) {
-    return <p className="text-center text-gray-500">Loading templates...</p>;
+    return <p className="text-center text-text-muted">Loading templates...</p>;
   }
 
   if (templates.length === 0) {
     return (
-      <p className="text-center text-gray-500">
+      <p className="text-center text-text-muted">
         No custom templates yet. Create your first one!
       </p>
     );

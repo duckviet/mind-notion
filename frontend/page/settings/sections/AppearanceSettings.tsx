@@ -66,8 +66,6 @@ const AppearanceSettings = () => {
     { value: "blue", label: "Blue", color: "bg-blue-600" },
     { value: "purple", label: "Purple", color: "bg-purple-600" },
     { value: "green", label: "Green", color: "bg-green-600" },
-    { value: "red", label: "Red", color: "bg-red-600" },
-    { value: "orange", label: "Orange", color: "bg-orange-600" },
   ];
 
   const handleThemeChange = (theme: Theme) => {
@@ -82,17 +80,21 @@ const AppearanceSettings = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 ">
       <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight">Appearance</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-2xl font-bold tracking-tight text-text-primary">
+          Appearance
+        </h2>
+        <p className="text-text-secondary">
           Customize the look and feel of your workspace.
         </p>
       </div>
 
       {/* Theme Section */}
-      <Card className=" shadow-sm bg-background">
+      <Card className="border border-border shadow-sm bg-surface">
         <CardHeader>
-          <CardTitle className="text-base font-semibold">Theme</CardTitle>
-          <CardDescription className="text-sm">
+          <CardTitle className="text-base font-semibold text-text-primary">
+            Theme
+          </CardTitle>
+          <CardDescription className="text-sm text-text-secondary">
             Select the color scheme that suits your environment.
           </CardDescription>
         </CardHeader>
@@ -109,18 +111,27 @@ const AppearanceSettings = () => {
                   className={cn(
                     "group relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 p-4 transition-all hover:scale-[1.02]",
                     isSelected
-                      ? "border-primary/50 bg-primary/5 shadow-sm"
-                      : "bg-slate-50/50 border-slate-300",
+                      ? "border-accent bg-accent-50 shadow-sm"
+                      : "border-border bg-surface-elevated hover:border-accent",
                   )}
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                      isSelected
+                        ? "bg-accent text-white"
+                        : "bg-accent-100 text-accent group-hover:bg-accent group-hover:text-white",
+                    )}
+                  >
                     {theme.icon}
                   </div>
                   <div className="text-center">
-                    <span className="text-sm font-medium">{theme.label}</span>
+                    <span className="text-sm font-medium text-text-primary">
+                      {theme.label}
+                    </span>
                     {isSelected && (
                       <div className="mt-1 flex items-center justify-center">
-                        <Check className="h-3 w-3 text-primary" />
+                        <Check className="h-3 w-3 text-accent" />
                       </div>
                     )}
                   </div>
@@ -133,12 +144,12 @@ const AppearanceSettings = () => {
 
       {/* Primary Color & Font Family Section */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className=" shadow-sm ">
+        <Card className="border border-border shadow-sm bg-surface">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">
+            <CardTitle className="text-base font-semibold text-text-primary">
               Primary Color
             </CardTitle>
-            <CardDescription className="text-sm">
+            <CardDescription className="text-sm text-text-secondary">
               Pick a color for accents and highlights.
             </CardDescription>
           </CardHeader>
@@ -151,14 +162,14 @@ const AppearanceSettings = () => {
                     key={color.value}
                     onClick={() => setPrimaryColor(color.value)}
                     className={cn(
-                      "relative flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                      "relative flex h-12 w-12 items-center justify-center rounded-full transition-transform hover:scale-110 focus:outline-none",
                       color.color,
                       isSelected &&
-                        "ring-2 ring-offset-2 ring-primary ring-offset-background",
+                        "ring-2 ring-offset-2 ring-accent ring-offset-surface",
                     )}
                     title={color.label}
                   >
-                    {isSelected && <Check className="h-4 w-4 text-white" />}
+                    {isSelected && <Check className="h-5 w-5 text-white" />}
                   </button>
                 );
               })}
@@ -166,12 +177,12 @@ const AppearanceSettings = () => {
           </CardContent>
         </Card>
 
-        <Card className=" shadow-sm ">
+        <Card className="border border-border shadow-sm bg-surface">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">
+            <CardTitle className="text-base font-semibold text-text-primary">
               Typography
             </CardTitle>
-            <CardDescription className="text-sm">
+            <CardDescription className="text-sm text-text-secondary">
               Choose the font family for the interface.
             </CardDescription>
           </CardHeader>
@@ -184,22 +195,25 @@ const AppearanceSettings = () => {
                     key={font.value}
                     onClick={() => setFontFamily(font.value)}
                     className={cn(
-                      "relative flex flex-col items-center justify-center rounded-lg border-2 p-3 transition-all hover:bg-muted/50",
+                      "relative flex flex-col items-center justify-center rounded-lg border-2 p-3 transition-all hover:border-accent",
                       isSelected
-                        ? "border-primary/50 bg-primary/5 shadow-sm"
-                        : "bg-slate-50/50 border-slate-300",
+                        ? "border-accent bg-accent-50 shadow-sm"
+                        : "border-border bg-surface-elevated",
                     )}
                   >
                     <span
-                      className={cn("text-lg font-bold", `font-${font.value}`)}
+                      className={cn(
+                        "text-lg font-bold text-text-primary",
+                        `font-${font.value}`,
+                      )}
                     >
                       {font.preview}
                     </span>
-                    <span className="text-xs text-muted-foreground mt-1">
+                    <span className="text-xs text-text-muted mt-1">
                       {font.label}
                     </span>
                     {isSelected && (
-                      <Check className="absolute top-2 right-2 h-3 w-3 text-primary" />
+                      <Check className="absolute top-2 right-2 h-3 w-3 text-accent" />
                     )}
                   </button>
                 );
@@ -210,12 +224,12 @@ const AppearanceSettings = () => {
       </div>
 
       {/* View Mode Section */}
-      <Card className=" shadow-sm ">
+      <Card className="border border-border shadow-sm bg-surface">
         <CardHeader>
-          <CardTitle className="text-base font-semibold">
+          <CardTitle className="text-base font-semibold text-text-primary">
             Layout Density
           </CardTitle>
-          <CardDescription className="text-sm">
+          <CardDescription className="text-sm text-text-secondary">
             Adjust the spacing of elements in the interface.
           </CardDescription>
         </CardHeader>
@@ -228,16 +242,27 @@ const AppearanceSettings = () => {
                   key={mode.value}
                   onClick={() => setViewMode(mode.value)}
                   className={cn(
-                    "relative flex items-start gap-4 rounded-xl border-2 p-4 text-left transition-all hover:border-primary/50",
-                    isSelected ? "border-primary" : "border-border",
+                    "relative flex items-start gap-4 rounded-xl border-2 p-4 text-left transition-all hover:border-accent",
+                    isSelected
+                      ? "border-accent bg-accent-50"
+                      : "border-border bg-surface-elevated",
                   )}
                 >
-                  <div className="h-4 w-4 rounded-full border-2 border-primary mt-1 flex items-center justify-center">
-                    {isSelected && <div className="h-2 w-2 rounded-full " />}
+                  <div
+                    className={cn(
+                      "h-5 w-5 rounded-full border-2 mt-0.5 flex items-center justify-center",
+                      isSelected ? "border-accent" : "border-border",
+                    )}
+                  >
+                    {isSelected && (
+                      <div className="h-2.5 w-2.5 rounded-full bg-accent" />
+                    )}
                   </div>
                   <div>
-                    <div className="font-medium">{mode.label}</div>
-                    <div className="text-sm text-muted-foreground mt-1">
+                    <div className="font-medium text-text-primary">
+                      {mode.label}
+                    </div>
+                    <div className="text-sm text-text-secondary mt-1">
                       {mode.desc}
                     </div>
                   </div>
@@ -249,68 +274,68 @@ const AppearanceSettings = () => {
       </Card>
 
       {/* Live Preview */}
-      <Card className=" shadow-sm ">
+      <Card className="border border-border shadow-sm bg-surface">
         <CardHeader>
-          <CardTitle className="text-base font-semibold">
+          <CardTitle className="text-base font-semibold text-text-primary">
             Live Preview
           </CardTitle>
-          <CardDescription className="text-sm">
+          <CardDescription className="text-sm text-text-secondary">
             See how accent, typography, and density feel in the interface.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-border/70 bg-white/70 p-4 shadow-sm dark:border-border/50 dark:bg-background/40">
+            <div className="rounded-xl border border-border bg-surface-elevated p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-foreground">
+                  <div className="text-sm font-semibold text-text-primary">
                     Project card
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-text-secondary">
                     Updated just now
                   </div>
                 </div>
-                <span className="rounded-full bg-[color:var(--accent-100)] px-2 py-1 text-[11px] font-medium text-[color:var(--accent-600)]">
+                <span className="rounded-full bg-accent-100 px-2.5 py-1 text-[11px] font-medium text-accent">
                   Accent chip
                 </span>
               </div>
-              <div className="mt-4 grid gap-2 text-sm text-muted-foreground">
-                <div className="h-2 rounded-full bg-[color:var(--accent-100)]" />
-                <div className="h-2 w-3/4 rounded-full bg-muted/70" />
+              <div className="mt-4 grid gap-2 text-sm">
+                <div className="h-2 rounded-full bg-accent-100" />
+                <div className="h-2 w-3/4 rounded-full bg-border" />
               </div>
               <div className="mt-4 flex gap-2 text-sm">
-                <button className="rounded-lg bg-[color:var(--accent-600)] px-3 py-2 font-medium text-white shadow-sm transition hover:brightness-110">
+                <button className="rounded-lg bg-accent px-3 py-2 font-medium text-white shadow-sm transition hover:brightness-110">
                   Primary action
                 </button>
-                <button className="rounded-lg border border-border bg-transparent px-3 py-2 font-medium text-foreground transition hover:border-[color:var(--accent-600)]">
+                <button className="rounded-lg border border-border bg-transparent px-3 py-2 font-medium text-text-primary transition hover:border-accent hover:text-accent">
                   Secondary
                 </button>
               </div>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-white/70 p-4 shadow-sm dark:border-border/50 dark:bg-background/40">
+            <div className="rounded-xl border border-border bg-surface-elevated p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-foreground">
+                  <div className="text-sm font-semibold text-text-primary">
                     Form preview
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-text-secondary">
                     Adapts to density
                   </div>
                 </div>
-                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-text-muted">
                   {viewMode === "compact" ? "Compact" : "Default"}
                 </span>
               </div>
               <div className="mt-3 space-y-2 text-sm">
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs text-muted-foreground">Label</span>
-                  <div className="rounded-lg border border-border bg-white/70 px-3 py-2 text-foreground shadow-inner" />
+                  <span className="text-xs text-text-muted">Label</span>
+                  <div className="rounded-lg border border-border bg-surface px-3 py-2 text-text-primary shadow-inner" />
                 </div>
-                <div className="flex items-center justify-between rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+                <div className="flex items-center justify-between rounded-lg border border-dashed border-border px-3 py-2 text-xs text-text-secondary">
                   <span>Toggle</span>
-                  <div className="h-5 w-9 rounded-full bg-[color:var(--accent-100)]">
-                    <div className="h-4 w-4 translate-x-1 rounded-full bg-[color:var(--accent-600)]" />
+                  <div className="h-5 w-9 rounded-full bg-accent-100 relative">
+                    <div className="h-4 w-4 translate-x-0.5 translate-y-0.5 rounded-full bg-accent" />
                   </div>
                 </div>
               </div>
