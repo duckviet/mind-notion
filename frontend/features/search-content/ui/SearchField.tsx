@@ -31,7 +31,7 @@ export default function SearchField({
     (value: string) => {
       setQuery(value);
     },
-    [setQuery]
+    [setQuery],
   );
 
   const handleClear = useCallback(() => {
@@ -42,9 +42,9 @@ export default function SearchField({
     <div className={cn("relative", className)}>
       <motion.div
         className={cn(
-          "relative bg-white rounded-xl",
+          "relative bg-surface rounded-xl",
           "transition-all duration-200 ease-out",
-          isFocused && "shadow-glass-lg border-accent-blue"
+          isFocused && "shadow-glass-lg border-accent-blue",
         )}
         animate={{
           scale: isFocused ? 1.02 : 1,
@@ -69,7 +69,7 @@ export default function SearchField({
             className={cn(
               "flex-1 bg-transparent text-lg placeholder:text-text-muted",
               "focus:outline-none text-text-primary",
-              "transition-colors duration-200"
+              "transition-colors duration-200",
             )}
             aria-label="Search your saved content"
             role="searchbox"

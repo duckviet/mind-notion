@@ -27,7 +27,7 @@ const CommentForm = ({
   showMotion = true,
 }: CommentFormProps) => {
   const content = (
-    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+    <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
       <div className="space-y-3">
         <textarea
           value={value}
@@ -35,17 +35,17 @@ const CommentForm = ({
           placeholder={placeholder}
           maxLength={1000}
           rows={3}
-          className="w-full min-h-[200px] px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+          className="w-full min-h-[200px] px-3 py-2 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm"
           autoFocus
         />
         <div className="flex items-end justify-between">
-          <span className="text-xs text-gray-500">{value.length}/1000</span>
+          <span className="text-xs text-text-muted">{value.length}/1000</span>
           <div className="flex gap-2">
             <Button
               size="sm"
               onClick={onSubmit}
               disabled={isLoading || !value.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-accent hover:bg-accent-600 text-white"
             >
               <Send className="w-4 h-4 mr-1" />
               {submitLabel}
@@ -54,7 +54,7 @@ const CommentForm = ({
               size="sm"
               variant="outline"
               onClick={onCancel}
-              className="text-gray-600"
+              className="text-text-primary"
             >
               Cancel
             </Button>

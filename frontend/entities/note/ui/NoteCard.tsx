@@ -87,7 +87,7 @@ export default function NoteCard({
         >
           <Card
             // role="article"
-            className="rounded-2xl bg-white w-full p-6"
+            className="rounded-2xl bg-surface w-full p-6"
             aria-label={`Note card: ${match.title}`}
           >
             <div className="flex justify-between items-center w-full mb-4">
@@ -101,14 +101,17 @@ export default function NoteCard({
           </Card>
         </div>
       </ContextMenuTrigger>
-      <ContextMenuContent className="bg-white border-gray-200 shadow-xl">
-        <ContextMenuItem onSelect={handlePreview} className="hover:bg-gray-200">
+      <ContextMenuContent className="bg-surface border-border shadow-lg">
+        <ContextMenuItem
+          onSelect={handlePreview}
+          className="hover:bg-surface-elevated"
+        >
           <Eye className="w-4 h-4 " />
           <p className="text-sm">Preview</p>
         </ContextMenuItem>
         <ContextMenuItem
           onSelect={handleFocusEdit}
-          className="focus:bg-gray-200"
+          className="focus:bg-surface-elevated"
         >
           <Edit3 className="w-4 h-4 " />
           <p className="text-sm">Focus Edit</p>
@@ -118,14 +121,17 @@ export default function NoteCard({
             <FolderInput className="w-4 h-4 mr-2" />
             <span className="text-sm">Add to Folder</span>
           </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="min-h-32 w-80 p-2 bg-white border-gray-200 shadow-xl">
+          <ContextMenuSubContent className="min-h-32 w-80 p-2 bg-surface border-border shadow-lg">
             <FolderTreeSelector
               onSelect={handleFolderSelect}
               currentFolderId={match.folder_id ?? undefined}
             />
           </ContextMenuSubContent>
         </ContextMenuSub>
-        <ContextMenuItem onClick={handleDelete} className="focus:bg-gray-200 ">
+        <ContextMenuItem
+          onClick={handleDelete}
+          className="focus:bg-surface-elevated "
+        >
           <Trash2Icon className="w-3 h-3" />
           <p className="text-sm ">Delete</p>
         </ContextMenuItem>

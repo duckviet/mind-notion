@@ -80,15 +80,15 @@ export function TemplatesModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="fixed left-1/2 top-1/2 z-50 w-[900px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[2rem] border border-gray-100 bg-white shadow-2xl"
+              className="fixed left-1/2 top-1/2 z-50 w-[900px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[2rem] border border-surface-elevated bg-surface shadow-2xl"
             >
               {/* Minimal Header */}
-              <div className="flex items-center justify-between px-8 py-6">
+              <div className="flex items-center justify-between px-8 py-6 border-b border-border">
                 <div>
-                  <h2 className="text-2xl font-bold tracking-tight text-black">
+                  <h2 className="text-2xl font-bold tracking-tight text-text-primary">
                     Choose a Template
                   </h2>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-text-muted">
                     {isLoading
                       ? "Loading templates..."
                       : `${allTemplates.length} templates available`}
@@ -100,7 +100,7 @@ export function TemplatesModal({
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={onManageTemplates}
-                      className="flex items-center gap-2 rounded-full bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+                      className="flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-600"
                     >
                       <Plus size={16} />
                       Create Template
@@ -110,7 +110,7 @@ export function TemplatesModal({
                     whileHover={{ rotate: 90, scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-black transition-colors hover:bg-black hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-elevated text-text-primary transition-colors hover:bg-destructive hover:text-white"
                   >
                     <X size={20} />
                   </motion.button>
@@ -134,24 +134,22 @@ export function TemplatesModal({
                         onSelectTemplate(template);
                         onClose();
                       }}
-                      className="group flex   items-start justify-between gap-4 rounded-[1.5rem] border border-gray-100 bg-gray-50/50 p-6 text-left transition-all  hover:shadow-lg"
+                      className="group flex flex-col items-start justify-between gap-4 rounded-[1.5rem] border border-border bg-surface-elevated/30 p-6 text-left transition-all hover:border-accent/50 hover:shadow-lg hover:bg-surface-elevated/50"
                     >
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white text-black shadow-sm transition-colors group-hover:bg-white/10 group-hover:text-white">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface text-accent shadow-sm transition-colors group-hover:bg-accent group-hover:text-white">
                         <Icon />
                       </div>
 
                       <div className="w-full">
-                        <h3 className="text-lg font-semibold text-gray-900 transition-colors group-hover:text-white">
+                        <h3 className="text-lg font-semibold text-text-primary transition-colors">
                           {template.name}
                         </h3>
                         {template.tags.length > 0 && (
-                          <div className="mt-1 flex flex-wrap gap-1.5">
+                          <div className="mt-2 flex flex-wrap gap-1.5">
                             {template.tags.slice(0, 3).map((tag) => (
                               <span
                                 key={tag}
-                                className="rounded-xl border border-gray-200 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-600 transition-colors 
-                                
-                                -hover:border-transparent group-hover:bg-white/20 group-hover:text-white"
+                                className="rounded-xl border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-text-secondary transition-colors group-hover:border-accent/20"
                               >
                                 {tag}
                               </span>

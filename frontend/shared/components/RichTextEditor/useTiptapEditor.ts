@@ -44,7 +44,7 @@ export const useTiptapEditor = ({
 
   const [toc, setToc] = usePersistentState(
     LocalStorageKeys.FOCUS_EDIT_TOC_COLLAPSED,
-    false
+    false,
   );
 
   const { mutateAsync: uploadMedia } = useUploadMedia({
@@ -94,7 +94,7 @@ export const useTiptapEditor = ({
       ExtSplitView,
       SplitViewColumn,
     ],
-    [placeholder, toc, setToc, uploadMedia]
+    [placeholder, toc, setToc, uploadMedia],
   );
 
   const editor = useEditor(
@@ -108,18 +108,18 @@ export const useTiptapEditor = ({
         attributes: {
           class: cn(
             "tiptap ProseMirror h-full min-h-[150px] pr-4 focus:outline-none",
-            !editable && "pointer-events-none select-text cursor-default"
+            !editable && "pointer-events-none select-text cursor-default",
           ),
         },
         handleKeyDown: (_view, event) => {
           onKeyDownRef.current?.(
-            event as unknown as React.KeyboardEvent<HTMLDivElement>
+            event as unknown as React.KeyboardEvent<HTMLDivElement>,
           );
           return false;
         },
       },
     },
-    [editable, extensions]
+    [editable, extensions],
   );
 
   // Update editor content when content prop changes
@@ -128,7 +128,11 @@ export const useTiptapEditor = ({
 
     const currentContent = editor.getHTML();
     if (content && currentContent !== content) {
-      editor.commands.setContent(content);
+      setTimeout(() => {
+        if (!editor.isDestroyed) {
+          editor.commands.setContent(content);
+        }
+      });
     }
   }, [content, editor]);
 

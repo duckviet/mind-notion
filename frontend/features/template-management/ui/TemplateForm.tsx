@@ -38,67 +38,67 @@ export function TemplateForm({
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-text-secondary mb-2">
           Template Name
         </label>
         <input
           type="text"
           value={formData.name}
           onChange={(e) => onFormDataChange({ name: e.target.value })}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-lg border border-border bg-surface-elevated px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
           placeholder="My Custom Template"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-text-secondary mb-2">
             Icon
           </label>
           <input
             type="text"
             value={formData.icon}
             onChange={(e) => onFormDataChange({ icon: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-border bg-surface-elevated px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
             placeholder="FileText"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-text-secondary mb-2">
             Color
           </label>
           <input
             type="text"
             value={formData.color}
             onChange={(e) => onFormDataChange({ color: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-lg border border-border bg-surface-elevated px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
             placeholder="#5a8a7d"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-text-secondary mb-2">
           Tags (comma-separated)
         </label>
         <input
           type="text"
           value={tagsInput}
           onChange={(e) => onTagsInputChange(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+          className="w-full rounded-lg border border-border bg-surface-elevated px-4 py-2 text-text-primary focus:border-accent focus:outline-none"
           placeholder="Work, Meeting, Project"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-text-secondary mb-2">
           Content
         </label>
         {editor && <Toolbar className="mb-2" editor={editor} />}
 
         <EditorContent
-          className="h-full min-h-[300px] rounded-lg border border-gray-300 p-4 focus:outline-none"
+          className="h-full min-h-[300px] rounded-lg border border-border bg-surface-elevated/30 p-4 focus:outline-none"
           editor={editor}
         />
       </div>
@@ -106,14 +106,14 @@ export function TemplateForm({
       <div className="flex gap-3 justify-end">
         <button
           onClick={onCancel}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-elevated hover:text-text-primary"
         >
           Cancel
         </button>
         <button
           onClick={onSave}
           disabled={isSaving}
-          className="flex items-center gap-2 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600 disabled:opacity-50"
+          className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-600 disabled:opacity-50"
         >
           <Save size={16} />
           {isSaving ? "Saving..." : "Save Template"}

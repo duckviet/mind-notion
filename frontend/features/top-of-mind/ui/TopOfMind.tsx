@@ -35,7 +35,7 @@ const TopOfMind = ({
           scrollBehavior: "smooth",
           scrollbarGutter: "stable",
         }}
-        className="flex gap-3  items-center bg-[#dee2ea] w-full rounded-2xl my-4 p-4 h-[154px] transition-all overflow-x-auto"
+        className="flex gap-3 bg-surface-elevated items-center w-full rounded-2xl my-4 p-4 h-[154px] transition-all overflow-x-auto scrollbar-hide"
       >
         {notes.length === 0 ? (
           <div className="text-text-muted text-sm">
