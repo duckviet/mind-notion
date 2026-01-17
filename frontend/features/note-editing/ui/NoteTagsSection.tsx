@@ -41,6 +41,7 @@ const NoteTagsSection = ({
         placeholder="New tag..."
         maxLength={50}
         disabled={disabled}
+        className="border-none bg-white focus-visible:ring-none shadow-none"
       />
     </div>
   );

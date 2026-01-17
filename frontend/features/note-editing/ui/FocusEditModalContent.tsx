@@ -84,7 +84,7 @@ export default function FocusEditModalContent({
         initial={false}
         animate={{ width: isSidebarCollapsed ? 50 : 320 }}
         transition={{ type: "spring", stiffness: 260, damping: 30 }}
-        className="shrink-0 rounded-2xl p-2 flex flex-col bg-transparent"
+        className="shrink-0 rounded-2xl p-2 flex flex-col bg-transparent overflow-auto"
       >
         <motion.div
           initial={false}
@@ -130,7 +130,7 @@ export default function FocusEditModalContent({
               transition={{ duration: 0.15 }}
               className="flex flex-col space-y-10 mt-4 min-w-0 mr-2"
             >
-              <NoteMetadataPanel note={note} />
+              {/* <NoteMetadataPanel note={note} /> */}
               <NoteTagsSection
                 tags={form.tags}
                 newTag={newTag}

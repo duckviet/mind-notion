@@ -63,7 +63,7 @@ const Tiptap = ({
 
   const slashCommands = useMemo(
     () => [...BASE_SLASH_COMMANDS, createTemplateCommand(openTemplatesModal)],
-    [openTemplatesModal]
+    [openTemplatesModal],
   );
 
   const {
@@ -107,7 +107,7 @@ const Tiptap = ({
       <div
         className={cn(
           "w-full h-full animate-pulse bg-gray-100 rounded",
-          className
+          className,
         )}
       />
     );
@@ -115,15 +115,19 @@ const Tiptap = ({
 
   return (
     <div className="flex flex-col gap-2" key={editorKey}>
-      {toolbar && <div className="sticky top-2 z-15 px-6"><Toolbar editor={editor} /></div>}
-      <div ref={contentRef} className="relative flex gap-6 cursor-text p-6">
+      {toolbar && (
+        <div className="sticky top-2 z-15 px-6">
+          <Toolbar editor={editor} />
+        </div>
+      )}
+      <div ref={contentRef} className="relative flex gap-6 cursor-text">
         <div className="flex-1">
           <EditorContent
             ref={ref}
             editor={editor}
             className={cn(
-              "w-full min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none",
-              className
+              "w-full  p-6 min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none",
+              className,
             )}
             onFocus={onFocus}
             onBlur={onBlur}

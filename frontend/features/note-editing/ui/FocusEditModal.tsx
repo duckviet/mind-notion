@@ -34,14 +34,13 @@ export default function FocusEditModal({
         refetchOnWindowFocus: false,
       },
     },
-    queryClient
+    queryClient,
   );
-  console.log(note?.content)
 
   const [isSaving, setIsSaving] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = usePersistentState(
     LocalStorageKeys.FOCUS_EDIT_SIDEBAR_COLLAPSED,
-    () => false
+    () => false,
   );
 
   const {
@@ -62,7 +61,7 @@ export default function FocusEditModal({
     form,
     note,
     isSaving,
-    setIsSaving
+    setIsSaving,
   );
 
   const modalRef = useRef<HTMLDivElement>(null);

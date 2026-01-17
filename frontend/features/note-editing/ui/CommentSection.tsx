@@ -4,6 +4,7 @@ import { Plus, Send, Trash2, Edit2, X } from "lucide-react";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useComments } from "@/features/note-editing/hooks/useComments";
+import CommentForm from "./CommentForm";
 
 interface CommentSectionProps {
   noteId: string;
@@ -60,9 +61,9 @@ const CommentSection = ({ noteId }: CommentSectionProps) => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="h-full">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6 pb-4 border-b">
+      <div className="flex justify-between items-center mb-3">
         <h3 className="text-lg font-semibold text-gray-900">
           Comments {comments.length > 0 && <>({comments.length})</>}
         </h3>
@@ -79,60 +80,24 @@ const CommentSection = ({ noteId }: CommentSectionProps) => {
       {/* Add comment form */}
       <AnimatePresence mode="wait">
         {isAdding && (
-          <motion.div
-            initial={{ opacity: 0, height: 0, y: -20 }}
-            animate={{ opacity: 1, height: "auto", y: 0 }}
-            exit={{ opacity: 0, height: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="mb-6 overflow-hidden"
-          >
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="space-y-3">
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Share your thoughts..."
-                  maxLength={1000}
-                  rows={3}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
-                  autoFocus
-                />
-                <div className="flex items-end justify-between">
-                  <span className="text-xs text-gray-500">
-                    {newComment.length}/1000
-                  </span>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={handleAddComment}
-                      disabled={isLoading || !newComment.trim()}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <Send className="w-4 h-4 mr-1" />
-                      Send
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setIsAdding(false);
-                        setNewComment("");
-                      }}
-                      className="text-gray-600"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          <CommentForm
+            value={newComment}
+            onChange={setNewComment}
+            onSubmit={handleAddComment}
+            onCancel={() => {
+              setIsAdding(false);
+              setNewComment("");
+            }}
+            isLoading={isLoading}
+            placeholder="Share your thoughts..."
+            submitLabel="Send"
+          />
         )}
       </AnimatePresence>
 
       {/* Comments list */}
-      <div className="space-y-4">
-        <AnimatePresence mode="popLayout">
+      <div className="flex-1 space-y-4">
+        <AnimatePresence>
           {comments.length === 0 ? (
             <motion.div
               key="empty"
@@ -154,7 +119,7 @@ const CommentSection = ({ noteId }: CommentSectionProps) => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, x: -100, scale: 0.95 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
-                className="group flex gap-3 p-4 rounded-lg hover:border-gray-300 bg-gray-50 transition-all"
+                className="group relative flex gap-3 p-4 rounded-lg hover:border-gray-300 bg-gray-50 transition-all"
               >
                 {/* Avatar */}
                 {/* <div className="flex-shrink-0">
@@ -167,8 +132,8 @@ const CommentSection = ({ noteId }: CommentSectionProps) => {
                 </div> */}
 
                 {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                <div className="w-full">
+                  <div className="flex items-center gap-2 mb-2">
                     <span className="font-medium text-sm text-gray-900">
                       {comment.user_name}
                     </span>
@@ -185,36 +150,18 @@ const CommentSection = ({ noteId }: CommentSectionProps) => {
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="space-y-2 mt-2 overflow-hidden"
+                        className="space-y-3 mt-2 overflow-hidden"
                       >
-                        <textarea
+                        <CommentForm
                           value={editContent}
-                          onChange={(e) => setEditContent(e.target.value)}
-                          maxLength={1000}
-                          rows={2}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none resize-none text-sm"
-                          autoFocus
+                          onChange={setEditContent}
+                          onSubmit={() => handleUpdateComment(comment.id || "")}
+                          onCancel={() => setEditingId(null)}
+                          isLoading={isLoading}
+                          placeholder="Edit your comment..."
+                          submitLabel="Save"
+                          showMotion={false}
                         />
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              handleUpdateComment(comment.id || "")
-                            }
-                            disabled={isLoading}
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs"
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setEditingId(null)}
-                            className="text-xs"
-                          >
-                            Cancel
-                          </Button>
-                        </div>
                       </motion.div>
                     ) : (
                       <motion.p
@@ -233,38 +180,29 @@ const CommentSection = ({ noteId }: CommentSectionProps) => {
 
                 {/* Actions */}
                 {editingId !== comment.id && (
-                  <div className="flex-shrink-0 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                  <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
+                      onClick={() => {
+                        setEditingId(comment.id || "");
+                        setEditContent(comment.content || "");
+                      }}
+                      title="Edit comment"
                     >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-gray-500 hover:text-blue-600 hover:bg-blue-50"
-                        onClick={() => {
-                          setEditingId(comment.id || "");
-                          setEditContent(comment.content || "");
-                        }}
-                        title="Edit comment"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Button>
-                    </motion.div>
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-gray-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={() => handleDeleteComment(comment.id || "")}
+                      title="Delete comment"
                     >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-gray-500 hover:text-red-600 hover:bg-red-50"
-                        onClick={() => handleDeleteComment(comment.id || "")}
-                        title="Delete comment"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </motion.div>
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 )}
               </motion.div>
