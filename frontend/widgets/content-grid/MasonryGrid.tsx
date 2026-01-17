@@ -57,7 +57,7 @@ export default function MasonryGrid({
     <div className="w-full relative">
       <motion.div
         ref={gridRef}
-        className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6"
+        className="columns-1 sm:columns-2 lg:columns-3 xl:columns-6 gap-6"
         style={{
           columnGap: "24px",
           columnFill: "balance",
@@ -68,7 +68,7 @@ export default function MasonryGrid({
       >
         {isLoading ? (
           React.Children.map(children, (child: any) =>
-            React.isValidElement(child) ? child : null
+            React.isValidElement(child) ? child : null,
           )
         ) : (
           <AnimatePresence mode="popLayout">{children}</AnimatePresence>

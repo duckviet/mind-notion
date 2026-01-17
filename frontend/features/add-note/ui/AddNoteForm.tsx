@@ -59,7 +59,7 @@ export default function AddNoteForm({
       <Card
         className={cn(
           "relative p-6 bg-white rounded-2xl transition-all duration-200 h-full",
-          isFocus ? "z-40" : "hover:shadow-lg"
+          isFocus ? "z-40" : "hover:shadow-lg",
         )}
       >
         {/* Title Input */}
@@ -91,7 +91,7 @@ export default function AddNoteForm({
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           onKeyDown={handleEnter}
-          className="min-h-36 max-h-100 overflow-y-auto cursor-text w-full h-full"
+          className="min-h-36 max-h-100 overflow-y-auto cursor-text w-full h-full p-0"
         />
         {/* Save Hint */}
         {isSaveHintVisible && (

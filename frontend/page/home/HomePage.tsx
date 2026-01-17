@@ -9,14 +9,14 @@ import { FloatingActionButton } from "@/shared/components/FloatingActionButton";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";
 const MasonryGrid = dynamic(
   () => import("@/widgets/content-grid").then((m) => m.MasonryGrid),
-  { ssr: false }
+  { ssr: false },
 );
 const FocusEditModal = dynamic(
   () =>
     import("@/features/note-editing").then((mod) => ({
       default: mod.FocusEditModal,
     })),
-  { ssr: false }
+  { ssr: false },
 );
 import NoteCard from "@/entities/note/ui/NoteCard";
 import ArticleCard from "@/entities/web-article/ui/ArticleCard";
@@ -36,10 +36,13 @@ import {
   DraggableItem,
 } from "@/shared/components/dnd";
 import { TopOfMind } from "@/features/top-of-mind";
-import { DragEndEvent } from "@dnd-kit/core";
+import { DragEndEvent, DragStartEvent, useDndContext } from "@dnd-kit/core";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import { useDebounce } from "use-debounce";
 import { FoldersListPage } from "../folder";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef } from "react";
+import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -72,8 +75,12 @@ function HomePageContent() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [focusEditNoteId, setFocusEditNoteId] = useState<string | null>(null);
   const { isModalOpen, openModal, closeModal } = useModal();
-
   const [debouncedQuery] = useDebounce(query, 300);
+
+  // Ref để track visibility của TopOfMind section
+  const tomRef = useRef<HTMLDivElement>(null);
+  const [isTomVisible, setIsTomVisible] = useState(true);
+
   const {
     notes: notesData,
     isLoading,
@@ -94,6 +101,23 @@ function HomePageContent() {
       retry: false,
     },
   });
+
+  // IntersectionObserver để check TopOfMind có trong viewport không
+  useEffect(() => {
+    const element = tomRef.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsTomVisible(entry.isIntersecting);
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+    // Re-attach when TOM data loads or skeleton disappears
+  }, [topOfMindNotesData, isLoadingTopOfMindNotes]);
 
   const notes = useMemo(() => {
     return (notesData || []).map((note) => ({
@@ -137,7 +161,10 @@ function HomePageContent() {
     console.log("event", event);
     if (!over) return;
 
-    const activeId = active.id.toString();
+    const rawActiveId = active.id.toString();
+    const activeId = rawActiveId.startsWith("floating-")
+      ? rawActiveId.slice("floating-".length)
+      : rawActiveId;
     const overId = over.id.toString();
 
     console.log("Drag End - activeId:", activeId, "overId:", overId);
@@ -154,8 +181,11 @@ function HomePageContent() {
     // console.log("activeId", activeId, "overId", overId);
     // console.log("parentElement", parentId);
     // console.log("overParentElement", overParentId);
-    // Check if dropping into top-of-mind zone
-    if (overId === "top-of-mind-zone") {
+    // Check if dropping into top-of-mind zone (root or floating)
+    if (
+      overId === "top-of-mind-zone" ||
+      overId === "top-of-mind-zone-floating"
+    ) {
       // Find the note from main grid
       const noteToMove = notes.find((n) => n.id === activeId);
       if (noteToMove && !topOfMindNotesData?.find((n) => n.id === activeId)) {
@@ -189,7 +219,10 @@ function HomePageContent() {
 
   const renderOverlay = useCallback(
     (activeId: string | number | null) => {
-      const noteId = activeId?.toString();
+      const rawId = activeId?.toString();
+      const noteId = rawId?.startsWith("floating-")
+        ? rawId.slice("floating-".length)
+        : rawId;
       const note =
         notes.find((n) => n.id === noteId) ||
         topOfMindNotesData?.find((n) => n.id === noteId);
@@ -209,7 +242,7 @@ function HomePageContent() {
         </div>
       );
     },
-    [notes, topOfMindNotesData]
+    [notes, topOfMindNotesData],
   );
 
   // if (error) {
@@ -223,7 +256,10 @@ function HomePageContent() {
   const handleUpdateTopOfMindNote = async (id: string, tom: boolean) => {
     try {
       // Strip "tom-" prefix if present (used for drag-and-drop identification)
-      const noteId = id.startsWith("tom-") ? id.slice(4) : id;
+      const normalizedId = id.startsWith("tom-") ? id.slice(4) : id;
+      const noteId = normalizedId.startsWith("floating-")
+        ? normalizedId.slice("floating-".length)
+        : normalizedId;
       await updateNoteTOM(noteId, {
         tom,
       });
@@ -281,13 +317,26 @@ function HomePageContent() {
             {isLoadingTopOfMindNotes && !topOfMindNotesData ? (
               <TopOfMindSkeleton />
             ) : (
-              <TopOfMind
-                notes={topOfMindNotesData || []}
-                onUnpin={handleUpdateTopOfMindNote}
-                onFocusEdit={handleFocusEdit}
-              />
+              <div ref={tomRef}>
+                <TopOfMind
+                  notes={topOfMindNotesData || []}
+                  onUnpin={handleUpdateTopOfMindNote}
+                  onFocusEdit={handleFocusEdit}
+                />
+              </div>
             )}
           </SortableContext>
+
+          {/* Floating TOM Modal - chỉ hiện khi TopOfMind gốc không visible */}
+          <DragAwareTomModal isTomVisible={isTomVisible}>
+            <TopOfMind
+              droppableId="top-of-mind-zone-floating"
+              draggableIdPrefix="floating-"
+              notes={topOfMindNotesData || []}
+              onUnpin={handleUpdateTopOfMindNote}
+              onFocusEdit={handleFocusEdit}
+            />
+          </DragAwareTomModal>
           {/* 
           {notes.length === 0 && !isLoading ? (
             <EmptyState
