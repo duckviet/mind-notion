@@ -1,12 +1,14 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight, Printer } from "lucide-react";
+import { useReactToPrint } from "react-to-print";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { Button } from "@/shared/components/ui/button";
 import NoteMetadataPanel from "./NoteMetadataPanel";
 import NoteTagsSection from "./NoteTagsSection";
 import CommentSection from "./CommentSection";
 import { ResDetailNote } from "@/shared/services/generated/api";
+import { cn } from "@/lib/utils";
 
 interface FocusEditModalContentProps {
   form: {
@@ -43,10 +45,16 @@ export default function FocusEditModalContent({
   onTagRemove,
   onToggleSidebar,
 }: FocusEditModalContentProps) {
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({
+    contentRef,
+    documentTitle: form.title,
+  });
+
   return (
     <div className="flex-1 flex overflow-hidden w-full gap-4 justify-center bg-[#f0f2f5] p-2 rounded-[16px]">
-      <div className="flex-1 p-6 overflow-y-auto space-y-4 rounded-2xl bg-white w-full">
-        <div>
+      <div className="flex-1 overflow-y-auto space-y-4 rounded-2xl bg-white w-full">
+        <div className="p-6 pb-0">
           <input
             ref={titleRef}
             name="title"
@@ -65,6 +73,7 @@ export default function FocusEditModalContent({
         </div>
         <RichTextEditor
           showTOC={true}
+          contentRef={contentRef}
           content={form.content}
           onUpdate={onContentChange}
           editable
@@ -73,11 +82,27 @@ export default function FocusEditModalContent({
 
       <motion.aside
         initial={false}
-        animate={{ width: isSidebarCollapsed ? 42 : 320 }}
+        animate={{ width: isSidebarCollapsed ? 50 : 320 }}
         transition={{ type: "spring", stiffness: 260, damping: 30 }}
         className="shrink-0 rounded-2xl p-2 flex flex-col bg-transparent"
       >
-        <div className="flex items-center justify-end">
+        <motion.div
+          initial={false}
+          transition={{ type: "spring", stiffness: 260, damping: 30 }}
+          className={cn(
+            "flex items-center justify-end gap-1",
+            isSidebarCollapsed && "flex-col-reverse",
+          )}
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => reactToPrintFn()}
+            aria-label="Print note"
+          >
+            <Printer className="w-4 h-4" />
+          </Button>
           <Button
             type="button"
             variant="ghost"
@@ -93,7 +118,7 @@ export default function FocusEditModalContent({
               <ChevronRight className="w-4 h-4" />
             )}
           </Button>
-        </div>
+        </motion.div>
 
         <AnimatePresence initial={false}>
           {!isSidebarCollapsed && (
