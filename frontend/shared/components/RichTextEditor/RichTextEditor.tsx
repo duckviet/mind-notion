@@ -30,6 +30,7 @@ interface TiptapProps {
   onBlur?: () => void;
   // Thêm editorKey để force remount khi cần
   editorKey?: string;
+  contentRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 const Tiptap = ({
@@ -46,6 +47,7 @@ const Tiptap = ({
   onFocus,
   onBlur,
   editorKey,
+  contentRef,
 }: TiptapProps) => {
   const editorRef = useRef<Editor | null>(null);
 
@@ -113,8 +115,8 @@ const Tiptap = ({
 
   return (
     <div className="flex flex-col gap-2" key={editorKey}>
-      {toolbar && <Toolbar editor={editor} />}
-      <div className="relative flex gap-6 cursor-text">
+      {toolbar && <div className="sticky top-2 z-15 px-6"><Toolbar editor={editor} /></div>}
+      <div ref={contentRef} className="relative flex gap-6 cursor-text p-6">
         <div className="flex-1">
           <EditorContent
             ref={ref}
@@ -130,7 +132,7 @@ const Tiptap = ({
           {slashMenu.isOpen && (
             <Portal lockScroll={true}>
               <div
-                className="fixed inset-0 z-40 bg-black/5"
+                className="fixed inset-0 z-100 bg-black/5"
                 onMouseDown={(e) => {
                   e.stopPropagation();
                   closeSlashMenu();
