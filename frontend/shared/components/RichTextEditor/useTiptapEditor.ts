@@ -70,6 +70,7 @@ export const useTiptapEditor = ({
         codeBlock: false,
         heading: false,
         link: false,
+        blockquote: false,
       }),
       ...ExtListKit,
       ExtCustomCodeBlock,

@@ -62,7 +62,7 @@ const Toolbar = ({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "flex flex-wrap items-center gap-1 p-2 bg-gray-50 rounded-lg border border-gray-200 sticky -top-4 z-15 shadow-md",
+        "flex flex-wrap items-center gap-1 p-2 bg-gray-50 rounded-lg border border-gray-200 shadow-md",
         className
       )}
     >

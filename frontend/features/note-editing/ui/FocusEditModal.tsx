@@ -36,6 +36,7 @@ export default function FocusEditModal({
     },
     queryClient
   );
+  console.log(note?.content)
 
   const [isSaving, setIsSaving] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = usePersistentState(
