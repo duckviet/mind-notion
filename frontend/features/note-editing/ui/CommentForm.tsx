@@ -45,16 +45,15 @@ const CommentForm = ({
               size="sm"
               onClick={onSubmit}
               disabled={isLoading || !value.trim()}
-              className="bg-accent hover:bg-accent-600 text-white"
+              className="bg-accent-500 hover:bg-accent-700 text-white"
             >
               <Send className="w-4 h-4 mr-1" />
               {submitLabel}
             </Button>
             <Button
               size="sm"
-              variant="outline"
               onClick={onCancel}
-              className="text-text-primary"
+              className="text-text-primary bg-surface-lowered hover:bg-surface-lowered/40"
             >
               Cancel
             </Button>

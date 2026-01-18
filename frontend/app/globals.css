@@ -14,7 +14,7 @@
   --background: #f0f2f5;
   --surface: #ffffff;
   --surface-elevated: #d4dae6;
-  --surface-lowered: #d5d7dc;
+  --surface-lowered: #fafafa;
   --border: #e5e7eb;
   --border-subtle: #f3f4f6;
   --foreground: #0f172a;
@@ -578,7 +578,8 @@ html.black .tiptap.ProseMirror th {
 .split-view-wrapper {
   position: relative;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
+  z-index: 10;
 }
 
 .split-view-container {
@@ -588,6 +589,7 @@ html.black .tiptap.ProseMirror th {
 .split-view-columns {
   display: block !important;
   width: 100% !important;
+  height: 100% !important;
 }
 
 .split-view-columns > [data-node-view-content-react] {
@@ -596,12 +598,11 @@ html.black .tiptap.ProseMirror th {
   width: 100% !important;
   align-items: stretch;
   gap: 1px;
-  background: var(--border);
 }
 
 .split-view-column {
   min-height: 120px;
-  height: 100%;
+  height: 100% !important;
   padding: 16px;
   overflow: auto;
   flex-shrink: 0;
@@ -610,7 +611,6 @@ html.black .tiptap.ProseMirror th {
 
 .split-view-column:first-child {
   width: var(--split-left-width, 50%);
-  border-right: 1px solid var(--border);
 }
 
 .split-view-column:last-child {
