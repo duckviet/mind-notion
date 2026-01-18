@@ -50,7 +50,7 @@ const config: Config = {
 
         /* Accent Colors (Dynamic based on user preference) */
         accent: {
-          DEFAULT: "rgb(var(--accent-rgb) / <alpha-value>)",
+          DEFAULT: "var(--accent-50)",
           50: "var(--accent-50)",
           100: "var(--accent-100)",
           500: "var(--accent-500)",

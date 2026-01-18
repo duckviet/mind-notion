@@ -43,56 +43,70 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     },
-    [leftWidth, updateAttributes]
+    [leftWidth, updateAttributes],
   );
 
   return (
     <NodeViewWrapper
       className={cn(
-        "split-view-wrapper relative my-4 rounded-lg  transition-all duration-200",
-        border ? "border" : "border-none bg-gray-50/30",
-        selected ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-200",
+        "split-view-wrapper relative my-10 rounded-lg transition-all duration-200 overflow-visible",
+        border ? "border" : "border-none bg-surface-elevated/20",
+        selected
+          ? "border-accent ring-2 ring-accent/20 z-50 shadow-lg"
+          : "border-border z-20",
         isDragging && "select-none",
-        isHovered && !selected && "border-gray-300"
+        isHovered && !selected && "border-border-subtle z-40",
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Toolbar */}
+      {/* Floating Toolbar - Higher z-index and better visibility */}
       <div
         className={cn(
-          "absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-md bg-white px-2 py-1 shadow-md border border-gray-200 transition-opacity z-10",
+          "absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-md  backdrop-blur-md px-2 py-1 shadow-2xl border border-border transition-all duration-300 z-[100] whitespace-nowrap",
           isHovered || selected
-            ? "opacity-100"
-            : "opacity-0 pointer-events-none"
+            ? "opacity-100 translate-y-0 visible"
+            : "opacity-0 translate-y-2 invisible pointer-events-none",
         )}
       >
-        <div className="flex items-center gap-1 text-xs text-gray-500">
-          <Columns2 className="h-3 w-3" />
-          <span>Split View</span>
-          <span className="ml-1 text-gray-400">
-            ({leftWidth}% / {100 - leftWidth}%)
+        <div className="flex items-center gap-2 text-xs font-medium text-text-primary mr-2">
+          <div className="p-1 rounded bg-accent/10 text-accent">
+            <Columns2 className="h-3.5 w-3.5" />
+          </div>
+          <span className="opacity-70 text-[10px] uppercase tracking-wider font-bold">
+            Split {leftWidth}:{100 - leftWidth}
           </span>
         </div>
 
-        <div className="h-4 w-px bg-gray-200 mx-1" />
+        <div className="h-4 w-px bg-border mx-1" />
+
         <button
-          onClick={() => updateAttributes({ border: !border })}
-          className="p-1 text-gray-400 hover:bg-blue-50 rounded transition-colors"
-          title="Toogle split view border"
+          onClick={(e) => {
+            e.preventDefault();
+            updateAttributes({ border: !border });
+          }}
+          className={cn(
+            "p-1.5 rounded-full transition-all duration-200",
+            border
+              ? "bg-accent/10 text-accent hover:bg-accent/20"
+              : "text-text-muted hover:bg-surface-elevated hover:text-text-primary",
+          )}
+          title="Toggle split view border"
         >
           <Columns2
-            className={cn("h-3.5 w-3.5", border && "[stroke-dasharray:2_4]")}
-          />{" "}
+            className={cn("h-4 w-4", border && "[stroke-dasharray:2_4]")}
+          />
         </button>
 
-        <div className="h-4 w-px bg-gray-200 mx-1" />
         <button
-          onClick={deleteNode}
-          className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+          onClick={(e) => {
+            e.preventDefault();
+            deleteNode();
+          }}
+          className="p-1.5 text-text-muted hover:text-destructive hover:bg-destructive/10 rounded-full transition-all duration-200 ml-1"
           title="Delete split view"
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <Trash2 className="h-4 w-4" />
         </button>
       </div>
 
@@ -114,7 +128,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
         <div
           className={cn(
             "split-view-resizer absolute top-0 bottom-0 w-4 -ml-2 cursor-col-resize z-10 flex items-center justify-center group",
-            isDragging && "bg-blue-100/50"
+            isDragging && "bg-accent/10",
           )}
           style={{ left: `${leftWidth}%` }}
           onMouseDown={handleMouseDown}
@@ -123,8 +137,8 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
             className={cn(
               "h-12 w-1.5 rounded-full transition-all duration-200 shadow-sm",
               isDragging
-                ? "bg-blue-500 scale-y-125"
-                : "bg-gray-300 group-hover:bg-blue-400 group-hover:scale-y-110"
+                ? "bg-accent scale-y-125"
+                : "bg-border group-hover:bg-accent group-hover:scale-y-110",
             )}
           />
         </div>
