@@ -1,3 +1,4 @@
+import { hover } from "framer-motion";
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -27,17 +28,22 @@ const config: Config = {
         background: "var(--background)",
         surface: {
           DEFAULT: "var(--surface)",
+          50: "var(--surface-50)",
+          100: "var(--surface-100)",
+          200: "var(--surface-200)",
           elevated: "var(--surface-elevated)",
           lowered: "var(--surface-lowered)",
+          hover: "var(--surface-hover)",
         },
+
         border: {
           DEFAULT: "var(--border)",
           subtle: "var(--border-subtle)",
         },
         foreground: "var(--foreground)",
         muted: {
-          DEFAULT: "var(--muted-foreground)",
-          foreground: "var(--muted-foreground)",
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-hover)",
         },
 
         /* Text Colors */
@@ -50,13 +56,16 @@ const config: Config = {
 
         /* Accent Colors (Dynamic based on user preference) */
         accent: {
-          DEFAULT: "var(--accent-50)",
+          DEFAULT: "var(--accent)",
           50: "var(--accent-50)",
           100: "var(--accent-100)",
           500: "var(--accent-500)",
           600: "var(--accent-600)",
           700: "var(--accent-700)",
           foreground: "#ffffff",
+          hover: "var(--accent-hover)",
+          light: "var(--accent-light)",
+          lighter: "var(--accent-lighter)",
         },
         /* Interactive State Colors */
         hover: "var(--hover-overlay)",

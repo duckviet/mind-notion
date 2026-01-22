@@ -16,6 +16,7 @@ import { FolderCard } from "@/shared/components/Folder";
 import { Button } from "@/shared/components/ui/button";
 import { updateFolder } from "@/shared/services/generated/api";
 import { toast } from "sonner";
+import { Input } from "@/shared/components/ui/input";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -138,7 +139,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
         {isLoading ? (
           <GridSkeleton items={8} />
         ) : (
-          <div className="flex w-full gap-6">
+          <div className="grid grid-cols-6 w-full gap-6">
             {folders.map((folder) => (
               <FolderCard
                 key={folder.id}
@@ -174,7 +175,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
 
         {/* Create Folder Dialog */}
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="sm:max-w-[400px] bg-surface border-none">
+          <DialogContent className="sm:max-w-[400px] bg-surface-50 border border-border">
             <DialogHeader>
               <DialogTitle>Create New Folder</DialogTitle>
             </DialogHeader>
@@ -186,7 +187,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
                 >
                   Folder Name
                 </label>
-                <input
+                <Input
                   id="folder-name"
                   type="text"
                   placeholder="Enter folder name"
@@ -197,7 +198,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
                       handleCreateFolderSubmit();
                     }
                   }}
-                  className="px-3 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="px-3 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-lg"
                   autoFocus
                 />
               </div>

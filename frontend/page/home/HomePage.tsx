@@ -301,7 +301,7 @@ function HomePageContent() {
       }}
     >
       <div className="min-h-screen overflow-hidden">
-        <div className="container mx-auto px-6 py-6 space-y-6">
+        <div className="p-6 space-y-6">
           <SearchField
             className="rounded-md"
             query={query}

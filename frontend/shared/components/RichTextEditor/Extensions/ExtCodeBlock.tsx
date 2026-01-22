@@ -142,7 +142,7 @@ const CustomCodeBlock = CodeBlockShiki.extend({
   renderHTML({ HTMLAttributes, node }: any) {
     const language = node.attrs.language || "plaintext";
     const className =
-      "p-4 rounded-lg bg-surface-lowered font-mono text-sm overflow-x-auto";
+      "p-4 rounded-lg bg-surface-50 border-border border font-mono text-sm overflow-x-auto";
     const finalClass =
       (HTMLAttributes?.class ? `${HTMLAttributes.class} ` : "") + className;
 

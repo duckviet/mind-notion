@@ -275,7 +275,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
   }
 
   return (
-    <div className="p-6">
+    <div className="">
       {/* Folder Header */}
       {isFolderLoading ? (
         <FolderHeaderSkeleton />

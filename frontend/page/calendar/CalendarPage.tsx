@@ -87,7 +87,7 @@ const fakeCalendarApi = {
     const current = ensureCalendarYear(year).map((calendar) =>
       calendar.month === month
         ? { ...calendar, holidayList: payload.holidayList }
-        : calendar
+        : calendar,
     );
     fakeCalendarStore.set(year, current);
     return current.find((item) => item.month === month)!;
@@ -111,7 +111,7 @@ export default function CalendarPage() {
       const day = Number(dayStr);
 
       const calendarForMonth = calendars.find(
-        (item) => item.month === month && item.year === year
+        (item) => item.month === month && item.year === year,
       );
 
       if (!calendarForMonth) {
@@ -131,8 +131,8 @@ export default function CalendarPage() {
             (old ?? []).map((item) =>
               item.month === month && item.year === year
                 ? { ...item, holidayList: payload.holidayList }
-                : item
-            )
+                : item,
+            ),
         );
         toast.success("Holiday updated");
       } catch (error) {
@@ -140,11 +140,11 @@ export default function CalendarPage() {
         toast.error("Failed to update day");
       }
     },
-    [calendars, queryClient]
+    [calendars, queryClient],
   );
 
   return (
-    <div className="hidden md:flex h-full flex-1 flex-col space-y-6 p-6 px-12">
+    <div className="hidden md:flex h-full flex-1 flex-col space-y-6 p-6">
       <YearDays
         calendars={calendars}
         currentYear={currentYear}

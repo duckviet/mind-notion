@@ -56,7 +56,7 @@ const PasswordSettings = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500 delay-100">
+    <div className="space-y-8  animate-in fade-in duration-500 delay-100">
       <div className="space-y-1">
         <h2 className="text-2xl font-bold tracking-tight">Security</h2>
         <p className="text-muted-foreground">
@@ -64,7 +64,7 @@ const PasswordSettings = () => {
         </p>
       </div>
 
-      <Card className="border-none shadow-sm bg-card/50 max-w-2xl">
+      <Card className="shadow-sm bg-surface border border-border  ">
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold">
             Change Password
@@ -86,7 +86,7 @@ const PasswordSettings = () => {
                   type={showCurrentPassword ? "text" : "password"}
                   {...register("currentPassword")}
                   placeholder="Enter current password"
-                  className="pl-9 pr-10 h-10"
+                  className="pl-9 pr-10 h-10 border-border shadow-none"
                 />
                 <button
                   type="button"
@@ -118,7 +118,7 @@ const PasswordSettings = () => {
                   type={showNewPassword ? "text" : "password"}
                   {...register("newPassword")}
                   placeholder="Enter new password"
-                  className="pl-9 pr-10 h-10"
+                  className="pl-9 pr-10 h-10 border-border shadow-none"
                 />
                 <button
                   type="button"
@@ -151,7 +151,7 @@ const PasswordSettings = () => {
                   type={showConfirmPassword ? "text" : "password"}
                   {...register("confirmPassword")}
                   placeholder="Confirm new password"
-                  className="pl-9 pr-10 h-10"
+                  className="pl-9 pr-10 h-10 border-border shadow-none"
                 />
                 <button
                   type="button"

@@ -28,8 +28,8 @@ export default function ToolbarButton({
         isActive && !label
           ? "bg-[#a55252] text-white"
           : disabled
-            ? "text-gray-300 cursor-not-allowed"
-            : "text-gray-700 hover:bg-gray-200"
+            ? "text-text-muted cursor-not-allowed"
+            : "text-text-muted hover:bg-surface-hover hover:text-text-inverse"
       }`}
     >
       {icon}

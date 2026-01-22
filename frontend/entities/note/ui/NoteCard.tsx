@@ -87,7 +87,7 @@ export default function NoteCard({
         >
           <Card
             // role="article"
-            className="rounded-2xl bg-surface w-full p-6"
+            className="rounded-2xl bg-surface-50 w-full p-6 overflow-hidden"
             aria-label={`Note card: ${match.title}`}
           >
             <div className="flex justify-between items-center w-full mb-4">
@@ -117,7 +117,7 @@ export default function NoteCard({
           <p className="text-sm">Focus Edit</p>
         </ContextMenuItem>
         <ContextMenuSub>
-          <ContextMenuSubTrigger className="cursor-pointer">
+          <ContextMenuSubTrigger className="cursor-pointer focus:bg-surface-elevated/40 text-text-primary">
             <FolderInput className="w-4 h-4 mr-2" />
             <span className="text-sm">Add to Folder</span>
           </ContextMenuSubTrigger>
