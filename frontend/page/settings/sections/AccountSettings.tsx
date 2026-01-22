@@ -17,15 +17,7 @@ import { Button } from "@/shared/components/ui/button";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useUpdateMe } from "@/shared/services/generated/api";
 import { toast } from "sonner";
-import {
-  User,
-  Mail,
-  Link,
-  KeyRound,
-  ShieldCheck,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { User, Mail, Link } from "lucide-react";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -33,29 +25,12 @@ const profileSchema = z.object({
   avatar: z.string().url("Invalid URL").optional().or(z.literal("")),
 });
 
-const passwordSchema = z
-  .object({
-    currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
 type ProfileFormValues = z.infer<typeof profileSchema>;
-type PasswordFormValues = z.infer<typeof passwordSchema>;
 
 const AccountSettings = () => {
   const { user, setUser } = useAuthStore();
   const updateMeMutation = useUpdateMe();
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // Profile form
   const {
     register: registerProfile,
     handleSubmit: handleSubmitProfile,
@@ -67,16 +42,6 @@ const AccountSettings = () => {
       email: user?.email || "",
       avatar: user?.avatar || "",
     },
-  });
-
-  // Password form
-  const {
-    register: registerPassword,
-    handleSubmit: handleSubmitPassword,
-    formState: { errors: passwordErrors },
-    reset: resetPassword,
-  } = useForm<PasswordFormValues>({
-    resolver: zodResolver(passwordSchema),
   });
 
   const onSubmitProfile = async (data: ProfileFormValues) => {
@@ -92,17 +57,6 @@ const AccountSettings = () => {
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error("Failed to update profile");
-      console.error(error);
-    }
-  };
-
-  const onSubmitPassword = async (data: PasswordFormValues) => {
-    try {
-      // TODO: Implement password change API call
-      toast.success("Password changed successfully");
-      resetPassword();
-    } catch (error) {
-      toast.error("Failed to change password");
       console.error(error);
     }
   };
@@ -151,7 +105,7 @@ const AccountSettings = () => {
                     id="name"
                     {...registerProfile("name")}
                     placeholder="John Doe"
-                    className="pl-9 h-10 bg-transparent border-border"
+                    className="pl-9 h-10 shadow-none  border-border"
                   />
                 </div>
                 {profileErrors.name && (
@@ -175,7 +129,7 @@ const AccountSettings = () => {
                     type="email"
                     {...registerProfile("email")}
                     placeholder="john@example.com"
-                    className="pl-9 h-10 bg-transparent border-border"
+                    className="pl-9 h-10 shadow-none  border-border"
                   />
                 </div>
                 {profileErrors.email && (
@@ -199,7 +153,7 @@ const AccountSettings = () => {
                   id="avatar"
                   {...registerProfile("avatar")}
                   placeholder="https://example.com/avatar.jpg"
-                  className="pl-9 h-10 bg-transparent border-border"
+                  className="pl-9 h-10 shadow-none  border-border"
                 />
               </div>
               {profileErrors.avatar && (
@@ -219,135 +173,6 @@ const AccountSettings = () => {
                 className="min-w-[120px]"
               >
                 {updateMeMutation.isPending ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Security Section */}
-      <Card className="border border-border shadow-sm bg-surface">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-lg font-semibold text-text-primary">
-            Change Password
-          </CardTitle>
-          <CardDescription className="text-text-secondary">
-            Ensure your account is using a long, random password to stay secure.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={handleSubmitPassword(onSubmitPassword)}
-            className="space-y-5"
-          >
-            <div className="space-y-2">
-              <Label
-                htmlFor="currentPassword"
-                className="text-sm text-text-primary"
-              >
-                Current Password
-              </Label>
-              <div className="relative">
-                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
-                <Input
-                  id="currentPassword"
-                  type={showCurrentPassword ? "text" : "password"}
-                  {...registerPassword("currentPassword")}
-                  placeholder="Enter current password"
-                  className="bg-transparent border-border pl-9 pr-10 h-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
-                >
-                  {showCurrentPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {passwordErrors.currentPassword && (
-                <p className="text-sm text-destructive font-medium">
-                  {passwordErrors.currentPassword.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="newPassword"
-                className="text-sm text-text-primary"
-              >
-                New Password
-              </Label>
-              <div className="relative">
-                <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
-                <Input
-                  id="newPassword"
-                  type={showNewPassword ? "text" : "password"}
-                  {...registerPassword("newPassword")}
-                  placeholder="Enter new password"
-                  className="bg-transparent border-border pl-9 pr-10 h-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
-                >
-                  {showNewPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {passwordErrors.newPassword && (
-                <p className="text-sm text-destructive font-medium">
-                  {passwordErrors.newPassword.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="confirmPassword"
-                className="text-sm text-text-primary"
-              >
-                Confirm New Password
-              </Label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 border-b-2 border-text-muted" />
-                <Input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  {...registerPassword("confirmPassword")}
-                  placeholder="Confirm new password"
-                  className="bg-transparent border-border pl-9 pr-10 h-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {passwordErrors.confirmPassword && (
-                <p className="text-sm text-destructive font-medium">
-                  {passwordErrors.confirmPassword.message}
-                </p>
-              )}
-            </div>
-
-            <div className="pt-2">
-              <Button type="submit" className="w-full sm:w-auto px-8">
-                Update Password
               </Button>
             </div>
           </form>

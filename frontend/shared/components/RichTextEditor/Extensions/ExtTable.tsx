@@ -28,7 +28,7 @@ export const ExtTableHeader = TableHeader.extend({
       {
         ...HTMLAttributes,
         class:
-          "border border-red-300 p-2 bg-gray-100 font-bold text-left min-w-[100px] relative group",
+          "border border-red-300 p-2 font-bold text-left min-w-[100px] relative group",
       },
       0,
     ];
