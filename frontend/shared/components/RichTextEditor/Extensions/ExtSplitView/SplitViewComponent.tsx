@@ -50,7 +50,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
     <NodeViewWrapper
       className={cn(
         "split-view-wrapper relative my-10 rounded-lg transition-all duration-200 overflow-visible",
-        border ? "border" : "border-none bg-surface-elevated/20",
+        border ? "border" : "border-none",
         selected
           ? "border-accent ring-2 ring-accent/20 z-50 shadow-lg"
           : "border-border z-20",
@@ -63,14 +63,14 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
       {/* Floating Toolbar - Higher z-index and better visibility */}
       <div
         className={cn(
-          "absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-md  backdrop-blur-md px-2 py-1 shadow-2xl border border-border transition-all duration-300 z-[100] whitespace-nowrap",
+          "absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-md    px-2 py-1 shadow-2xl border border-border transition-all duration-300 z-[100] whitespace-nowrap",
           isHovered || selected
-            ? "opacity-100 translate-y-0 visible"
+            ? "opacity-100 translate-y-0 visible bg-surface"
             : "opacity-0 translate-y-2 invisible pointer-events-none",
         )}
       >
         <div className="flex items-center gap-2 text-xs font-medium text-text-primary mr-2">
-          <div className="p-1 rounded bg-accent/10 text-accent">
+          <div className="p-1 rounded bg-background text-accent">
             <Columns2 className="h-3.5 w-3.5" />
           </div>
           <span className="opacity-70 text-[10px] uppercase tracking-wider font-bold">
@@ -89,7 +89,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
             "p-1.5 rounded-full transition-all duration-200",
             border
               ? "bg-accent/10 text-accent hover:bg-accent/20"
-              : "text-text-muted hover:bg-surface-elevated hover:text-text-primary",
+              : "text-text-muted hover:bg-surface hover:text-text-primary",
           )}
           title="Toggle split view border"
         >

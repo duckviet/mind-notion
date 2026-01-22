@@ -7,13 +7,11 @@ import { useUploadMedia } from "@/shared/services/generated/api";
 import ToolbarButton from "./ToolbarButton";
 import TableSizeDropdown from "./TableSizeDropdown";
 import { getToolbarGroups } from "./ToolbarConfig";
-import { Dropdown } from "react-day-picker";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "../../ui/hover-card";
-import { Button } from "../../ui/button";
 
 const Toolbar = ({
   editor,
@@ -62,7 +60,7 @@ const Toolbar = ({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "flex flex-wrap items-center gap-1 p-2 bg-surface-lowered text-primary rounded-lg   shadow-md",
+        "flex flex-wrap border border-border items-center gap-1 p-2 bg-surface-50 text-text-primary rounded-lg   shadow-md",
         className,
       )}
     >
