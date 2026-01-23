@@ -27,8 +27,8 @@ const SettingsPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground mx-auto max-w-7xl w-full">
-      <h1 className=" font-bold tracking-tight text-text-primary mb-10 pt-10">
+    <div className="min-h-screen bg-background text-foreground mx-auto max-w-7xl w-full py-6">
+      <h1 className=" font-bold tracking-tight text-text-primary mb-10">
         Settings
       </h1>
       <div className="py-8 md:py-12 w-full">

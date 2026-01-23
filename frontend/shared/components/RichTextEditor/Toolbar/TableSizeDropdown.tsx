@@ -36,12 +36,14 @@ export default function TableSizeDropdown({ editor }: { editor: Editor }) {
           <div
             key={`${row}-${col}`}
             className={cn(
-              "w-4 h-4 border border-gray-300 cursor-pointer transition-colors rounded-sm",
-              isHighlighted ? "bg-[#a55252]" : "bg-white hover:bg-gray-100"
+              "w-4 h-4 border border-border cursor-pointer transition-colors rounded-[4px]",
+              isHighlighted
+                ? "bg-[#a55252]"
+                : "bg-accent-foreground hover:bg-gray-100",
             )}
             onMouseEnter={() => setHoveredCell({ row, col })}
             onClick={() => handleInsertTable(row, col)}
-          />
+          />,
         );
       }
     }
@@ -57,7 +59,7 @@ export default function TableSizeDropdown({ editor }: { editor: Editor }) {
         title="Insert Table"
         className={cn(
           "p-2 rounded transition-colors",
-          isOpen ? "bg-[#a55252] text-white" : "text-gray-700 hover:bg-gray-200"
+          isOpen ? "bg-[#a55252] text-white" : "text-primary hover:bg-accent",
         )}
       >
         <Table size={16} />
@@ -70,7 +72,7 @@ export default function TableSizeDropdown({ editor }: { editor: Editor }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50"
+            className="absolute top-full left-0 mt-2 bg-accent border border-border rounded-lg shadow-lg p-3 z-50"
             onMouseLeave={() => setHoveredCell(null)}
           >
             <div
