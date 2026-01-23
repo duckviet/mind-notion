@@ -64,7 +64,6 @@
   --text-inverse: #ffffff; /* Text trên nền đậm */
 
   /* Accent Colors (Blue - Default) */
-  --accent: #3b82f6; /* Màu chính cho button, link */
   --accent-hover: #2563eb; /* Hover accent */
   --accent-light: #dbeafe; /* Nền nhạt khi item được chọn */
   --accent-lighter: #eff6ff; /* Nền rất nhạt */
@@ -144,7 +143,6 @@ html.dark {
   --text-inverse: #0f172a;
 
   /* Accent Colors */
-  --accent: #4a9eff;
   --accent-hover: #3b82f6;
   --accent-light: #1e3a5f;
   --accent-lighter: #172554;
