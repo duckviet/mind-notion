@@ -73,12 +73,12 @@ const config: Config = {
 
         /* Semantic Colors */
         primary: {
-          DEFAULT: "var(--accent-600)",
-          foreground: "#ffffff",
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
         },
         secondary: {
-          DEFAULT: "var(--surface-elevated)",
-          foreground: "var(--text-primary)",
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
         },
         destructive: {
           DEFAULT: "#ef4444",

@@ -229,3 +229,23 @@ func (api *NoteAPI) ListNotesTOM(c *gin.Context) {
     }
     c.JSON(http.StatusOK, notes)
 }
+
+// Get /api/v1/public/notes/:note_id
+// Get public note by ID (no auth required)
+func (api *NoteAPI) GetPublicNote(c *gin.Context) {
+    idStr := c.Param("note_id")
+
+    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+        return
+    }
+
+    // Only return if note is public
+    if !note.IsPublic {
+        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+        return
+    }
+
+    c.JSON(http.StatusOK, note)
+}

@@ -20,7 +20,7 @@ const SidebarWrapper = ({ children }: { children?: React.ReactNode }) => {
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar />
-      <SidebarInset className="overflow-x-hidden w-full bg-background transition-[margin] duration-200 px-12">
+      <SidebarInset className="overflow-x-hidden w-full bg-background transition-[margin] duration-200">
         {children}
       </SidebarInset>
     </SidebarProvider>

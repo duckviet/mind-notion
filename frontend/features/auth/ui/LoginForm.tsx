@@ -56,7 +56,7 @@ export const LoginForm = ({
   };
 
   return (
-    <Card className="w-full backdrop-blur-sm bg-surface/80 border-0 shadow-xl shadow-shadow-lg">
+    <Card className="w-full backdrop-blur-sm  /80 border-0 shadow-xl shadow-shadow-lg">
       <CardHeader className="space-y-1 pb-6">
         <CardTitle className="text-2xl font-bold text-center text-text-primary">
           Welcome Back
@@ -93,7 +93,7 @@ export const LoginForm = ({
                 type="text"
                 placeholder="Enter your username or email"
                 {...register("username")}
-                className={`pl-10 h-11 bg-surface-elevated border-border focus:bg-surface focus:border-accent focus:ring-accent/20 transition-all ${
+                className={`pl-10 h-11  -elevated border-border focus:  focus:border-accent focus:ring-accent/20 transition-all ${
                   errors.username
                     ? "border-destructive focus:border-destructive"
                     : ""
@@ -122,7 +122,7 @@ export const LoginForm = ({
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 {...register("password")}
-                className={`pl-10 pr-10 h-11 bg-surface-elevated border-border focus:bg-surface focus:border-accent focus:ring-accent/20 transition-all ${
+                className={`pl-10 pr-10 h-11  -elevated border-border focus:  focus:border-accent focus:ring-accent/20 transition-all ${
                   errors.password
                     ? "border-destructive focus:border-destructive"
                     : ""
@@ -169,7 +169,7 @@ export const LoginForm = ({
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-surface px-2 text-text-muted">
+              <span className="  px-2 text-text-muted">
                 New to our platform?
               </span>
             </div>
@@ -179,7 +179,7 @@ export const LoginForm = ({
             type="button"
             variant="outline"
             onClick={onSwitchToRegister}
-            className="w-full h-11 border-border hover:bg-surface-elevated hover:border-border text-text-primary transition-all"
+            className="w-full h-11 border-border hover: -elevated hover:border-border text-text-primary transition-all"
           >
             Create an account
           </Button>

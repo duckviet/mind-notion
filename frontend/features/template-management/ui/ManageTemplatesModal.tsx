@@ -191,7 +191,7 @@ export function ManageTemplatesModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="fixed left-1/2 top-1/2 z-50 w-[900px] max-h-[80vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[2rem] border border-border bg-surface shadow-2xl"
+              className="fixed left-1/2 top-1/2 z-50 w-[900px] max-h-[80vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[1.5rem] border border-border  bg-card shadow-2xl"
             >
               {/* Header */}
               <div className="flex items-center justify-between px-8 py-6 border-b border-border">
@@ -209,7 +209,7 @@ export function ManageTemplatesModal({
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={handleCreate}
-                      className="rounded-full bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-600"
+                      className="rounded-[1rem] bg-accent px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-accent-50"
                     >
                       Create New
                     </motion.button>
@@ -218,14 +218,14 @@ export function ManageTemplatesModal({
                     whileHover={{ rotate: 90, scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-elevated text-text-primary transition-colors hover:bg-destructive hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-full  -elevated text-text-primary transition-colors hover:bg-destructive hover:text-white"
                   >
                     <X size={20} />
                   </motion.button>
                 </div>
               </div>
               {/* Content */}
-              <div className="p-8 overflow-y-auto max-h-[calc(80vh-120px)] bg-surface text-text-primary">
+              <div className="p-8 overflow-y-auto max-h-[calc(80vh-120px)]   text-text-primary">
                 {isEditing && editor ? (
                   <TemplateForm
                     editor={editor}

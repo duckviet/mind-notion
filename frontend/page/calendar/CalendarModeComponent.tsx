@@ -40,7 +40,7 @@ function CalendarModeComponent({
   }, []);
 
   return (
-    <div className="p-4 space-y-3 rounded-md h-full  ">
+    <div className="p-4 space-y-3 rounded-md h-full">
       {mode !== "weekly" && (
         <h4 className="text-md font-medium text-lg capitalize">
           {title && title.toLowerCase()}
@@ -89,7 +89,7 @@ function CalendarModeComponent({
                 : undefined
             }
             className={cn(
-              "p-2 h-30 bg-surface rounded-md relative flex items-center cursor-pointer transition hover:bg-surface-elevated",
+              "p-2 h-30 bg-accent   rounded-md relative flex items-center cursor-pointer transition hover: -elevated",
               highlightDate && highlightDate === day.date
                 ? "bg-accent-100 border-accent-300 shadow-md ring ring-accent-200 animate-pulse"
                 : "",

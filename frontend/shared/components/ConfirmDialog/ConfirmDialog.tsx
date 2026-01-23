@@ -69,7 +69,7 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-sm bg-surface border-none">
+      <DialogContent className="sm:max-w-sm   border-none">
         <DialogHeader>
           <DialogTitle className="text-2xl text-text-primary">
             {title}

@@ -416,6 +416,32 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  '/public/notes/{note_id}':
+    get:
+      operationId: getPublicNote
+      summary: Get a public note by ID (no auth required)
+      description: Fetches a note that has been marked as public. No authentication required.
+      security: []
+      tags:
+        - Note
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The note ID
+      responses:
+        '200':
+          description: Successful response with note details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Res_DetailNote'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   '/notes/{note_id}/comments':
     post:
       summary: Create a comment on a note
