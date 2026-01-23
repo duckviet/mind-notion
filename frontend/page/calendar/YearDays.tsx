@@ -194,7 +194,7 @@ function YearDays({
             onClick={() => setCalendarMode("yearly")}
             className={cn(
               "  cursor-pointer hover:bg-hover-overlay ",
-              calendarMode === "yearly" ? "bg-accent-500/20 text-black" : " ",
+              calendarMode === "yearly" ? "bg-accent-100 text-black" : " ",
             )}
           >
             Yearly
@@ -203,7 +203,7 @@ function YearDays({
             onClick={() => setCalendarMode("monthly")}
             className={cn(
               "  cursor-pointer hover:bg-hover-overlay ",
-              calendarMode === "monthly" ? "bg-accent-500/20 text-black" : " ",
+              calendarMode === "monthly" ? "bg-accent-100 text-black" : " ",
             )}
           >
             Monthly
@@ -212,7 +212,7 @@ function YearDays({
             onClick={() => setCalendarMode("weekly")}
             className={cn(
               "  cursor-pointer hover:bg-hover-overlay ",
-              calendarMode === "weekly" ? "bg-accent-500/20 text-black" : " ",
+              calendarMode === "weekly" ? "bg-accent-100 text-black" : " ",
             )}
           >
             Weekly

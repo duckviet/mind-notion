@@ -175,7 +175,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
 
         {/* Create Folder Dialog */}
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="sm:max-w-[400px]  -50 border border-border">
+          <DialogContent className="sm:max-w-[400px]  bg-accent border border-border">
             <DialogHeader>
               <DialogTitle>Create New Folder</DialogTitle>
             </DialogHeader>
@@ -198,27 +198,22 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
                       handleCreateFolderSubmit();
                     }
                   }}
-                  className="px-3 py-2 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent text-lg"
+                  className="px-3 py-2 rounded-lg border border-border  focus:ring-2 focus:ring-accent   text-lg"
                   autoFocus
                 />
               </div>
             </div>
             <DialogFooter>
-              <button
-                type="button"
-                onClick={() => setIsCreateModalOpen(false)}
-                className="px-3 py-2 text-sm font-medium text-text-primary   border border-border rounded-lg hover: -elevated"
-              >
+              <Button type="button" onClick={() => setIsCreateModalOpen(false)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleCreateFolderSubmit}
                 disabled={!folderName.trim() || isCreating}
-                className="px-3 py-2 text-sm font-medium text-white bg-accent rounded-lg hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isCreating ? "Creating..." : "Create"}
-              </button>
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
