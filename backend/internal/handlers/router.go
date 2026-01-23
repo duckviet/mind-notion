@@ -18,6 +18,7 @@ var publicPaths = []string{
 	"/ws",
 	"/api/v1/auth",
 	"/auth",
+	"/api/v1/public/notes",
 }
 
 // SetupRouter initializes and configures the Gin server

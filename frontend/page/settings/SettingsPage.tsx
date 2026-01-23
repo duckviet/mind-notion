@@ -34,7 +34,7 @@ const SettingsPage = () => {
       <div className="py-8 md:py-12 w-full">
         <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
           {/* Sidebar */}
-          <aside className="w-full md:w-64 flex-shrink-0">
+          <aside className="w-full md:w-48 flex-shrink-0">
             <div className="sticky top-8">
               <nav className="space-y-1">
                 {menuItems.map((item) => (

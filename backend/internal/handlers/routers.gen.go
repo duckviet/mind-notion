@@ -233,6 +233,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.NoteAPI.GetNote,
 		},
 		{
+			"GetPublicNote",
+			http.MethodGet,
+			"/api/v1/public/notes/:note_id",
+			handleFunctions.NoteAPI.GetPublicNote,
+		},
+		{
 			"ListNotes",
 			http.MethodGet,
 			"/api/v1/notes/list",

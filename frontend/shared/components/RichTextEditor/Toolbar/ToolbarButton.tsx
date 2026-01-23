@@ -29,7 +29,7 @@ export default function ToolbarButton({
           ? "bg-[#a55252] text-white"
           : disabled
             ? "text-text-muted cursor-not-allowed"
-            : "text-text-muted hover:bg-surface-hover hover:text-text-inverse"
+            : "text-text-muted hover: -hover hover:text-text-inverse"
       }`}
     >
       {icon}

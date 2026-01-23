@@ -11,10 +11,12 @@ const DragAwareTomModal = ({
   children,
   isTomVisible = true,
 }: DragAwareTomModalProps) => {
-  const { active } = useDndContext();
+  const { active, activeNode } = useDndContext();
 
+  const dataType = activeNode?.getAttribute("data-type");
   // Chỉ hiện modal khi đang drag VÀ TopOfMind gốc không hiển thị trên màn hình
-  const shouldShowFloatingModal = !!active && !isTomVisible;
+  const shouldShowFloatingModal =
+    !!active && !isTomVisible && dataType !== "tom-note";
 
   return (
     <div>

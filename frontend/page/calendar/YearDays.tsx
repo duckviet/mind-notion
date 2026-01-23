@@ -172,24 +172,13 @@ function YearDays({
     <div className="space-y-4 rounded-md p-4 h-full min-h-screen flex flex-col items-center">
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-2">
-          <Button
-            className="bg-surface cursor-pointer hover:bg-accent-100 text-primary"
-            onClick={handlePrevButton}
-          >
+          <Button onClick={handlePrevButton}>
             <ArrowLeftIcon className="w-4 h-4" />
           </Button>
-          <Button
-            className="bg-surface cursor-pointer hover:bg-accent-100 text-primary"
-            onClick={handleNextButton}
-          >
+          <Button onClick={handleNextButton}>
             <ArrowRightIcon className="w-4 h-4" />
           </Button>
-          <Button
-            className="bg-surface cursor-pointer hover:bg-accent-100 text-primary"
-            onClick={handleTodayClick}
-          >
-            Today
-          </Button>
+          <Button onClick={handleTodayClick}>Today</Button>
         </div>
 
         <h3 className="text-center font-bold text-4xl text-primary">
@@ -204,8 +193,8 @@ function YearDays({
           <Button
             onClick={() => setCalendarMode("yearly")}
             className={cn(
-              "bg-surface cursor-pointer hover:bg-hover-overlay text-primary",
-              calendarMode === "yearly" ? "bg-accent-500/20 " : "bg-surface",
+              "  cursor-pointer hover:bg-hover-overlay ",
+              calendarMode === "yearly" ? "bg-accent-500/20 text-black" : " ",
             )}
           >
             Yearly
@@ -213,8 +202,8 @@ function YearDays({
           <Button
             onClick={() => setCalendarMode("monthly")}
             className={cn(
-              "bg-surface cursor-pointer hover:bg-hover-overlay text-primary",
-              calendarMode === "monthly" ? "bg-accent-500/20 " : "bg-surface",
+              "  cursor-pointer hover:bg-hover-overlay ",
+              calendarMode === "monthly" ? "bg-accent-500/20 text-black" : " ",
             )}
           >
             Monthly
@@ -222,8 +211,8 @@ function YearDays({
           <Button
             onClick={() => setCalendarMode("weekly")}
             className={cn(
-              "bg-surface cursor-pointer hover:bg-hover-overlay text-primary",
-              calendarMode === "weekly" ? "bg-accent-500/20 " : "bg-surface",
+              "  cursor-pointer hover:bg-hover-overlay ",
+              calendarMode === "weekly" ? "bg-accent-500/20 text-black" : " ",
             )}
           >
             Weekly
