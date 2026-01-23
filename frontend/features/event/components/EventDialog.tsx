@@ -129,7 +129,7 @@ export function EventDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl   border-border border">
+      <DialogContent className="sm:max-w-xl bg-accent  border-border border">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>{dialogTitle}</DialogTitle>

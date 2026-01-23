@@ -38,7 +38,7 @@ export default function NotePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen  -50 p-4 md:p-8 flex justify-center items-start pt-20">
+      <div className="min-h-screen  p-4 md:p-8 flex justify-center items-start pt-20">
         <div className="w-full max-w-4xl space-y-8">
           <div className="space-y-4">
             <Skeleton className="h-12 w-3/4 rounded-lg" />
@@ -59,8 +59,8 @@ export default function NotePage() {
 
   if (error || !note) {
     return (
-      <div className="min-h-screen  -50 flex flex-col items-center justify-center p-4">
-        <div className="  p-8 rounded-2xl border border-border shadow-sm text-center max-w-md w-full">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="bg-accent p-8 rounded-xl border border-border shadow-sm text-center max-w-md w-full">
           <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-6 h-6" />
           </div>
@@ -75,8 +75,8 @@ export default function NotePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background w-full overflow-y-auto">
-      <div className="container mx-auto px-4 py-8 md:py-12  ">
+    <div className="min-h-screen bg-background w-full overflow-y-auto  px-4 py-6  mx-auto ">
+      <div className="p-6 rounded-lg bg-accent">
         <header className="mb-8 md:mb-12 space-y-6">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 leading-tight">
@@ -121,14 +121,12 @@ export default function NotePage() {
           </div>
         </header>
 
-        <main className="  rounded-2xl p-6 md:p-10 shadow-sm border border-border/50 min-h-[60vh] ">
-          <RichTextEditor
-            content={note.content}
-            editable={false}
-            showTOC={true}
-            toolbar={false}
-          />
-        </main>
+        <RichTextEditor
+          content={note.content}
+          editable={false}
+          showTOC={true}
+          toolbar={false}
+        />
 
         <footer className="mt-12 text-center text-sm text-muted-foreground">
           <p>Shared via Mind Notion</p>
