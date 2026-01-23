@@ -76,7 +76,7 @@ export function ShareNoteModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogOverlay />
-      <DialogContent className="sm:max-w-md z-100   border border-border">
+      <DialogContent className="sm:max-w-md z-100 bg-accent  border border-border">
         <DialogHeader>
           <DialogTitle>Share to Web</DialogTitle>
         </DialogHeader>
@@ -151,7 +151,7 @@ export function ShareNoteModal({
 
         {/* Footer actions */}
         <div className="flex justify-end gap-2 pt-2">
-          <Button variant="outline" onClick={onClose}>
+          <Button className="hover:bg-foreground/40" onClick={onClose}>
             Done
           </Button>
         </div>
