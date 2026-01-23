@@ -40,14 +40,14 @@ function CalendarModeComponent({
   }, []);
 
   return (
-    <div className="p-4 space-y-3 rounded-md h-full">
+    <div className="p-4 rounded-md h-full flex flex-col gap-2 border border-border bg-surface/40">
       {mode !== "weekly" && (
         <h4 className="text-md font-medium text-lg capitalize">
           {title && title.toLowerCase()}
-          <span className="text-sm text-gray-500"> ({days.length} days)</span>
+          <span className="text-sm text-foreground"> ({days.length} days)</span>
         </h4>
       )}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7  gap-2">
         {DAYS.map((day) => (
           <div key={day} className="font-medium text-sm text-center">
             <p>{day}</p>
@@ -62,7 +62,7 @@ function CalendarModeComponent({
       )}
 
       <div
-        className="grid grid-cols-7 gap-2 h-full"
+        className="grid grid-cols-7 bg gap-2 h-full"
         style={{
           gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
           gap: "0.5rem",

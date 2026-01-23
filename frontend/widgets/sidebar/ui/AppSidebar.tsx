@@ -56,7 +56,7 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
       variant="floating"
-      className="sticky text-text-primary py-6 "
+      className="sticky text-text-primary py-6 ml-2"
     >
       {/* Header - Logo */}
       <SidebarHeader className="flex items-center">
