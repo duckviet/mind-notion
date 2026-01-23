@@ -20,6 +20,7 @@ import {
 import { EventDialog } from "@/features/event/components";
 import type { ResDetailEvent } from "@/features/event/types";
 import type { ReqCreateEvent, ReqUpdateEvent } from "@/features/event/api";
+import { Button } from "@/shared/components/ui/button";
 
 type DayName = (typeof DAYS)[number];
 
@@ -439,23 +440,18 @@ const DayMode = () => {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header with Create button */}
-      <div className="flex-shrink-0 px-6 py-4 bg-surface border-b border-border flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text-primary">Week</h2>
-        <button
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-600 transition-colors"
-          onClick={openCreate}
-        >
-          Create Event
-        </button>
+      <div className="flex-shrink-0  py-4   border-b border-border flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-text-primary">Weekly</h2>
+        <Button onClick={openCreate}>Create Event</Button>
       </div>
 
       <MultiZoneDndProvider
         onDragEnd={handleDragEnd}
         renderOverlay={renderOverlay}
       >
-        <div className="flex flex-1 overflow-hidden border-t border-border">
+        <div className="flex flex-1 overflow-hidden border-t border-border bg-accent rounded-lg">
           {/* Time column */}
-          <div className="flex-shrink-0 w-20 bg-surface border-r border-border">
+          <div className="flex-shrink-0 w-20   border-r border-border">
             <div className="h-16 border-b border-border" />{" "}
             {/* Spacer for day headers */}
             <div
@@ -475,9 +471,9 @@ const DayMode = () => {
           </div>
 
           {/* Calendar grid */}
-          <div className="flex-1 overflow-auto bg-surface">
+          <div className="flex-1 overflow-auto  ">
             {/* Day headers */}
-            <div className="sticky top-0 z-30 bg-surface border-b border-border grid grid-cols-7">
+            <div className="sticky top-0 z-30   border-b border-border grid grid-cols-7">
               {DAYS.map((day) => (
                 <div
                   key={day}

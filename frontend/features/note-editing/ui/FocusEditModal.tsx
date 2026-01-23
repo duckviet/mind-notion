@@ -123,7 +123,7 @@ export default function FocusEditModal({
               tabIndex={-1}
               className="fixed inset-0 z-100 flex items-center justify-center p-4 pointer-events-none"
             >
-              <div className="w-[95vw] h-full max-h-[90vh] items-center space-x-4 pointer-events-auto flex flex-col">
+              <div className="w-[95vw] h-full max-h-[90vh] items-center space-x-4 pointer-events-auto flex flex-col ">
                 <FocusEditModalContent
                   form={form}
                   newTag={newTag}

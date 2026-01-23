@@ -30,6 +30,8 @@ paths:
       $ref: "./note/update.yaml"
     delete:
       $ref: "./note/delete.yaml"
+    get-public:
+      $ref: "./note/get-public.yaml"
 
   # Folder Management
   /folders:

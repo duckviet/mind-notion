@@ -27,7 +27,7 @@ const NoteTagsSection = ({
         {tags.map((t) => (
           <div
             key={t}
-            className="bg-surface-elevated rounded px-2 py-1 text-sm cursor-pointer hover:bg-destructive/10"
+            className=" bg-accent-50 rounded px-2 py-1 text-sm cursor-pointer hover:bg-accent/70"
             onClick={() => onTagRemove(t)}
           >
             #{t} <X className="w-3 h-3 inline" />
@@ -41,7 +41,7 @@ const NoteTagsSection = ({
         placeholder="New tag..."
         maxLength={50}
         disabled={disabled}
-        className="bg-transparent border border-border focus-visible:ring-1 focus-visible:ring-ring shadow-sm"
+        className="bg-accent  border border-border focus-visible:ring-1 focus-visible:ring-ring shadow-sm"
       />
     </div>
   );

@@ -2,6 +2,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Send, X } from "lucide-react";
 import React from "react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface CommentFormProps {
   value: string;
@@ -13,6 +14,7 @@ interface CommentFormProps {
   submitLabel?: string;
   isEditing?: boolean;
   showMotion?: boolean;
+  className?: string;
 }
 
 const CommentForm = ({
@@ -25,9 +27,15 @@ const CommentForm = ({
   submitLabel = "Send",
   isEditing = false,
   showMotion = true,
+  className,
 }: CommentFormProps) => {
   const content = (
-    <div className="p-4 bg-accent/10 rounded-lg border border-accent/20">
+    <div
+      className={cn(
+        "p-4 bg-accent/80 rounded-lg border border-accent/20",
+        className,
+      )}
+    >
       <div className="space-y-3">
         <textarea
           value={value}
@@ -35,7 +43,7 @@ const CommentForm = ({
           placeholder={placeholder}
           maxLength={1000}
           rows={3}
-          className="w-full min-h-[200px] px-3 py-2 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm"
+          className="w-full min-h-[200px] px-3 py-2 bg-accent-50  border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm"
           autoFocus
         />
         <div className="flex items-end justify-between">
@@ -45,16 +53,11 @@ const CommentForm = ({
               size="sm"
               onClick={onSubmit}
               disabled={isLoading || !value.trim()}
-              className="bg-accent-500 hover:bg-accent-700 text-white"
             >
               <Send className="w-4 h-4 mr-1" />
               {submitLabel}
             </Button>
-            <Button
-              size="sm"
-              onClick={onCancel}
-              className="text-text-primary bg-surface-lowered hover:bg-surface-lowered/40"
-            >
+            <Button size="sm" onClick={onCancel}>
               Cancel
             </Button>
           </div>

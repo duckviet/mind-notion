@@ -74,17 +74,17 @@ const CodeBlockComponent = (props: any) => {
           >
             <SelectTrigger
               ref={selectRef}
-              className="h-6 w-fit px-2 rounded bg-surface text-text-primary border-none"
+              className="h-6 w-fit px-2 rounded   text-text-primary border-none"
             >
               <SelectValue placeholder="Code Language" />
             </SelectTrigger>
-            <SelectContent className="z-100 bg-surface  border-none shadow-md">
+            <SelectContent className="z-100    border-none shadow-md">
               {[
                 { value: "plaintext", label: "plaintext" },
                 ...languageList,
               ].map(({ label, value }) => (
                 <SelectItem
-                  className="focus:bg-surface-lowered text-primary"
+                  className="focus: -lowered text-primary"
                   value={value}
                   key={value}
                 >
@@ -142,7 +142,7 @@ const CustomCodeBlock = CodeBlockShiki.extend({
   renderHTML({ HTMLAttributes, node }: any) {
     const language = node.attrs.language || "plaintext";
     const className =
-      "p-4 rounded-lg bg-surface-50 border-border border font-mono text-sm overflow-x-auto";
+      "p-4 rounded-lg  -50 border-border border font-mono text-sm overflow-x-auto";
     const finalClass =
       (HTMLAttributes?.class ? `${HTMLAttributes.class} ` : "") + className;
 

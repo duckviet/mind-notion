@@ -21,10 +21,10 @@ function FolderLayoutContent({ children }: { children: ReactNode }) {
 
   console.log(items);
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen p-6">
       {/* Header with Breadcrumb */}
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur  ">
-        <div className="max-w-[1600px] mx-auto  py-4">
+      <header className="sticky top-0  bg-background/95 backdrop-blur  ">
+        <div className="max-w-[1600px] mx-auto mb-4">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>

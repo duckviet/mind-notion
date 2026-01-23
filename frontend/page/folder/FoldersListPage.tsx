@@ -20,7 +20,7 @@ import { Input } from "@/shared/components/ui/input";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
-    className={`animate-pulse rounded-md bg-surface-elevated/50 ${className ?? ""}`}
+    className={`animate-pulse rounded-md  -elevated/50 ${className ?? ""}`}
   />
 );
 
@@ -128,7 +128,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
           </div>
           <Button
             onClick={handleCreateFolder}
-            className="inline-flex bg-surface text-primary items-center gap-2 px-4 py-2 rounded-lg transition-colors hover:bg-surface-elevated hover:shadow-md cursor-pointer"
+            className="bg-accent text-text-primary hover:bg-accent-50"
           >
             <Plus className="w-4 h-4" />
             <span>New Folder</span>
@@ -175,7 +175,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
 
         {/* Create Folder Dialog */}
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="sm:max-w-[400px] bg-surface-50 border border-border">
+          <DialogContent className="sm:max-w-[400px]  -50 border border-border">
             <DialogHeader>
               <DialogTitle>Create New Folder</DialogTitle>
             </DialogHeader>
@@ -207,7 +207,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
               <button
                 type="button"
                 onClick={() => setIsCreateModalOpen(false)}
-                className="px-3 py-2 text-sm font-medium text-text-primary bg-surface border border-border rounded-lg hover:bg-surface-elevated"
+                className="px-3 py-2 text-sm font-medium text-text-primary   border border-border rounded-lg hover: -elevated"
               >
                 Cancel
               </button>

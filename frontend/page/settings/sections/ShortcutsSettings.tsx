@@ -59,7 +59,7 @@ const shortcuts = [
 
 const Kbd = ({ children }: { children: React.ReactNode }) => {
   return (
-    <kbd className="inline-flex items-center justify-center rounded border border-border bg-surface-elevated px-2 py-1.5 text-xs font-semibold text-text-primary shadow-sm transition-colors hover:bg-hover">
+    <kbd className="inline-flex items-center justify-center rounded border border-border  -elevated px-2 py-1.5 text-xs font-semibold text-text-primary shadow-sm transition-colors hover:bg-hover">
       {children}
     </kbd>
   );
@@ -77,7 +77,7 @@ const ShortcutsSettings = () => {
         </p>
       </div>
 
-      <Card className="border border-border shadow-sm bg-surface">
+      <Card className="border border-border shadow-sm  ">
         <CardHeader>
           <CardTitle className="text-base font-semibold text-text-primary">
             Available Shortcuts
@@ -98,7 +98,7 @@ const ShortcutsSettings = () => {
                   {category.items.map((item, itemIdx) => (
                     <div
                       key={itemIdx}
-                      className="group flex items-center justify-between rounded-lg border border-transparent bg-surface-elevated p-2.5 transition-all hover:border-border hover:bg-hover"
+                      className="group flex items-center justify-between rounded-lg border border-transparent  -elevated p-2.5 transition-all hover:border-border hover:bg-hover"
                     >
                       <span className="text-sm text-text-secondary group-hover:text-text-primary transition-colors">
                         {item.description}

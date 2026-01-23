@@ -1,12 +1,19 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AlertCircle, ChevronLeft, ChevronRight, Printer } from "lucide-react";
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Printer,
+  Share2,
+} from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { Button } from "@/shared/components/ui/button";
 import NoteMetadataPanel from "./NoteMetadataPanel";
 import NoteTagsSection from "./NoteTagsSection";
 import CommentSection from "./CommentSection";
+import { ShareNoteModal } from "./ShareNoteModal";
 import { ResDetailNote } from "@/shared/services/generated/api";
 import { cn } from "@/lib/utils";
 
@@ -51,9 +58,11 @@ export default function FocusEditModalContent({
     documentTitle: form.title,
   });
 
+  const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
+
   return (
-    <div className="flex-1 flex overflow-hidden w-full gap-4 justify-center bg-background p-2 rounded-[16px]">
-      <div className="flex-1 overflow-y-auto space-y-4 rounded-2xl bg-surface border border-border w-full">
+    <div className="flex-1 flex overflow-hidden w-full gap-4 justify-center   bg-surface-100 p-2 rounded-[16px]">
+      <div className="flex-1 overflow-y-auto space-y-4 rounded-2xl  bg-card border border-border w-full">
         <div className="p-6 pb-0">
           <input
             ref={titleRef}
@@ -94,6 +103,17 @@ export default function FocusEditModalContent({
             isSidebarCollapsed && "flex-col-reverse",
           )}
         >
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsShareModalOpen(true)}
+            aria-label="Share note"
+            className="hover:bg-hover-overlay"
+          >
+            <Share2 className="w-4 h-4" />
+          </Button>
+
           <Button
             type="button"
             variant="ghost"
@@ -149,6 +169,16 @@ export default function FocusEditModalContent({
           )}
         </AnimatePresence>
       </motion.aside>
+
+      {note && (
+        <ShareNoteModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          noteId={note.id}
+          isPublic={note.is_public}
+          title={form.title}
+        />
+      )}
     </div>
   );
 }

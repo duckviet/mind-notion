@@ -73,7 +73,7 @@ const AccountSettings = () => {
       </div>
 
       {/* Profile Section */}
-      <Card className="border border-border shadow-sm bg-surface">
+      <Card className="border border-border shadow-sm  ">
         <CardHeader className="pb-6">
           <div className="flex items-center gap-4">
             <div>

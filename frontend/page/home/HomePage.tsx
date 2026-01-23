@@ -46,7 +46,7 @@ import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
-    className={`animate-pulse rounded-md bg-surface-elevated/50 ${className ?? ""}`}
+    className={`animate-pulse rounded-md  -elevated/50 ${className ?? ""}`}
   />
 );
 
@@ -232,7 +232,7 @@ function HomePageContent() {
       const previewText = note.title || note.content || "Note";
 
       return (
-        <div className="w-full min-w-[260px] max-w-[320px] rounded-lg border border-border bg-surface/90 shadow-md px-4 py-3 opacity-90">
+        <div className="w-full min-w-[260px] max-w-[320px] rounded-lg border border-border  /90 shadow-md px-4 py-3 opacity-90">
           <div className="text-xs font-semibold text-text-muted mb-2">
             Dragging
           </div>
@@ -337,6 +337,7 @@ function HomePageContent() {
               onFocusEdit={handleFocusEdit}
             />
           </DragAwareTomModal>
+
           {/* 
           {notes.length === 0 && !isLoading ? (
             <EmptyState

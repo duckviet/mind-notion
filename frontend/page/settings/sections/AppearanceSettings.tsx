@@ -87,7 +87,7 @@ const AppearanceSettings = () => {
       </div>
 
       {/* Theme Section */}
-      <Card className="border border-border bg-surface shadow-sm">
+      <Card className="border border-border   shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-semibold text-text-primary">
             Theme
@@ -109,7 +109,7 @@ const AppearanceSettings = () => {
                   className={cn(
                     "group relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 px-4 py-5 transition-all duration-200",
                     isSelected
-                      ? "border-border-strong bg-surface shadow-sm"
+                      ? "border-border-strong   shadow-sm"
                       : "border-border bg-muted hover:border-text-secondary hover:bg-muted-hover",
                   )}
                 >
@@ -130,7 +130,7 @@ const AppearanceSettings = () => {
       {/* Primary Color & Typography */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Primary Color */}
-        <Card className="border border-border bg-surface shadow-sm">
+        <Card className="border border-border   shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-semibold text-text-primary">
               Primary Color
@@ -164,7 +164,7 @@ const AppearanceSettings = () => {
         </Card>
 
         {/* Typography */}
-        <Card className="border border-border bg-surface shadow-sm">
+        <Card className="border border-border   shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="text-base font-semibold text-text-primary">
               Typography
@@ -216,7 +216,7 @@ const AppearanceSettings = () => {
       </div>
 
       {/* Layout Density */}
-      <Card className="border border-border bg-surface shadow-sm">
+      <Card className="border border-border   shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-semibold text-text-primary">
             Layout Density
@@ -272,7 +272,7 @@ const AppearanceSettings = () => {
       </Card>
 
       {/* Live Preview */}
-      <Card className="border border-border bg-surface shadow-sm">
+      <Card className="border border-border   shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-semibold text-text-primary">
             Live Preview
@@ -306,7 +306,7 @@ const AppearanceSettings = () => {
                 <button className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-text-inverse transition-colors hover:bg-accent-hover">
                   Primary
                 </button>
-                <button className="rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:border-accent hover:text-accent">
+                <button className="rounded-lg border border-border   px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:border-accent hover:text-accent">
                   Secondary
                 </button>
               </div>
@@ -330,7 +330,7 @@ const AppearanceSettings = () => {
               <div className="mt-3 space-y-3">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs text-text-muted">Input label</span>
-                  <div className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text-muted">
+                  <div className="rounded-lg border border-border   px-3 py-2 text-sm text-text-muted">
                     Placeholder text
                   </div>
                 </div>

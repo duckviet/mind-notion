@@ -129,7 +129,7 @@ export function EventDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl bg-surface border-border border">
+      <DialogContent className="sm:max-w-xl   border-border border">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle>{dialogTitle}</DialogTitle>
@@ -143,7 +143,7 @@ export function EventDialog({
               <Input
                 required
                 value={formValues.title}
-                className="bg-surface border-border border"
+                className="  border-border border"
                 onChange={(e) => handleChange("title", e.target.value)}
                 placeholder="Team sync, focus block..."
               />
@@ -155,7 +155,7 @@ export function EventDialog({
               </label>
               <Textarea
                 value={formValues.description}
-                className="bg-surface border-border border"
+                className="  border-border border"
                 onChange={(e) => handleChange("description", e.target.value)}
                 rows={3}
                 placeholder="Add notes or agenda"
@@ -173,10 +173,10 @@ export function EventDialog({
                     handleChange("type", val as ReqCreateEventType)
                   }
                 >
-                  <SelectTrigger className="bg-surface border-border border">
+                  <SelectTrigger className="  border-border border">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-surface border-border border">
+                  <SelectContent className="  border-border border">
                     <SelectItem value="task">Task</SelectItem>
                     <SelectItem value="event">Event</SelectItem>
                     <SelectItem value="note">Note</SelectItem>
@@ -194,10 +194,10 @@ export function EventDialog({
                     handleChange("status", val as ReqCreateEventStatus)
                   }
                 >
-                  <SelectTrigger className="bg-surface border-border border">
+                  <SelectTrigger className="  border-border border">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                  <SelectContent className="bg-surface border-border border">
+                  <SelectContent className="  border-border border">
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
                     <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -217,10 +217,10 @@ export function EventDialog({
                     handleChange("priority", val as ReqCreateEventPriority)
                   }
                 >
-                  <SelectTrigger className="bg-surface border-border border">
+                  <SelectTrigger className="  border-border border">
                     <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
-                  <SelectContent className="bg-surface border-border border">
+                  <SelectContent className="  border-border border">
                     <SelectItem value="low">Low</SelectItem>
                     <SelectItem value="normal">Normal</SelectItem>
                     <SelectItem value="high">High</SelectItem>
@@ -231,7 +231,7 @@ export function EventDialog({
                 <label className="text-sm font-medium text-foreground">
                   All day
                 </label>
-                <div className="border-border bg-surface flex items-center justify-between rounded-md border px-3 py-2">
+                <div className="border-border   flex items-center justify-between rounded-md border px-3 py-2">
                   <span className="text-sm text-muted-foreground">Toggle</span>
                   <Switch
                     className=" "
@@ -250,7 +250,7 @@ export function EventDialog({
                   Start
                 </label>
                 <Input
-                  className="bg-surface border-border border"
+                  className="  border-border border"
                   type="datetime-local"
                   value={formValues.start_time}
                   onChange={(e) => handleChange("start_time", e.target.value)}
@@ -262,7 +262,7 @@ export function EventDialog({
                   End
                 </label>
                 <Input
-                  className="bg-surface border-border border"
+                  className="  border-border border"
                   type="datetime-local"
                   value={formValues.end_time}
                   onChange={(e) => handleChange("end_time", e.target.value)}

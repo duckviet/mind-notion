@@ -65,7 +65,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
         className={cn(
           "absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-md    px-2 py-1 shadow-2xl border border-border transition-all duration-300 z-[100] whitespace-nowrap",
           isHovered || selected
-            ? "opacity-100 translate-y-0 visible bg-surface"
+            ? "opacity-100 translate-y-0 visible  "
             : "opacity-0 translate-y-2 invisible pointer-events-none",
         )}
       >
@@ -89,7 +89,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
             "p-1.5 rounded-full transition-all duration-200",
             border
               ? "bg-accent/10 text-accent hover:bg-accent/20"
-              : "text-text-muted hover:bg-surface hover:text-text-primary",
+              : "text-text-muted hover:  hover:text-text-primary",
           )}
           title="Toggle split view border"
         >

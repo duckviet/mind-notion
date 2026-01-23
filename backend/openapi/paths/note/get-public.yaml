@@ -1,0 +1,25 @@
+get:
+  operationId: getPublicNote
+  summary: Get a public note by ID (no auth required)
+  description: Fetches a note that has been marked as public. No authentication required.
+  security: []
+  tags:
+    - Note
+  parameters:
+    - name: note_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The note ID
+  responses:
+    "200":
+      description: Successful response with note details
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas/Note/Res_DetailNote.yaml"
+    "404":
+      $ref: "../../components/responses/NotFound.yaml"
+    "500":
+      $ref: "../../components/responses/InternalServerError.yaml"

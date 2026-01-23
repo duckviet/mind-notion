@@ -8,6 +8,7 @@ export interface DraggableItemProps {
   className?: string;
   style?: CSSProperties;
   disabled?: boolean;
+  type?: string;
 }
 
 /**
@@ -19,6 +20,7 @@ export function DraggableItem({
   className = "",
   style = {},
   disabled = false,
+  type = "note",
 }: DraggableItemProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -35,6 +37,7 @@ export function DraggableItem({
   return (
     <div
       data-id={id}
+      data-type={type}
       ref={setNodeRef}
       style={draggableStyle}
       className={className}

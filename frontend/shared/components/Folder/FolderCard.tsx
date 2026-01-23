@@ -58,22 +58,22 @@ const FolderCard = ({
       <ContextMenu>
         <ContextMenuTrigger asChild className="outline-none">
           <Link href={`/folder/${id}`}>
-            <Card>
+            <Card className="bg-transparent">
               <div className="h-[130px] w-full mb-4 relative pt-6 ">
                 {/* Folder tab background */}
                 <div className="absolute top-0 left-0 w-full h-full z-0">
                   {/* Lớp folder phía sau cùng (Cái tai cao nhất) */}
-                  <div className="absolute -top-0 left-0 w-1/2 h-10 bg-surface-100 rounded-t-2xl rounded-tr-[40px]"></div>
+                  <div className="absolute -top-0 left-0 w-1/2 h-10  bg-surface-100 rounded-t-2xl rounded-tr-[40px]"></div>
                   {/* Lớp thân folder phía sau (Phần hình chữ nhật bao quanh) */}
-                  <div className="absolute top-2 left-0 w-full h-[calc(100%-16px)] bg-surface-100 rounded-2xl"></div>
+                  <div className="absolute top-2 left-0 w-full h-[calc(100%-16px)]  bg-surface-100 rounded-2xl"></div>
 
                   {notesCount != 0 && (
-                    <div className="absolute top-4 left-4 right-4 h-[10%] bg-surface-50/70 border border-border border-solid  rounded-2xl"></div>
+                    <div className="absolute top-4 left-4 right-4 h-[40%]  bg-surface-50 border border-border border-solid  rounded-lg"></div>
                   )}
                 </div>
 
                 {/* Main folder content - Thêm shadow để tách biệt với nền */}
-                <div className="bg-surface-50 border border-border border-solid rounded-2xl w-full h-full relative p-6 flex flex-col justify-between shadow-sm">
+                <div className="bg-card border border-border border-solid rounded-2xl w-full h-full relative p-6 flex flex-col justify-between shadow-sm">
                   {/* Folder title */}
                   <div className="flex items-center gap-2 mb-2">
                     <FolderOpen className="w-5 h-5 text-text-primary" />
@@ -100,10 +100,10 @@ const FolderCard = ({
             </Card>
           </Link>
         </ContextMenuTrigger>
-        <ContextMenuContent className="bg-surface border-border shadow-lg">
+        <ContextMenuContent className="  border-border shadow-lg">
           <ContextMenuItem
             onSelect={() => onDelete?.(id)}
-            className="hover:bg-surface-elevated text-destructive"
+            className="hover: -elevated text-destructive"
           >
             <Trash2 className="w-4 h-4 mr-2" />
             <span>Delete</span>
@@ -114,7 +114,7 @@ const FolderCard = ({
               <FolderInput className="w-4 h-4 mr-2" />
               <span className="text-sm">Add to Folder</span>
             </ContextMenuSubTrigger>
-            <ContextMenuSubContent className="min-h-32 w-80 p-2 bg-surface border-border shadow-lg">
+            <ContextMenuSubContent className="min-h-32 w-80 p-2   border-border shadow-lg">
               <FolderTreeSelector
                 onSelect={onMoveToFolder}
                 currentFolderId={id}

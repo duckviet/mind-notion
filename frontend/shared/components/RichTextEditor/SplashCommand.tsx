@@ -22,7 +22,7 @@ export const SlashCommandMenu = ({
 }) => {
   return (
     <div
-      className="fixed z-50 w-64 rounded-lg border border-border bg-surface shadow-xl"
+      className="fixed z-100 w-64 rounded-lg border border-border bg-card  shadow-xl"
       style={{ top: position.y, left: position.x }}
     >
       <div className="flex flex-col py-2">
@@ -35,7 +35,7 @@ export const SlashCommandMenu = ({
             }}
             className={cn(
               "flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-text-primary hover:bg-gray-100",
-              index === selectedIndex && "bg-surface-lowered/20",
+              index === selectedIndex && " -lowered/20",
             )}
           >
             <div className="flex h-6 w-6 items-center justify-center rounded-md border border-border text-text-primary">

@@ -31,7 +31,7 @@ export function TemplateList({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 bg-card">
       {templates.map((template) => (
         <TemplateCard
           key={template.id}

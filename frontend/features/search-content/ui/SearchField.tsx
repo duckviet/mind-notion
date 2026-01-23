@@ -42,7 +42,7 @@ export default function SearchField({
     <div className={cn("relative", className)}>
       <motion.div
         className={cn(
-          "relative bg-surface rounded-xl",
+          "relative  bg-card  rounded-xl",
           "transition-all duration-200 ease-out",
           isFocused && "shadow-glass-lg border-accent-blue",
         )}

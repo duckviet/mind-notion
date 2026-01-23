@@ -64,7 +64,7 @@ const PasswordSettings = () => {
         </p>
       </div>
 
-      <Card className="shadow-sm bg-surface border border-border  ">
+      <Card className="shadow-sm   border border-border  ">
         <CardHeader className="pb-4">
           <CardTitle className="text-lg font-semibold">
             Change Password

@@ -56,7 +56,7 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
       variant="floating"
-      className="sticky text-text-primary"
+      className="sticky text-text-primary py-6 "
     >
       {/* Header - Logo */}
       <SidebarHeader className="flex items-center">
@@ -109,7 +109,7 @@ export function AppSidebar() {
                       className={cn(
                         "h-10 px-3 rounded-lg transition-all",
                         isActive
-                          ? "bg-surface-100 font-semibold !text-text-primary"
+                          ? " -100 font-semibold !text-text-primary"
                           : "hover:bg-sidebar-accent/50 !text-text-muted",
                       )}
                     >
@@ -159,7 +159,7 @@ export function AppSidebar() {
                       className={cn(
                         "h-10 px-3 rounded-lg transition-all",
                         isActive
-                          ? "bg-surface-100 font-semibold"
+                          ? " -100 font-semibold"
                           : "hover:bg-sidebar-accent/50 ",
                       )}
                     >

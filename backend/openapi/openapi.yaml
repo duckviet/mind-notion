@@ -47,6 +47,10 @@ paths:
   /notes/list-tom:
     $ref: "./paths/note/list-tom.yaml"
 
+  # Public Note Access (no auth required)
+  /public/notes/{note_id}:
+    $ref: "./paths/note/get-public.yaml"
+
   # Comment Management
   /notes/{note_id}/comments:
     $ref: "./paths/comment/create.yaml"
