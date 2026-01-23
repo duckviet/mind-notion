@@ -637,6 +637,7 @@ html.black .ProseMirror .react-renderer.node-codeBlock {
 .table-wrapper table {
   display: block;
   overflow-x: auto;
+  width: 100%;
 }
 
 /* Tables */

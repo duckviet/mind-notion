@@ -42,14 +42,13 @@ export const ExtTable = Table.configure({
 }).extend({
   renderHTML({ HTMLAttributes }) {
     const wrapperAttrs = {
-      class:
-        "table-wrapper my-6 overflow-x-auto border border-gray-200 rounded-lg group relative",
+      class: "table-wrapper my-6 overflow-x-auto rounded-lg group relative",
       "data-type": "table-container",
     };
 
     const tableAttrs = {
       ...HTMLAttributes,
-      class: "border-collapse table-fixed w-full border-none",
+      class: "w-full table-auto border-collapse",
     };
 
     return ["div", wrapperAttrs, ["table", tableAttrs, ["tbody", 0]]];

@@ -3,19 +3,29 @@
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { Calendar, User, Clock, AlertCircle, Copy, Check } from "lucide-react";
+import {
+  Calendar,
+  User,
+  Clock,
+  AlertCircle,
+  Copy,
+  Check,
+  PrinterIcon,
+} from "lucide-react";
 import { useGetPublicNote } from "@/shared/services/generated/api";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useReactToPrint } from "react-to-print";
 
 export default function NotePage() {
   const params = useParams();
   const id = params?.id as string;
   const router = useRouter();
   const [copied, setCopied] = React.useState(false);
+  const contentRef = React.useRef<HTMLDivElement>(null);
 
   const {
     data: note,
@@ -35,6 +45,11 @@ export default function NotePage() {
     toast.success("Link copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const handlePrint = useReactToPrint({
+    contentRef,
+    documentTitle: note?.title,
+  });
 
   if (isLoading) {
     return (
@@ -82,19 +97,27 @@ export default function NotePage() {
             <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 leading-tight">
               {note.title}
             </h1>
-            <Button
-              variant="outline"
-              size="sm"
-              className="shrink-0 gap-2"
-              onClick={handleCopyLink}
-            >
-              {copied ? (
-                <Check className="w-4 h-4" />
-              ) : (
-                <Copy className="w-4 h-4" />
-              )}
-              {copied ? "Copied" : "Copy Link"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                className="shrink-0 gap-2 hover:bg-foreground/50"
+                onClick={handleCopyLink}
+              >
+                {copied ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+                {copied ? "Copied" : "Copy Link"}
+              </Button>
+              <Button
+                size="sm"
+                className="shrink-0 gap-2 hover:bg-foreground/50"
+                onClick={handlePrint}
+              >
+                <PrinterIcon /> Print
+              </Button>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-b border-border pb-6">
@@ -121,12 +144,14 @@ export default function NotePage() {
           </div>
         </header>
 
-        <RichTextEditor
-          content={note.content}
-          editable={false}
-          showTOC={true}
-          toolbar={false}
-        />
+        <div ref={contentRef}>
+          <RichTextEditor
+            content={note.content}
+            editable={false}
+            showTOC={true}
+            toolbar={false}
+          />
+        </div>
 
         <footer className="mt-12 text-center text-sm text-muted-foreground">
           <p>Shared via Mind Notion</p>
