@@ -87,7 +87,7 @@ const TOCItem = ({
           "hover:bg-accent/50",
           isActive
             ? "text-foreground font-semibold bg-accent/80"
-            : "text-muted-foreground"
+            : "text-muted-foreground",
         )}
         style={{
           paddingLeft: `${(data.level - 2) * 12}px`,
@@ -189,7 +189,7 @@ export const TableOfContents = ({
 
       const findInTree = (
         nodes: HeadingNode[],
-        target: string
+        target: string,
       ): HeadingNode | null => {
         for (const node of nodes) {
           if (node.data.id === target) return node;
@@ -210,7 +210,7 @@ export const TableOfContents = ({
         // Tìm parent node để tiếp tục lấy parent ID
         const findParent = (
           nodes: HeadingNode[],
-          parentId: string
+          parentId: string,
         ): HeadingNode | undefined => {
           for (const node of nodes) {
             if (node.data.id === parentId) return node;
@@ -226,7 +226,7 @@ export const TableOfContents = ({
 
       return ancestors;
     },
-    []
+    [],
   );
 
   // Auto-expand cha khi active thay đổi
@@ -261,7 +261,7 @@ export const TableOfContents = ({
 
         if (visibleEntries.length > 0) {
           visibleEntries.sort(
-            (a, b) => b.intersectionRatio - a.intersectionRatio
+            (a, b) => b.intersectionRatio - a.intersectionRatio,
           );
           const element = visibleEntries[0].target;
           const heading = observerMap.get(element);
@@ -274,7 +274,7 @@ export const TableOfContents = ({
         root: dom.parentElement || null,
         rootMargin: "-20% 0px -60% 0px",
         threshold: 0,
-      }
+      },
     );
 
     headingElements.forEach((el) => observer.observe(el));
@@ -295,7 +295,7 @@ export const TableOfContents = ({
 
       setOpenItems((prev) => new Set(prev).add(heading.id));
     },
-    [editor]
+    [editor],
   );
 
   const handleToggle = useCallback((id: string) => {
@@ -315,7 +315,7 @@ export const TableOfContents = ({
   if (!editor?.storage.extTableOfContents.toc) return null;
 
   return (
-    <div className="w-64 sticky top-10 h-fit max-h-[700px] overflow-auto bg-white shadow-md rounded-lg p-3">
+    <div className="w-64 sticky top-10 h-fit max-h-[700px] overflow-auto bg-accent shadow-md rounded-lg p-3">
       <div className={cn("flex flex-col h-full", className)}>
         <div className="p-2">
           <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">

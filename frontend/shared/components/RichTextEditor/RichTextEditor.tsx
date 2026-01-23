@@ -120,13 +120,13 @@ const Tiptap = ({
           <Toolbar editor={editor} />
         </div>
       )}
-      <div ref={contentRef} className="relative flex gap-6 cursor-text">
+      <div ref={contentRef} className="relative flex gap-6 cursor-text p-6">
         <div className="flex-1">
           <EditorContent
             ref={ref}
             editor={editor}
             className={cn(
-              "w-full  p-6 min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none",
+              "w-full min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none",
               className,
             )}
             onFocus={onFocus}
