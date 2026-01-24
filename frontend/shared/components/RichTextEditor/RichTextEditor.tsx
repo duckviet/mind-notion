@@ -120,7 +120,7 @@ const Tiptap = ({
           <Toolbar editor={editor} />
         </div>
       )}
-      <div ref={contentRef} className="relative flex gap-6 cursor-text p-6">
+      <div ref={contentRef} className="relative flex gap-6 cursor-text px-6">
         <div className="flex-1">
           <EditorContent
             ref={ref}
@@ -154,12 +154,12 @@ const Tiptap = ({
         {showTOC && <TableOfContents editor={editor} />}
       </div>
 
-      <TemplatesModal
+      {/* <TemplatesModal
         isOpen={isTemplatesModalOpen}
         onClose={closeTemplatesModal}
         onSelectTemplate={applyTemplate}
         onManageTemplates={openManageTemplates}
-      />
+      /> */}
 
       <ManageTemplatesModal
         isOpen={isManageTemplatesOpen}

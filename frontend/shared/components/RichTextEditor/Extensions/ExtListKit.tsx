@@ -1,4 +1,9 @@
-import { BulletList, OrderedList, ListItem } from "@tiptap/extension-list";
+import {
+  BulletList,
+  OrderedList,
+  ListItem,
+  TaskList,
+} from "@tiptap/extension-list";
 
 const ExtBulletList = BulletList.extend({
   renderHTML({ HTMLAttributes }) {
@@ -33,6 +38,27 @@ const ExtListItem = ListItem.extend({
       {
         ...HTMLAttributes,
         class: "mb-1",
+      },
+      0,
+    ];
+  },
+});
+
+const ExtTaskList = TaskList.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      "data-type": {
+        default: "taskItem",
+      },
+    };
+  },
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "ul",
+      {
+        ...HTMLAttributes,
+        class: "list-none pl-0 my-2",
       },
       0,
     ];

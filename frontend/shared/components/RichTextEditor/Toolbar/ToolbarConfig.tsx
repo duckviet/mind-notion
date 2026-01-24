@@ -40,7 +40,7 @@ interface ToolbarGroup {
 
 export const getToolbarGroups = (
   editor: Editor,
-  options: { onAddImage: () => void }
+  options: { onAddImage: () => void },
 ): ToolbarGroup[] => [
   {
     name: "formatting",
@@ -125,6 +125,7 @@ export const getToolbarGroups = (
         onClick: () => {}, // Handled by component
         isDropdown: true,
       },
+
       {
         icon: <Quote size={16} />,
         tooltip: "Quote",

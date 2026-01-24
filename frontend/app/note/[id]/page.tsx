@@ -143,7 +143,14 @@ export default function NotePage() {
             </div>
           </div>
         </header>
-
+        <iframe
+          width="853"
+          height="480"
+          src={`https://www.youtube.com/embed?v=CRrf3h9vhp8&list=RDic8j13piAhQ&index=4`}
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title="Embedded youtube"
+        />
         <div ref={contentRef}>
           <RichTextEditor
             content={note.content}
