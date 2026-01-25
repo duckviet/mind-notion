@@ -95,6 +95,7 @@ export const useTiptapEditor = ({
         blockquote: false,
       }),
       ...ExtListKit,
+      // ExtTaskList,
       ExtCustomCodeBlock,
       ExtHeading,
       ExtMathematics,

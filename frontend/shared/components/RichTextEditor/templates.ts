@@ -150,5 +150,3 @@ export const defaultTemplates: Template[] = [
     color: "#8a5a7d",
   },
 ];
-
-

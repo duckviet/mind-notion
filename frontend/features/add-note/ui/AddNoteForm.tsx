@@ -60,7 +60,7 @@ export default function AddNoteForm({
       {/* Card Container */}
       <Card
         className={cn(
-          "relative p-6  -50 rounded-2xl transition-all duration-200 h-full",
+          "relative rounded-2xl transition-all duration-200 h-full",
           isFocus ? "z-40" : "hover:shadow-lg",
         )}
       >
@@ -70,20 +70,9 @@ export default function AddNoteForm({
           onChange={(e) => setTitle(e.target.value)}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
-          className="text-xl mb-2 bg-transparent w-full focus:outline-none"
+          className="text-xl px-6 pt-6 mb-2 bg-transparent w-full focus:outline-none"
           placeholder="Add a new note"
         />
-
-        {/* Note Content */}
-        {/* <Textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          onKeyDown={handleEnter}
-          className="p-0 shadow-none mb-4 ring-0 ring-offset-0 no-scrollbar focus-visible:ring-0 focus-visible:border-none text-lg border-none resize-none bg-transparent min-h-36"
-          placeholder="Type your message here..."
-        /> */}
 
         <RichTextEditor
           toolbar={false}
