@@ -14,13 +14,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Heroku Login
-        uses: oven-sh/setup-heroku@v1
-        with:
-          heroku-api-key: ${{ secrets.HEROKU_API_KEY }}
-
       - name: Login to Heroku Container Registry
-        run: heroku container:login
+        run: echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
 
       - name: Build and Push Docker Image
         env:
@@ -37,5 +34,6 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           APP_NAME: ${{ secrets.HEROKU_APP_NAME_COLLAB }}
         run: |
-          # Release app với Heroku CLI
+          # Dùng Heroku CLI (đã có sẵn trong ubuntu-latest) để release
+          npm install -g heroku
           heroku container:release web --app $APP_NAME
