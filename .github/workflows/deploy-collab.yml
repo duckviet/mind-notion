@@ -14,6 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Heroku CLI
+        run: npm install -g heroku
+
       - name: Login to Heroku Container Registry
         run: heroku container:login
         env:
@@ -34,6 +37,5 @@ jobs:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           APP_NAME: ${{ secrets.HEROKU_APP_NAME_COLLAB }}
         run: |
-          # Dùng Heroku CLI (đã có sẵn trong ubuntu-latest) để release
-          npm install -g heroku
+          # Release app với Heroku CLI
           heroku container:release web --app $APP_NAME
