@@ -1,9 +1,8 @@
 name: Deploy Collab Server to Heroku
 
 on:
-  push:
-    branches:
-      - master # Hoặc main tùy vào nhánh chính của bạn
+  pull_request:
+    branches: ["master"]
     paths:
       - "collab-server/**" # Chỉ chạy khi có thay đổi trong folder này
 
