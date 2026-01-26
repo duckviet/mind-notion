@@ -1,0 +1,12 @@
+type: object
+properties:
+  id:
+    type: string
+    example: "note-uuid-123"
+  updated_at:
+    type: string
+    format: date-time
+    example: "2026-01-24T12:30:00Z"
+required:
+  - id
+  - updated_at

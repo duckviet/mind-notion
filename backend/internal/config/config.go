@@ -17,6 +17,7 @@ type Config struct {
     Pinecone PineconeConfig `mapstructure:"pinecone"`
     Cohere   CohereConfig   `mapstructure:"cohere"`
     CDN      CDNConfig      `mapstructure:"cdn" validate:"required"`
+    Collab   CollabConfig   `mapstructure:"collab" validate:"required"`
 }
 
 // Nested structs - chỉ cần tag cho field, prefix tự động
@@ -66,6 +67,11 @@ type CDNConfig struct {
     Region          string `mapstructure:"region" validate:"required,min=1"`
     BucketName      string `mapstructure:"bucket_name" validate:"required,min=1"`
     PublicBaseURL   string `mapstructure:"public_base_url" validate:"omitempty,url"`
+}
+
+type CollabConfig struct {
+    TokenSecret      string `mapstructure:"token_secret" validate:"required,min=8"`
+    TokenTTLMinutes  int    `mapstructure:"token_ttl_minutes" validate:"required,min=5,max=1440"`
 }
 
 // Validate method - cải thiện để không panic nếu API key rỗng

@@ -1,0 +1,21 @@
+{
+  "name": "collab-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.17.2",
+    "ws": "^8.18.3",
+    "y-leveldb": "^0.1.2",
+    "y-postgresql": "^1.0.1",
+    "y-websocket": "^1.5.4",
+    "yjs": "^13.6.27"
+  }
+}

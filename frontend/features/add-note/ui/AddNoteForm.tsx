@@ -54,7 +54,7 @@ export default function AddNoteForm({
     <div className="relative h-full break-inside-avoid mb-6">
       {/* Overlay */}
       {isFocus && (
-        <div className="fixed inset-0 bg-black/5 backdrop-blur-[0.5px] z-30" />
+        <div className="fixed inset-0 bg-gray-500/20 backdrop-blur-[0.5px] z-30" />
       )}
 
       {/* Card Container */}

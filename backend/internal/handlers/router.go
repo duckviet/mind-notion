@@ -19,6 +19,7 @@ var publicPaths = []string{
 	"/api/v1/auth",
 	"/auth",
 	"/api/v1/public/notes",
+	"/api/v1/public/collab",
 }
 
 // SetupRouter initializes and configures the Gin server
@@ -68,6 +69,7 @@ func SetupRouter(
 		EventAPI:    EventAPI{eventService: &eventService, authService: authService},
 		MediaAPI:    *NewMediaAPI(mediaService),
 		CommentAPI:  *NewCommentAPI(commentService),
+		CollabAPI:   *NewCollabAPI(noteService, authService, cfg),
 	}
 
 	// Register generated routes
@@ -109,7 +111,7 @@ func corsMiddleware() gin.HandlerFunc {
 		c.Header("Vary", "Origin")
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
-		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept, X-Requested-With")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization, Accept, X-Requested-With, X-Edit-Token")
 
 		// 3. Xử lý Preflight (Quan trọng!)
 		if c.Request.Method == http.MethodOptions {

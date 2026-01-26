@@ -1,0 +1,39 @@
+name: Deploy Collab Server to Heroku
+
+on:
+  pull_request:
+    branches: ["master"]
+    paths:
+      - "collab-server/**" # Chỉ chạy khi có thay đổi trong folder này
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: secrets
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Heroku Container Registry
+        run: echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+
+      - name: Build and Push Docker Image
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          APP_NAME: ${{ secrets.HEROKU_APP_NAME_COLLAB }}
+        run: |
+          # Build image từ folder collab-server
+          docker build -t registry.heroku.com/$APP_NAME/web ./collab-server
+          # Push lên Heroku registry
+          docker push registry.heroku.com/$APP_NAME/web
+
+      - name: Release App
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+          APP_NAME: ${{ secrets.HEROKU_APP_NAME_COLLAB }}
+        run: |
+          # Dùng Heroku CLI (đã có sẵn trong ubuntu-latest) để release
+          npm install -g heroku
+          heroku container:release web --app $APP_NAME

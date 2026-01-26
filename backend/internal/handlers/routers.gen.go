@@ -64,6 +64,8 @@ type ApiHandleFunctions struct {
 
 	// Routes for the AuthAPI part of the API
 	AuthAPI AuthAPI
+	// Routes for the CollabAPI part of the API
+	CollabAPI CollabAPI
 	// Routes for the CommentAPI part of the API
 	CommentAPI CommentAPI
 	// Routes for the EventAPI part of the API
@@ -111,6 +113,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			http.MethodPost,
 			"/api/v1/auth/register",
 			handleFunctions.AuthAPI.Register,
+		},
+		{
+			"CreateCollabToken",
+			http.MethodPost,
+			"/api/v1/public/collab/token",
+			handleFunctions.CollabAPI.CreateCollabToken,
 		},
 		{
 			"CreateComment",
@@ -233,6 +241,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.NoteAPI.GetNote,
 		},
 		{
+			"GetPublicEditSettings",
+			http.MethodGet,
+			"/api/v1/notes/:note_id/public-edit",
+			handleFunctions.NoteAPI.GetPublicEditSettings,
+		},
+		{
 			"GetPublicNote",
 			http.MethodGet,
 			"/api/v1/public/notes/:note_id",
@@ -251,6 +265,18 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.NoteAPI.ListNotesTOM,
 		},
 		{
+			"RotatePublicEditToken",
+			http.MethodPost,
+			"/api/v1/notes/:note_id/public-edit/rotate",
+			handleFunctions.NoteAPI.RotatePublicEditToken,
+		},
+		{
+			"SaveNoteSnapshot",
+			http.MethodPost,
+			"/api/v1/public/notes/:note_id/snapshot",
+			handleFunctions.NoteAPI.SaveNoteSnapshot,
+		},
+		{
 			"UpdateNote",
 			http.MethodPut,
 			"/api/v1/notes/:note_id/update",
@@ -261,6 +287,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			http.MethodPut,
 			"/api/v1/notes/:note_id/tom",
 			handleFunctions.NoteAPI.UpdateNoteTOM,
+		},
+		{
+			"UpdatePublicEditSettings",
+			http.MethodPost,
+			"/api/v1/notes/:note_id/public-edit",
+			handleFunctions.NoteAPI.UpdatePublicEditSettings,
 		},
 		{
 			"CreateTemplate",

@@ -38,3 +38,7 @@ cdn:
   region: us-west-1
   bucket_name: your-cdn-bucket-name
   public_base_url: ""
+
+collab:
+  token_secret: your-collab-token-secret
+  token_ttl_minutes: 60

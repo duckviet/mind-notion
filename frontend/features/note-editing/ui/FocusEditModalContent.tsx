@@ -1,4 +1,5 @@
 import React from "react";
+import type { Editor } from "@tiptap/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertCircle,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
+import type { CollaborationConfig } from "@/shared/components/RichTextEditor/useTiptapEditor";
 import { Button } from "@/shared/components/ui/button";
 import NoteMetadataPanel from "./NoteMetadataPanel";
 import NoteTagsSection from "./NoteTagsSection";
@@ -16,6 +18,7 @@ import CommentSection from "./CommentSection";
 import { ShareNoteModal } from "./ShareNoteModal";
 import { ResDetailNote } from "@/shared/services/generated/api";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
 interface FocusEditModalContentProps {
   form: {
@@ -28,13 +31,21 @@ interface FocusEditModalContentProps {
   isSaving: boolean;
   isSidebarCollapsed: boolean | null;
   titleRef: React.RefObject<HTMLInputElement | null>;
-  note: ResDetailNote | undefined;
+  // note: ResDetailNote | undefined;
+  noteId: string | undefined;
+  isPublic: boolean | undefined;
   onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onContentChange: (value: string) => void;
   onNewTagChange: (value: string) => void;
   onTagAdd: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onTagRemove: (tag: string) => void;
   onToggleSidebar: () => void;
+  collaboration?: CollaborationConfig;
+  readOnlyMeta?: boolean;
+  showShareActions?: boolean;
+  showComments?: boolean;
+  onEditorReady?: (editor: Editor) => void;
+  showEditor?: boolean;
 }
 
 export default function FocusEditModalContent({
@@ -44,13 +55,20 @@ export default function FocusEditModalContent({
   isSaving,
   isSidebarCollapsed,
   titleRef,
-  note,
+  noteId,
+  isPublic,
   onTitleChange,
   onContentChange,
   onNewTagChange,
   onTagAdd,
   onTagRemove,
   onToggleSidebar,
+  collaboration,
+  readOnlyMeta = false,
+  showShareActions = true,
+  showComments = true,
+  onEditorReady,
+  showEditor = true,
 }: FocusEditModalContentProps) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
@@ -70,8 +88,12 @@ export default function FocusEditModalContent({
             value={form.title}
             onChange={onTitleChange}
             placeholder="Your note title..."
-            className="w-full text-4xl font-semibold text-text-primary bg-transparent outline-none mb-3"
+            className={cn(
+              "w-full text-4xl font-semibold text-text-primary bg-transparent outline-none mb-3",
+              readOnlyMeta && "opacity-70 cursor-not-allowed",
+            )}
             maxLength={200}
+            disabled={readOnlyMeta}
           />
           {error && (
             <div className="flex items-center gap-2 text-red-600 text-sm mb-3">
@@ -81,11 +103,13 @@ export default function FocusEditModalContent({
           )}
         </div>
         <RichTextEditor
-          showTOC={true}
+          showEditor={showEditor}
           contentRef={contentRef}
           content={form.content}
           onUpdate={onContentChange}
           editable
+          collaboration={collaboration}
+          onEditorReady={onEditorReady}
         />
       </div>
 
@@ -103,16 +127,18 @@ export default function FocusEditModalContent({
             isSidebarCollapsed && "flex-col-reverse",
           )}
         >
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsShareModalOpen(true)}
-            aria-label="Share note"
-            className="hover:bg-hover-overlay"
-          >
-            <Share2 className="w-4 h-4" />
-          </Button>
+          {showShareActions && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsShareModalOpen(true)}
+              aria-label="Share note"
+              className="hover:bg-hover-overlay"
+            >
+              <Share2 className="w-4 h-4" />
+            </Button>
+          )}
 
           <Button
             type="button"
@@ -159,9 +185,9 @@ export default function FocusEditModalContent({
                 onNewTagChange={onNewTagChange}
                 onTagAdd={onTagAdd}
                 onTagRemove={onTagRemove}
-                disabled={isSaving}
+                disabled={isSaving || readOnlyMeta}
               />
-              {note?.id && <CommentSection noteId={note.id} />}
+              {showComments && noteId && <CommentSection noteId={noteId} />}
               <div className="text-xs text-right mt-auto text-gray-500">
                 {form.content.length} chars
               </div>
@@ -170,12 +196,12 @@ export default function FocusEditModalContent({
         </AnimatePresence>
       </motion.aside>
 
-      {note && (
+      {noteId && showShareActions && (
         <ShareNoteModal
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
-          noteId={note.id}
-          isPublic={note.is_public}
+          noteId={noteId}
+          isPublic={isPublic || false}
           title={form.title}
         />
       )}

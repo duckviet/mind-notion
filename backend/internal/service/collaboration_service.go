@@ -44,7 +44,7 @@ func (s *CollaborationServiceImpl) HandleConnection(ctx context.Context, client 
 	s.clientRepo.Add(client)
 
 	// Get current document
-	doc, err := s.noteUseCase.GetNoteByID(ctx, client.User.ID)
+	doc, err := s.noteUseCase.GetNoteByID(ctx, client.NoteID)
 	if err != nil {
 		return fmt.Errorf("failed to get document: %w", err)
 	}
@@ -190,12 +190,12 @@ func (s *CollaborationServiceImpl) handleDocUpdate(client *domain.Client, payloa
 	}
 
 	// Try to update the document
-	updatedDoc, err := s.noteUseCase.UpdateNote(context.Background(), client.User.ID, UpdateNoteRequest{
+	updatedDoc, err := s.noteUseCase.UpdateNote(context.Background(), client.NoteID, UpdateNoteRequest{
 		Content: docUpdatePayload.Content,
 	})
 	if err != nil {
 		// Version conflict - send current state back to requester
-		currentDoc, getErr := s.noteUseCase.GetNoteByID(context.Background(), client.User.ID)
+		currentDoc, getErr := s.noteUseCase.GetNoteByID(context.Background(), client.NoteID)
 		if getErr != nil {
 			return fmt.Errorf("failed to get current document: %w", getErr)
 		}

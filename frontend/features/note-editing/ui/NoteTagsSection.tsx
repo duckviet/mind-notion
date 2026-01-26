@@ -27,8 +27,12 @@ const NoteTagsSection = ({
         {tags.map((t) => (
           <div
             key={t}
-            className=" bg-accent-50 rounded px-2 py-1 text-sm cursor-pointer hover:bg-accent/70"
-            onClick={() => onTagRemove(t)}
+            className={` bg-accent-50 rounded px-2 py-1 text-sm ${
+              disabled ? "opacity-70 cursor-not-allowed" : "cursor-pointer hover:bg-accent/70"
+            }`}
+            onClick={() => {
+              if (!disabled) onTagRemove(t);
+            }}
           >
             #{t} <X className="w-3 h-3 inline" />
           </div>
