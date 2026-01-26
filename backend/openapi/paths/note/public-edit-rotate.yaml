@@ -1,0 +1,26 @@
+post:
+  summary: Rotate public edit token for a note
+  operationId: rotatePublicEditToken
+  tags: [Note]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: note_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+  responses:
+    "200":
+      description: Rotated public edit token
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Note/Res_PublicEditSettings.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

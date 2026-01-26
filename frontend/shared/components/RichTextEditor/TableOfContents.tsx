@@ -244,42 +244,51 @@ export const TableOfContents = ({
   }, [activeId, getAncestorIds]);
 
   useEffect(() => {
-    if (!editor || flatHeadings.length === 0 || !editor.view?.dom) return;
+    try {
+      if (!editor || flatHeadings.length === 0) return;
 
-    const dom = editor.view.dom;
-    const headingElements = Array.from(dom.querySelectorAll("h1, h2, h3"));
-    if (!headingElements || headingElements.length === 0) return;
-    const observerMap = new Map<Element, Heading>();
-    flatHeadings.forEach((h) => {
-      const el = headingElements[h.index];
-      if (el) observerMap.set(el, h);
-    });
+      const view = editor.view;
+      if (!view || !view.dom) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleEntries = entries.filter((entry) => entry.isIntersecting);
+      const dom = view.dom;
+      const headingElements = Array.from(dom.querySelectorAll("h1, h2, h3"));
+      if (!headingElements || headingElements.length === 0) return;
+      const observerMap = new Map<Element, Heading>();
+      flatHeadings.forEach((h) => {
+        const el = headingElements[h.index];
+        if (el) observerMap.set(el, h);
+      });
 
-        if (visibleEntries.length > 0) {
-          visibleEntries.sort(
-            (a, b) => b.intersectionRatio - a.intersectionRatio,
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visibleEntries = entries.filter(
+            (entry) => entry.isIntersecting,
           );
-          const element = visibleEntries[0].target;
-          const heading = observerMap.get(element);
-          if (heading && heading.id !== activeId) {
-            setActiveId(heading.id);
+
+          if (visibleEntries.length > 0) {
+            visibleEntries.sort(
+              (a, b) => b.intersectionRatio - a.intersectionRatio,
+            );
+            const element = visibleEntries[0].target;
+            const heading = observerMap.get(element);
+            if (heading && heading.id !== activeId) {
+              setActiveId(heading.id);
+            }
           }
-        }
-      },
-      {
-        root: dom.parentElement || null,
-        rootMargin: "-20% 0px -60% 0px",
-        threshold: 0,
-      },
-    );
+        },
+        {
+          root: dom.parentElement || null,
+          rootMargin: "-20% 0px -60% 0px",
+          threshold: 0,
+        },
+      );
 
-    headingElements.forEach((el) => observer.observe(el));
+      headingElements.forEach((el) => observer.observe(el));
 
-    return () => observer.disconnect();
+      return () => observer.disconnect();
+    } catch {
+      return;
+    }
   }, [editor, flatHeadings, activeId]);
 
   const handleHeadingClick = useCallback(

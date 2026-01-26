@@ -1,0 +1,4 @@
+type: apiKey
+in: header
+name: X-Edit-Token
+description: Public edit token for note collaboration

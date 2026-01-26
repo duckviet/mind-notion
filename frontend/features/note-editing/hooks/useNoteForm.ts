@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { ResDetailNote } from "@/shared/services/generated/api";
 
@@ -15,11 +15,9 @@ function validateTitle(title: string): string {
 }
 
 export function useNoteForm(isOpen: boolean, note: ResDetailNote | undefined) {
-  const [form, setForm] = useState<FormState>({
-    title: "",
-    content: "",
-    tags: [],
-  });
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
   const [error, setError] = useState("");
   const titleRef = useRef<HTMLInputElement>(null);
@@ -41,14 +39,12 @@ export function useNoteForm(isOpen: boolean, note: ResDetailNote | undefined) {
     // Chỉ khởi tạo 1 lần cho mỗi noteId
     if (initializedNoteIdRef.current === note.id) return;
 
-    setForm({
-      title: note.title ?? "",
-      content: note.content ?? "",
-      tags: note.tags ?? [],
-    });
+    setTitle(note.title ?? "");
+    setContent(note.content ?? "");
+    setTags(note.tags ?? []);
     setError("");
     initializedNoteIdRef.current = note.id;
-  }, [isOpen, note?.id, note?.title, note?.content, note?.tags]);
+  }, [isOpen, note?.id]);
 
   // Focus title on open
   useEffect(() => {
@@ -61,16 +57,15 @@ export function useNoteForm(isOpen: boolean, note: ResDetailNote | undefined) {
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
-      setForm((f) => ({ ...f, title: value }));
+      setTitle(value);
       setError(validateTitle(value));
     },
-    []
+    [],
   );
 
-  const handleContentChange = useCallback(
-    (value: string) => setForm((f) => ({ ...f, content: value })),
-    []
-  );
+  const handleContentChange = useCallback((value: string) => {
+    setContent(value);
+  }, []);
 
   const handleTagAdd = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -81,24 +76,24 @@ export function useNoteForm(isOpen: boolean, note: ResDetailNote | undefined) {
         toast.error("Tag too long");
         return;
       }
-      if (form.tags.includes(tag)) {
-        toast.info("Tag exists");
-        return;
-      }
-      setForm((f) => ({ ...f, tags: [...f.tags, tag] }));
+      setTags((current) => {
+        if (current.includes(tag)) {
+          toast.info("Tag exists");
+          return current;
+        }
+        return [...current, tag];
+      });
       setNewTag("");
     },
-    [newTag, form.tags]
+    [newTag],
   );
 
-  const handleTagRemove = useCallback(
-    (tag: string) =>
-      setForm((f) => ({ ...f, tags: f.tags.filter((t) => t !== tag) })),
-    []
-  );
+  const handleTagRemove = useCallback((tag: string) => {
+    setTags((current) => current.filter((t) => t !== tag));
+  }, []);
 
   return {
-    form,
+    form: { title, content, tags },
     newTag,
     error,
     titleRef,
@@ -107,6 +102,6 @@ export function useNoteForm(isOpen: boolean, note: ResDetailNote | undefined) {
     handleContentChange,
     handleTagAdd,
     handleTagRemove,
-    validateTitle: () => validateTitle(form.title),
+    validateTitle: () => validateTitle(title),
   };
 }

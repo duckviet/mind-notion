@@ -1,0 +1,7 @@
+type: object
+properties:
+  enabled:
+    type: boolean
+    example: true
+required:
+  - enabled
