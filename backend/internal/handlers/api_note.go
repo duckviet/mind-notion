@@ -247,5 +247,179 @@ func (api *NoteAPI) GetPublicNote(c *gin.Context) {
         return
     }
 
+	// Hide edit token in public response
+	note.PublicEditToken = ""
+	note.PublicEditEnabled = false
+
     c.JSON(http.StatusOK, note)
+}
+
+// Get /api/v1/notes/:id/public-edit
+// Get public edit settings (owner only)
+func (api *NoteAPI) GetPublicEditSettings(c *gin.Context) {
+    idStr := c.Param("note_id")
+
+    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+        return
+    }
+
+    userVal, _ := c.Get("user")
+    u := userVal.(*dbmodels.User)
+    if note.UserID != u.ID {
+        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+        return
+    }
+
+    // Ensure token exists for owner view
+    if note.PublicEditToken == "" {
+        note, err = api.noteService.RotatePublicEditToken(c.Request.Context(), idStr)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "enabled": note.PublicEditEnabled,
+        "token":   note.PublicEditToken,
+    })
+}
+
+// Post /api/v1/notes/:id/public-edit
+// Update public edit enabled flag (owner only)
+func (api *NoteAPI) UpdatePublicEditSettings(c *gin.Context) {
+    idStr := c.Param("note_id")
+
+    var body struct {
+        Enabled bool `json:"enabled"`
+    }
+    if err := c.ShouldBindJSON(&body); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+        return
+    }
+
+    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+        return
+    }
+
+    userVal, _ := c.Get("user")
+    u := userVal.(*dbmodels.User)
+    if note.UserID != u.ID {
+        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+        return
+    }
+
+    updated, err := api.noteService.UpdatePublicEditSettings(c.Request.Context(), idStr, body.Enabled)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "enabled": updated.PublicEditEnabled,
+        "token":   updated.PublicEditToken,
+    })
+}
+
+// Post /api/v1/notes/:id/public-edit/rotate
+// Rotate public edit token (owner only)
+func (api *NoteAPI) RotatePublicEditToken(c *gin.Context) {
+    idStr := c.Param("note_id")
+
+    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+        return
+    }
+
+    userVal, _ := c.Get("user")
+    u := userVal.(*dbmodels.User)
+    if note.UserID != u.ID {
+        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+        return
+    }
+
+    updated, err := api.noteService.RotatePublicEditToken(c.Request.Context(), idStr)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "enabled": updated.PublicEditEnabled,
+        "token":   updated.PublicEditToken,
+    })
+}
+
+// Post /api/v1/public/notes/:id/snapshot
+// Save HTML snapshot (owner or public-edit token)
+func (api *NoteAPI) SaveNoteSnapshot(c *gin.Context) {
+    idStr := c.Param("note_id")
+
+    var body struct {
+        Content string `json:"content"`
+    }
+    if err := c.ShouldBindJSON(&body); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+        return
+    }
+
+    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+        return
+    }
+
+    if !api.canEditNote(c, note) {
+        fmt.Print("[SaveSnapshot] - Can not edit note!")
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+        return
+    }
+
+    updated, err := api.noteService.SaveNoteSnapshot(c.Request.Context(), idStr, body.Content)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "id":         updated.ID,
+        "updated_at": updated.UpdatedAt,
+    })
+}
+
+func (api *NoteAPI) canEditNote(c *gin.Context, note *dbmodels.Note) bool {
+    // Owner via middleware
+    if userVal, ok := c.Get("user"); ok {
+        u := userVal.(*dbmodels.User)
+        return note.UserID == u.ID
+    }
+
+    // Owner via bearer token (public route)
+    token := extractTokenFromRequest(c)
+    if token != "" {
+        user, err := api.authService.ValidateToken(c.Request.Context(), token)
+        if err == nil && note.UserID == user.ID {
+            return true
+        }
+    }
+
+    // Public edit token
+    editToken := getEditToken(c)
+    if editToken != "" && note.PublicEditEnabled && note.PublicEditToken == editToken {
+        return true
+    }
+
+    return false
+}
+
+func getEditToken(c *gin.Context) string {
+    if token := c.GetHeader("X-Edit-Token"); token != "" {
+        return token
+    }
+    return c.Query("token")
 }

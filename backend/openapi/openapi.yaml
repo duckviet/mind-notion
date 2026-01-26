@@ -42,6 +42,10 @@ paths:
     $ref: "./paths/note/update.yaml"
   /notes/{note_id}/delete:
     $ref: "./paths/note/delete.yaml"
+  /notes/{note_id}/public-edit:
+    $ref: "./paths/note/public-edit.yaml"
+  /notes/{note_id}/public-edit/rotate:
+    $ref: "./paths/note/public-edit-rotate.yaml"
   /notes/{note_id}/tom:
     $ref: "./paths/note/update-tom.yaml"
   /notes/list-tom:
@@ -50,6 +54,12 @@ paths:
   # Public Note Access (no auth required)
   /public/notes/{note_id}:
     $ref: "./paths/note/get-public.yaml"
+  /public/notes/{note_id}/snapshot:
+    $ref: "./paths/note/snapshot.yaml"
+
+  # Collaboration
+  /public/collab/token:
+    $ref: "./paths/collab/token.yaml"
 
   # Comment Management
   /notes/{note_id}/comments:
@@ -111,6 +121,8 @@ components:
     # Key 'BearerAuth' sẽ có giá trị được load từ file bên ngoài
     BearerAuth:
       $ref: "./components/securitySchemes/JWTAuth.yaml"
+    EditToken:
+      $ref: "./components/securitySchemes/EditToken.yaml"
 
   schemas:
     $ref: "./components/schemas/_index.yaml"

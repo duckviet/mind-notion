@@ -1,0 +1,14 @@
+type: object
+properties:
+  token:
+    type: string
+    example: "jwt-token-value"
+  role:
+    type: string
+    example: "owner"
+  note:
+    $ref: "./CollabNote.yaml"
+required:
+  - token
+  - role
+  - note

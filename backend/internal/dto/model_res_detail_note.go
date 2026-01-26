@@ -35,6 +35,10 @@ type ResDetailNote struct {
 
 	IsPublic bool `json:"is_public"`
 
+	PublicEditEnabled bool `json:"public_edit_enabled,omitempty"`
+
+	PublicEditToken string `json:"public_edit_token,omitempty"`
+
 	CreatedAt time.Time `json:"created_at"`
 
 	UpdatedAt time.Time `json:"updated_at"`

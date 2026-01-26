@@ -185,14 +185,14 @@ export const getToolbarGroups = (
         icon: <Undo size={16} />,
         tooltip: "Undo",
         isActive: () => false,
-        disabled: () => !editor.can().undo(),
+        // disabled: () => !editor.can().undo(),
         onClick: () => editor.chain().focus().undo().run(),
       },
       {
         icon: <Redo size={16} />,
         tooltip: "Redo",
         isActive: () => false,
-        disabled: () => !editor.can().redo(),
+        // disabled: () => !editor.can().redo(),
         onClick: () => editor.chain().focus().redo().run(),
       },
       {

@@ -1,0 +1,7 @@
+type: object
+properties:
+  content:
+    type: string
+    example: "<p>Updated note content</p>"
+required:
+  - content

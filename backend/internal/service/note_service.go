@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strings"
 
 	"gorm.io/gorm"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/utils"
+	"github.com/google/uuid"
 )
 
 // NoteService defines the interface for note business logic
@@ -25,6 +27,9 @@ type NoteService interface {
 	RemoveTagFromNote(ctx context.Context, noteID, tagID string) error
 	UpdateNoteTOM(ctx context.Context, id string, tom bool) (*models.Note, error)
 	ListNotesTOM(ctx context.Context, userID string) ([]*models.Note, error)
+	UpdatePublicEditSettings(ctx context.Context, id string, enabled bool) (*models.Note, error)
+	RotatePublicEditToken(ctx context.Context, id string) (*models.Note, error)
+	SaveNoteSnapshot(ctx context.Context, id string, content string) (*models.Note, error)
 }
 
 // noteService implements NoteService
@@ -253,4 +258,66 @@ func (s *noteService) ListNotesTOM(ctx context.Context, userID string) ([]*model
 	}
 	utils.FormatNotePreviews(notes, utils.DefaultNotePreviewLength)
 	return notes, nil
+}
+
+// UpdatePublicEditSettings toggles public edit access for a note.
+func (s *noteService) UpdatePublicEditSettings(ctx context.Context, id string, enabled bool) (*models.Note, error) {
+	note, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNoteNotFound
+		}
+		return nil, ErrInternalServerError
+	}
+
+	if note.PublicEditToken == "" {
+		note.PublicEditToken = generatePublicEditToken()
+	}
+	note.PublicEditEnabled = enabled
+
+	if err := s.repo.Update(ctx, note); err != nil {
+		return nil, ErrInternalServerError
+	}
+
+	return note, nil
+}
+
+// RotatePublicEditToken regenerates the edit token for a note.
+func (s *noteService) RotatePublicEditToken(ctx context.Context, id string) (*models.Note, error) {
+	note, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNoteNotFound
+		}
+		return nil, ErrInternalServerError
+	}
+
+	note.PublicEditToken = generatePublicEditToken()
+	if err := s.repo.Update(ctx, note); err != nil {
+		return nil, ErrInternalServerError
+	}
+
+	return note, nil
+}
+
+// SaveNoteSnapshot updates the persisted HTML content for a note.
+func (s *noteService) SaveNoteSnapshot(ctx context.Context, id string, content string) (*models.Note, error) {
+	note, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNoteNotFound
+		}
+		return nil, ErrInternalServerError
+	}
+
+	note.Content = content
+	if err := s.repo.Update(ctx, note); err != nil {
+		return nil, ErrInternalServerError
+	}
+
+	return note, nil
+}
+
+func generatePublicEditToken() string {
+	return strings.ReplaceAll(uuid.NewString(), "-", "")
 }

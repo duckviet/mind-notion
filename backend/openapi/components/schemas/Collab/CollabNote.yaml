@@ -1,0 +1,29 @@
+type: object
+properties:
+  id:
+    type: string
+    example: "note-uuid-123"
+  title:
+    type: string
+    example: "My Note"
+  content:
+    type: string
+    example: "<p>Note content</p>"
+  tags:
+    type: array
+    items:
+      type: string
+    example: ["tag1", "tag2"]
+  is_public:
+    type: boolean
+    example: true
+  public_edit_enabled:
+    type: boolean
+    example: true
+required:
+  - id
+  - title
+  - content
+  - tags
+  - is_public
+  - public_edit_enabled

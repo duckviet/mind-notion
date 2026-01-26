@@ -1,0 +1,61 @@
+get:
+  summary: Get public edit settings for a note
+  operationId: getPublicEditSettings
+  tags: [Note]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: note_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+  responses:
+    "200":
+      description: Public edit settings
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Note/Res_PublicEditSettings.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml
+
+post:
+  summary: Update public edit settings for a note
+  operationId: updatePublicEditSettings
+  tags: [Note]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: note_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Note/Req_PublicEditSettings.yaml
+  responses:
+    "200":
+      description: Updated public edit settings
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Note/Res_PublicEditSettings.yaml
+    "400":
+      $ref: ../../components/responses/BadRequest.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

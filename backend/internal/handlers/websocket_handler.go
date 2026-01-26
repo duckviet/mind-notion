@@ -40,6 +40,11 @@ func (h *WebSocketHandler) HandleConnections(w http.ResponseWriter, r *http.Requ
 	defer h.cleanupClient(ws)
 
 	log.Printf("URL: %v", (r.URL))
+	noteID := r.URL.Query().Get("note_id")
+	if noteID == "" {
+		log.Printf("Missing note_id for websocket connection")
+		return
+	}
 	// Get user ID from query parameter or create new user
 	userID := r.URL.Query().Get("user_id")
 	var user *models.User
@@ -73,6 +78,7 @@ func (h *WebSocketHandler) HandleConnections(w http.ResponseWriter, r *http.Requ
 	client := &domain.Client{
 		Conn: ws,
 		User: user,
+		NoteID: noteID,
 	}
 
 	// Handle the connection

@@ -10,6 +10,8 @@ type Note struct {
 	TopOfMind   bool      `gorm:"default:false" json:"top_of_mind"`
 	Thumbnail   string    `gorm:"type:text" json:"thumbnail"`
 	IsPublic    bool      `gorm:"default:false" json:"is_public"`
+	PublicEditEnabled bool   `gorm:"default:false" json:"public_edit_enabled"`
+	PublicEditToken   string `gorm:"type:varchar(64)" json:"public_edit_token,omitempty"`
 
 	// Foreign Keys
 	UserID   string  `gorm:"type:uuid;not null" json:"user_id"`

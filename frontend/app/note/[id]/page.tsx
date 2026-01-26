@@ -19,6 +19,7 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useReactToPrint } from "react-to-print";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 export default function NotePage() {
   const params = useParams();
@@ -143,19 +144,19 @@ export default function NotePage() {
             </div>
           </div>
         </header>
-        <iframe
+        {/* <iframe
           width="853"
           height="480"
           src={`https://www.youtube.com/embed?v=CRrf3h9vhp8&list=RDic8j13piAhQ&index=4`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           title="Embedded youtube"
-        />
+        /> */}
         <div ref={contentRef}>
           <RichTextEditor
-            content={note.content}
+            content={sanitizeHtml(note.content)}
             editable={false}
-            showTOC={true}
+            showEditor={true}
             toolbar={false}
           />
         </div>

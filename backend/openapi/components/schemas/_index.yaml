@@ -30,6 +30,19 @@ Req_RemoveNote:
   $ref: "./Note/Req_RemoveNote.yaml"
 Res_DetailNote:
   $ref: "./Note/Res_DetailNote.yaml"
+Req_PublicEditSettings:
+  $ref: "./Note/Req_PublicEditSettings.yaml"
+Res_PublicEditSettings:
+  $ref: "./Note/Res_PublicEditSettings.yaml"
+Req_NoteSnapshot:
+  $ref: "./Note/Req_NoteSnapshot.yaml"
+Res_NoteSnapshot:
+  $ref: "./Note/Res_NoteSnapshot.yaml"
+
+Req_CollabToken:
+  $ref: "./Collab/Req_CollabToken.yaml"
+Res_CollabToken:
+  $ref: "./Collab/Res_CollabToken.yaml"
 
 Comment:
   $ref: "./Comment/Comment.yaml"

@@ -5,6 +5,11 @@ import { cn } from "@/lib/utils";
 import { Placeholder } from "@tiptap/extensions";
 import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
 import { LocalStorageKeys } from "@/shared/configs/localStorageKeys";
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+
+import type { WebsocketProvider } from "y-websocket";
+import type * as Y from "yjs";
 import ExtImage from "./Extensions/ExtImage";
 import { toast } from "sonner";
 import { useUploadMedia } from "@/shared/services/generated/api";
@@ -22,6 +27,8 @@ import {
 import { migrateMathStrings } from "@tiptap/extension-mathematics";
 import ExtBlockQuote from "./Extensions/ExtQuote";
 import ExtHighLight from "./Extensions/ExtHighLight";
+import { useSearchParams } from "next/navigation";
+import { useEditTokenStore } from "@/shared/stores/editTokenStore";
 
 interface UseTiptapEditorProps {
   content?: string;
@@ -29,7 +36,17 @@ interface UseTiptapEditorProps {
   onUpdate?: (content: string) => void;
   editable?: boolean;
   onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
+  collaboration?: CollaborationConfig;
 }
+
+export type CollaborationConfig = {
+  document: Y.Doc;
+  provider: WebsocketProvider;
+  user?: {
+    name: string;
+    color: string;
+  };
+};
 
 export const useTiptapEditor = ({
   content = "",
@@ -37,6 +54,7 @@ export const useTiptapEditor = ({
   onUpdate,
   editable = true,
   onKeyDown,
+  collaboration,
 }: UseTiptapEditorProps) => {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const onUpdateRef = useRef(onUpdate);
@@ -52,7 +70,18 @@ export const useTiptapEditor = ({
     LocalStorageKeys.FOCUS_EDIT_TOC_COLLAPSED,
     false,
   );
+  const searchParams = useSearchParams();
 
+  const { setEditToken } = useEditTokenStore();
+
+  // Khi vào trang có edit token từ URL
+  useEffect(() => {
+    const token = searchParams.get("token");
+    console.log("Edit token from URL:", token);
+    if (token) setEditToken(token);
+
+    return () => setEditToken(null); // Cleanup khi rời trang
+  }, []);
   const { mutateAsync: uploadMedia } = useUploadMedia({
     mutation: {
       onError: () => toast.error("Failed to upload image"),
@@ -83,6 +112,9 @@ export const useTiptapEditor = ({
 
   // IMPORTANT: Use minimal dependencies to prevent editor recreation
   // Callbacks use refs so they stay stable
+  const collabEnabled = Boolean(
+    collaboration?.document && collaboration?.provider,
+  );
   const extensions = useMemo(
     () => [
       StarterKit.configure({
@@ -93,6 +125,7 @@ export const useTiptapEditor = ({
         heading: false,
         link: false,
         blockquote: false,
+        undoRedo: false,
       }),
       ...ExtListKit,
       // ExtTaskList,
@@ -116,16 +149,29 @@ export const useTiptapEditor = ({
       }),
       ExtSplitView,
       SplitViewColumn,
+      ...(collabEnabled
+        ? [
+            Collaboration.configure({ document: collaboration!.document }),
+            CollaborationCaret.extend().configure({
+              provider: collaboration!.provider,
+            }),
+          ]
+        : []),
     ],
     // Only recreate extensions when placeholder changes (rarely)
     // toc, setToc, uploadMedia are accessed via refs
-    [placeholder],
+    [
+      placeholder,
+      collabEnabled,
+      collaboration?.document,
+      collaboration?.provider,
+    ],
   );
 
   const editor = useEditor(
     {
       extensions,
-      content, // Chỉ dùng cho initial value
+      content: collabEnabled ? undefined : content, // Chỉ dùng cho initial value
       immediatelyRender: false,
       editable,
       injectCSS: false,
@@ -151,6 +197,7 @@ export const useTiptapEditor = ({
   // Only sync if: content changed, not from our own update, and user is not actively editing
   useEffect(() => {
     if (!editor) return;
+    if (collabEnabled) return;
 
     // Store the received content for reference
     lastReceivedContentRef.current = content;
@@ -186,7 +233,7 @@ export const useTiptapEditor = ({
         }
       });
     }
-  }, [content, editor]);
+  }, [content, editor, collabEnabled]);
 
   // Handle editor updates with debounce and track user editing state
   useEffect(() => {

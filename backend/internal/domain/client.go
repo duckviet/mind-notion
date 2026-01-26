@@ -9,6 +9,7 @@ import (
 type Client struct {
 	Conn *websocket.Conn
 	User *models.User
+	NoteID string
 }
 
 // ClientRepository defines the interface for client management

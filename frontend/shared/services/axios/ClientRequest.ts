@@ -6,7 +6,7 @@ import axios, {
 import Cookies from "js-cookie"; // Dùng cái này để quản lý cookie nhất quán
 import { useAuthStore } from "@/features/auth/store/authStore";
 import authAction from "@/shared/services/actions/auth.action";
-
+import { useEditTokenStore } from "@/shared/stores/editTokenStore";
 interface FailedRequestQueueItem {
   resolve: (value: any) => void;
   reject: (reason?: any) => void;
@@ -38,6 +38,10 @@ export class ClientRequest {
     // Request Interceptor: Chỉ đơn giản là gắn token nếu có
     this.axiosInstance.interceptors.request.use(
       (config) => {
+        const editToken = useEditTokenStore.getState().editToken;
+        if (editToken) {
+          config.headers["X-Edit-Token"] = editToken;
+        }
         // Đọc từ Cookie thay vì LocalStorage để nhất quán với Middleware
         const token = Cookies.get("access_token");
         if (token) {

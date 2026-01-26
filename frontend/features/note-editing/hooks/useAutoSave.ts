@@ -20,11 +20,33 @@ export function useAutoSave(
   form: FormState,
   note: ResDetailNote | undefined,
   isSaving: boolean,
-  setIsSaving: (value: boolean) => void
+  setIsSaving: (value: boolean) => void,
+  syncContent: boolean = true,
 ) {
   const queryClient = useQueryClient();
   const lastSavedRef = useRef<FormState>(form);
+  const noteMetadataRef = useRef<
+    | {
+        status: string;
+        thumbnail: string;
+        folder_id: string | null;
+        is_public: boolean;
+      }
+    | undefined
+  >(undefined);
   const queryKey = getGetNoteQueryKey(noteId);
+
+  // Initialize metadata once when component mounts or noteId changes
+  useEffect(() => {
+    if (note && !noteMetadataRef.current) {
+      noteMetadataRef.current = {
+        status: note.status ?? "draft",
+        thumbnail: note.thumbnail ?? "",
+        folder_id: note.folder_id ?? null,
+        is_public: note.is_public ?? false,
+      };
+    }
+  }, [noteId]);
 
   const updateNoteMutation = useUpdateNote(
     {
@@ -51,7 +73,7 @@ export function useAutoSave(
                   tags: data.tags ?? old.tags,
                   updated_at: serverNote.updated_at,
                 }
-              : serverNote
+              : serverNote,
           );
 
           lastSavedRef.current = {
@@ -65,42 +87,64 @@ export function useAutoSave(
         },
       },
     },
-    queryClient
+    queryClient,
   );
 
   useEffect(() => {
     if (!noteId || !form.title.trim() || isSaving) return;
 
-    const changed = !isEqual(form, lastSavedRef.current);
+    // Fix: Chỉ compare các field sẽ được save
+    const formToCompare = syncContent
+      ? form
+      : { title: form.title, tags: form.tags };
+
+    const lastToCompare = syncContent
+      ? lastSavedRef.current
+      : { title: lastSavedRef.current.title, tags: lastSavedRef.current.tags };
+
+    const changed = !isEqual(formToCompare, lastToCompare);
+
+    console.log("🔍 Auto-save check:", {
+      changed,
+      formToCompare,
+      lastToCompare,
+      syncContent,
+    });
+
     if (!changed) return;
 
     const timer = setTimeout(() => {
+      const metadata = noteMetadataRef.current ?? {
+        status: "draft",
+        thumbnail: "",
+        folder_id: null,
+        is_public: false,
+      };
+
       const payload: ReqUpdateNote = {
         id: noteId,
         title: form.title,
-        content: form.content,
+        content: syncContent ? form.content : undefined,
         content_type: "text",
-        status: note?.status ?? "draft",
-        thumbnail: note?.thumbnail ?? "",
-        folder_id: note?.folder_id ?? null,
+        status: metadata.status,
+        thumbnail: metadata.thumbnail,
+        folder_id: metadata.folder_id,
         tags: form.tags,
-        is_public: note?.is_public ?? false,
+        is_public: metadata.is_public,
+      };
+
+      // Fix: Update lastSavedRef TRƯỚC khi mutate để tránh race condition
+      lastSavedRef.current = {
+        title: form.title,
+        content: form.content, // Luôn lưu content hiện tại
+        tags: [...form.tags],
       };
 
       updateNoteMutation.mutate({ noteId, data: payload });
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [
-    form,
-    noteId,
-    note?.status,
-    note?.thumbnail,
-    note?.folder_id,
-    note?.is_public,
-    isSaving,
-    updateNoteMutation,
-  ]);
+  }, [form, noteId, isSaving, syncContent]);
 
   return { updateNoteMutation, lastSavedRef };
 }

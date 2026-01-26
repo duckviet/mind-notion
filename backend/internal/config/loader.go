@@ -102,4 +102,8 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("cdn.region", "")
 	v.SetDefault("cdn.bucket_name", "")
 	v.SetDefault("cdn.public_base_url", "")
+
+	// Collab defaults
+	v.SetDefault("collab.token_secret", "your-collab-token-secret")
+	v.SetDefault("collab.token_ttl_minutes", 60)
 }

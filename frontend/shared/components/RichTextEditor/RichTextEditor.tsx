@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { EditorContent, type Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
 import { useTiptapEditor } from "./useTiptapEditor";
+import type { CollaborationConfig } from "./useTiptapEditor";
 import { SlashCommandMenu } from "./SplashCommand";
 import Portal from "@/shared/components/PortalModal/PortalModal";
 import { TemplatesModal } from "./TemplatesModal";
@@ -14,6 +15,7 @@ import { useTemplateModals } from "./hooks/useTemplateModals";
 import { useEditorKeyboard } from "./hooks/useEditorKeyboard";
 import { BASE_SLASH_COMMANDS, createTemplateCommand } from "./slashCommands";
 import { Toolbar } from "./Toolbar";
+import { Skeleton } from "../ui/skeleton";
 
 interface TiptapProps {
   toolbar?: boolean;
@@ -25,9 +27,10 @@ interface TiptapProps {
   onUpdate?: (content: string) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   onEditorReady?: (editor: Editor) => void;
-  showTOC?: boolean;
+  showEditor?: boolean;
   onFocus?: () => void;
   onBlur?: () => void;
+  collaboration?: CollaborationConfig;
   // Thêm editorKey để force remount khi cần
   editorKey?: string;
   contentRef?: React.RefObject<HTMLDivElement | null>;
@@ -43,13 +46,15 @@ const Tiptap = ({
   editable = true,
   onKeyDown,
   onEditorReady,
-  showTOC = false,
+  showEditor = true,
   onFocus,
   onBlur,
+  collaboration,
   editorKey,
   contentRef,
 }: TiptapProps) => {
   const editorRef = useRef<Editor | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   const {
     isTemplatesModalOpen,
@@ -86,6 +91,7 @@ const Tiptap = ({
     onMoveSelection: moveSelection,
     onKeyDown,
   });
+  console.log(content);
 
   const editor = useTiptapEditor({
     content,
@@ -93,7 +99,12 @@ const Tiptap = ({
     onUpdate,
     editable,
     onKeyDown: handleKeyDown,
+    collaboration,
   });
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     editorRef.current = editor;
@@ -102,7 +113,7 @@ const Tiptap = ({
     }
   }, [editor, onEditorReady]);
 
-  if (!editor) {
+  if (!editor || !isMounted) {
     return (
       <div
         className={cn(
@@ -120,39 +131,47 @@ const Tiptap = ({
           <Toolbar editor={editor} />
         </div>
       )}
-      <div ref={contentRef} className="relative flex gap-6 cursor-text px-6">
-        <div className="flex-1">
-          <EditorContent
-            ref={ref}
-            editor={editor}
-            className={cn(
-              "w-full min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none",
-              className,
-            )}
-            onFocus={onFocus}
-            onBlur={onBlur}
-          />
 
-          {slashMenu.isOpen && (
-            <Portal lockScroll={true}>
-              <div
-                className="fixed inset-0 z-100 bg-black/5"
-                onMouseDown={(e) => {
-                  e.stopPropagation();
-                  closeSlashMenu();
-                }}
-              />
-              <SlashCommandMenu
-                position={slashMenu.position}
-                commands={slashCommands}
-                selectedIndex={slashMenu.selectedIndex}
-                onSelect={selectCommand}
-              />
-            </Portal>
-          )}
+      {showEditor ? (
+        <div ref={contentRef} className="relative flex gap-6 cursor-text px-6">
+          <div className="flex-1">
+            <EditorContent
+              ref={ref}
+              editor={editor}
+              className={cn(
+                "w-full min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none",
+                className,
+              )}
+              onFocus={onFocus}
+              onBlur={onBlur}
+            />
+
+            {slashMenu.isOpen && (
+              <Portal lockScroll={true}>
+                <div
+                  className="fixed inset-0 z-100 bg-black/5"
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    closeSlashMenu();
+                  }}
+                />
+                <SlashCommandMenu
+                  position={slashMenu.position}
+                  commands={slashCommands}
+                  selectedIndex={slashMenu.selectedIndex}
+                  onSelect={selectCommand}
+                />
+              </Portal>
+            )}
+          </div>
+
+          <TableOfContents editor={editor} />
         </div>
-        {showTOC && <TableOfContents editor={editor} />}
-      </div>
+      ) : (
+        <div className="px-6 pb-6">
+          <Skeleton className="h-[300px] w-full" />
+        </div>
+      )}
 
       {/* <TemplatesModal
         isOpen={isTemplatesModalOpen}

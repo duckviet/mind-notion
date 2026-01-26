@@ -1,0 +1,27 @@
+post:
+  summary: Create collaboration token for a note
+  operationId: createCollabToken
+  description: Returns a short-lived collaboration token for the note.
+  tags: [Collab]
+  security: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Collab/Req_CollabToken.yaml
+  responses:
+    "200":
+      description: Collaboration token response
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Collab/Res_CollabToken.yaml
+    "400":
+      $ref: ../../components/responses/BadRequest.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml
