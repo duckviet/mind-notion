@@ -14,13 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Heroku CLI
-        run: npm install -g heroku
+      - name: Heroku Login
+        uses: oven-sh/setup-heroku@v1
+        with:
+          heroku-api-key: ${{ secrets.HEROKU_API_KEY }}
 
       - name: Login to Heroku Container Registry
         run: heroku container:login
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
 
       - name: Build and Push Docker Image
         env:
