@@ -4,7 +4,8 @@ require("dotenv").config();
  * Application configuration loaded from environment variables
  */
 const config = {
-  port: Number(process.env.COLLAB_PORT || 1234),
+  // Heroku requires binding to $PORT; fallback to custom COLLAB_PORT then 1234
+  port: Number(process.env.PORT || process.env.COLLAB_PORT || 1234),
   host: process.env.COLLAB_HOST || "0.0.0.0",
   tokenSecret: process.env.COLLAB_TOKEN_SECRET || "your-collab-token-secret",
   maxConnectionsPerNote:
