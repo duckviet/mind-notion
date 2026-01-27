@@ -9,6 +9,10 @@
 
 package dto
 
+import (
+	"time"
+)
+
 type ResCollabTokenNote struct {
 
 	Id string `json:"id"`
@@ -17,9 +21,25 @@ type ResCollabTokenNote struct {
 
 	Content string `json:"content"`
 
+	ContentType string `json:"content_type"`
+
+	Status string `json:"status"`
+
+	TopOfMind bool `json:"top_of_mind"`
+
+	Thumbnail string `json:"thumbnail"`
+
 	Tags []string `json:"tags"`
+
+	FolderId *string `json:"folder_id,omitempty"`
 
 	IsPublic bool `json:"is_public"`
 
-	PublicEditEnabled bool `json:"public_edit_enabled"`
+	PublicEditEnabled bool `json:"public_edit_enabled,omitempty"`
+
+	PublicEditToken string `json:"public_edit_token,omitempty"`
+
+	CreatedAt time.Time `json:"created_at"`
+
+	UpdatedAt time.Time `json:"updated_at"`
 }

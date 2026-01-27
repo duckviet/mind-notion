@@ -89,12 +89,15 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
             "p-1.5 rounded-full transition-all duration-200",
             border
               ? "bg-accent/10 text-accent hover:bg-accent/20"
-              : "text-text-muted hover:  hover:text-text-primary",
+              : "bg-accent/10 text-text-muted hover:  hover:text-text-primary",
           )}
           title="Toggle split view border"
         >
           <Columns2
-            className={cn("h-4 w-4", border && "[stroke-dasharray:2_4]")}
+            className={cn(
+              "h-4 w-4 bg-accent-100",
+              border && "[stroke-dasharray:2_4] stroke-gray-800",
+            )}
           />
         </button>
 
@@ -113,7 +116,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
       {/* Main container */}
       <div
         ref={containerRef}
-        className="split-view-container w-full relative h-full"
+        className="split-view-container w-full relative h-full group"
         style={
           {
             "--split-left-width": `${leftWidth}%`,
@@ -135,10 +138,10 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
         >
           <div
             className={cn(
-              "h-12 w-1.5 rounded-full transition-all duration-200 shadow-sm",
+              "h-12 w-1.5 rounded-full transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100",
               isDragging
                 ? "bg-accent scale-y-125"
-                : "bg-border group-hover:bg-accent group-hover:scale-y-110",
+                : "bg-border group-hover:scale-y-110",
             )}
           />
         </div>
