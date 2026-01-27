@@ -160,9 +160,18 @@ export type ResCollabTokenNote = {
   id: string;
   title: string;
   content: string;
+  content_type: string;
+  status: string;
+  top_of_mind: boolean;
+  thumbnail: string;
   tags: string[];
+  /** @nullable */
+  folder_id?: string | null;
   is_public: boolean;
-  public_edit_enabled: boolean;
+  public_edit_enabled?: boolean;
+  public_edit_token?: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export interface ResCollabToken {

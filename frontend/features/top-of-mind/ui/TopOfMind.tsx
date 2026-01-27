@@ -38,7 +38,7 @@ const TopOfMind = ({
         className="flex gap-3  bg-surface-100 items-center w-full rounded-2xl my-4 p-4 h-[154px] transition-all overflow-x-auto scrollbar-hide"
       >
         {notes.length === 0 ? (
-          <div className="text-text-muted text-sm">
+          <div className="text-text-muted mx-auto">
             Drag notes here to pin them
           </div>
         ) : (
