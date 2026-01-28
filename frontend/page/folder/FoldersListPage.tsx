@@ -70,9 +70,9 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
     if (!folderName.trim()) return;
     setIsCreating(true);
     try {
-      const newFolder = await createFolder({
+      await createFolder({
         name: folderName.trim(),
-        parent_id: "",
+        parent_id: parentId || "",
         is_public: false,
       });
       setFolderName("");
