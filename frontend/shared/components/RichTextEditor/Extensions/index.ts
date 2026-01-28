@@ -8,3 +8,6 @@ export { default as ExtTableOfContents } from "./ExtTableOfContents";
 export { default as ExtTableKit } from "./ExtTable";
 export { default as ExtImageUpload } from "./ExtImageUpload";
 export { default as ExtSplitView, SplitViewColumn } from "./ExtSplitView";
+export { default as ExtBlockQuote } from "./ExtQuote";
+export { default as ExtHighLight } from "./ExtHighLight";
+export { default as ExtAI } from "./ExtAI";

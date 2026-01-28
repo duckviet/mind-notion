@@ -22,7 +22,6 @@ export const useNoteSnapshot = ({
     async (content: string) => {
       if (!enabled || !noteId) return;
       const sanitized = sanitizeHtml(content);
-      console.log("Sending snapshot:", sanitized);
       if (sanitized === lastContentRef.current) return;
       lastContentRef.current = sanitized;
       try {
