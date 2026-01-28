@@ -18,6 +18,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
+import { cn } from "@/lib/utils";
 
 const registerSchema = z
   .object({
@@ -68,7 +69,7 @@ export const RegisterForm = ({
   };
 
   const inputBaseClass =
-    "pl-10 h-11  -elevated border-border focus:  focus:border-accent focus:ring-accent/20 transition-all";
+    "pl-10 pr-10 h-11 focus:border-primary/40  shadow-none transition-all";
 
   return (
     <Card className="w-full backdrop-blur-sm  /80 border-0 shadow-xl shadow-shadow-lg">
@@ -104,7 +105,11 @@ export const RegisterForm = ({
                 type="text"
                 placeholder="Choose a username"
                 {...register("username")}
-                className={`${inputBaseClass} ${errors.username ? "border-destructive" : ""}`}
+                className={cn(
+                  "",
+                  inputBaseClass,
+                  errors.username ? "border-destructive" : "",
+                )}
               />
             </div>
             {errors.username && (
@@ -124,7 +129,11 @@ export const RegisterForm = ({
                 type="email"
                 placeholder="Enter your email"
                 {...register("email")}
-                className={`${inputBaseClass} ${errors.email ? "border-destructive" : ""}`}
+                className={cn(
+                  "",
+                  inputBaseClass,
+                  errors.email ? "border-destructive" : "",
+                )}
               />
             </div>
             {errors.email && (
@@ -142,7 +151,11 @@ export const RegisterForm = ({
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
                 {...register("password")}
-                className={`${inputBaseClass} pr-10 ${errors.password ? "border-destructive" : ""}`}
+                className={cn(
+                  "",
+                  inputBaseClass,
+                  errors.password ? "border-destructive" : "",
+                )}
               />
               <button
                 type="button"
@@ -173,7 +186,11 @@ export const RegisterForm = ({
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
                 {...register("confirmPassword")}
-                className={`${inputBaseClass} pr-10 ${errors.confirmPassword ? "border-destructive" : ""}`}
+                className={cn(
+                  "",
+                  inputBaseClass,
+                  errors.confirmPassword ? "border-destructive" : "",
+                )}
               />
               <button
                 type="button"
@@ -196,7 +213,7 @@ export const RegisterForm = ({
 
           <Button
             type="submit"
-            className="w-full h-11 bg-accent text-white border-transparent hover:bg-accent-600 hover:text-white cursor-pointer transition-all"
+            className="w-full h-11 bg-primary text-white border-transparent   hover:bg-primary/80 cursor-pointer transition-all"
             disabled={registerMutation.isPending}
           >
             {registerMutation.isPending ? (
@@ -214,7 +231,7 @@ export const RegisterForm = ({
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="  px-2 text-text-muted">
+              <span className=" bg-accent px-2 text-text-muted">
                 Already have an account?
               </span>
             </div>

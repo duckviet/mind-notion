@@ -93,7 +93,7 @@ export const LoginForm = ({
                 type="text"
                 placeholder="Enter your username or email"
                 {...register("username")}
-                className={`pl-10 h-11  -elevated border-border focus:  focus:border-accent focus:ring-accent/20 transition-all ${
+                className={`pl-10 h-11 focus:border-primary/40 transition-all shadow-none ${
                   errors.username
                     ? "border-destructive focus:border-destructive"
                     : ""
@@ -122,7 +122,7 @@ export const LoginForm = ({
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 {...register("password")}
-                className={`pl-10 pr-10 h-11  -elevated border-border focus:  focus:border-accent focus:ring-accent/20 transition-all ${
+                className={`pl-10 pr-10 h-11 focus:border-primary/40 transition-all shadow-none ${
                   errors.password
                     ? "border-destructive focus:border-destructive"
                     : ""
@@ -151,7 +151,7 @@ export const LoginForm = ({
           <Button
             type="submit"
             variant="default"
-            className="w-full h-11 bg-accent text-white border-transparent hover:bg-accent-600 hover:text-white cursor-pointer transition-all"
+            className="w-full h-11 bg-primary text-white border-transparent   hover:bg-primary/80 cursor-pointer transition-all"
             disabled={loginMutation.isPending}
           >
             {loginMutation.isPending ? (
@@ -169,7 +169,7 @@ export const LoginForm = ({
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="  px-2 text-text-muted">
+              <span className="bg-accent  px-2 text-text-muted">
                 New to our platform?
               </span>
             </div>
