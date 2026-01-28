@@ -53,7 +53,7 @@ const CommentItem = ({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, x: -100, scale: 0.95 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="group relative flex gap-3 p-4 rounded-lg hover:border-border bg-accent  transition-all"
+      className="group relative flex gap-3 p-4 rounded-lg border-border border bg-accent  transition-all"
     >
       {/* Content */}
       <div className="w-full">

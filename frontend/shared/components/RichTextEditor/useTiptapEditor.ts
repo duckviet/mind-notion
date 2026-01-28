@@ -1,16 +1,15 @@
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Placeholder } from "@tiptap/extensions";
 import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
 import { LocalStorageKeys } from "@/shared/configs/localStorageKeys";
-import Collaboration from "@tiptap/extension-collaboration";
-import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+import createCollaborationExtensions from "./Extensions/ExtCollaboration";
 
 import type { WebsocketProvider } from "y-websocket";
 import type * as Y from "yjs";
-import ExtImage from "./Extensions/ExtImage";
+import ExtImage from "./Extensions/ExtImage/ExtImage";
 import { toast } from "sonner";
 import { useUploadMedia } from "@/shared/services/generated/api";
 import {
@@ -23,10 +22,11 @@ import {
   ExtTableOfContents,
   ExtSplitView,
   SplitViewColumn,
+  ExtBlockQuote,
+  ExtHighLight,
+  ExtAI,
 } from "./Extensions";
 import { migrateMathStrings } from "@tiptap/extension-mathematics";
-import ExtBlockQuote from "./Extensions/ExtQuote";
-import ExtHighLight from "./Extensions/ExtHighLight";
 import { useSearchParams } from "next/navigation";
 import { useEditTokenStore } from "@/shared/stores/editTokenStore";
 
@@ -37,6 +37,11 @@ interface UseTiptapEditorProps {
   editable?: boolean;
   onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   collaboration?: CollaborationConfig;
+  onAIAction?: (
+    action: string,
+    selectedText: string,
+    customPrompt?: string,
+  ) => Promise<string>;
 }
 
 export type CollaborationConfig = {
@@ -55,10 +60,18 @@ export const useTiptapEditor = ({
   editable = true,
   onKeyDown,
   collaboration,
+  onAIAction,
 }: UseTiptapEditorProps) => {
+  const [aiMenuState, setAIMenuState] = useState<{
+    isOpen: boolean;
+    selection: string;
+    range: { from: number; to: number } | null;
+  }>({ isOpen: false, selection: "", range: null });
+
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const onUpdateRef = useRef(onUpdate);
   const onKeyDownRef = useRef(onKeyDown);
+  const onAIActionRef = useRef(onAIAction);
   // Track if user is actively editing to prevent race conditions
   const isUserEditingRef = useRef(false);
   // Track the last content we sent to parent to detect external changes
@@ -77,11 +90,10 @@ export const useTiptapEditor = ({
   // Khi vào trang có edit token từ URL
   useEffect(() => {
     const token = searchParams.get("token");
-    console.log("Edit token from URL:", token);
     if (token) setEditToken(token);
 
     return () => setEditToken(null); // Cleanup khi rời trang
-  }, []);
+  }, [searchParams, setEditToken]);
   const { mutateAsync: uploadMedia } = useUploadMedia({
     mutation: {
       onError: () => toast.error("Failed to upload image"),
@@ -110,11 +122,24 @@ export const useTiptapEditor = ({
     onKeyDownRef.current = onKeyDown;
   }, [onKeyDown]);
 
+  useEffect(() => {
+    onAIActionRef.current = onAIAction;
+  }, [onAIAction]);
+
   // IMPORTANT: Use minimal dependencies to prevent editor recreation
   // Callbacks use refs so they stay stable
   const collabEnabled = Boolean(
     collaboration?.document && collaboration?.provider,
   );
+
+  // Memoize collaboration extensions to prevent duplicate keyed plugin registration
+  const collabExtensions = useMemo(() => {
+    if (!collabEnabled || !collaboration) return [];
+    return createCollaborationExtensions(
+      collaboration.document,
+      collaboration.provider,
+    );
+  }, [collabEnabled, collaboration?.document, collaboration?.provider]);
   const extensions = useMemo(
     () => [
       StarterKit.configure({
@@ -149,23 +174,16 @@ export const useTiptapEditor = ({
       }),
       ExtSplitView,
       SplitViewColumn,
-      ...(collabEnabled
-        ? [
-            Collaboration.configure({ document: collaboration!.document }),
-            CollaborationCaret.extend().configure({
-              provider: collaboration!.provider,
-            }),
-          ]
-        : []),
+      ExtAI.configure({
+        onOpenAI: (selection: string, range: { from: number; to: number }) => {
+          setAIMenuState({ isOpen: true, selection, range });
+        },
+      }),
+      ...collabExtensions,
     ],
-    // Only recreate extensions when placeholder changes (rarely)
+    // Only recreate extensions when placeholder or collabExtensions changes
     // toc, setToc, uploadMedia are accessed via refs
-    [
-      placeholder,
-      collabEnabled,
-      collaboration?.document,
-      collaboration?.provider,
-    ],
+    [placeholder, collabExtensions],
   );
 
   const editor = useEditor(
@@ -289,5 +307,10 @@ export const useTiptapEditor = ({
     return () => editor?.destroy();
   }, [editor]);
 
-  return editor;
+  return {
+    editor,
+    aiMenuState,
+    closeAIMenu: () =>
+      setAIMenuState({ isOpen: false, selection: "", range: null }),
+  };
 };

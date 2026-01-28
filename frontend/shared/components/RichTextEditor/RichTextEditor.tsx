@@ -16,6 +16,8 @@ import { useEditorKeyboard } from "./hooks/useEditorKeyboard";
 import { BASE_SLASH_COMMANDS, createTemplateCommand } from "./slashCommands";
 import { Toolbar } from "./Toolbar";
 import { Skeleton } from "../ui/skeleton";
+import { AIMenu } from "./Extensions/ExtAI";
+import type { AIAction } from "./Extensions/ExtAI";
 
 interface TiptapProps {
   toolbar?: boolean;
@@ -34,6 +36,11 @@ interface TiptapProps {
   // Thêm editorKey để force remount khi cần
   editorKey?: string;
   contentRef?: React.RefObject<HTMLDivElement | null>;
+  onAIAction?: (
+    action: string,
+    selectedText: string,
+    customPrompt?: string,
+  ) => Promise<string>;
 }
 
 const Tiptap = ({
@@ -52,9 +59,12 @@ const Tiptap = ({
   collaboration,
   editorKey,
   contentRef,
+  onAIAction,
 }: TiptapProps) => {
   const editorRef = useRef<Editor | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [isAILoading, setIsAILoading] = useState(false);
+  const [aiMenuPosition, setAIMenuPosition] = useState({ top: 0, left: 0 });
 
   const {
     isTemplatesModalOpen,
@@ -91,15 +101,15 @@ const Tiptap = ({
     onMoveSelection: moveSelection,
     onKeyDown,
   });
-  console.log(content);
 
-  const editor = useTiptapEditor({
+  const { editor, aiMenuState, closeAIMenu } = useTiptapEditor({
     content,
     placeholder,
     onUpdate,
     editable,
     onKeyDown: handleKeyDown,
     collaboration,
+    onAIAction,
   });
 
   useEffect(() => {
@@ -112,6 +122,45 @@ const Tiptap = ({
       onEditorReady(editor);
     }
   }, [editor, onEditorReady]);
+
+  // Update AI menu position when it opens
+  useEffect(() => {
+    if (aiMenuState.isOpen && editor) {
+      const { view } = editor;
+      const { from } = view.state.selection;
+      const coords = view.coordsAtPos(from);
+      setAIMenuPosition({
+        top: coords.top + window.scrollY + 30,
+        left: coords.left + window.scrollX,
+      });
+    }
+  }, [aiMenuState.isOpen, editor]);
+
+  const handleAIAction = async (action: AIAction, customPrompt?: string) => {
+    if (!onAIAction || !editor || !aiMenuState.range) return;
+
+    setIsAILoading(true);
+    try {
+      const result = await onAIAction(
+        action,
+        aiMenuState.selection,
+        customPrompt,
+      );
+
+      // Replace selected text with AI result
+      editor
+        .chain()
+        .focus()
+        .deleteRange(aiMenuState.range)
+        .insertContent(result)
+        .run();
+    } catch (error) {
+      console.error("AI action failed:", error);
+    } finally {
+      setIsAILoading(false);
+      closeAIMenu();
+    }
+  };
 
   if (!editor || !isMounted) {
     return (
@@ -162,6 +211,17 @@ const Tiptap = ({
                   onSelect={selectCommand}
                 />
               </Portal>
+            )}
+
+            {aiMenuState.isOpen && (
+              <AIMenu
+                isOpen={aiMenuState.isOpen}
+                onClose={closeAIMenu}
+                position={aiMenuPosition}
+                selectedText={aiMenuState.selection}
+                onAction={handleAIAction}
+                isLoading={isAILoading}
+              />
             )}
           </div>
 
