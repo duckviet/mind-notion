@@ -17,8 +17,10 @@ export default function PublicNoteEditPage() {
   const { data, isLoading, error } = useCollabSession(
     noteId,
     editToken,
-    !!noteId && !!editToken,
+    !!noteId,
   );
+
+  console.log("Collab session data:", data);
 
   const note = data?.note;
   const collabToken = data?.token ?? "";
@@ -63,6 +65,7 @@ export default function PublicNoteEditPage() {
       error={error}
       isSynced={isSynced}
       isHydrated={isHydrated}
+      showComments
       mode="edit"
       onContentUpdate={handleContentUpdate}
       onEditorReady={handleEditorReady}

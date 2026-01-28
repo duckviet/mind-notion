@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Check, Copy, Globe, Lock } from "lucide-react";
+import { Check, Copy, Globe, Lock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -23,11 +23,6 @@ import {
   updatePublicEditSettings,
   rotatePublicEditToken,
 } from "@/shared/services/generated/api";
-// import {
-//   getPublicEditSettings,
-//   rotatePublicEditToken,
-//   updatePublicEditSettings,
-// } from "@/shared/services/collab";
 
 interface ShareNoteModalProps {
   isOpen: boolean;
@@ -54,7 +49,6 @@ export function ShareNoteModal({
   const { mutate: updateNote, isPending: isUpdating } = useUpdateNote({
     mutation: {
       onSuccess: () => {
-        // Invalidate note query to refresh data
         queryClient.invalidateQueries({ queryKey: getGetNoteQueryKey(noteId) });
         queryClient.invalidateQueries({ queryKey: ["notes"] });
       },
@@ -141,110 +135,117 @@ export function ShareNoteModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogOverlay />
-      <DialogContent className="sm:max-w-md z-100 bg-accent  border border-border">
+      <DialogContent className="sm:max-w-md bg-surface border border-border z-100">
         <DialogHeader>
-          <DialogTitle>Share to Web</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Globe className="w-5 h-5 " />
+            Share to Web
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-6 py-4">
-          {/* Header section with icon and description */}
-          <div className="flex items-start gap-4">
-            <div
-              className={`p-3 rounded-full ${isPublic ? " -50 text-text-primary" : " -50 text-text-primary"}`}
-            >
-              {isPublic ? (
-                <Globe className="w-6 h-6" />
-              ) : (
-                <Lock className="w-6 h-6" />
-              )}
-            </div>
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 py-2">
+          {/* Public Access Section */}
+          <div className="rounded-lg border border-border bg-accent/50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
                 <Label
                   htmlFor="public-access-switch"
-                  className="text-base font-medium"
+                  className="text-sm font-medium"
                 >
                   Public Access
                 </Label>
-                <Switch
-                  id="public-access-switch"
-                  className="border border-border"
-                  checked={isPublic}
-                  onCheckedChange={handleTogglePublic}
-                  disabled={isUpdating}
-                />
+                <p className="text-xs text-muted-foreground">
+                  {isPublic
+                    ? "Anyone with the link can view"
+                    : "Only you can access"}
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {isPublic
-                  ? "Anyone with the link can view this note."
-                  : "Only you can access this note."}
-              </p>
-            </div>
-          </div>
-
-          {/* Link section (only valid if public) */}
-          {isPublic && (
-            <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-              <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
-                Public Link
-              </Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  readOnly
-                  value={publicUrl}
-                  className="bg-muted/50 font-mono text-sm h-10 select-all"
-                  onClick={(e) => e.currentTarget.select()}
-                />
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="shrink-0 h-10 w-10"
-                  onClick={handleCopy}
-                  title="Copy link"
-                >
-                  {copied ? (
-                    <Check className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">Copy link</span>
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Public edit section */}
-          <div className="space-y-3 pt-2 border-t border-border">
-            <div className="flex items-center justify-between">
-              <Label className="text-base font-medium">Public Edit</Label>
               <Switch
-                className="border border-border"
-                checked={publicEditEnabled}
-                onCheckedChange={handleTogglePublicEdit}
-                disabled={isLoadingPublicEdit}
+                id="public-access-switch"
+                checked={isPublic}
+                onCheckedChange={handleTogglePublic}
+                disabled={isUpdating}
               />
             </div>
-            <p className="text-sm text-muted-foreground">
-              {publicEditEnabled
-                ? "Anyone with the edit link can collaborate."
-                : "Only you can edit this note."}
-            </p>
-            {publicEditEnabled && publicEditToken && (
-              <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
-                  Edit Link
+
+            {/* Public Link */}
+            {isPublic && (
+              <div className="mt-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                <Label className="text-xs text-muted-foreground">
+                  Public Link
                 </Label>
                 <div className="flex items-center gap-2">
                   <Input
                     readOnly
-                    value={editUrl}
-                    className="bg-muted/50 font-mono text-sm h-10 select-all"
+                    value={publicUrl}
+                    className=" font-mono text-xs h-9 select-all"
                     onClick={(e) => e.currentTarget.select()}
                   />
                   <Button
                     size="icon"
                     variant="outline"
-                    className="shrink-0 h-10 w-10"
+                    className="shrink-0 h-9 w-9"
+                    onClick={handleCopy}
+                    title="Copy link"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Public Edit Section */}
+          <div className="rounded-lg border border-border bg-accent/50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium">Public Edit</Label>
+                <p className="text-xs text-muted-foreground">
+                  {publicEditEnabled
+                    ? "Anyone with edit link can collaborate"
+                    : "Only you can edit"}
+                </p>
+              </div>
+              <Switch
+                checked={publicEditEnabled}
+                onCheckedChange={handleTogglePublicEdit}
+                disabled={isLoadingPublicEdit}
+              />
+            </div>
+
+            {/* Edit Link */}
+            {publicEditEnabled && publicEditToken && (
+              <div className="mt-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs text-muted-foreground">
+                    Edit Link
+                  </Label>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                    onClick={handleRotateToken}
+                    disabled={isLoadingPublicEdit}
+                  >
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    Regenerate
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input
+                    readOnly
+                    value={editUrl}
+                    className=" font-mono text-xs h-9 select-all"
+                    onClick={(e) => e.currentTarget.select()}
+                  />
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="shrink-0 h-9 w-9"
                     onClick={handleCopyEdit}
                     title="Copy edit link"
                   >
@@ -253,17 +254,6 @@ export function ShareNoteModal({
                     ) : (
                       <Copy className="h-4 w-4" />
                     )}
-                    <span className="sr-only">Copy edit link</span>
-                  </Button>
-                </div>
-                <div className="flex justify-end">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={handleRotateToken}
-                    disabled={isLoadingPublicEdit}
-                  >
-                    Regenerate link
                   </Button>
                 </div>
               </div>
@@ -271,11 +261,9 @@ export function ShareNoteModal({
           </div>
         </div>
 
-        {/* Footer actions */}
-        <div className="flex justify-end gap-2 pt-2">
-          <Button className="hover:bg-foreground/40" onClick={onClose}>
-            Done
-          </Button>
+        {/* Footer */}
+        <div className="flex justify-end pt-2">
+          <Button onClick={onClose}>Done</Button>
         </div>
       </DialogContent>
     </Dialog>

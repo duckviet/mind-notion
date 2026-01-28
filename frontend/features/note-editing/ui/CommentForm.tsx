@@ -32,7 +32,7 @@ const CommentForm = ({
   const content = (
     <div
       className={cn(
-        "p-4 bg-accent/80 rounded-lg border border-accent/20",
+        "p-4 bg-accent/80 rounded-lg border border-border",
         className,
       )}
     >

@@ -1,17 +1,9 @@
 "use client";
 
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { format } from "date-fns";
 import dayjs from "dayjs";
-import {
-  Calendar,
-  User,
-  Clock,
-  AlertCircle,
-  Copy,
-  Check,
-  PrinterIcon,
-} from "lucide-react";
+import { Calendar, User, Clock, AlertCircle, Copy, Check } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "sonner";
 
@@ -21,6 +13,9 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { cn } from "@/lib/utils";
 import { CollaborationConfig } from "@/shared/components/RichTextEditor/useTiptapEditor";
+import { CollaborativeSidebar } from "@/shared/components/CollaborativeSidebar";
+import { ShareNoteModal } from "@/features/note-editing/ui/ShareNoteModal";
+import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
 
 export interface NotePageProps {
   // Note data
@@ -50,6 +45,17 @@ export interface NotePageProps {
   // Collaboration
   collaboration?: CollaborationConfig;
 
+  // Tags management
+  newTag?: string;
+  onNewTagChange?: (value: string) => void;
+  onTagAdd?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onTagRemove?: (tag: string) => void;
+
+  // Share functionality
+  isPublic?: boolean;
+  showShareActions?: boolean;
+  showComments?: boolean;
+
   // Optional: Custom className for container
   containerClassName?: string;
 }
@@ -64,9 +70,21 @@ export const NotePage: React.FC<NotePageProps> = ({
   onContentUpdate,
   onEditorReady,
   collaboration,
+  newTag = "",
+  onNewTagChange,
+  onTagAdd,
+  onTagRemove,
+  isPublic = false,
+  showShareActions = false,
+  showComments = false,
   containerClassName,
 }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = usePersistentState(
+    "note-sidebar",
+    false,
+  );
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const handleCopyLink = () => {
@@ -81,6 +99,10 @@ export const NotePage: React.FC<NotePageProps> = ({
     contentRef,
     documentTitle: note?.title,
   });
+
+  const handleToggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
 
   const isEditable = mode === "edit";
   const showEditor = !collaboration || isHydrated;
@@ -141,11 +163,11 @@ export const NotePage: React.FC<NotePageProps> = ({
   return (
     <div
       className={cn(
-        "h-screen   bg-background w-full  px-4 py-6 mx-auto",
+        "h-screen flex w-full gap-4 px-4 py-6 mx-auto",
         containerClassName,
       )}
     >
-      <div className="flex flex-col p-6 rounded-lg bg-accent h-full overflow-y-auto">
+      <div className="flex flex-col flex-1 p-6 rounded-lg border border-border bg-surface h-full overflow-y-auto">
         {/* Header */}
         <header className="mb-4 px-6 space-y-6">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -165,13 +187,6 @@ export const NotePage: React.FC<NotePageProps> = ({
                 )}
                 {copied ? "Copied" : "Copy Link"}
               </Button>
-              <Button
-                size="sm"
-                className="shrink-0 gap-2 hover:bg-foreground/50"
-                onClick={handlePrint}
-              >
-                <PrinterIcon /> Print
-              </Button>
             </div>
           </div>
 
@@ -182,17 +197,17 @@ export const NotePage: React.FC<NotePageProps> = ({
               !isEditable && "border-b border-border pb-6",
             )}
           >
-            <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
               <Calendar className="w-4 h-4" />
               <span>{formatDate(note.created_at)}</span>
             </div>
             {note.updated_at && (
-              <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-full">
+              <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
                 <Clock className="w-4 h-4" />
                 <span>Updated {formatDate(note.updated_at)}</span>
               </div>
             )}
-            <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-full">
+            <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
               <User className="w-4 h-4" />
               <span>{isEditable ? "Editable Link" : "Public View"}</span>
             </div>
@@ -219,6 +234,35 @@ export const NotePage: React.FC<NotePageProps> = ({
           <p>Shared via Mind Notion</p>
         </footer>
       </div>
+
+      {/* Collaborative Sidebar */}
+      <CollaborativeSidebar
+        isSidebarCollapsed={isSidebarCollapsed || false}
+        onToggleSidebar={handleToggleSidebar}
+        tags={isEditable ? note.tags : undefined}
+        newTag={newTag}
+        onNewTagChange={isEditable ? onNewTagChange : undefined}
+        onTagAdd={isEditable ? onTagAdd : undefined}
+        onTagRemove={isEditable ? onTagRemove : undefined}
+        tagsDisabled={false}
+        showComments={showComments}
+        noteId={note.id}
+        showShareActions={showShareActions && isEditable}
+        onShareClick={() => setIsShareModalOpen(true)}
+        showPrintAction
+        onPrintClick={handlePrint}
+        contentLength={note.content?.length || 0}
+      />
+
+      {note.id && showShareActions && isEditable && (
+        <ShareNoteModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          noteId={note.id}
+          isPublic={isPublic}
+          title={note.title}
+        />
+      )}
     </div>
   );
 };
