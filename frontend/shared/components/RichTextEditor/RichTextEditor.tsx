@@ -18,8 +18,11 @@ import { Toolbar } from "./Toolbar";
 import { Skeleton } from "../ui/skeleton";
 import { AIMenu } from "./Extensions/ExtAI";
 import type { AIAction } from "./Extensions/ExtAI";
+import SharedBubbleMenu from "./Extensions/SharedBubbleMenu";
+import { getHeaderToolbarConfigs } from "./Toolbar/ToolbarConfig";
 
 interface TiptapProps {
+  noteId?: string;
   toolbar?: boolean;
   ref?: React.RefObject<HTMLDivElement>;
   className?: string;
@@ -44,6 +47,7 @@ interface TiptapProps {
 }
 
 const Tiptap = ({
+  noteId,
   toolbar = true,
   placeholder = "Type your message here...",
   ref,
@@ -103,6 +107,7 @@ const Tiptap = ({
   });
 
   const { editor, aiMenuState, closeAIMenu } = useTiptapEditor({
+    noteId,
     content,
     placeholder,
     onUpdate,
@@ -177,7 +182,7 @@ const Tiptap = ({
     <div className="flex flex-col gap-2" key={editorKey}>
       {toolbar && (
         <div className="sticky top-2 z-15 px-6">
-          <Toolbar editor={editor} />
+          <Toolbar editor={editor} getConfig={getHeaderToolbarConfigs} />
         </div>
       )}
 
@@ -188,7 +193,7 @@ const Tiptap = ({
               ref={ref}
               editor={editor}
               className={cn(
-                "w-full min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none",
+                "w-full min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none overflow-hidden",
                 className,
               )}
               onFocus={onFocus}
@@ -223,6 +228,8 @@ const Tiptap = ({
                 isLoading={isAILoading}
               />
             )}
+
+            <SharedBubbleMenu editor={editor} />
           </div>
 
           <TableOfContents editor={editor} />

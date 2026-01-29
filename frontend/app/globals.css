@@ -450,22 +450,11 @@ div {
    INTERACTIVE ELEMENTS
    ============================================ */
 
-a,
 button,
 input,
 textarea,
 select {
   accent-color: var(--accent-600);
-}
-
-a {
-  color: var(--accent-600);
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-a:hover {
-  color: var(--accent-700);
 }
 
 button {
