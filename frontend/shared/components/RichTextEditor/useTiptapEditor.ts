@@ -25,6 +25,9 @@ import {
   ExtBlockQuote,
   ExtHighLight,
   ExtAI,
+  ExtLink,
+  ExtComment,
+  ExtTaskList,
 } from "./Extensions";
 import { migrateMathStrings } from "@tiptap/extension-mathematics";
 import { useSearchParams } from "next/navigation";
@@ -153,7 +156,9 @@ export const useTiptapEditor = ({
         undoRedo: false,
       }),
       ...ExtListKit,
-      // ExtTaskList,
+      ...ExtTaskList,
+      ExtLink,
+      ExtComment,
       ExtCustomCodeBlock,
       ExtHeading,
       ExtMathematics,

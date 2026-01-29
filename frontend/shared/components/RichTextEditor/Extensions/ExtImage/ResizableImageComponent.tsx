@@ -15,8 +15,6 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
     height: node.attrs.height || "auto",
   });
 
-  console.log("Image node attrs:", node.attrs, dimensions);
-
   const [caption, setCaption] = useState(node.attrs.caption || "");
   const [isCaptionFocused, setIsCaptionFocused] = useState(false);
 

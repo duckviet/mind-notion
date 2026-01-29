@@ -142,7 +142,14 @@ export const getToolbarGroups = (
         icon: <Link2 size={16} />,
         tooltip: "Add Link",
         isActive: () => editor.isActive("link"),
-        onClick: () => editor.chain().focus().toggleLink({ href: "" }).run(),
+        onClick: () => {
+          editor
+            .chain()
+            .focus()
+            .extendMarkRange("link")
+            .setLink({ href: "https://" })
+            .run();
+        },
       },
       {
         icon: <ImageIcon size={16} />,

@@ -18,6 +18,7 @@ import { Toolbar } from "./Toolbar";
 import { Skeleton } from "../ui/skeleton";
 import { AIMenu } from "./Extensions/ExtAI";
 import type { AIAction } from "./Extensions/ExtAI";
+import SharedBubbleMenu from "./Extensions/SharedBubbleMenu";
 
 interface TiptapProps {
   toolbar?: boolean;
@@ -188,7 +189,7 @@ const Tiptap = ({
               ref={ref}
               editor={editor}
               className={cn(
-                "w-full min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none",
+                "w-full min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none overflow-hidden",
                 className,
               )}
               onFocus={onFocus}
@@ -223,6 +224,8 @@ const Tiptap = ({
                 isLoading={isAILoading}
               />
             )}
+
+            <SharedBubbleMenu editor={editor} />
           </div>
 
           <TableOfContents editor={editor} />
