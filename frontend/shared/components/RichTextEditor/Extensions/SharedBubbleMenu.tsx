@@ -7,6 +7,10 @@ import { MessageSquarePlus, Trash2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import LinkBubbleMenuContent from "./ExtLink/LinkPopup";
 import { Toolbar } from "../Toolbar";
+import {
+  getBubbleToolbarConfigs,
+  getHeaderToolbarConfigs,
+} from "../Toolbar/ToolbarConfig";
 
 interface SharedBubbleMenuProps {
   editor: Editor;
@@ -67,7 +71,7 @@ const SharedBubbleMenu = ({ editor }: SharedBubbleMenuProps) => {
       );
     }
 
-    return <Toolbar editor={editor} />;
+    return <Toolbar editor={editor} getConfig={getBubbleToolbarConfigs} />;
   }, [
     commentId,
     editor,

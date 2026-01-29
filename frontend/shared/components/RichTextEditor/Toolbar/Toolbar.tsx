@@ -6,7 +6,11 @@ import { cn } from "@/lib/utils";
 import { useUploadMedia } from "@/shared/services/generated/api";
 import ToolbarButton from "./ToolbarButton";
 import TableSizeDropdown from "./TableSizeDropdown";
-import { getToolbarGroups } from "./ToolbarConfig";
+import {
+  getHeaderToolbarConfigs,
+  ToolbarConfigProps,
+  ToolbarGroup,
+} from "./ToolbarConfig";
 import {
   HoverCard,
   HoverCardContent,
@@ -16,9 +20,11 @@ import {
 const Toolbar = ({
   editor,
   className,
+  getConfig,
 }: {
   editor: Editor;
   className?: string;
+  getConfig?: (props: ToolbarConfigProps) => ToolbarGroup[];
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { mutateAsync: uploadMedia, isPending: isUploading } = useUploadMedia({
@@ -49,10 +55,13 @@ const Toolbar = ({
   // Khởi tạo các groups thông qua useMemo
   const groups = useMemo(
     () =>
-      getToolbarGroups(editor, {
-        onAddImage: () => fileInputRef.current?.click(),
-      }),
-    [editor],
+      getConfig
+        ? getConfig({
+            editor,
+            options: { onAddImage: () => fileInputRef.current?.click() },
+          })
+        : [],
+    [editor, getConfig],
   );
 
   return (
@@ -60,7 +69,7 @@ const Toolbar = ({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "flex flex-wrap border border-border items-center gap-1 p-2  bg-surface-50 text-text-primary rounded-lg   shadow-md",
+        "flex flex-wrap border border-border items-center gap-1 p-2  bg-surface-50 text-text-primary rounded-lg   shadow-lg",
         className,
       )}
     >
@@ -68,8 +77,14 @@ const Toolbar = ({
         <React.Fragment key={group.name}>
           <div className="flex items-center gap-1">
             {group.items.map((item, itemIdx) =>
-              item.isDropdown ? (
-                <TableSizeDropdown key={itemIdx} editor={editor} />
+              item.isDropdown && item.DropdownNode ? (
+                <React.Fragment key={itemIdx}>
+                  {item.DropdownNode}
+                </React.Fragment>
+              ) : item.isPopover && item.PopoverNode ? (
+                <React.Fragment key={itemIdx}>
+                  {item.PopoverNode}
+                </React.Fragment>
               ) : (
                 <React.Fragment key={itemIdx}>
                   {item.variants && item.variants.length > 0 ? (
@@ -86,6 +101,7 @@ const Toolbar = ({
                               (item.tooltip === "Add Image" && isUploading)
                             }
                             icon={item.icon}
+                            label={item.label}
                             tooltip={""}
                           />
                         </div>
@@ -117,6 +133,7 @@ const Toolbar = ({
                         (item.tooltip === "Add Image" && isUploading)
                       }
                       icon={item.icon}
+                      label={item.label}
                       tooltip={item.tooltip}
                     />
                   )}

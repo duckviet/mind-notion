@@ -94,11 +94,13 @@ export default function FocusEditModalContent({
           )}
         </div>
         <RichTextEditor
+          noteId={noteId}
           showEditor={showEditor}
           contentRef={contentRef}
           content={form.content}
           onUpdate={onContentChange}
           editable
+          toolbar={false}
           collaboration={collaboration}
           onEditorReady={onEditorReady}
         />

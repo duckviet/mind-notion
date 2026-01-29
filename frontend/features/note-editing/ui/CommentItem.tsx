@@ -9,6 +9,7 @@ interface CommentItemProps {
   onUpdate: (content: string) => Promise<void>;
   onDelete: () => Promise<void>;
   isLoading?: boolean;
+  editing?: boolean;
 }
 
 const formatDate = (date: string) => {
@@ -31,8 +32,9 @@ const CommentItem = ({
   onUpdate,
   onDelete,
   isLoading,
+  editing = false,
 }: CommentItemProps) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(editing || false);
   const [editContent, setEditContent] = useState(comment.content || "");
 
   const handleUpdate = async () => {
@@ -74,7 +76,7 @@ const CommentItem = ({
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="space-y-3 mt-2 overflow-hidden"
+              className="space-y-3 mt-2 overflow-hidden "
             >
               <CommentForm
                 value={editContent}
@@ -84,7 +86,7 @@ const CommentItem = ({
                 isLoading={!!isLoading}
                 placeholder="Edit your comment..."
                 submitLabel="Save"
-                className="p-0"
+                className="p-0 border-none"
                 showMotion={false}
               />
             </motion.div>
