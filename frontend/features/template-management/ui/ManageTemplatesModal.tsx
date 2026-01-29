@@ -12,7 +12,6 @@ import ExtMathematics from "../../../shared/components/RichTextEditor/Extensions
 import ExtHeading from "../../../shared/components/RichTextEditor/Extensions/ExtHeading";
 import ExtCodeBlock from "../../../shared/components/RichTextEditor/Extensions/ExtCodeBlock";
 import ExtListKit from "../../../shared/components/RichTextEditor/Extensions/ExtListKit";
-import ExtLink from "../../../shared/components/RichTextEditor/Extensions/ExtLink";
 import { TemplateForm } from "./TemplateForm";
 import { TemplateList } from "./TemplateList";
 import { useTemplates } from "../hooks/useTemplates";
@@ -65,7 +64,6 @@ export function ManageTemplatesModal({
         codeBlock: false,
         heading: false,
       }),
-      ExtLink,
       ...ExtListKit,
       ExtCodeBlock,
       ExtHeading,
