@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import React from "react";
 export type ToolbarButtonProps = {
@@ -7,6 +8,7 @@ export type ToolbarButtonProps = {
   tooltip: string;
   disabled?: boolean;
   label?: string;
+  className?: string;
 };
 
 export default function ToolbarButton({
@@ -16,6 +18,7 @@ export default function ToolbarButton({
   tooltip,
   disabled = false,
   label,
+  className,
 }: ToolbarButtonProps) {
   return (
     <motion.button
@@ -24,16 +27,18 @@ export default function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       title={tooltip}
-      className={`p-2 rounded inline-flex items-center space-x-2 transition-colors ${
+      className={cn(
+        "p-2 gap-2 rounded inline-flex items-center space-x-2 transition-colors text-sm",
+        className,
         isActive && !label
           ? "bg-[#a55252] text-white"
           : disabled
             ? "cursor-not-allowed"
-            : "hover:bg-accent-foreground/40 hover:text-primary-foreground"
-      }`}
+            : "hover:bg-accent-foreground/40 hover:text-primary-foreground",
+      )}
     >
       {icon}
-      {label && <span className="text-sm">{label}</span>}
+      {label}
     </motion.button>
   );
 }

@@ -217,10 +217,11 @@ export const NotePage: React.FC<NotePageProps> = ({
         {/* Content Editor */}
         {showEditor && (
           <RichTextEditor
+            noteId={note.id}
             content={isEditable ? note.content : sanitizeHtml(note.content)}
             editable={isEditable}
             showEditor={true}
-            toolbar={isEditable}
+            toolbar={true}
             onUpdate={isEditable ? onContentUpdate : undefined}
             onEditorReady={isEditable ? onEditorReady : undefined}
             collaboration={isEditable ? collaboration : undefined}

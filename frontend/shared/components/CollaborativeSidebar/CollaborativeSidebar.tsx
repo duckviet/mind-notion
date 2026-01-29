@@ -72,9 +72,12 @@ export const CollaborativeSidebar: React.FC<CollaborativeSidebarProps> = ({
       animate={{ width: isSidebarCollapsed ? 50 : 320 }}
       transition={{ type: "spring", stiffness: 260, damping: 30 }}
       className={cn(
-        "shrink-0 rounded-lg p-6 flex flex-col bg-surface overflow-auto dark:border dark:border-border",
+        "shrink-0 rounded-lg  p-4 pl-6 flex flex-col bg-surface overflow-auto dark:border dark:border-border",
         className,
       )}
+      style={{
+        scrollbarGutter: "stable",
+      }}
     >
       <motion.div
         initial={false}

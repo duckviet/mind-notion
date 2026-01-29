@@ -34,6 +34,7 @@ import { useSearchParams } from "next/navigation";
 import { useEditTokenStore } from "@/shared/stores/editTokenStore";
 
 interface UseTiptapEditorProps {
+  noteId?: string;
   content?: string;
   placeholder?: string;
   onUpdate?: (content: string) => void;
@@ -57,6 +58,7 @@ export type CollaborationConfig = {
 };
 
 export const useTiptapEditor = ({
+  noteId,
   content = "",
   placeholder = "Type your message here...",
   onUpdate,
@@ -204,6 +206,7 @@ export const useTiptapEditor = ({
             "tiptap ProseMirror h-full min-h-[150px] pr-4 focus:outline-none",
             !editable && "pointer-events-none select-text cursor-default",
           ),
+          "data-note-id": noteId ?? "",
         },
         handleKeyDown: (_view, event) => {
           onKeyDownRef.current?.(

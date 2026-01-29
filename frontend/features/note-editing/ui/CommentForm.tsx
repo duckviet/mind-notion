@@ -3,6 +3,7 @@ import { Send, X } from "lucide-react";
 import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/shared/components/ui/textarea";
 
 interface CommentFormProps {
   value: string;
@@ -37,13 +38,16 @@ const CommentForm = ({
       )}
     >
       <div className="space-y-3">
-        <textarea
+        <Textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           maxLength={1000}
           rows={3}
-          className="w-full min-h-[200px] px-3 py-2 bg-accent-50  border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm"
+          style={{
+            scrollbarGutter: "stable",
+          }}
+          className="w-full max-h-[300px] overflow-y-auto  focus:ring-none focus:border-none px-3 py-2 bg-accent-50  border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm border-none"
           autoFocus
         />
         <div className="flex items-end justify-between">
