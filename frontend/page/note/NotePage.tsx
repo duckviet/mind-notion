@@ -167,7 +167,7 @@ export const NotePage: React.FC<NotePageProps> = ({
         containerClassName,
       )}
     >
-      <div className="flex flex-col flex-1 p-6 rounded-lg border border-border bg-surface h-full overflow-y-auto">
+      <div className="flex flex-col flex-1 p-6 rounded-lg border border-border bg-surface h-full overflow-y-auto w-fit overflow-x-hidden">
         {/* Header */}
         <header className="mb-4 px-6 space-y-6">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -216,17 +216,16 @@ export const NotePage: React.FC<NotePageProps> = ({
 
         {/* Content Editor */}
         {showEditor && (
-          <div ref={contentRef} className=" ">
-            <RichTextEditor
-              content={isEditable ? note.content : sanitizeHtml(note.content)}
-              editable={isEditable}
-              showEditor={true}
-              toolbar={isEditable}
-              onUpdate={isEditable ? onContentUpdate : undefined}
-              onEditorReady={isEditable ? onEditorReady : undefined}
-              collaboration={isEditable ? collaboration : undefined}
-            />
-          </div>
+          <RichTextEditor
+            content={isEditable ? note.content : sanitizeHtml(note.content)}
+            editable={isEditable}
+            showEditor={true}
+            toolbar={isEditable}
+            onUpdate={isEditable ? onContentUpdate : undefined}
+            onEditorReady={isEditable ? onEditorReady : undefined}
+            collaboration={isEditable ? collaboration : undefined}
+            contentRef={contentRef}
+          />
         )}
 
         {/* Footer */}

@@ -20,8 +20,6 @@ export default function PublicNoteEditPage() {
     !!noteId,
   );
 
-  console.log("Collab session data:", data);
-
   const note = data?.note;
   const collabToken = data?.token ?? "";
   const collabEnabled = Boolean(collabToken);

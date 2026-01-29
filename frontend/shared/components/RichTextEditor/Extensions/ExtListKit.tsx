@@ -44,27 +44,6 @@ const ExtListItem = ListItem.extend({
   },
 });
 
-const ExtTaskList = TaskList.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      "data-type": {
-        default: "taskItem",
-      },
-    };
-  },
-  renderHTML({ HTMLAttributes }) {
-    return [
-      "ul",
-      {
-        ...HTMLAttributes,
-        class: "list-none pl-0 my-2",
-      },
-      0,
-    ];
-  },
-});
-
 const ExtListKit = [ExtBulletList, ExtOrderedList, ExtListItem];
 
 export default ExtListKit;

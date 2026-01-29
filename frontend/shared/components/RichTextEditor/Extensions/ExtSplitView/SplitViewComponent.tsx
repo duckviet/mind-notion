@@ -50,7 +50,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
   return (
     <NodeViewWrapper
       className={cn(
-        "split-view-wrapper relative my-10 rounded-lg transition-all duration-200 overflow-visible",
+        "split-view-wrapper relative  rounded-lg transition-all duration-200 overflow-visible",
         border ? "border" : "border-none",
         padding ? "p-5" : "p-0",
         selected

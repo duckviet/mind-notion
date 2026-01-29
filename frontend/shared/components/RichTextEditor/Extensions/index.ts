@@ -1,7 +1,9 @@
 export { default as ExtCustomCodeBlock } from "./ExtCodeBlock";
 export { default as ExtImage } from "./ExtImage";
-export { default as ExtLink } from "./ExtLink";
+export { default as ExtLink } from "./ExtLink/ExtLink";
+export { default as ExtComment } from "./ExtComment/ExtComment";
 export { default as ExtListKit } from "./ExtListKit";
+export { default as ExtTaskList } from "./ExtTaskList";
 export { default as ExtHeading } from "./ExtHeading";
 export { default as ExtMathematics } from "./ExtMathematics";
 export { default as ExtTableOfContents } from "./ExtTableOfContents";
