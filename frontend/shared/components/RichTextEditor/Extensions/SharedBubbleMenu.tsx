@@ -11,6 +11,7 @@ import {
   getBubbleToolbarConfigs,
   getHeaderToolbarConfigs,
 } from "../Toolbar/ToolbarConfig";
+import CommentBubblePopup from "./ExtComment/CommentPopup";
 
 interface SharedBubbleMenuProps {
   editor: Editor;
@@ -23,17 +24,19 @@ const SharedBubbleMenu = ({ editor }: SharedBubbleMenuProps) => {
       selector: ({ editor }) => ({
         isLinkActive: editor.isActive("link"),
         isCommentActive: editor.isActive("comment"),
+
         hasSelection: !editor.state.selection.empty,
         commentId: editor.getAttributes("comment")?.id as string | undefined,
       }),
     });
 
-  const shouldShow = useCallback(
-    ({ editor }: { editor: Editor }) => {
-      return !editor.state.selection.empty;
-    },
-    [editor.state.selection.empty],
-  );
+  const shouldShow = useCallback(({ editor }: { editor: Editor }) => {
+    const hasSelection = !editor.state.selection.empty;
+    const isCommentActive = editor.isActive("comment");
+    const isLinkActive = editor.isActive("link");
+
+    return hasSelection || isCommentActive || isLinkActive;
+  }, []);
 
   const handleAddComment = useCallback(() => {
     if (editor.state.selection.empty) return;
@@ -54,21 +57,7 @@ const SharedBubbleMenu = ({ editor }: SharedBubbleMenuProps) => {
     }
 
     if (isCommentActive) {
-      return (
-        <div className="flex items-center gap-2">
-          <div className="text-xs text-muted-foreground">
-            Comment: <span className="font-medium">{commentId}</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 px-2 text-muted-foreground hover:text-red-600"
-            onClick={handleRemoveComment}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      );
+      return <CommentBubblePopup editor={editor} isActive={isCommentActive} />;
     }
 
     return <Toolbar editor={editor} getConfig={getBubbleToolbarConfigs} />;

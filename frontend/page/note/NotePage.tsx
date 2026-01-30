@@ -16,6 +16,7 @@ import { CollaborationConfig } from "@/shared/components/RichTextEditor/useTipta
 import { CollaborativeSidebar } from "@/shared/components/CollaborativeSidebar";
 import { ShareNoteModal } from "@/features/note-editing/ui/ShareNoteModal";
 import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
+import { ModalProvider } from "@/shared/contexts/ModalContext";
 
 export interface NotePageProps {
   // Note data
@@ -85,6 +86,7 @@ export const NotePage: React.FC<NotePageProps> = ({
     false,
   );
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [activeCommentId, setActiveCommentId] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const handleCopyLink = () => {
@@ -161,109 +163,113 @@ export const NotePage: React.FC<NotePageProps> = ({
   }
 
   return (
-    <div
-      className={cn(
-        "h-screen flex w-full gap-4 px-4 py-6 mx-auto",
-        containerClassName,
-      )}
-    >
-      <div className="flex flex-col flex-1 p-6 rounded-lg border border-border bg-surface h-full overflow-y-auto w-fit overflow-x-hidden">
-        {/* Header */}
-        <header className="mb-4 px-6 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-            <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 leading-tight">
-              {note.title}
-            </h1>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                className="shrink-0 gap-2 hover:bg-foreground/50"
-                onClick={handleCopyLink}
-              >
-                {copied ? (
-                  <Check className="w-4 h-4" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-                {copied ? "Copied" : "Copy Link"}
-              </Button>
-            </div>
-          </div>
-
-          {/* Metadata */}
-          <div
-            className={cn(
-              "flex flex-wrap items-center gap-4 text-sm text-muted-foreground pb-4",
-              !isEditable && "border-b border-border pb-6",
-            )}
-          >
-            <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
-              <Calendar className="w-4 h-4" />
-              <span>{formatDate(note.created_at)}</span>
-            </div>
-            {note.updated_at && (
-              <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
-                <Clock className="w-4 h-4" />
-                <span>Updated {formatDate(note.updated_at)}</span>
+    <ModalProvider>
+      <div
+        className={cn(
+          "h-screen flex w-full gap-4 px-4 py-6 mx-auto",
+          containerClassName,
+        )}
+      >
+        <div className="flex flex-col flex-1 p-6 rounded-lg border border-border bg-surface h-full overflow-y-auto w-fit overflow-x-hidden">
+          {/* Header */}
+          <header className="mb-4 px-6 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 leading-tight">
+                {note.title}
+              </h1>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="shrink-0 gap-2 hover:bg-foreground/50"
+                  onClick={handleCopyLink}
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
+                  {copied ? "Copied" : "Copy Link"}
+                </Button>
               </div>
-            )}
-            <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
-              <User className="w-4 h-4" />
-              <span>{isEditable ? "Editable Link" : "Public View"}</span>
             </div>
-          </div>
-        </header>
 
-        {/* Content Editor */}
-        {showEditor && (
-          <RichTextEditor
+            {/* Metadata */}
+            <div
+              className={cn(
+                "flex flex-wrap items-center gap-4 text-sm text-muted-foreground pb-4",
+                !isEditable && "border-b border-border pb-6",
+              )}
+            >
+              <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
+                <Calendar className="w-4 h-4" />
+                <span>{formatDate(note.created_at)}</span>
+              </div>
+              {note.updated_at && (
+                <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
+                  <Clock className="w-4 h-4" />
+                  <span>Updated {formatDate(note.updated_at)}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
+                <User className="w-4 h-4" />
+                <span>{isEditable ? "Editable Link" : "Public View"}</span>
+              </div>
+            </div>
+          </header>
+
+          {/* Content Editor */}
+          {showEditor && (
+            <RichTextEditor
+              noteId={note.id}
+              content={isEditable ? note.content : sanitizeHtml(note.content)}
+              editable={isEditable}
+              showEditor={true}
+              toolbar={true}
+              onUpdate={isEditable ? onContentUpdate : undefined}
+              onEditorReady={isEditable ? onEditorReady : undefined}
+              collaboration={isEditable ? collaboration : undefined}
+              contentRef={contentRef}
+              onActiveCommentChange={setActiveCommentId}
+            />
+          )}
+
+          {/* Footer */}
+          <footer className="mt-12 text-center text-sm text-muted-foreground flex-1 content-end">
+            <p>Shared via Mind Notion</p>
+          </footer>
+        </div>
+
+        {/* Collaborative Sidebar */}
+        <CollaborativeSidebar
+          isSidebarCollapsed={isSidebarCollapsed || false}
+          onToggleSidebar={handleToggleSidebar}
+          tags={isEditable ? note.tags : undefined}
+          newTag={newTag}
+          onNewTagChange={isEditable ? onNewTagChange : undefined}
+          onTagAdd={isEditable ? onTagAdd : undefined}
+          onTagRemove={isEditable ? onTagRemove : undefined}
+          tagsDisabled={false}
+          showComments={showComments}
+          noteId={note.id}
+          activeCommentId={activeCommentId}
+          showShareActions={showShareActions && isEditable}
+          onShareClick={() => setIsShareModalOpen(true)}
+          showPrintAction
+          onPrintClick={handlePrint}
+          contentLength={note.content?.length || 0}
+        />
+
+        {note.id && showShareActions && isEditable && (
+          <ShareNoteModal
+            isOpen={isShareModalOpen}
+            onClose={() => setIsShareModalOpen(false)}
             noteId={note.id}
-            content={isEditable ? note.content : sanitizeHtml(note.content)}
-            editable={isEditable}
-            showEditor={true}
-            toolbar={true}
-            onUpdate={isEditable ? onContentUpdate : undefined}
-            onEditorReady={isEditable ? onEditorReady : undefined}
-            collaboration={isEditable ? collaboration : undefined}
-            contentRef={contentRef}
+            isPublic={isPublic}
+            title={note.title}
           />
         )}
-
-        {/* Footer */}
-        <footer className="mt-12 text-center text-sm text-muted-foreground flex-1 content-end">
-          <p>Shared via Mind Notion</p>
-        </footer>
       </div>
-
-      {/* Collaborative Sidebar */}
-      <CollaborativeSidebar
-        isSidebarCollapsed={isSidebarCollapsed || false}
-        onToggleSidebar={handleToggleSidebar}
-        tags={isEditable ? note.tags : undefined}
-        newTag={newTag}
-        onNewTagChange={isEditable ? onNewTagChange : undefined}
-        onTagAdd={isEditable ? onTagAdd : undefined}
-        onTagRemove={isEditable ? onTagRemove : undefined}
-        tagsDisabled={false}
-        showComments={showComments}
-        noteId={note.id}
-        showShareActions={showShareActions && isEditable}
-        onShareClick={() => setIsShareModalOpen(true)}
-        showPrintAction
-        onPrintClick={handlePrint}
-        contentLength={note.content?.length || 0}
-      />
-
-      {note.id && showShareActions && isEditable && (
-        <ShareNoteModal
-          isOpen={isShareModalOpen}
-          onClose={() => setIsShareModalOpen(false)}
-          noteId={note.id}
-          isPublic={isPublic}
-          title={note.title}
-        />
-      )}
-    </div>
+    </ModalProvider>
   );
 };
 

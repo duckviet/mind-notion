@@ -41,6 +41,7 @@ interface UseTiptapEditorProps {
   editable?: boolean;
   onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   collaboration?: CollaborationConfig;
+  onActiveCommentChange?: (commentId: string | null) => void;
   onAIAction?: (
     action: string,
     selectedText: string,
@@ -65,6 +66,7 @@ export const useTiptapEditor = ({
   editable = true,
   onKeyDown,
   collaboration,
+  onActiveCommentChange,
   onAIAction,
 }: UseTiptapEditorProps) => {
   const [aiMenuState, setAIMenuState] = useState<{
@@ -77,6 +79,7 @@ export const useTiptapEditor = ({
   const onUpdateRef = useRef(onUpdate);
   const onKeyDownRef = useRef(onKeyDown);
   const onAIActionRef = useRef(onAIAction);
+  const onActiveCommentChangeRef = useRef(onActiveCommentChange);
   // Track if user is actively editing to prevent race conditions
   const isUserEditingRef = useRef(false);
   // Track the last content we sent to parent to detect external changes
@@ -130,6 +133,10 @@ export const useTiptapEditor = ({
   useEffect(() => {
     onAIActionRef.current = onAIAction;
   }, [onAIAction]);
+
+  useEffect(() => {
+    onActiveCommentChangeRef.current = onActiveCommentChange;
+  }, [onActiveCommentChange]);
 
   // IMPORTANT: Use minimal dependencies to prevent editor recreation
   // Callbacks use refs so they stay stable
@@ -307,6 +314,41 @@ export const useTiptapEditor = ({
       if (debounceRef.current) clearTimeout(debounceRef.current);
       editor.off("update", debouncedUpdate);
       editor.off("focus", handleFocus);
+      editor.off("blur", handleBlur);
+    };
+  }, [editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+    if (!onActiveCommentChangeRef.current) return;
+
+    let lastActiveId: string | null = null;
+
+    const emitActiveComment = () => {
+      const isCommentActive = editor.isActive("comment");
+      const nextId = isCommentActive
+        ? ((editor.getAttributes("comment")?.id as string | undefined) ?? null)
+        : null;
+
+      if (nextId !== lastActiveId) {
+        lastActiveId = nextId;
+        onActiveCommentChangeRef.current?.(nextId);
+      }
+    };
+
+    const handleBlur = () => {
+      if (lastActiveId !== null) {
+        lastActiveId = null;
+        onActiveCommentChangeRef.current?.(null);
+      }
+    };
+
+    emitActiveComment();
+    editor.on("selectionUpdate", emitActiveComment);
+    editor.on("blur", handleBlur);
+
+    return () => {
+      editor.off("selectionUpdate", emitActiveComment);
       editor.off("blur", handleBlur);
     };
   }, [editor]);

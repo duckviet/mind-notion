@@ -28,7 +28,7 @@ export default function ToolbarButton({
       disabled={disabled}
       title={tooltip}
       className={cn(
-        "p-2 gap-2 rounded inline-flex items-center space-x-2 transition-colors text-sm",
+        "p-1 gap-2 rounded inline-flex items-center space-x-2 transition-colors text-sm",
         className,
         isActive && !label
           ? "bg-[#a55252] text-white"

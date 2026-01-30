@@ -121,6 +121,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.CollabAPI.CreateCollabToken,
 		},
 		{
+			"CommentDetail",
+			http.MethodGet,
+			"/api/v1/comment/:comment_id",
+			handleFunctions.CommentAPI.CommentDetail,
+		},
+		{
 			"CreateComment",
 			http.MethodPost,
 			"/api/v1/notes/:note_id/comments",

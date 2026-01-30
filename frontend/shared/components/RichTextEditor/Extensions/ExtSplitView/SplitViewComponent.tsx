@@ -65,7 +65,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
       {/* Floating Toolbar - Higher z-index and better visibility */}
       <div
         className={cn(
-          "absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-md    px-2 py-1 shadow-2xl border border-border transition-all duration-300 z-[100] whitespace-nowrap",
+          "absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-md px-2 py-1 shadow-2xl border border-border transition-all duration-300 z-50 whitespace-nowrap",
           isHovered || selected
             ? "opacity-100 translate-y-0 visible  "
             : "opacity-0 translate-y-2 invisible pointer-events-none",

@@ -6,6 +6,8 @@ import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 const bundledLanguages = {
   javascript: () => import("@shikijs/langs/javascript"),
   typescript: () => import("@shikijs/langs/typescript"),
+  tsx: () => import("@shikijs/langs/tsx"),
+  jsx: () => import("@shikijs/langs/jsx"),
   python: () => import("@shikijs/langs/python"),
   css: () => import("@shikijs/langs/css"),
   html: () => import("@shikijs/langs/html"),
@@ -37,7 +39,7 @@ export async function getShikiHighlighter() {
 export async function highlightCode(
   code: string,
   lang: Lang,
-  theme: Theme = "dark"
+  theme: Theme = "dark",
 ): Promise<string> {
   const highlighter = await getShikiHighlighter();
   return highlighter.codeToHtml(code, {
@@ -63,6 +65,8 @@ export const themeMap: Record<string, string> = {
 export const langMap: Record<string, string> = {
   js: "javascript",
   ts: "typescript",
+  jsx: "jsx",
+  tsx: "tsx",
   py: "python",
   css: "css",
   html: "html",

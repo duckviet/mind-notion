@@ -88,21 +88,21 @@ const LinkBubbleMenu = ({ editor, isActive }: LinkBubbleMenuProps) => {
 
   return (
     <BubbleMenu className="bottom-0" editor={editor} shouldShow={shouldShow}>
-      <div className="flex items-center gap-1 rounded-lg border border-border bg-surface p-1.5 shadow-lg">
+      <div className="flex items-center gap-1 rounded-lg border border-border bg-surface px-2 shadow-lg">
         {isEditing ? (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 p-2">
             <Input
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Text"
-              className="h-8 w-48 px-2 text-xs"
+              className="h-8 w-48 p-1 text-xs"
               onKeyDown={(e) => e.key === "Enter" && handleSave()}
             />
             <Input
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="URL"
-              className="h-8 w-48 px-2 text-xs"
+              className="h-8 w-48 p-1 text-xs"
               onKeyDown={(e) => e.key === "Enter" && handleSave()}
             />
             <Button
@@ -127,7 +127,7 @@ const LinkBubbleMenu = ({ editor, isActive }: LinkBubbleMenuProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-2 text-muted-foreground hover:text-foreground"
+              className="p-1 hover:bg-accent-100/40 text-muted-foreground hover:text-foreground"
               onClick={handleOpenLink}
               title="Open Link"
             >
@@ -137,7 +137,7 @@ const LinkBubbleMenu = ({ editor, isActive }: LinkBubbleMenuProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-2 text-muted-foreground hover:text-blue-600"
+              className="p-1 hover:bg-accent-100/40 text-muted-foreground hover:text-blue-600"
               onClick={handleStartEdit}
               title="Edit Link"
             >
@@ -147,7 +147,7 @@ const LinkBubbleMenu = ({ editor, isActive }: LinkBubbleMenuProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 px-2 text-muted-foreground hover:text-red-600"
+              className="p-1 hover:bg-accent-100/40 text-muted-foreground hover:text-red-600"
               onClick={handleRemove}
               title="Remove Link"
             >

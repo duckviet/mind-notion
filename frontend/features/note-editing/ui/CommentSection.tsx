@@ -6,15 +6,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useComments } from "@/features/note-editing/hooks/useComments";
 import CommentForm from "./CommentForm";
 import CommentItem from "./CommentItem";
+import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";
 
 interface CommentSectionProps {
   noteId: string;
+  activeCommentId?: string | null;
 }
 
-const CommentSection = ({ noteId }: CommentSectionProps) => {
+const CommentSection = ({ noteId, activeCommentId }: CommentSectionProps) => {
   const { comments, isLoading, addComment, updateComment, deleteComment } =
     useComments(noteId);
   const [isAdding, setIsAdding] = useState(false);
+  const [selectedCommentId, setSelectedCommentId] = useState<string | null>(
+    null,
+  );
   const [newComment, setNewComment] = useState("");
 
   const handleAddComment = async () => {
@@ -29,10 +34,12 @@ const CommentSection = ({ noteId }: CommentSectionProps) => {
   };
 
   const handleDeleteComment = async (commentId: string) => {
-    if (!confirm("Delete this comment?")) return;
-    await deleteComment(commentId);
+    setSelectedCommentId(commentId);
   };
-
+  const handleConfirmDeleteComment = async () => {
+    await deleteComment(selectedCommentId || "");
+    setSelectedCommentId(null);
+  };
   return (
     <div className="h-full">
       {/* Header */}
@@ -93,11 +100,23 @@ const CommentSection = ({ noteId }: CommentSectionProps) => {
                 }
                 onDelete={() => handleDeleteComment(comment.id || "")}
                 isLoading={isLoading}
+                isActive={comment.id === activeCommentId}
               />
             ))
           )}
         </AnimatePresence>
       </div>
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={!!selectedCommentId}
+        onOpenChange={(open) => !open && setSelectedCommentId(null)}
+        onConfirm={handleConfirmDeleteComment}
+        title="Delete Comment"
+        description="Are you sure you want to delete this comment? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        confirmVariant="destructive"
+      />
     </div>
   );
 };

@@ -3369,6 +3369,164 @@ export const useDeleteComment = <
 };
 
 /**
+ * @summary Get comment by comment Id
+ */
+export const commentDetail = (commentId: string, signal?: AbortSignal) => {
+  return customInstance<Comment>({
+    url: `/comment/${commentId}`,
+    method: "GET",
+    signal,
+  });
+};
+
+export const getCommentDetailQueryKey = (commentId?: string) => {
+  return [`/comment/${commentId}`] as const;
+};
+
+export const getCommentDetailQueryOptions = <
+  TData = Awaited<ReturnType<typeof commentDetail>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  commentId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof commentDetail>>, TError, TData>
+    >;
+  },
+) => {
+  const { query: queryOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getCommentDetailQueryKey(commentId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof commentDetail>>> = ({
+    signal,
+  }) => commentDetail(commentId, signal);
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!commentId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof commentDetail>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type CommentDetailQueryResult = NonNullable<
+  Awaited<ReturnType<typeof commentDetail>>
+>;
+export type CommentDetailQueryError =
+  | UnauthorizedResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+export function useCommentDetail<
+  TData = Awaited<ReturnType<typeof commentDetail>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  commentId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof commentDetail>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof commentDetail>>,
+          TError,
+          Awaited<ReturnType<typeof commentDetail>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCommentDetail<
+  TData = Awaited<ReturnType<typeof commentDetail>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  commentId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof commentDetail>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof commentDetail>>,
+          TError,
+          Awaited<ReturnType<typeof commentDetail>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCommentDetail<
+  TData = Awaited<ReturnType<typeof commentDetail>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  commentId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof commentDetail>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get comment by comment Id
+ */
+
+export function useCommentDetail<
+  TData = Awaited<ReturnType<typeof commentDetail>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  commentId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof commentDetail>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getCommentDetailQueryOptions(commentId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
  * @summary Create a new folder
  */
 export const createFolder = (

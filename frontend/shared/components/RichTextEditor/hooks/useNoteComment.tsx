@@ -3,8 +3,6 @@ import { type Editor } from "@tiptap/react";
 import { useComments } from "@/features/note-editing/hooks/useComments";
 
 type UseNoteCommentResult = {
-  isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
   content: string;
   setContent: (value: string) => void;
   submitComment: () => Promise<void>;
@@ -15,7 +13,6 @@ export function useNoteComment(
   editor: Editor | null,
   noteId?: string,
 ): UseNoteCommentResult {
-  const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addComment } = useComments(noteId ?? "");
@@ -41,16 +38,14 @@ export function useNoteComment(
         .focus()
         .setComment({ id: commentId || "" })
         .run();
+
       setContent("");
-      setIsOpen(false);
     } finally {
       setIsSubmitting(false);
     }
   }, [addComment, content, editor, noteId]);
 
   return {
-    isOpen,
-    setIsOpen,
     content,
     setContent,
     submitComment,
