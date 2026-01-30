@@ -13,4 +13,5 @@ export const useCollabSession = (
     enabled: enabled && !!noteId,
     retry: false,
     staleTime: 60_000,
+    refetchOnWindowFocus: false,
   });

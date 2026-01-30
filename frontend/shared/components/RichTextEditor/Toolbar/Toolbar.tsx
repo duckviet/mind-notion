@@ -69,7 +69,7 @@ const Toolbar = ({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "flex flex-wrap border border-border items-center gap-1 p-2  bg-surface-50 text-text-primary rounded-lg   shadow-lg",
+        "flex flex-wrap border border-border items-center gap-1 p-1 bg-surface-50 text-text-primary rounded-md shadow-lg",
         className,
       )}
     >
@@ -89,24 +89,21 @@ const Toolbar = ({
                 <React.Fragment key={itemIdx}>
                   {item.variants && item.variants.length > 0 ? (
                     <HoverCard>
-                      <HoverCardTrigger asChild>
-                        <div className="inline-block cursor-pointer">
-                          {" "}
-                          <ToolbarButton
-                            key={itemIdx}
-                            onClick={item.onClick}
-                            isActive={item.isActive()}
-                            disabled={
-                              item.disabled?.() ||
-                              (item.tooltip === "Add Image" && isUploading)
-                            }
-                            icon={item.icon}
-                            label={item.label}
-                            tooltip={""}
-                          />
-                        </div>
+                      <HoverCardTrigger className="mt-1">
+                        <ToolbarButton
+                          key={itemIdx}
+                          onClick={item.onClick}
+                          isActive={item.isActive()}
+                          disabled={
+                            item.disabled?.() ||
+                            (item.tooltip === "Add Image" && isUploading)
+                          }
+                          icon={item.icon}
+                          label={item.label}
+                          tooltip={""}
+                        />
                       </HoverCardTrigger>
-                      <HoverCardContent className="bg-white flex gap-2 flex-col border-none p-2">
+                      <HoverCardContent className="bg-white flex gap-2 flex-col border-none p-1">
                         {item?.variants?.map((variant, variantIdx) => (
                           <ToolbarButton
                             key={variantIdx}

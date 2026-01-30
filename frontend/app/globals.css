@@ -830,3 +830,11 @@ html.black .tiptap.ProseMirror th {
     --sidebar-ring: oklch(0.439 0 0);
   }
 }
+
+.is-active-comment {
+  text-decoration: underline !important;
+  text-underline-offset: 1px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: #eab20889; /* Màu vàng tương ứng bg-yellow */
+  transition: all 0.2s ease;
+}

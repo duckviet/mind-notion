@@ -146,3 +146,21 @@ func (api *CommentAPI) UpdateComment(c *gin.Context) {
 
 	c.JSON(http.StatusOK, comment)
 }
+
+// Get /api/v1/comment/:comment_id
+// Get comment detail by comment ID
+func (api *CommentAPI) CommentDetail(c *gin.Context) {
+	commentID := c.Param("comment_id")
+
+	comment, err := api.commentService.GetCommentByID(c.Request.Context(), commentID)
+	if err != nil {
+		if err.Error() == "comment not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, comment)
+}
