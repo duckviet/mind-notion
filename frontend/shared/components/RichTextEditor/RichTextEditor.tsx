@@ -39,6 +39,7 @@ interface TiptapProps {
   // Thêm editorKey để force remount khi cần
   editorKey?: string;
   contentRef?: React.RefObject<HTMLDivElement | null>;
+  onActiveCommentChange?: (commentId: string | null) => void;
   onAIAction?: (
     action: string,
     selectedText: string,
@@ -63,6 +64,7 @@ const Tiptap = ({
   collaboration,
   editorKey,
   contentRef,
+  onActiveCommentChange,
   onAIAction,
 }: TiptapProps) => {
   const editorRef = useRef<Editor | null>(null);
@@ -114,6 +116,7 @@ const Tiptap = ({
     editable,
     onKeyDown: handleKeyDown,
     collaboration,
+    onActiveCommentChange,
     onAIAction,
   });
 

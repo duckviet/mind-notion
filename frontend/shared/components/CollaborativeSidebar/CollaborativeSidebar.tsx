@@ -28,6 +28,7 @@ export interface CollaborativeSidebarProps {
   // Comments
   showComments?: boolean;
   noteId?: string;
+  activeCommentId?: string | null;
 
   // Actions
   showShareActions?: boolean;
@@ -56,6 +57,7 @@ export const CollaborativeSidebar: React.FC<CollaborativeSidebarProps> = ({
   tagsDisabled = false,
   showComments = false,
   noteId,
+  activeCommentId,
   showShareActions = false,
   onShareClick,
   showPrintAction = false,
@@ -167,7 +169,12 @@ export const CollaborativeSidebar: React.FC<CollaborativeSidebarProps> = ({
                 disabled={tagsDisabled}
               />
             )}
-            {showComments && noteId && <CommentSection noteId={noteId} />}
+            {showComments && noteId && (
+              <CommentSection
+                noteId={noteId}
+                activeCommentId={activeCommentId}
+              />
+            )}
             {contentLength !== undefined && (
               <div className="text-xs text-right mt-auto text-gray-500">
                 {contentLength} chars

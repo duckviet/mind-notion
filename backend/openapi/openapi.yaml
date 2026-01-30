@@ -70,6 +70,8 @@ paths:
     $ref: "./paths/comment/update.yaml"
   /notes/{note_id}/comments/{comment_id}/delete:
     $ref: "./paths/comment/delete.yaml"
+  /comment/{comment_id}:
+    $ref: "./paths/comment/detail.yaml"
 
   # Folder Management
   /folders/create:

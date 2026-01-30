@@ -3,6 +3,8 @@ import { Edit2, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CommentForm from "./CommentForm";
+import { cn } from "@/lib/utils";
+import { formatDate } from "@/shared/utils/date-format";
 
 interface CommentItemProps {
   comment: any;
@@ -10,22 +12,8 @@ interface CommentItemProps {
   onDelete: () => Promise<void>;
   isLoading?: boolean;
   editing?: boolean;
+  isActive?: boolean;
 }
-
-const formatDate = (date: string) => {
-  const d = new Date(date);
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
-  return d.toLocaleDateString();
-};
 
 const CommentItem = ({
   comment,
@@ -33,6 +21,7 @@ const CommentItem = ({
   onDelete,
   isLoading,
   editing = false,
+  isActive = false,
 }: CommentItemProps) => {
   const [isEditing, setIsEditing] = useState(editing || false);
   const [editContent, setEditContent] = useState(comment.content || "");
@@ -55,7 +44,10 @@ const CommentItem = ({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, x: -100, scale: 0.95 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="group relative flex gap-3 p-4 rounded-lg border-border border bg-accent  transition-all"
+      className={cn(
+        "group relative flex gap-3 p-4 rounded-lg border-border border bg-accent transition-all",
+        isActive && "border-primary/60 bg-accent-100/5 shadow-sm ",
+      )}
     >
       {/* Content */}
       <div className="w-full">
