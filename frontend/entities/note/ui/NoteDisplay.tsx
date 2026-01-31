@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import React from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 type Props = {
   content: any;
   className?: string;
@@ -12,11 +12,30 @@ export default function NoteDisplay({
   zoom,
   width,
 }: Props) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const html = useMemo(() => content ?? "", [content]);
+  useEffect(() => {
+    if (!ref.current) return;
+
+    // Chỉ set khi content thực sự thay đổi
+    ref.current.innerHTML = html;
+
+    // Optional: chỉnh img attrs 1 lần sau khi set HTML
+    const imgs = ref.current.querySelectorAll("img");
+    imgs.forEach((img) => {
+      img.setAttribute("loading", "eager");
+      img.setAttribute("decoding", "async");
+      img.style.maxWidth = "100%";
+      img.style.height = "auto";
+    });
+  }, [html]);
   return (
-    <p
+    <div
+      ref={ref}
       className={cn(
         "text-gray-700 leading-relaxed mb-3 line-clamp-6 w-full",
-        className
+        className,
       )}
       style={{
         userSelect: "none",
@@ -24,12 +43,10 @@ export default function NoteDisplay({
         MozTransform: "scale(0.75)",
         MozTransformOrigin: "top left",
         width: width ?? "150%",
-        // Force wrapping on nested HTML elements
         wordBreak: "break-word",
         overflowWrap: "break-word",
         hyphens: "auto",
       }}
-      dangerouslySetInnerHTML={{ __html: content }}
     />
   );
 }
