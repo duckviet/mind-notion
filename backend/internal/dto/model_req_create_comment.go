@@ -12,4 +12,6 @@ package dto
 type ReqCreateComment struct {
 
 	Content string `json:"content"`
+
+	ParentId *string `json:"parent_id,omitempty"`
 }

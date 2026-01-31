@@ -17,6 +17,7 @@ const CommentSection = ({ noteId, activeCommentId }: CommentSectionProps) => {
   const { comments, isLoading, addComment, updateComment, deleteComment } =
     useComments(noteId);
   const [isAdding, setIsAdding] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [selectedCommentId, setSelectedCommentId] = useState<string | null>(
     null,
   );
@@ -24,9 +25,18 @@ const CommentSection = ({ noteId, activeCommentId }: CommentSectionProps) => {
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
-    await addComment(newComment.trim());
+    await addComment({
+      content: newComment.trim(),
+      parentId: replyingTo || undefined,
+    });
     setNewComment("");
     setIsAdding(false);
+    setReplyingTo(null);
+  };
+
+  const handleReply = (commentId: string) => {
+    setReplyingTo(commentId);
+    setIsAdding(true);
   };
 
   const handleUpdateComment = async (commentId: string, content: string) => {
@@ -67,9 +77,12 @@ const CommentSection = ({ noteId, activeCommentId }: CommentSectionProps) => {
             onCancel={() => {
               setIsAdding(false);
               setNewComment("");
+              setReplyingTo(null);
             }}
             isLoading={isLoading}
-            placeholder="Share your thoughts..."
+            placeholder={
+              replyingTo ? "Write a reply..." : "Share your thoughts..."
+            }
             submitLabel="Send"
           />
         )}
@@ -95,10 +108,9 @@ const CommentSection = ({ noteId, activeCommentId }: CommentSectionProps) => {
               <CommentItem
                 key={comment.id}
                 comment={comment}
-                onUpdate={(content) =>
-                  handleUpdateComment(comment.id || "", content)
-                }
+                onUpdate={(id, content) => handleUpdateComment(id, content)}
                 onDelete={() => handleDeleteComment(comment.id || "")}
+                onReply={handleReply}
                 isLoading={isLoading}
                 isActive={comment.id === activeCommentId}
               />

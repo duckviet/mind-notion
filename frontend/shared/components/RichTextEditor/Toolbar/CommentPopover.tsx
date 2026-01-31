@@ -15,6 +15,8 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
   const noteId = editor.view.dom.getAttribute("data-note-id") || "";
   const [isOpen, setIsOpen] = React.useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  // const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // const selection = editor.state.selection;
 
   const { content, setContent, submitComment, isSubmitting } = useNoteComment(
     editor,
@@ -30,11 +32,23 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
         !containerRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
+        closeAndCleanup();
       }
     };
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
+
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     // Sử dụng setTimeout 0 hoặc requestAnimationFrame để đảm bảo
+  //     // DOM đã render xong hoàn toàn sau animation ban đầu
+  //     const timer = setTimeout(() => {
+  //       // textareaRef.current?.focus();
+  //     }, 50);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [isOpen]);
 
   useEffect(() => {
     if (!canComment && isOpen) setIsOpen(false);
@@ -42,6 +56,7 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
 
   const handleSubmit = async () => {
     await submitComment();
+    closeAndCleanup();
     setIsOpen(false);
   };
 
@@ -54,10 +69,25 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
     }
   };
 
+  const handleOpen = () => {
+    if (canComment) {
+      // 1. Lưu lại vùng chọn hiện tại hoặc tạo một highlight tạm thời
+      // Nếu bạn có extension 'highlight', bạn có thể dùng nó:
+      setIsOpen(true);
+      editor.chain().focus().setHighlight({ color: "#bbcff5" }).run();
+    }
+  };
+
+  // Cập nhật lại handleSubmit và handleCancel (hoặc useEffect click outside)
+  const closeAndCleanup = () => {
+    // Xóa highlight tạm thời khi đóng popover
+    setIsOpen(false);
+    editor.chain().focus().unsetHighlight().run();
+  };
   return (
     <div className={cn("relative", className)} ref={containerRef}>
       <motion.button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleOpen}
         className={cn(
           "flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors hover:bg-accent-foreground/40 hover:text-primary-foreground",
           isOpen && "bg-[#a55252] text-primary-foreground",
@@ -77,6 +107,7 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
           >
             <div className="flex w-64 items-end gap-1">
               <Textarea
+                // ref={textareaRef}
                 className="max-h-[300px] min-h-[36px] flex-1 resize-none overflow-y-auto border-none bg-accent text-sm focus-visible:ring-1 focus-visible:ring-ring"
                 autoFocus
                 placeholder={

@@ -25,9 +25,13 @@ type Comment struct {
 
 	UserAvatar string `json:"user_avatar,omitempty"`
 
+	ParentId *string `json:"parent_id,omitempty"`
+
 	Content string `json:"content"`
 
 	CreatedAt time.Time `json:"created_at"`
 
 	UpdatedAt time.Time `json:"updated_at"`
+
+	Replies []Comment `json:"replies,omitempty"`
 }
