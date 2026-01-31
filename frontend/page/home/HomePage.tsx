@@ -36,11 +36,10 @@ import {
   DraggableItem,
 } from "@/shared/components/dnd";
 import { TopOfMind } from "@/features/top-of-mind";
-import { DragEndEvent, DragStartEvent, useDndContext } from "@dnd-kit/core";
+import { DragEndEvent } from "@dnd-kit/core";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import { useDebounce } from "use-debounce";
 import { FoldersListPage } from "../folder";
-import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef } from "react";
 import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
 
