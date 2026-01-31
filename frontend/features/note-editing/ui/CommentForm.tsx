@@ -1,5 +1,5 @@
 import { Button } from "@/shared/components/ui/button";
-import { Send, X } from "lucide-react";
+import { ArrowUp, ArrowUpIcon, Send, X, XIcon } from "lucide-react";
 import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -53,17 +53,19 @@ const CommentForm = ({
         <div className="flex items-end justify-between">
           <span className="text-xs text-text-muted">{value.length}/1000</span>
           <div className="flex gap-2">
-            <Button
-              size="sm"
+            <button
+              className="rounded-full bg-accent-50 hover:bg-accent-100 m-0 p-2"
+              onClick={onCancel}
+            >
+              <XIcon width={14} height={14} />
+            </button>
+            <button
               onClick={onSubmit}
               disabled={isLoading || !value.trim()}
+              className="rounded-full bg-accent-50 hover:bg-accent-100 m-0 p-2"
             >
-              <Send className="w-4 h-4 mr-1" />
-              {submitLabel}
-            </Button>
-            <Button size="sm" onClick={onCancel}>
-              Cancel
-            </Button>
+              <ArrowUpIcon width={14} height={14} />
+            </button>
           </div>
         </div>
       </div>

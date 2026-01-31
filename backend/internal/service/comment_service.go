@@ -28,9 +28,10 @@ type commentService struct {
 
 // CreateCommentRequest represents the request to create a comment
 type CreateCommentRequest struct {
-	NoteID  string `json:"note_id" validate:"required"`
-	UserID  string `json:"user_id" validate:"required"`
-	Content string `json:"content" validate:"required,min=1,max=1000"`
+	NoteID   string  `json:"note_id" validate:"required"`
+	UserID   string  `json:"user_id" validate:"required"`
+	Content  string  `json:"content" validate:"required,min=1,max=1000"`
+	ParentID *string `json:"parent_id" validate:""`
 }
 
 // UpdateCommentRequest represents the request to update a comment
@@ -48,6 +49,8 @@ type CommentResponse struct {
 	Content    string `json:"content"`
 	CreatedAt  string `json:"created_at"`
 	UpdatedAt  string `json:"updated_at"`
+	ParentID   *string `json:"parent_id,omitempty"`
+	Replies   []CommentResponse `json:"replies,omitempty"`
 }
 
 // NewCommentService creates a new comment service
@@ -81,9 +84,10 @@ func (s *commentService) CreateComment(ctx context.Context, req CreateCommentReq
 
 	// Create comment
 	comment := &models.Comment{
-		NoteID:  note.ID,
-		UserID:  user.ID,
-		Content: req.Content,
+		NoteID:   note.ID,
+		UserID:   user.ID,
+		Content:  req.Content,
+		ParentID: req.ParentID,
 	}
 
 	if err := s.repo.Create(ctx, comment); err != nil {
@@ -189,6 +193,11 @@ func (s *commentService) ListCommentsByNoteID(ctx context.Context, noteID string
 
 // toResponse converts a comment model to a response
 func (s *commentService) toResponse(comment *models.Comment) *CommentResponse {
+	replies := make([]CommentResponse, len(comment.Replies))
+	for i, reply := range comment.Replies {
+		replies[i] = *s.toResponse(&reply)
+	}
+
 	resp := &CommentResponse{
 		ID:        comment.ID,
 		NoteID:    comment.NoteID,
@@ -196,6 +205,8 @@ func (s *commentService) toResponse(comment *models.Comment) *CommentResponse {
 		Content:   comment.Content,
 		CreatedAt: comment.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt: comment.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		ParentID:  comment.ParentID,
+		Replies:   replies,
 	}
 
 	if comment.User.ID != "" {

@@ -11,7 +11,7 @@ package dto
 
 type ListComments200Response struct {
 
-	Comments []ListComments200ResponseCommentsInner `json:"comments,omitempty"`
+	Comments []Comment `json:"comments,omitempty"`
 
 	// Total number of comments
 	Total int32 `json:"total,omitempty"`

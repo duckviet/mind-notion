@@ -41,7 +41,7 @@ func (api *CommentAPI) CreateComment(c *gin.Context) {
 	}
 	u := userVal.(*dbmodels.User)
 
-	var req dto.CreateCommentRequest
+	var req dto.ReqCreateComment
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
@@ -49,9 +49,10 @@ func (api *CommentAPI) CreateComment(c *gin.Context) {
 
 	// Create comment
 	comment, err := api.commentService.CreateComment(c.Request.Context(), service.CreateCommentRequest{
-		NoteID:  noteID,
-		UserID:  u.ID,
-		Content: req.Content,
+		NoteID:   noteID,
+		UserID:   u.ID,
+		Content:  req.Content,
+		ParentID: req.ParentId,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -122,7 +123,7 @@ func (api *CommentAPI) UpdateComment(c *gin.Context) {
 	}
 	u := userVal.(*dbmodels.User)
 
-	var req dto.UpdateCommentRequest
+	var req dto.ReqUpdateComment
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return

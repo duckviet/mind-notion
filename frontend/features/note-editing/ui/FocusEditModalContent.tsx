@@ -124,7 +124,7 @@ export default function FocusEditModalContent({
         showExpandAction
         onExpandClick={() => router.push(`/note/${noteId}/edit`)}
         contentLength={form.content.length}
-        className="rounded-2xl p-6 bg-transparent"
+        className="rounded-2xl p-4 bg-transparent"
       />
 
       {noteId && showShareActions && (

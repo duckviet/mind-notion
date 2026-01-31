@@ -666,34 +666,7 @@ paths:
                   comments:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          example: comment-123
-                        note_id:
-                          type: string
-                          example: note-456
-                        user_id:
-                          type: string
-                          example: user-789
-                        user_name:
-                          type: string
-                          example: John Doe
-                        user_avatar:
-                          type: string
-                          example: 'https://example.com/avatar.png'
-                        content:
-                          type: string
-                          example: This is a comment
-                        created_at:
-                          type: string
-                          format: date-time
-                          example: '2021-01-01T00:00:00Z'
-                        updated_at:
-                          type: string
-                          format: date-time
-                          example: '2021-01-01T00:00:00Z'
+                      $ref: '#/components/schemas/Comment'
                   total:
                     type: integer
                     description: Total number of comments
@@ -1889,6 +1862,10 @@ components:
         user_avatar:
           type: string
           example: 'https://example.com/avatar.png'
+        parent_id:
+          type: string
+          nullable: true
+          example: comment-111
         content:
           type: string
           example: This is a comment
@@ -1900,6 +1877,11 @@ components:
           type: string
           format: date-time
           example: '2021-01-01T00:00:00Z'
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+          example: []
       required:
         - id
         - note_id
@@ -1916,6 +1898,10 @@ components:
           minLength: 1
           maxLength: 1000
           example: This is my comment
+        parent_id:
+          type: string
+          nullable: true
+          example: comment-111
       required:
         - content
     Req_UpdateComment:
