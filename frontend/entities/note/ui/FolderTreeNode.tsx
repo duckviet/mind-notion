@@ -43,9 +43,9 @@ function FolderTreeNode({
     <div>
       <button
         className={cn(
-          "flex items-center gap-2 py-1.5 rounded-md cursor-pointer w-full hover:bg-gray-100 transition-colors pr-2",
-          isSelected && "bg-blue-50 hover:bg-blue-100",
-          folder.id === currentFolderId && "cursor-not-allowed text-gray-400"
+          "flex items-center gap-2 py-1.5  cursor-pointer w-full hover:bg-surface-100/70 transition-colors pr-2",
+          isSelected && "bg-surface",
+          folder.id === currentFolderId && "cursor-not-allowed text-gray-400",
         )}
         style={{ paddingLeft: `${level * 16 + 8}px` }} // Tăng padding để dễ nhìn cấp độ
         onClick={handleSelect}
@@ -75,7 +75,7 @@ function FolderTreeNode({
         <span
           className={cn(
             "text-sm truncate select-none",
-            isSelected ? "font-medium text-blue-700" : "text-gray-700"
+            isSelected ? "font-medium text-blue-700" : "text-gray-700",
           )}
         >
           {folder.name}

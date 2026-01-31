@@ -103,7 +103,7 @@ const Toolbar = ({
                           tooltip={""}
                         />
                       </HoverCardTrigger>
-                      <HoverCardContent className="bg-white flex gap-2 flex-col border-none p-1">
+                      <HoverCardContent className="bg-surface-50 flex gap-2 flex-col border-none p-1">
                         {item?.variants?.map((variant, variantIdx) => (
                           <ToolbarButton
                             key={variantIdx}

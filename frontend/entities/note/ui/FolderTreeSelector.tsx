@@ -16,7 +16,7 @@ export default function FolderTreeSelector({
 }: FolderTreeSelectorProps) {
   const { folders, isLoading } = useFolders({ limit: 100, offset: 0 });
   const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(
-    currentFolderId
+    currentFolderId,
   );
 
   // 3. Sử dụng useMemo để tính toán cây thư mục một lần khi folders thay đổi
@@ -68,12 +68,12 @@ export default function FolderTreeSelector({
   }
 
   return (
-    <div className="max-h-[400px] overflow-y-auto   rounded-md bg-white">
+    <div className="max-h-[400px] overflow-y-auto   rounded-md bg-surface-50 ">
       {/* Option to remove from folder */}
       <div
         className={cn(
-          "flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100 transition-colors border-b border-gray-200 sticky top-0 bg-white z-10",
-          !selectedFolderId && "bg-blue-50 hover:bg-blue-100"
+          "flex items-center gap-2 px-3 py-2 cursor-pointer  transition-colors border-b border-gray-200 sticky top-0  z-10",
+          !selectedFolderId && "bg-blue-50 hover:bg-blue-100",
         )}
         onClick={() => onSelect && onSelect(null)}
       >
@@ -82,7 +82,7 @@ export default function FolderTreeSelector({
         <span
           className={cn(
             "text-sm",
-            !selectedFolderId ? "font-medium text-blue-700" : "text-gray-600"
+            !selectedFolderId ? "font-medium text-blue-700" : "text-gray-600",
           )}
         >
           Root (No parent)
