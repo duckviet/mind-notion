@@ -5,6 +5,10 @@ properties:
     minLength: 1
     maxLength: 1000
     example: "This is my comment"
+  parent_id:
+    type: string
+    nullable: true
+    example: "comment-111"
 
 required:
   - content

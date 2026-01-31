@@ -22,34 +22,7 @@ get:
               comments:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                      example: "comment-123"
-                    note_id:
-                      type: string
-                      example: "note-456"
-                    user_id:
-                      type: string
-                      example: "user-789"
-                    user_name:
-                      type: string
-                      example: "John Doe"
-                    user_avatar:
-                      type: string
-                      example: "https://example.com/avatar.png"
-                    content:
-                      type: string
-                      example: "This is a comment"
-                    created_at:
-                      type: string
-                      format: date-time
-                      example: "2021-01-01T00:00:00Z"
-                    updated_at:
-                      type: string
-                      format: date-time
-                      example: "2021-01-01T00:00:00Z"
+                  $ref: ../../components/schemas/Comment/Comment.yaml
               total:
                 type: integer
                 description: Total number of comments

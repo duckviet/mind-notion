@@ -186,9 +186,12 @@ export interface Comment {
   user_id: string;
   user_name: string;
   user_avatar?: string;
+  /** @nullable */
+  parent_id?: string | null;
   content: string;
   created_at: string;
   updated_at: string;
+  replies?: Comment[];
 }
 
 export interface ReqCreateComment {
@@ -197,6 +200,8 @@ export interface ReqCreateComment {
    * @maxLength 1000
    */
   content: string;
+  /** @nullable */
+  parent_id?: string | null;
 }
 
 export interface ReqUpdateComment {
@@ -497,19 +502,8 @@ export type UpdateNoteTOM200 = {
   top_of_mind?: boolean;
 };
 
-export type ListComments200CommentsItem = {
-  id?: string;
-  note_id?: string;
-  user_id?: string;
-  user_name?: string;
-  user_avatar?: string;
-  content?: string;
-  created_at?: string;
-  updated_at?: string;
-};
-
 export type ListComments200 = {
-  comments?: ListComments200CommentsItem[];
+  comments?: Comment[];
   /** Total number of comments */
   total?: number;
 };

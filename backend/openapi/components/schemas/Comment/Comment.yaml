@@ -15,6 +15,10 @@ properties:
   user_avatar:
     type: string
     example: "https://example.com/avatar.png"
+  parent_id:
+    type: string
+    nullable: true
+    example: "comment-111"
   content:
     type: string
     example: "This is a comment"
@@ -26,6 +30,11 @@ properties:
     type: string
     format: date-time
     example: "2021-01-01T00:00:00Z"
+  replies:
+    type: array
+    items:
+      $ref: ./Comment.yaml
+    example: []
 
 required:
   - id

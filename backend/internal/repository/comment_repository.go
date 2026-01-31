@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 
+	"gorm.io/gorm"
+
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
 )
@@ -36,6 +38,9 @@ func (r *commentRepository) GetByID(ctx context.Context, id string) (*models.Com
 	var comment models.Comment
 	err := r.db.WithContext(ctx).
 		Preload("User").
+		Preload("Replies", func(db *gorm.DB) *gorm.DB {
+			return db.Preload("User").Order("created_at ASC")
+		}).
 		Where("id = ?", id).
 		First(&comment).Error
 	return &comment, err
@@ -56,7 +61,11 @@ func (r *commentRepository) ListByNoteID(ctx context.Context, noteID string) ([]
 	var comments []*models.Comment
 	err := r.db.WithContext(ctx).
 		Preload("User").
+		Preload("Replies", func(db *gorm.DB) *gorm.DB {
+			return db.Preload("User").Order("created_at ASC")
+		}).
 		Where("note_id = ?", noteID).
+		Where("parent_id IS NULL").
 		Order("created_at ASC").
 		Find(&comments).Error
 	return comments, err

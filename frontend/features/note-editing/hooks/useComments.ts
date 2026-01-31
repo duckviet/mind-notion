@@ -25,7 +25,11 @@ export function useComments(noteId: string) {
     queryClient.invalidateQueries({ queryKey: commentKeys.list(noteId) });
 
   const addCommentMutation = useMutation({
-    mutationFn: (content: string) => createComment(noteId, { content }),
+    mutationFn: (payload: { content: string; parentId?: string }) =>
+      createComment(noteId, {
+        content: payload.content,
+        parent_id: payload.parentId,
+      }),
     onSuccess: async () => {
       toast.success("Comment added");
       await invalidate();
@@ -36,8 +40,9 @@ export function useComments(noteId: string) {
   const updateCommentMutation = useMutation({
     mutationFn: (payload: { commentId: string; content: string }) =>
       updateComment(noteId, payload.commentId, { content: payload.content }),
-    onSuccess: async () => {
+    onSuccess: async (res) => {
       toast.success("Comment updated");
+      console.log("Updated comment response:", res);
       await invalidate();
     },
     onError: () => toast.error("Failed to update comment"),
