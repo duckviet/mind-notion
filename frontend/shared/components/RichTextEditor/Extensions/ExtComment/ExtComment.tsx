@@ -22,7 +22,8 @@ const ExtComment = Mark.create({
   addOptions() {
     return {
       HTMLAttributes: {
-        class: "rounded-sm bg-yellow-100/60 text-foreground",
+        class:
+          "rounded-sm dark:bg-yellow-50/20 bg-yellow-100/60 text-foreground",
       },
     };
   },

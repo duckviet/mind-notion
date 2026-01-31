@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { use, useEffect, useMemo, useRef } from "react";
 import { Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
 import { useNoteComment } from "../hooks/useNoteComment";
@@ -12,9 +12,11 @@ type CommentPopoverProps = {
 };
 
 const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
+  console.log("[CommentPopover] render", { className });
   const noteId = editor.view.dom.getAttribute("data-note-id") || "";
   const [isOpen, setIsOpen] = React.useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const savedSelectionRef = useRef<{ from: number; to: number } | null>(null);
   // const textareaRef = useRef<HTMLTextAreaElement>(null);
   // const selection = editor.state.selection;
 
@@ -23,7 +25,16 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
     noteId,
   );
 
-  const canComment = !editor.state.selection.empty;
+  const canComment = useMemo(() => {
+    const result = !editor.state.selection.empty;
+    console.debug("[CommentPopover] canComment computed", {
+      result,
+      selectionEmpty: editor.state.selection.empty,
+      selectionFrom: editor.state.selection.from,
+      selectionTo: editor.state.selection.to,
+    });
+    return result;
+  }, [editor.state.selection]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -31,6 +42,13 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
         containerRef.current &&
         !containerRef.current.contains(event.target as Node)
       ) {
+        console.debug("[CommentPopover] click outside -> close", {
+          isOpen,
+          canComment,
+          selectionEmpty: editor.state.selection.empty,
+          selectionFrom: editor.state.selection.from,
+          selectionTo: editor.state.selection.to,
+        });
         setIsOpen(false);
         closeAndCleanup();
       }
@@ -51,10 +69,27 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
   // }, [isOpen]);
 
   useEffect(() => {
-    if (!canComment && isOpen) setIsOpen(false);
+    if (!canComment && isOpen) {
+      console.debug("[CommentPopover] canComment false -> close", {
+        isOpen,
+        canComment,
+        selectionEmpty: editor.state.selection.empty,
+        selectionFrom: editor.state.selection.from,
+        selectionTo: editor.state.selection.to,
+      });
+      setIsOpen(false);
+    }
   }, [canComment, isOpen]);
 
   const handleSubmit = async () => {
+    console.debug("[CommentPopover] submit", {
+      canComment,
+      isSubmitting,
+      contentLength: content.length,
+      selectionEmpty: editor.state.selection.empty,
+      selectionFrom: editor.state.selection.from,
+      selectionTo: editor.state.selection.to,
+    });
     await submitComment();
     closeAndCleanup();
     setIsOpen(false);
@@ -70,27 +105,59 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
   };
 
   const handleOpen = () => {
-    if (canComment) {
-      // 1. Lưu lại vùng chọn hiện tại hoặc tạo một highlight tạm thời
-      // Nếu bạn có extension 'highlight', bạn có thể dùng nó:
+    const before = editor.state.selection;
+
+    // Lưu selection trước khi focus
+    if (!before.empty) {
+      savedSelectionRef.current = { from: before.from, to: before.to };
+    }
+
+    editor.chain().focus().run();
+
+    // Restore selection ngay sau focus
+    if (savedSelectionRef.current) {
+      editor
+        .chain()
+        .focus()
+        .setTextSelection({
+          from: savedSelectionRef.current.from,
+          to: savedSelectionRef.current.to,
+        })
+        .run();
+    }
+
+    if (
+      canComment ||
+      (savedSelectionRef.current && !editor.state.selection.empty)
+    ) {
       setIsOpen(true);
-      editor.chain().focus().setHighlight({ color: "#bbcff5" }).run();
+      // editor.chain().focus().setHighlight({ color: "#bbcff5" }).run();
     }
   };
 
   // Cập nhật lại handleSubmit và handleCancel (hoặc useEffect click outside)
   const closeAndCleanup = () => {
     // Xóa highlight tạm thời khi đóng popover
+
     setIsOpen(false);
-    editor.chain().focus().unsetHighlight().run();
+    // editor.chain().focus().unsetHighlight().run();
   };
   return (
     <div className={cn("relative", className)} ref={containerRef}>
       <motion.button
-        onClick={handleOpen}
+        onMouseDown={(e) => {
+          e.preventDefault();
+        }}
+        onClick={() => {
+          console.log("[CommentPopover] button onClick fired", {
+            canComment,
+            selection: editor.state.selection.empty,
+          });
+          handleOpen();
+        }}
         className={cn(
           "flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors hover:bg-accent-foreground/40 hover:text-primary-foreground",
-          isOpen && "bg-[#a55252] text-primary-foreground",
+          isOpen && "bg-[#a55252] text-primary",
         )}
       >
         <MessageSquareMoreIcon size={14} /> Comment
