@@ -27,7 +27,7 @@ export function useNoteComment(
     try {
       let commentId: string | null = null;
       if (noteId) {
-        const res = await addComment(trimmed);
+        const res = await addComment({ content: trimmed });
         if (res && typeof res === "object" && "id" in res && res.id) {
           commentId = String(res.id);
         }
