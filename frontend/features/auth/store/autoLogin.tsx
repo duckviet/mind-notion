@@ -73,9 +73,9 @@ export default function AutoLogin({ children }: { children: React.ReactNode }) {
     <>
       {canPopup && (
         <div className="fixed inset-0 z-[9999] flex justify-center bg-black/50 backdrop-blur-sm">
-          <div className="flex h-fit mt-2 flex-col items-center gap-4 rounded-lg bg-white p-6 shadow-xl">
+          <div className="flex h-fit mt-2 flex-col items-center gap-4 rounded-lg bg-surface-50 p-6 shadow-xl">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            <p className="text-sm font-medium text-gray-700">
+            <p className="text-sm font-medium text-primary-foreground">
               Phiên đăng nhập hết hạn, đang tự động kết nối lại...
             </p>
           </div>

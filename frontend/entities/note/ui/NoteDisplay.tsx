@@ -26,7 +26,7 @@ export default function NoteDisplay({
     imgs.forEach((img) => {
       img.setAttribute("loading", "eager");
       img.setAttribute("decoding", "async");
-      img.style.maxWidth = "100%";
+      img.style.maxWidth = "60%";
       img.style.height = "auto";
     });
   }, [html]);

@@ -41,7 +41,7 @@ function FolderTreeNode({
 
   return (
     <div>
-      <button
+      <div
         className={cn(
           "flex items-center gap-2 py-1.5  cursor-pointer w-full hover:bg-surface-100/70 transition-colors pr-2",
           isSelected && "bg-surface",
@@ -49,7 +49,6 @@ function FolderTreeNode({
         )}
         style={{ paddingLeft: `${level * 16 + 8}px` }} // Tăng padding để dễ nhìn cấp độ
         onClick={handleSelect}
-        disabled={folder.id === currentFolderId}
       >
         {hasChildren ? (
           <button
@@ -80,7 +79,7 @@ function FolderTreeNode({
         >
           {folder.name}
         </span>
-      </button>
+      </div>
 
       {/* 2. Bỏ comment và render đệ quy */}
       {isExpanded && hasChildren && (

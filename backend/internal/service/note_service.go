@@ -54,14 +54,15 @@ type CreateNoteRequest struct {
 
 // UpdateNoteRequest represents the request to update a note
 type UpdateNoteRequest struct {
-	Title       string  `json:"title,omitempty" validate:"omitempty,min=1,max=200"`
-	Content     string  `json:"content,omitempty"`
-	ContentType string  `json:"content_type,omitempty" validate:"omitempty,oneof=text markdown html"`
-	Status      string  `json:"status,omitempty" validate:"omitempty,oneof=draft published archived"`
-	Thumbnail   string  `json:"thumbnail,omitempty"`
-	FolderID    *string `json:"folder_id,omitempty"`
-	IsPublic    *bool   `json:"is_public,omitempty"`
-	TagIDs      []uint  `json:"tag_ids,omitempty"`
+	Title          string  `json:"title,omitempty" validate:"omitempty,min=1,max=200"`
+	Content        string  `json:"content,omitempty"`
+	ContentType    string  `json:"content_type,omitempty" validate:"omitempty,oneof=text markdown html"`
+	Status         string  `json:"status,omitempty" validate:"omitempty,oneof=draft published archived"`
+	Thumbnail      string  `json:"thumbnail,omitempty"`
+	FolderID       *string `json:"folder_id,omitempty"`
+	UpdateFolderID bool    `json:"-"` // Internal flag to indicate folder_id should be updated
+	IsPublic       *bool   `json:"is_public,omitempty"`
+	TagIDs         []uint  `json:"tag_ids,omitempty"`
 }
 
 // NewNoteService creates a new note service
@@ -147,7 +148,16 @@ func (s *noteService) UpdateNote(ctx context.Context, id string, req UpdateNoteR
 	if req.Thumbnail != "" {
 		note.Thumbnail = req.Thumbnail
 	}
-	if req.FolderID != nil {
+	if req.UpdateFolderID {
+		oldVal := "nil"
+		if note.FolderID != nil {
+			oldVal = *note.FolderID
+		}
+		newVal := "nil"
+		if req.FolderID != nil {
+			newVal = *req.FolderID
+		}
+		log.Printf("DEBUG: Updating FolderID from '%s' to '%s'", oldVal, newVal)
 		note.FolderID = req.FolderID
 	}
 	if req.IsPublic != nil {

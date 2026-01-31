@@ -47,6 +47,7 @@ export default function FolderTreeSelector({
   }, [folders]);
 
   const handleSelect = (folderId: string) => {
+    console.log("Folder selected in tree selector:", folderId);
     setSelectedFolderId(folderId);
     onSelect && onSelect(folderId);
   };
@@ -72,21 +73,14 @@ export default function FolderTreeSelector({
       {/* Option to remove from folder */}
       <div
         className={cn(
-          "flex items-center gap-2 px-3 py-2 cursor-pointer  transition-colors border-b border-gray-200 sticky top-0  z-10",
-          !selectedFolderId && "bg-blue-50 hover:bg-blue-100",
+          "flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-surface-100/70 transition-colors border-b border-gray-200 sticky top-0  z-10",
+          !selectedFolderId && "bg-surface/70",
         )}
         onClick={() => onSelect && onSelect(null)}
       >
         <div className="w-5" /> {/* Spacer cho thẳng hàng icon */}
         <Folder className="w-4 h-4 text-gray-400" />
-        <span
-          className={cn(
-            "text-sm",
-            !selectedFolderId ? "font-medium text-blue-700" : "text-gray-600",
-          )}
-        >
-          Root (No parent)
-        </span>
+        <span className={cn("text-sm")}>Root (No parent)</span>
       </div>
 
       {/* Folder tree rendering */}
