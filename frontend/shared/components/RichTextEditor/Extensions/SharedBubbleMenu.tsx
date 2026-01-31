@@ -78,8 +78,9 @@ const SharedBubbleMenu = ({ editor }: SharedBubbleMenuProps) => {
       editor={editor}
       options={{ placement: "bottom", offset: 8, flip: true }}
       shouldShow={shouldShow}
+      className="z-9999"
     >
-      <div className="">{content}</div>
+      {content}
     </BubbleMenu>
   );
 };

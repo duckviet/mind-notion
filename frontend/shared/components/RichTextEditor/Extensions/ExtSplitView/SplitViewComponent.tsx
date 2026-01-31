@@ -50,14 +50,14 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
   return (
     <NodeViewWrapper
       className={cn(
-        "split-view-wrapper relative  rounded-lg transition-all duration-200 overflow-visible",
+        "split-view-wrapper relative w-full rounded-lg transition-all duration-200 overflow-visible",
         border ? "border" : "border-none",
         padding ? "p-5" : "p-0",
         selected
-          ? "border-accent ring-2 ring-accent/20 z-50 shadow-lg"
-          : "border-border z-20",
+          ? "border-accent ring-2 ring-accent/20 shadow-lg"
+          : "border-border",
         isDragging && "select-none",
-        isHovered && !selected && "border-border-subtle z-40",
+        isHovered && !selected && "border-border-subtle",
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -65,7 +65,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
       {/* Floating Toolbar - Higher z-index and better visibility */}
       <div
         className={cn(
-          "absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-md px-2 py-1 shadow-2xl border border-border transition-all duration-300  whitespace-nowrap",
+          "absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-md px-2 py-1 shadow-2xl border border-border transition-all duration-300 z-100  whitespace-nowrap",
           isHovered || selected
             ? "opacity-100 translate-y-0 visible  "
             : "opacity-0 translate-y-2 invisible pointer-events-none",
@@ -134,7 +134,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
       {/* Main container */}
       <div
         ref={containerRef}
-        className="split-view-container w-full relative h-full group"
+        className="split-view-container w-full relative h-full group wrap-break-word"
         style={
           {
             "--split-left-width": `${leftWidth}%`,
@@ -148,7 +148,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
         {/* Resizer handle */}
         <div
           className={cn(
-            "split-view-resizer absolute top-0 bottom-0 w-4 -ml-2 cursor-col-resize z-10 flex items-center justify-center group",
+            "split-view-resizer absolute top-0 bottom-0 w-4 -ml-2 cursor-col-resize  flex items-center justify-center group",
             isDragging && "bg-accent/10",
           )}
           style={{ left: `${leftWidth}%` }}
