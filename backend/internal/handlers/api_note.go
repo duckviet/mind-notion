@@ -11,6 +11,7 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -151,19 +152,65 @@ func (api *NoteAPI) ListNotes(c *gin.Context) {
 func (api *NoteAPI) UpdateNote(c *gin.Context) {
     idStr := c.Param("note_id")
 
-    var body struct {
-        Title       string   `json:"title"`
-        Content     string   `json:"content"`
-        ContentType string   `json:"content_type"`
-        Status      string   `json:"status"`
-        Thumbnail   string   `json:"thumbnail"`
-        Tags        []string `json:"tags"`
-        FolderID    *string  `json:"folder_id"`
-        IsPublic    *bool    `json:"is_public"`
-    }
-    if err := c.ShouldBindJSON(&body); err != nil {
+    // Parse as map to detect which fields are present
+    var rawBody map[string]interface{}
+    if err := c.ShouldBindJSON(&rawBody); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
         return
+    }
+
+    // Extract fields with proper type handling
+    var body struct {
+        Title       string
+        Content     string
+        ContentType string
+        Status      string
+        Thumbnail   string
+        Tags        []string
+        FolderID    *string
+        IsPublic    *bool
+    }
+    
+    if val, ok := rawBody["title"].(string); ok {
+        body.Title = val
+    }
+    if val, ok := rawBody["content"].(string); ok {
+        body.Content = val
+    }
+    if val, ok := rawBody["content_type"].(string); ok {
+        body.ContentType = val
+    }
+    if val, ok := rawBody["status"].(string); ok {
+        body.Status = val
+    }
+    if val, ok := rawBody["thumbnail"].(string); ok {
+        body.Thumbnail = val
+    }
+    
+    hasFolderID := false
+    if val, exists := rawBody["folder_id"]; exists {
+        hasFolderID = true
+        if val == nil {
+            body.FolderID = nil
+        } else if strVal, ok := val.(string); ok {
+            body.FolderID = &strVal
+        }
+    }
+    
+    if val, exists := rawBody["is_public"]; exists {
+        if boolVal, ok := val.(bool); ok {
+            body.IsPublic = &boolVal
+        }
+    }
+
+    if hasFolderID {
+        if body.FolderID != nil {
+            log.Printf("DEBUG UpdateNote - NoteID: %s, FolderID value: %s", idStr, *body.FolderID)
+        } else {
+            log.Printf("DEBUG UpdateNote - NoteID: %s, FolderID is nil (move to root)", idStr)
+        }
+    } else {
+        log.Printf("DEBUG UpdateNote - NoteID: %s, no folder_id field", idStr)
     }
 
     // Ensure ownership before update
@@ -180,14 +227,15 @@ func (api *NoteAPI) UpdateNote(c *gin.Context) {
     }
 
     updated, err := api.noteService.UpdateNote(c.Request.Context(), idStr, service.UpdateNoteRequest{
-        Title:       body.Title,
-        Content:     body.Content,
-        ContentType: body.ContentType,
-        Status:      body.Status,
-        Thumbnail:   body.Thumbnail,
-        FolderID:    body.FolderID,
-        TagIDs:      []uint{}, // TODO: Convert string tags to tag IDs
-        IsPublic:    body.IsPublic,
+        Title:          body.Title,
+        Content:        body.Content,
+        ContentType:    body.ContentType,
+        Status:         body.Status,
+        Thumbnail:      body.Thumbnail,
+        FolderID:       body.FolderID,
+        UpdateFolderID: hasFolderID,
+        TagIDs:         []uint{}, // TODO: Convert string tags to tag IDs
+        IsPublic:       body.IsPublic,
     })
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

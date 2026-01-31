@@ -120,7 +120,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
 
   return (
     <ModalProvider>
-      <div className="mb-4">
+      <div className="mb-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>

@@ -1,9 +1,10 @@
-import React, { useState, KeyboardEvent } from "react";
+import React, { useState, KeyboardEvent, useEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 import { Card } from "@/shared/components/Card";
 import { ReqCreateNote } from "@/shared/services/generated/api";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
+import type { Editor } from "@tiptap/react";
 export default function AddNoteForm({
   folder_id,
   onCreate,
@@ -15,7 +16,8 @@ export default function AddNoteForm({
   const [content, setContent] = useState<string>(""); // Note content
   const [isFocus, setIsFocus] = useState<boolean>(false); // Focus state
   const [isSaving, setIsSaving] = useState<boolean>(false); // Saving state
-
+  const editorRef = useRef<Editor | null>(null);
+  console.log(content);
   // Handle Ctrl + Enter for saving
   const handleEnter = async (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.ctrlKey && e.key === "Enter") {
@@ -32,8 +34,12 @@ export default function AddNoteForm({
             is_public: false,
             folder_id,
           });
+          // Clear content after successful save
           setTitle("");
           setContent("");
+          if (editorRef.current) {
+            editorRef.current.commands.clearContent();
+          }
           setIsFocus(false);
         } catch (err) {
           console.error("Failed to create note", err);
@@ -82,6 +88,9 @@ export default function AddNoteForm({
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           onKeyDown={handleEnter}
+          onEditorReady={(editor) => {
+            editorRef.current = editor;
+          }}
           className="min-h-36 max-h-100 overflow-y-auto cursor-text w-full h-full p-0"
         />
         {/* Save Hint */}

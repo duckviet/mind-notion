@@ -54,12 +54,16 @@ const FolderCard = ({
     return date.toLocaleDateString();
   };
   return (
-    <DroppableZone id={`folder-${id}`} className="group">
+    <DroppableZone
+      id={`folder-${id}`}
+      className="group"
+      activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-lg"
+    >
       <ContextMenu>
         <ContextMenuTrigger asChild className="outline-none">
           <Link href={`/folder/${id}`}>
             <Card className="bg-transparent">
-              <div className="h-[130px] w-full mb-4 relative pt-6 ">
+              <div className="h-[130px] w-full   relative pt-6 ">
                 {/* Folder tab background */}
                 <div className="absolute top-0 left-0 w-full h-full z-0">
                   {/* Lớp folder phía sau cùng (Cái tai cao nhất) */}

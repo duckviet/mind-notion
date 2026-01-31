@@ -48,7 +48,9 @@ func (r *noteRepository) GetByID(ctx context.Context, id string) (*models.Note, 
 
 // Update updates a note
 func (r *noteRepository) Update(ctx context.Context, note *models.Note) error {
-	return r.db.WithContext(ctx).Save(note).Error
+	return r.db.WithContext(ctx).
+		Omit("User", "Folder", "Tags").
+		Save(note).Error
 }
 
 // Delete deletes a note
@@ -70,9 +72,7 @@ func (r *noteRepository) List(ctx context.Context, params NoteListParams) ([]*mo
 	if params.Status != nil {
 		query = query.Where("status = ?", *params.Status)
 	}
-	if params.FolderID != nil {
-		query = query.Where("folder_id = ?", *params.FolderID)
-	}
+	query = query.Where("folder_id = ?", *params.FolderID)
 	if params.IsPublic != nil {
 		query = query.Where("is_public = ?", *params.IsPublic)
 	}
@@ -101,12 +101,16 @@ func (r *noteRepository) GetByUserID(ctx context.Context, userID string, params 
 		Where("user_id = ?", userID).
 		Where("top_of_mind = ?", false)
 
-	// Apply filters
-	if params.Status != nil {
-		query = query.Where("status = ?", *params.Status)
-	}
+	// Filter by folder - if nil, get root notes (folder_id IS NULL)
 	if params.FolderID != nil {
 		query = query.Where("folder_id = ?", *params.FolderID)
+	} else {
+		query = query.Where("folder_id IS NULL")
+	}
+
+	// Apply other filters
+	if params.Status != nil {
+		query = query.Where("status = ?", *params.Status)
 	}
 
 	// Count total (with all filters applied)
