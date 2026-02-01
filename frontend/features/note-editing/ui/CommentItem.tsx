@@ -57,8 +57,7 @@ const CommentItem = ({
         className={cn(
           "group relative",
           // Highlight khi active nhưng nhẹ nhàng, không shadow nặng
-          isActive &&
-            "bg-blue-50/50 -mx-2 px-2 rounded-md border-l-2 border-blue-400",
+          isActive && "-translate-x-2",
         )}
       >
         <div className="flex flex-col w-full dark:bg-surface-50 border border-transparent dark:border-border p-2 rounded-lg">
