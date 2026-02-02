@@ -109,7 +109,7 @@ export function AppSidebar() {
                       className={cn(
                         "h-10 px-3 rounded-lg transition-all",
                         isActive
-                          ? " -100 font-semibold !text-text-primary"
+                          ? "bg-surface-100 font-semibold !text-text-primary"
                           : "hover:bg-sidebar-accent/50 !text-text-muted",
                       )}
                     >
@@ -159,8 +159,8 @@ export function AppSidebar() {
                       className={cn(
                         "h-10 px-3 rounded-lg transition-all",
                         isActive
-                          ? " -100 font-semibold"
-                          : "hover:bg-sidebar-accent/50 ",
+                          ? " bg-surface-100 font-semibold"
+                          : "hover:bg-surface-100/50 ",
                       )}
                     >
                       <Link
