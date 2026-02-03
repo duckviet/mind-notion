@@ -1,19 +1,11 @@
-import React, {
-  useState,
-  useRef,
-  Fragment,
-  useCallback,
-  useEffect,
-} from "react";
+import React, { useState, useRef, Fragment, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Portal from "@/shared/components/PortalModal/PortalModal";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ReqUpdateNote, useGetNote } from "@/shared/services/generated/api";
 import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
 import { LocalStorageKeys } from "@/shared/configs/localStorageKeys";
 import { useNoteForm } from "../hooks/useNoteForm";
-import { useAutoSave } from "../hooks/useAutoSave";
 import FocusEditModalContent from "./FocusEditModalContent";
 import { useCollabSession } from "../hooks/useCollabSession";
 import { useCollabProvider } from "../hooks/useCollabProvider";
@@ -21,14 +13,12 @@ import { useNoteSnapshot } from "../hooks/useNoteSnapshot";
 import { useAuthStore } from "@/features/auth";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
 import { Editor } from "@tiptap/react";
-import { useEditTokenStore } from "@/shared/stores/editTokenStore";
-import { useSearchParams } from "next/navigation";
 
 interface FocusEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   noteId: string;
-  onSave?: (data: ReqUpdateNote) => void;
+  onSave?: (id: string, data: ReqUpdateNote) => void;
 }
 
 export default function FocusEditModal({
@@ -37,26 +27,14 @@ export default function FocusEditModal({
   noteId,
   onSave,
 }: FocusEditModalProps) {
-  const queryClient = useQueryClient();
   const { user } = useAuthStore();
-
-  const { data: note } = useGetNote(
-    noteId,
-    {
-      query: {
-        enabled: isOpen && !!noteId,
-        staleTime: 60_000,
-        refetchOnWindowFocus: false,
-      },
-    },
-    queryClient,
-  );
 
   const { data: collabSession, isLoading: collabLoading } = useCollabSession(
     noteId,
     undefined,
     isOpen && !!noteId,
   );
+  const note = collabSession?.note;
   const collabToken = collabSession?.token ?? "";
   const collabEnabled = Boolean(collabToken);
   const collabPending = isOpen && collabLoading;
@@ -80,14 +58,14 @@ export default function FocusEditModal({
     validateTitle,
   } = useNoteForm(isOpen, note);
 
-  const { updateNoteMutation } = useAutoSave(
-    noteId,
-    form,
-    note,
-    isSaving,
-    setIsSaving,
-    !collabEnabled,
-  );
+  // const { updateNoteMutation } = useAutoSave(
+  //   noteId,
+  //   form,
+  //   note,
+  //   isSaving,
+  //   setIsSaving,
+  //   !collabEnabled,
+  // );
 
   const modalRef = useRef<HTMLDivElement>(null);
   const editorRef = useRef<Editor | null>(null);
@@ -120,6 +98,8 @@ export default function FocusEditModal({
 
   const handleContentUpdate = useCallback(
     (value: string) => {
+      console.log("Content updated:", value);
+
       if (collabEnabled) {
         scheduleSnapshot(value);
       } else {
@@ -140,24 +120,23 @@ export default function FocusEditModal({
     }
 
     const payload: ReqUpdateNote = {
-      id: noteId,
+      ...note!,
       title: form.title,
       content: collabEnabled ? undefined : form.content,
-      content_type: "text",
-      status: note?.status ?? "draft",
-      thumbnail: note?.thumbnail ?? "",
       tags: form.tags,
-      is_public: note?.is_public ?? false,
+      content_type: "text",
     };
 
-    onSave?.(payload);
-    updateNoteMutation.mutate({ noteId: noteId, data: payload });
+    onSave?.(noteId, payload);
     toast.success("Saved");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.ctrlKey && e.key === "Enter") {
+      console.log("Ctrl+Enter pressed");
+      handleSave();
+    }
     if (e.key === "Escape") onClose();
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") handleSave();
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {

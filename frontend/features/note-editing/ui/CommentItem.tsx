@@ -60,7 +60,7 @@ const CommentItem = ({
           isActive && "-translate-x-2",
         )}
       >
-        <div className="flex flex-col w-full dark:bg-surface-50 border border-transparent dark:border-border p-2 rounded-lg">
+        <div className="flex flex-col w-full dark:bg-surface-50 bg-accent-50 border border-transparent dark:border-border p-2 rounded-lg">
           {/* Header */}
           <div className="relative mb-2">
             <div className="flex items-baseline gap-2 ">
@@ -74,33 +74,27 @@ const CommentItem = ({
 
             {/* Actions: Reply, Edit, Delete - Hiển thị dưới dạng text links nhỏ hoặc icons */}
             {!isEditing && (
-              <div className="absolute bg-accent-50 right-0 top-0 flex items-center gap-1  opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute bg-accent-50 dark:bg-surface-50 shadow-sm p-1 rounded-md right-0 top-0 flex items-center gap-1  opacity-0 group-hover:opacity-100 transition-opacity">
                 {onReply && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 px-2 text-[12px] font-medium  hover:bg-foreground hover:text-primary-foreground"
+                  <button
+                    className="p-0.5 hover:bg-accent-500/20 rounded-sm"
                     onClick={() => onReply(comment.id)}
                   >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                  </Button>
+                    <MessageSquare className="w-4 h-4" />
+                  </button>
                 )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6  hover:bg-foreground hover:text-primary-foreground"
+                <button
+                  className="p-0.5 hover:bg-accent-500/20 rounded-sm"
                   onClick={() => setIsEditing(true)}
                 >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 hover:bg-foreground hover:text-primary-foreground"
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+                  className="p-0.5 hover:bg-accent-500/20 rounded-sm"
                   onClick={() => onDelete(comment.id)}
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             )}
           </div>
