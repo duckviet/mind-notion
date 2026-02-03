@@ -401,6 +401,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
           noteId={focusEditNoteId}
           isOpen={isModalOpen}
           onClose={handleCloseFocusEdit}
+          onSave={handleUpdate}
         />
       )}
     </div>

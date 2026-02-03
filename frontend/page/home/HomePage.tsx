@@ -4,18 +4,11 @@ import { useMemo, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useNotes } from "@/shared/hooks/useNotes";
 import { SearchField } from "@/features/search-content";
-import { EmptyState } from "@/shared/components/EmptyState";
 import { FloatingActionButton } from "@/shared/components/FloatingActionButton";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";
+import { FocusEditModal } from "@/features/note-editing";
 const MasonryGrid = dynamic(
   () => import("@/widgets/content-grid").then((m) => m.MasonryGrid),
-  { ssr: false },
-);
-const FocusEditModal = dynamic(
-  () =>
-    import("@/features/note-editing").then((mod) => ({
-      default: mod.FocusEditModal,
-    })),
   { ssr: false },
 );
 import NoteCard from "@/entities/note/ui/NoteCard";
@@ -143,6 +136,7 @@ function HomePageContent() {
   };
 
   const handleUpdate = async (id: string, data: ReqUpdateNote) => {
+    console.log("Updating note", id, data);
     try {
       await updateNote({ id, data });
     } catch (error) {
@@ -421,12 +415,12 @@ function HomePageContent() {
           }}
         />
 
-        {focusEditNoteId && (
+        {focusEditNoteId && isModalOpen && (
           <FocusEditModal
-            isOpen={!!focusEditNoteId}
+            isOpen={true}
             onClose={handleCloseFocusEdit}
             noteId={focusEditNoteId}
-            onSave={() => {}}
+            onSave={handleUpdate}
           />
         )}
       </div>

@@ -12,7 +12,6 @@ type CommentPopoverProps = {
 };
 
 const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
-  console.log("[CommentPopover] render", { className });
   const noteId = editor.view.dom.getAttribute("data-note-id") || "";
   const [isOpen, setIsOpen] = React.useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -27,12 +26,7 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
 
   const canComment = useMemo(() => {
     const result = !editor.state.selection.empty;
-    console.debug("[CommentPopover] canComment computed", {
-      result,
-      selectionEmpty: editor.state.selection.empty,
-      selectionFrom: editor.state.selection.from,
-      selectionTo: editor.state.selection.to,
-    });
+
     return result;
   }, [editor.state.selection]);
 
@@ -42,13 +36,6 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
         containerRef.current &&
         !containerRef.current.contains(event.target as Node)
       ) {
-        console.debug("[CommentPopover] click outside -> close", {
-          isOpen,
-          canComment,
-          selectionEmpty: editor.state.selection.empty,
-          selectionFrom: editor.state.selection.from,
-          selectionTo: editor.state.selection.to,
-        });
         setIsOpen(false);
         closeAndCleanup();
       }
@@ -70,26 +57,11 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
 
   useEffect(() => {
     if (!canComment && isOpen) {
-      console.debug("[CommentPopover] canComment false -> close", {
-        isOpen,
-        canComment,
-        selectionEmpty: editor.state.selection.empty,
-        selectionFrom: editor.state.selection.from,
-        selectionTo: editor.state.selection.to,
-      });
       setIsOpen(false);
     }
   }, [canComment, isOpen]);
 
   const handleSubmit = async () => {
-    console.debug("[CommentPopover] submit", {
-      canComment,
-      isSubmitting,
-      contentLength: content.length,
-      selectionEmpty: editor.state.selection.empty,
-      selectionFrom: editor.state.selection.from,
-      selectionTo: editor.state.selection.to,
-    });
     await submitComment();
     closeAndCleanup();
     setIsOpen(false);
@@ -149,10 +121,6 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
           e.preventDefault();
         }}
         onClick={() => {
-          console.log("[CommentPopover] button onClick fired", {
-            canComment,
-            selection: editor.state.selection.empty,
-          });
           handleOpen();
         }}
         className={cn(
