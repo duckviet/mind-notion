@@ -100,7 +100,7 @@ export default function FocusEditModalContent({
           content={form.content}
           onUpdate={onContentChange}
           editable
-          toolbar={false}
+          toolbar={true}
           collaboration={collaboration}
           onEditorReady={onEditorReady}
         />
@@ -124,7 +124,7 @@ export default function FocusEditModalContent({
         showExpandAction
         onExpandClick={() => router.push(`/note/${noteId}/edit`)}
         contentLength={form.content.length}
-        className="rounded-2xl p-4 bg-transparent"
+        className="rounded-2xl  bg-transparent"
       />
 
       {noteId && showShareActions && (

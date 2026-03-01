@@ -98,8 +98,6 @@ export default function FocusEditModal({
 
   const handleContentUpdate = useCallback(
     (value: string) => {
-      console.log("Content updated:", value);
-
       if (collabEnabled) {
         scheduleSnapshot(value);
       } else {

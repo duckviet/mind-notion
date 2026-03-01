@@ -93,8 +93,8 @@ export function useSearch() {
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
         item.metadata.tags?.some((tag) =>
-          tag.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+          tag.toLowerCase().includes(searchTerm.toLowerCase()),
+        ),
     );
 
     setFilteredResults(filtered);

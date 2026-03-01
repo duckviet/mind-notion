@@ -58,7 +58,7 @@ export const ExtAI = Extension.create<AIOptions>({
   addKeyboardShortcuts() {
     return {
       // Sử dụng alias command đã định nghĩa trong addCommands
-      "Mod-j": () => this.editor.commands.openAI(),
+      "Alt-m": () => this.editor.commands.openAI(),
     };
   },
 

@@ -49,8 +49,11 @@ export function ShareNoteModal({
   const { mutate: updateNote, isPending: isUpdating } = useUpdateNote({
     mutation: {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetNoteQueryKey(noteId) });
+        queryClient.invalidateQueries({
+          queryKey: ["collab-session", noteId],
+        });
         queryClient.invalidateQueries({ queryKey: ["notes"] });
+        toast.success("Share settings updated");
       },
       onError: (error) => {
         toast.error("Failed to update share settings");
