@@ -109,6 +109,71 @@ paths:
                 $ref: '#/components/schemas/Res_AuthTokens'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /ai/runs:
+    post:
+      summary: Create AI run and stream assistant output
+      operationId: createAiRun
+      tags:
+        - AI
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Req_CreateAIRun'
+      responses:
+        '200':
+          description: Streaming SSE response from AI run
+          content:
+            text/event-stream:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/ai/runs/{run_id}/consent':
+    patch:
+      summary: Provide consent for pending AI tool call
+      operationId: provideAiRunConsent
+      tags:
+        - AI
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: run_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: AI run ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Req_ProvideAIRunConsent'
+      responses:
+        '200':
+          description: Consent applied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Res_ProvideAIRunConsent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /user/me:
     get:
       summary: Get current user information
@@ -1844,6 +1909,68 @@ components:
         - token
         - role
         - note
+    Req_CreateAIRun:
+      type: object
+      properties:
+        workspace_id:
+          type: string
+          example: workspace-123
+        session_id:
+          type: string
+          example: session-123
+        note_id:
+          type: string
+          example: note-123
+        message:
+          type: object
+          properties:
+            role:
+              type: string
+              enum:
+                - user
+              example: user
+            content:
+              type: string
+              example: Hãy tóm tắt ghi chú này
+          required:
+            - content
+      required:
+        - workspace_id
+        - session_id
+        - note_id
+        - message
+    Req_ProvideAIRunConsent:
+      type: object
+      properties:
+        tool_call_id:
+          type: string
+          example: tool-call-123
+        approved:
+          type: boolean
+          example: true
+      required:
+        - tool_call_id
+        - approved
+    Res_ProvideAIRunConsent:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+        run_id:
+          type: string
+          example: run-123
+        tool_call_id:
+          type: string
+          example: tool-call-123
+        approved:
+          type: boolean
+          example: true
+      required:
+        - ok
+        - run_id
+        - tool_call_id
+        - approved
     Comment:
       type: object
       properties:

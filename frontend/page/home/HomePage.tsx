@@ -4,7 +4,7 @@ import { useMemo, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useNotes } from "@/shared/hooks/useNotes";
 import { SearchField } from "@/features/search-content";
-import { FloatingActionButton } from "@/shared/components/FloatingActionButton";
+import { Chatbot, type ChatbotDropPayload } from "@/shared/components/Chatbot";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";
 import { FocusEditModal } from "@/features/note-editing";
 const MasonryGrid = dynamic(
@@ -33,8 +33,8 @@ import { DragEndEvent } from "@dnd-kit/core";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import { useDebounce } from "use-debounce";
 import { FoldersListPage } from "../folder";
-import { useEffect, useRef } from "react";
 import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
+import { useTomVisibility } from "@/features/top-of-mind/model/useTomVisibility";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -63,6 +63,8 @@ const TopOfMindSkeleton = () => (
 function HomePageContent() {
   const [query, setQuery] = useState("");
   const [isFabOpen, setIsFabOpen] = useState(false);
+  const [chatDropPayload, setChatDropPayload] =
+    useState<ChatbotDropPayload | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [focusEditNoteId, setFocusEditNoteId] = useState<string | null>(null);
@@ -70,8 +72,6 @@ function HomePageContent() {
   const [debouncedQuery] = useDebounce(query, 300);
 
   // Ref để track visibility của TopOfMind section
-  const tomRef = useRef<HTMLDivElement>(null);
-  const [isTomVisible, setIsTomVisible] = useState(true);
 
   const {
     notes: notesData,
@@ -94,22 +94,10 @@ function HomePageContent() {
     },
   });
 
-  // IntersectionObserver để check TopOfMind có trong viewport không
-  useEffect(() => {
-    const element = tomRef.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsTomVisible(entry.isIntersecting);
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-    // Re-attach when TOM data loads or skeleton disappears
-  }, [topOfMindNotesData, isLoadingTopOfMindNotes]);
+  const { tomRef, isTomVisible } = useTomVisibility([
+    topOfMindNotesData,
+    isLoadingTopOfMindNotes,
+  ]);
 
   const notes = useMemo(() => {
     return (notesData || []).map((note) => ({
@@ -148,6 +136,16 @@ function HomePageContent() {
     setIsFabOpen(!isFabOpen);
   };
 
+  const normalizeDragId = (id: string) => {
+    const withoutFloating = id.startsWith("floating-")
+      ? id.slice("floating-".length)
+      : id;
+
+    return withoutFloating.startsWith("tom-")
+      ? withoutFloating.slice(4)
+      : withoutFloating;
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -155,9 +153,7 @@ function HomePageContent() {
     if (!over) return;
 
     const rawActiveId = active.id.toString();
-    const activeId = rawActiveId.startsWith("floating-")
-      ? rawActiveId.slice("floating-".length)
-      : rawActiveId;
+    const activeId = normalizeDragId(rawActiveId);
     const overId = over.id.toString();
 
     console.log("Drag End - activeId:", activeId, "overId:", overId);
@@ -188,6 +184,29 @@ function HomePageContent() {
       return;
     }
 
+    if (overId === "chat-bot") {
+      const droppedNote =
+        notes.find((n) => n.id === activeId) ||
+        topOfMindNotesData?.find((n) => n.id === activeId);
+
+      if (droppedNote) {
+        setChatDropPayload({
+          note: {
+            id: droppedNote.id,
+            title: droppedNote.title,
+            content: droppedNote.content,
+          },
+          droppedAt: Date.now(),
+        });
+      }
+
+      if (!isFabOpen) {
+        setIsFabOpen(true);
+      }
+
+      return;
+    }
+
     // Check if dropping into grid zone
     if (overId === "grid-zone") {
       // Remove from top of mind if it was there
@@ -213,9 +232,7 @@ function HomePageContent() {
   const renderOverlay = useCallback(
     (activeId: string | number | null) => {
       const rawId = activeId?.toString();
-      const noteId = rawId?.startsWith("floating-")
-        ? rawId.slice("floating-".length)
-        : rawId;
+      const noteId = rawId ? normalizeDragId(rawId) : rawId;
       const note =
         notes.find((n) => n.id === noteId) ||
         topOfMindNotesData?.find((n) => n.id === noteId);
@@ -398,7 +415,11 @@ function HomePageContent() {
           {/* )} */}
         </div>
 
-        <FloatingActionButton isOpen={isFabOpen} onToggle={handleFabToggle} />
+        <Chatbot
+          isOpen={isFabOpen}
+          onToggle={handleFabToggle}
+          droppedNotePayload={chatDropPayload}
+        />
 
         <ConfirmDialog
           open={!!deleteTargetId}

@@ -10,114 +10,120 @@ import (
 
 // Config struct chính
 type Config struct {
-    Server   ServerConfig   `mapstructure:"server" validate:"required"`
-    Database DatabaseConfig `mapstructure:"database" validate:"required"`
-    JWT      JWTConfig      `mapstructure:"jwt" validate:"required"`
-    Redis    RedisConfig    `mapstructure:"redis" validate:"required"`
-    Pinecone PineconeConfig `mapstructure:"pinecone"`
-    Cohere   CohereConfig   `mapstructure:"cohere"`
-    CDN      CDNConfig      `mapstructure:"cdn" validate:"required"`
-    Collab   CollabConfig   `mapstructure:"collab" validate:"required"`
+	Server   ServerConfig   `mapstructure:"server" validate:"required"`
+	Database DatabaseConfig `mapstructure:"database" validate:"required"`
+	JWT      JWTConfig      `mapstructure:"jwt" validate:"required"`
+	Redis    RedisConfig    `mapstructure:"redis" validate:"required"`
+	AI       AIConfig       `mapstructure:"ai" validate:"required"`
+	Pinecone PineconeConfig `mapstructure:"pinecone"`
+	Cohere   CohereConfig   `mapstructure:"cohere"`
+	CDN      CDNConfig      `mapstructure:"cdn" validate:"required"`
+	Collab   CollabConfig   `mapstructure:"collab" validate:"required"`
 }
 
 // Nested structs - chỉ cần tag cho field, prefix tự động
 type ServerConfig struct {
-    Host string `mapstructure:"host" validate:"required"`
-    Port string `mapstructure:"port" validate:"required"`
-    Mode string `mapstructure:"mode" validate:"oneof=debug release test"`
+	Host string `mapstructure:"host" validate:"required"`
+	Port string `mapstructure:"port" validate:"required"`
+	Mode string `mapstructure:"mode" validate:"oneof=debug release test"`
 }
 
 type DatabaseConfig struct {
-    Host     string `mapstructure:"host" validate:"required"`
-    Port     string `mapstructure:"port" validate:"required"`
-    User     string `mapstructure:"user" validate:"required"`
-    Password string `mapstructure:"password" validate:"omitempty"`
-    Name     string `mapstructure:"name" validate:"required"`
-    SSLMode  string `mapstructure:"ssl_mode" validate:"omitempty,oneof=disable require prefer verify-ca verify-full"`
+	Host     string `mapstructure:"host" validate:"required"`
+	Port     string `mapstructure:"port" validate:"required"`
+	User     string `mapstructure:"user" validate:"required"`
+	Password string `mapstructure:"password" validate:"omitempty"`
+	Name     string `mapstructure:"name" validate:"required"`
+	SSLMode  string `mapstructure:"ssl_mode" validate:"omitempty,oneof=disable require prefer verify-ca verify-full"`
 }
 
 type JWTConfig struct {
-    SecretKey string `mapstructure:"secret_key" validate:"required,min=8"`
-    ExpiresIn int    `mapstructure:"expires_in" validate:"required,min=60,max=86400"`
+	SecretKey string `mapstructure:"secret_key" validate:"required,min=8"`
+	ExpiresIn int    `mapstructure:"expires_in" validate:"required,min=60,max=86400"`
 }
 
 type RedisConfig struct {
-    Host     string `mapstructure:"host" validate:"required"`
-    Port     string `mapstructure:"port" validate:"required"`
-    Password string `mapstructure:"password" validate:"omitempty"`
-    DB       int    `mapstructure:"db" validate:"min=0,max=15"`
+	Host     string `mapstructure:"host" validate:"required"`
+	Port     string `mapstructure:"port" validate:"required"`
+	Password string `mapstructure:"password" validate:"omitempty"`
+	DB       int    `mapstructure:"db" validate:"min=0,max=15"`
 }
 
 type PineconeConfig struct {
-    APIKey      string `mapstructure:"api_key" validate:"omitempty,min=1"`       // PINECONE_API_KEY
-    Environment string `mapstructure:"environment" validate:"omitempty,min=1"`    // PINECONE_ENVIRONMENT
-    IndexName   string `mapstructure:"index_name" validate:"required,min=1"`      // PINECONE_INDEX_NAME  
-    Namespace   string `mapstructure:"namespace" validate:"omitempty,min=1"`       // PINECONE_NAMESPACE
+	APIKey      string `mapstructure:"api_key" validate:"omitempty,min=1"`     // PINECONE_API_KEY
+	Environment string `mapstructure:"environment" validate:"omitempty,min=1"` // PINECONE_ENVIRONMENT
+	IndexName   string `mapstructure:"index_name" validate:"required,min=1"`   // PINECONE_INDEX_NAME
+	Namespace   string `mapstructure:"namespace" validate:"omitempty,min=1"`   // PINECONE_NAMESPACE
 }
 
 type CohereConfig struct {
-    APIKey string `mapstructure:"api_key" validate:"omitempty,min=1"`         // COHERE_API_KEY
-    Model  string `mapstructure:"model" validate:"omitempty,min=1"`            // COHERE_MODEL
+	APIKey string `mapstructure:"api_key" validate:"omitempty,min=1"` // COHERE_API_KEY
+	Model  string `mapstructure:"model" validate:"omitempty,min=1"`   // COHERE_MODEL
 }
 
 type CDNConfig struct {
-    AccountID       string `mapstructure:"account_id" validate:"required,min=1"`
-    AccessKeyID     string `mapstructure:"access_key_id" validate:"required,min=1"`
-    SecretAccessKey string `mapstructure:"secret_access_key" validate:"required,min=1"`
-    Region          string `mapstructure:"region" validate:"required,min=1"`
-    BucketName      string `mapstructure:"bucket_name" validate:"required,min=1"`
-    PublicBaseURL   string `mapstructure:"public_base_url" validate:"omitempty,url"`
+	AccountID       string `mapstructure:"account_id" validate:"required,min=1"`
+	AccessKeyID     string `mapstructure:"access_key_id" validate:"required,min=1"`
+	SecretAccessKey string `mapstructure:"secret_access_key" validate:"required,min=1"`
+	Region          string `mapstructure:"region" validate:"required,min=1"`
+	BucketName      string `mapstructure:"bucket_name" validate:"required,min=1"`
+	PublicBaseURL   string `mapstructure:"public_base_url" validate:"omitempty,url"`
 }
 
 type CollabConfig struct {
-    TokenSecret      string `mapstructure:"token_secret" validate:"required,min=8"`
-    TokenTTLMinutes  int    `mapstructure:"token_ttl_minutes" validate:"required,min=5,max=1440"`
+	TokenSecret     string `mapstructure:"token_secret" validate:"required,min=8"`
+	TokenTTLMinutes int    `mapstructure:"token_ttl_minutes" validate:"required,min=5,max=1440"`
+}
+
+type AIConfig struct {
+	ServiceURL       string `mapstructure:"service_url" validate:"required,url"`
+	ServiceToken     string `mapstructure:"service_token" validate:"required,min=8"`
+	RequestTimeoutMs int    `mapstructure:"request_timeout_ms" validate:"required,min=1000,max=180000"`
 }
 
 // Validate method - cải thiện để không panic nếu API key rỗng
 func (c *Config) Validate() error {
-    validate := validator.New()
+	validate := validator.New()
 
-    // Custom validation cho port number
-    validate.RegisterValidation("portnumber", func(fl validator.FieldLevel) bool {
-        port := fl.Field().String()
-        p, err := strconv.Atoi(port)
-        return err == nil && p > 0 && p <= 65535
-    })
+	// Custom validation cho port number
+	validate.RegisterValidation("portnumber", func(fl validator.FieldLevel) bool {
+		port := fl.Field().String()
+		p, err := strconv.Atoi(port)
+		return err == nil && p > 0 && p <= 65535
+	})
 
-    if err := validate.Struct(c); err != nil {
-        var errs validator.ValidationErrors
-        if validationErr, ok := err.(validator.ValidationErrors); ok {
-            errs = validationErr
-        } else {
-            return fmt.Errorf("validation failed: %w", err)
-        }
+	if err := validate.Struct(c); err != nil {
+		var errs validator.ValidationErrors
+		if validationErr, ok := err.(validator.ValidationErrors); ok {
+			errs = validationErr
+		} else {
+			return fmt.Errorf("validation failed: %w", err)
+		}
 
-        for _, err := range errs {
-            field := err.Field()
-            switch err.Tag() {
-            case "required":
-                return fmt.Errorf("%s is required", field)
-            case "min":
-                return fmt.Errorf("%s must be at least %s characters", field, err.Param())
-            case "oneof":
-                return fmt.Errorf("%s must be one of: %s", field, err.Param())
-            default:
-                return fmt.Errorf("%s validation failed: %s", field, err.Tag())
-            }
-        }
-    }
+		for _, err := range errs {
+			field := err.Field()
+			switch err.Tag() {
+			case "required":
+				return fmt.Errorf("%s is required", field)
+			case "min":
+				return fmt.Errorf("%s must be at least %s characters", field, err.Param())
+			case "oneof":
+				return fmt.Errorf("%s must be one of: %s", field, err.Param())
+			default:
+				return fmt.Errorf("%s validation failed: %s", field, err.Tag())
+			}
+		}
+	}
 
-    // Business logic validation - không bắt buộc API keys ở development
-    if c.Pinecone.APIKey == "" {
-        log.Println("⚠️  Pinecone API key is empty. Vector search features will be disabled.")
-        // Không return error để app vẫn chạy được
-    }
+	// Business logic validation - không bắt buộc API keys ở development
+	if c.Pinecone.APIKey == "" {
+		log.Println("⚠️  Pinecone API key is empty. Vector search features will be disabled.")
+		// Không return error để app vẫn chạy được
+	}
 
-    if c.Cohere.APIKey == "" {
-        log.Println("⚠️  Cohere API key is empty. Text embedding features will be disabled.")
-    }
+	if c.Cohere.APIKey == "" {
+		log.Println("⚠️  Cohere API key is empty. Text embedding features will be disabled.")
+	}
 
-    return nil
+	return nil
 }
- 

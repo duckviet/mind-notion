@@ -21,6 +21,11 @@ redis:
   password: ""
   db: 0
 
+ai:
+  service_url: "http://localhost:8090"
+  service_token: "dev-ai-service-token"
+  request_timeout_ms: 30000
+
 pinecone:
   api_key: ""
   environment: "" # e.g., us-east-1

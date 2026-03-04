@@ -20,6 +20,7 @@ var publicPaths = []string{
 	"/auth",
 	"/api/v1/public/notes",
 	"/api/v1/public/collab",
+	"/internal/v1/ai",
 }
 
 // SetupRouter initializes and configures the Gin server
@@ -33,6 +34,8 @@ func SetupRouter(
 	eventService service.EventService,
 	mediaService service.MediaService,
 	commentService service.CommentService,
+	aiRunAPI *AIRunAPI,
+	aiInternalAPI *AIInternalAPI,
 	wsHandler *WebSocketHandler,
 	searchHandler *SearchHandler,
 ) *gin.Engine {
@@ -59,8 +62,13 @@ func SetupRouter(
 		router.POST("/api/v1/notes/reindex", searchHandler.ReindexAllNotes)
 	}
 
+	if aiInternalAPI != nil {
+		router.POST("/internal/v1/ai/tools/execute", aiInternalAPI.ExecuteTool)
+	}
+
 	// API handlers
 	apiHandlers := ApiHandleFunctions{
+		AIAPI:       *NewAIAPI(aiRunAPI),
 		AuthAPI:     *NewAuthAPI(authService, cfg),
 		UserAPI:     UserAPI{userService},
 		NoteAPI:     NoteAPI{noteService: noteService, authService: authService},

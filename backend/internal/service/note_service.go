@@ -20,6 +20,7 @@ type NoteService interface {
 	CreateNote(ctx context.Context, req CreateNoteRequest) (*models.Note, error)
 	GetNoteByID(ctx context.Context, id string) (*models.Note, error)
 	UpdateNote(ctx context.Context, id string, req UpdateNoteRequest) (*models.Note, error)
+	UpdateNoteContentWithVersion(ctx context.Context, id string, content string, expectedVersion int) (*models.Note, error)
 	DeleteNote(ctx context.Context, id string) error
 	ListNotes(ctx context.Context, params repository.NoteListParams, userID string) ([]*models.Note, int64, error)
 	GetNotesByUserID(ctx context.Context, userID string, params repository.NoteListParams) ([]*models.Note, int64, error)
@@ -165,6 +166,21 @@ func (s *noteService) UpdateNote(ctx context.Context, id string, req UpdateNoteR
 	}
 
 	if err := s.repo.Update(ctx, note); err != nil {
+		return nil, ErrInternalServerError
+	}
+
+	return note, nil
+}
+
+func (s *noteService) UpdateNoteContentWithVersion(ctx context.Context, id string, content string, expectedVersion int) (*models.Note, error) {
+	note, err := s.repo.UpdateContentWithVersion(ctx, id, content, expectedVersion)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNoteNotFound
+		}
+		if errors.Is(err, repository.ErrVersionConflict) {
+			return nil, ErrVersionConflict
+		}
 		return nil, ErrInternalServerError
 	}
 

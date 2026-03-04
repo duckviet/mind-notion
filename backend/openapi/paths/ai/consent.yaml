@@ -1,0 +1,32 @@
+patch:
+  summary: Provide consent for pending AI tool call
+  operationId: provideAiRunConsent
+  tags: [AI]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: run_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: AI run ID
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/AI/Req_ProvideAIRunConsent.yaml
+  responses:
+    "200":
+      description: Consent applied
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/AI/Res_ProvideAIRunConsent.yaml
+    "400":
+      $ref: ../../components/responses/BadRequest.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

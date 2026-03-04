@@ -8,9 +8,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
- 
-
- 
 
 func Load() (*Config, error) {
 	// Load file .env nếu có (không bắt buộc trong Production)
@@ -106,4 +103,9 @@ func setDefaults(v *viper.Viper) {
 	// Collab defaults
 	v.SetDefault("collab.token_secret", "your-collab-token-secret")
 	v.SetDefault("collab.token_ttl_minutes", 60)
+
+	// AI service defaults
+	v.SetDefault("ai.service_url", "http://localhost:8090")
+	v.SetDefault("ai.service_token", "dev-ai-service-token")
+	v.SetDefault("ai.request_timeout_ms", 30000)
 }
