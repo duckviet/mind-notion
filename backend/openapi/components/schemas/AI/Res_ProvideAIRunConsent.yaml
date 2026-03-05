@@ -1,0 +1,15 @@
+type: object
+properties:
+  ok:
+    type: boolean
+    example: true
+  run_id:
+    type: string
+    example: "run-123"
+  tool_call_id:
+    type: string
+    example: "tool-call-123"
+  approved:
+    type: boolean
+    example: true
+required: [ok, run_id, tool_call_id, approved]

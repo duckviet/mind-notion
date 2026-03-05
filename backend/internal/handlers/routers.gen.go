@@ -62,6 +62,8 @@ func DefaultHandleFunc(c *gin.Context) {
 
 type ApiHandleFunctions struct {
 
+	// Routes for the AIAPI part of the API
+	AIAPI AIAPI
 	// Routes for the AuthAPI part of the API
 	AuthAPI AuthAPI
 	// Routes for the CollabAPI part of the API
@@ -84,6 +86,18 @@ type ApiHandleFunctions struct {
 
 func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 	return []Route{ 
+		{
+			"CreateAiRun",
+			http.MethodPost,
+			"/api/v1/ai/runs",
+			handleFunctions.AIAPI.CreateAiRun,
+		},
+		{
+			"ProvideAiRunConsent",
+			http.MethodPatch,
+			"/api/v1/ai/runs/:run_id/consent",
+			handleFunctions.AIAPI.ProvideAiRunConsent,
+		},
 		{
 			"CheckAuth",
 			http.MethodGet,

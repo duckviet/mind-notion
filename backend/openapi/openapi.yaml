@@ -23,6 +23,13 @@ paths:
     $ref: "./paths/jwt-auth/check.yaml"
   /auth/refresh-token:
     $ref: "./paths/jwt-auth/refresh-token.yaml"
+
+  # AI
+  /ai/runs:
+    $ref: "./paths/ai/create-run.yaml"
+  /ai/runs/{run_id}/consent:
+    $ref: "./paths/ai/consent.yaml"
+
   # User Management
   /user/me:
     $ref: "./paths/user/me.yaml"

@@ -4,6 +4,8 @@ export type { DndItem, DndProviderProps } from "./Dnd";
 export { MultiZoneDndProvider } from "./MultiZoneDndProvider";
 export type { MultiZoneDndProviderProps } from "./MultiZoneDndProvider";
 
+export { GlobalDndProvider, useGlobalDndHandlers } from "./GlobalDndProvider";
+
 export { SortableItem } from "./SortableItem";
 export type { SortableItemProps } from "./SortableItem";
 

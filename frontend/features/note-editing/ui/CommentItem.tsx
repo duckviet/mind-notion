@@ -137,7 +137,7 @@ const CommentItem = ({
       {hasReplies && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="my-2 text-[13px] font-medium text-text-primary hover:text-text-primary/70 flex items-center gap-1.5 transition-colors ml-0"
+          className="mt-2 text-[13px] font-medium text-text-primary hover:text-text-primary/70 flex items-center gap-1.5 transition-colors ml-0"
         >
           {isExpanded
             ? "Hide Replies"
@@ -155,19 +155,17 @@ const CommentItem = ({
             transition={{ duration: 0.2, ease: "easeInOut" }}
             className="overflow-hidden"
           >
-            <div className="pt-1">
-              {comment.replies!.map((reply) => (
-                <CommentItem
-                  key={reply.id}
-                  comment={reply}
-                  onDelete={onDelete}
-                  onUpdate={onUpdate}
-                  onReply={onReply}
-                  isLoading={isLoading}
-                  depth={depth + 1}
-                />
-              ))}
-            </div>
+            {comment.replies!.map((reply) => (
+              <CommentItem
+                key={reply.id}
+                comment={reply}
+                onDelete={onDelete}
+                onUpdate={onUpdate}
+                onReply={onReply}
+                isLoading={isLoading}
+                depth={depth + 1}
+              />
+            ))}
           </motion.div>
         )}
       </AnimatePresence>

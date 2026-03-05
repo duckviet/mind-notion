@@ -83,6 +83,8 @@ func New(ctx context.Context) (*App, func(), error) {
 	eventService := service.NewEventService(eventRepo)
 	authService := service.NewAuthService(userRepo, cfg)
 	commentService := service.NewCommentService(commentRepo, noteRepo, userRepo)
+	aiRunAPI := handlers.NewAIRunAPI(cfg, noteService)
+	aiInternalAPI := handlers.NewAIInternalAPI(noteService, cfg)
 
 	mediaService, err := service.NewMediaService(ctx, cfg.CDN)
 	if err != nil {
@@ -95,7 +97,7 @@ func New(ctx context.Context) (*App, func(), error) {
 	wsHandler := handlers.NewWebSocketHandler(collabService)
 
 	// Initialize handlers
-	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, templateService, *eventService, mediaService, commentService, wsHandler, searchHandler)
+	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, templateService, *eventService, mediaService, commentService, aiRunAPI, aiInternalAPI, wsHandler, searchHandler)
 
 	app := &App{
 		router: router,

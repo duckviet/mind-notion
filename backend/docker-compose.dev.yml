@@ -12,13 +12,34 @@ services:
       - DATABASE_NAME=collaborative_editor
       - REDIS_HOST=redis
       - REDIS_PORT=6380
+      - AI_SERVICE_URL=http://ai-service:8090
+      - AI_SERVICE_TOKEN=dev-ai-service-token
+      - AI_REQUEST_TIMEOUT_MS=30000
     depends_on:
       - postgres
       - redis
+      - ai-service
     volumes:
       - .:/app
     working_dir: /app
     command: sh -c "go mod download && go install github.com/cosmtrek/air@latest && air"
+
+  ai-service:
+    image: python:3.11-slim
+    ports:
+      - "8090:8090"
+    environment:
+      - AI_SERVICE_HOST=0.0.0.0
+      - AI_SERVICE_PORT=8090
+      - AI_INTERNAL_TOKEN=dev-ai-service-token
+      - BACKEND_INTERNAL_BASE_URL=http://app:8080
+      - BACKEND_INTERNAL_TOKEN=dev-ai-service-token
+      - BACKEND_TOOL_TIMEOUT_MS=30000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ../ai-services/agent-py:/app
+    working_dir: /app
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && python main.py"
 
   postgres:
     image: postgres:14-alpine

@@ -180,6 +180,38 @@ export interface ResCollabToken {
   note: ResCollabTokenNote;
 }
 
+export type ReqCreateAIRunMessageRole =
+  (typeof ReqCreateAIRunMessageRole)[keyof typeof ReqCreateAIRunMessageRole];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ReqCreateAIRunMessageRole = {
+  user: "user",
+} as const;
+
+export type ReqCreateAIRunMessage = {
+  role?: ReqCreateAIRunMessageRole;
+  content: string;
+};
+
+export interface ReqCreateAIRun {
+  workspace_id: string;
+  session_id: string;
+  note_id: string;
+  message: ReqCreateAIRunMessage;
+}
+
+export interface ReqProvideAIRunConsent {
+  tool_call_id: string;
+  approved: boolean;
+}
+
+export interface ResProvideAIRunConsent {
+  ok: boolean;
+  run_id: string;
+  tool_call_id: string;
+  approved: boolean;
+}
+
 export interface Comment {
   id: string;
   note_id: string;
@@ -1074,6 +1106,201 @@ export const useRefreshToken = <
   TContext
 > => {
   const mutationOptions = getRefreshTokenMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Create AI run and stream assistant output
+ */
+export const createAiRun = (
+  reqCreateAIRun: ReqCreateAIRun,
+  signal?: AbortSignal,
+) => {
+  return customInstance<string>({
+    url: `/ai/runs`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: reqCreateAIRun,
+    signal,
+  });
+};
+
+export const getCreateAiRunMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createAiRun>>,
+    TError,
+    { data: ReqCreateAIRun },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createAiRun>>,
+  TError,
+  { data: ReqCreateAIRun },
+  TContext
+> => {
+  const mutationKey = ["createAiRun"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createAiRun>>,
+    { data: ReqCreateAIRun }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createAiRun(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateAiRunMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAiRun>>
+>;
+export type CreateAiRunMutationBody = ReqCreateAIRun;
+export type CreateAiRunMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | ForbiddenResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Create AI run and stream assistant output
+ */
+export const useCreateAiRun = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createAiRun>>,
+      TError,
+      { data: ReqCreateAIRun },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createAiRun>>,
+  TError,
+  { data: ReqCreateAIRun },
+  TContext
+> => {
+  const mutationOptions = getCreateAiRunMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Provide consent for pending AI tool call
+ */
+export const provideAiRunConsent = (
+  runId: string,
+  reqProvideAIRunConsent: ReqProvideAIRunConsent,
+) => {
+  return customInstance<ResProvideAIRunConsent>({
+    url: `/ai/runs/${runId}/consent`,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    data: reqProvideAIRunConsent,
+  });
+};
+
+export const getProvideAiRunConsentMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof provideAiRunConsent>>,
+    TError,
+    { runId: string; data: ReqProvideAIRunConsent },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof provideAiRunConsent>>,
+  TError,
+  { runId: string; data: ReqProvideAIRunConsent },
+  TContext
+> => {
+  const mutationKey = ["provideAiRunConsent"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof provideAiRunConsent>>,
+    { runId: string; data: ReqProvideAIRunConsent }
+  > = (props) => {
+    const { runId, data } = props ?? {};
+
+    return provideAiRunConsent(runId, data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ProvideAiRunConsentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof provideAiRunConsent>>
+>;
+export type ProvideAiRunConsentMutationBody = ReqProvideAIRunConsent;
+export type ProvideAiRunConsentMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Provide consent for pending AI tool call
+ */
+export const useProvideAiRunConsent = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof provideAiRunConsent>>,
+      TError,
+      { runId: string; data: ReqProvideAIRunConsent },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof provideAiRunConsent>>,
+  TError,
+  { runId: string; data: ReqProvideAIRunConsent },
+  TContext
+> => {
+  const mutationOptions = getProvideAiRunConsentMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
