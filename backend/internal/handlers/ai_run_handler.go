@@ -22,21 +22,23 @@ type AIRunAPI struct {
 	config      *config.Config
 	noteService service.NoteService
 	httpClient  *http.Client
+	streamHTTPClient *http.Client
 }
 
 func NewAIRunAPI(cfg *config.Config, noteService service.NoteService) *AIRunAPI {
 	timeout := time.Duration(cfg.AI.RequestTimeoutMs) * time.Millisecond
 	return &AIRunAPI{
-		config:      cfg,
-		noteService: noteService,
-		httpClient:  &http.Client{Timeout: timeout},
+		config:           cfg,
+		noteService:      noteService,
+		httpClient:       &http.Client{Timeout: timeout},
+		streamHTTPClient: &http.Client{},
 	}
 }
 
 type createRunRequest struct {
 	WorkspaceID string `json:"workspace_id" binding:"required"`
 	SessionID   string `json:"session_id" binding:"required"`
-	NoteID      string `json:"note_id" binding:"required"`
+	NoteID      string `json:"note_id"`
 	Message     struct {
 		Role    string `json:"role"`
 		Content string `json:"content" binding:"required"`
@@ -62,14 +64,41 @@ func (api *AIRunAPI) CreateRun(c *gin.Context) {
 	}
 	user := userVal.(*dbmodels.User)
 
-	note, err := api.noteService.GetNoteByID(c.Request.Context(), req.NoteID)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-		return
-	}
-	if note.UserID != user.ID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
-		return
+	trimmedNoteID := strings.TrimSpace(req.NoteID)
+
+	noteVersion := 0
+	resourceNoteID := ""
+	allowedTools := []map[string]interface{}{}
+
+	if trimmedNoteID != "" {
+		note, err := api.noteService.GetNoteByID(c.Request.Context(), trimmedNoteID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+			return
+		}
+		if note.UserID != user.ID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+
+		resourceNoteID = trimmedNoteID
+		noteVersion = note.Version
+		allowedTools = []map[string]interface{}{
+			{
+				"name": "notes.read",
+				"constraints": map[string]interface{}{
+					"workspace_id":         req.WorkspaceID,
+					"require_user_consent": false,
+				},
+			},
+			{
+				"name": "notes.write",
+				"constraints": map[string]interface{}{
+					"workspace_id":         req.WorkspaceID,
+					"require_user_consent": true,
+				},
+			},
+		}
 	}
 
 	runID := uuid.NewString()
@@ -88,25 +117,10 @@ func (api *AIRunAPI) CreateRun(c *gin.Context) {
 			},
 		},
 		"resource_context": map[string]interface{}{
-			"note_id":      req.NoteID,
-			"note_version": note.Version,
+			"note_id":      resourceNoteID,
+			"note_version": noteVersion,
 		},
-		"allowed_tools": []map[string]interface{}{
-			{
-				"name": "notes.read",
-				"constraints": map[string]interface{}{
-					"workspace_id":         req.WorkspaceID,
-					"require_user_consent": false,
-				},
-			},
-			{
-				"name": "notes.write",
-				"constraints": map[string]interface{}{
-					"workspace_id":         req.WorkspaceID,
-					"require_user_consent": true,
-				},
-			},
-		},
+		"allowed_tools": allowedTools,
 		"policy": map[string]interface{}{
 			"max_tool_calls": 5,
 			"timeout_ms":     30000,
@@ -136,7 +150,7 @@ func (api *AIRunAPI) CreateRun(c *gin.Context) {
 	httpReq.Header.Set("Accept", "text/event-stream")
 	httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", api.config.AI.ServiceToken))
 
-	resp, err := api.httpClient.Do(httpReq)
+	resp, err := api.streamHTTPClient.Do(httpReq)
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": "failed to reach ai service"})
 		return

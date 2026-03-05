@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -51,6 +52,8 @@ except ImportError:  # pragma: no cover
     from agent.tools.types import ToolSpec
     from agent.contracts import AgentCallbacks, TokenUsageInfo
 
+logger = logging.getLogger(__name__)
+
 MODEL_NAME = "gpt-5-mini"
 
 
@@ -58,7 +61,9 @@ def _to_provider_tool_name(internal_name: str) -> str:
     return internal_name.replace(".", "_")
 
 
-def _build_tool_name_maps(tool_registry: Mapping[str, ToolSpec]) -> tuple[dict[str, str], dict[str, str]]:
+def _build_tool_name_maps(
+    tool_registry: Mapping[str, ToolSpec],
+) -> tuple[dict[str, str], dict[str, str]]:
     internal_to_provider: dict[str, str] = {}
     provider_to_internal: dict[str, str] = {}
 
@@ -77,13 +82,17 @@ def _tool_definitions(
     definitions: list[dict[str, Any]] = []
     for internal_name, tool in tool_registry.items():
         tool_def = tool.to_openai_tool()
-        tool_def["function"]["name"] = internal_to_provider.get(internal_name, internal_name)
+        tool_def["function"]["name"] = internal_to_provider.get(
+            internal_name, internal_name
+        )
         definitions.append(tool_def)
     return definitions
 
 
 def _supports_token_usage(callbacks: AgentCallbacks) -> bool:
-    return hasattr(callbacks, "on_token_usage") and callable(getattr(callbacks, "on_token_usage"))
+    return hasattr(callbacks, "on_token_usage") and callable(
+        getattr(callbacks, "on_token_usage")
+    )
 
 
 def _report_token_usage(
@@ -95,6 +104,14 @@ def _report_token_usage(
         return
 
     usage = estimate_messages_tokens(messages)
+    logger.debug(
+        "Token usage — input: %d, output: %d, total: %d / %d (%.1f%%)",
+        usage.input,
+        usage.output,
+        usage.total,
+        context_window,
+        calculate_usage_percentage(usage.total, context_window),
+    )
     callbacks.on_token_usage(
         TokenUsageInfo(
             input_tokens=usage.input,
@@ -118,6 +135,13 @@ async def run_agent(
     resource_context: dict[str, Any] | None = None,
     tool_registry: Mapping[str, ToolSpec] | None = None,
 ) -> list[dict[str, Any]]:
+    logger.info(
+        "Agent run started — run_id=%s, model=%s, history_len=%d",
+        run_id,
+        model_name,
+        len(conversation_history),
+    )
+
     model_limits = get_model_limits(model_name)
     active_tools = tool_registry or tools
     internal_to_provider, provider_to_internal = _build_tool_name_maps(active_tools)
@@ -129,7 +153,9 @@ async def run_agent(
     actor_token = None
     resource_token = None
     if run_id is not None:
-        run_token, actor_token, resource_token = set_run_context(run_id, actor_context, resource_context_data)
+        run_token, actor_token, resource_token = set_run_context(
+            run_id, actor_context, resource_context_data
+        )
 
     working_history = filter_compatible_messages(conversation_history)
     precheck_tokens = estimate_messages_tokens(
@@ -141,6 +167,11 @@ async def run_agent(
     )
 
     if is_over_threshold(precheck_tokens.total, model_limits.context_window):
+        logger.warning(
+            "Context over threshold (%d / %d tokens), compacting conversation…",
+            precheck_tokens.total,
+            model_limits.context_window,
+        )
         working_history = await compact_conversation(working_history, client, model_name)
 
     messages: list[dict[str, Any]] = [
@@ -153,7 +184,11 @@ async def run_agent(
     _report_token_usage(callbacks, messages, model_limits.context_window)
 
     try:
+        iteration = 0
         while True:
+            iteration += 1
+            logger.debug("LLM call #%d — messages in context: %d", iteration, len(messages))
+
             completion = await client.chat.completions.create(
                 model=model_name,
                 messages=messages,
@@ -190,7 +225,14 @@ async def run_agent(
             _report_token_usage(callbacks, messages, model_limits.context_window)
 
             if not tool_calls:
+                logger.debug("No tool calls returned — ending agent loop")
                 break
+
+            logger.info(
+                "Tool calls requested (%d): %s",
+                len(tool_calls),
+                [tc.function.name for tc in tool_calls],
+            )
 
             rejected = False
             for tc in tool_calls:
@@ -207,17 +249,40 @@ async def run_agent(
                 callback_args = dict(parsed_args)
                 callback_args["_tool_call_id"] = tc.id
 
+                logger.info(
+                    "Tool call start — tool=%s, call_id=%s, args=%s",
+                    tool_name,
+                    tc.id,
+                    parsed_args,
+                )
                 callbacks.on_tool_call_start(tool_name, callback_args)
+
+                logger.debug("Awaiting approval — tool=%s, call_id=%s", tool_name, tc.id)
                 approved = await callbacks.on_tool_approval(tool_name, callback_args)
                 if not approved:
+                    logger.warning(
+                        "Tool call rejected by user — tool=%s, call_id=%s",
+                        tool_name,
+                        tc.id,
+                    )
                     rejected = True
                     break
 
+                logger.debug("Tool call approved — tool=%s, call_id=%s", tool_name, tc.id)
                 tool_call_token = set_tool_call_context(tc.id)
                 try:
-                    result = await execute_tool(tool_name, parsed_args, tool_registry=active_tools)
+                    result = await execute_tool(
+                        tool_name, parsed_args, tool_registry=active_tools
+                    )
                 finally:
                     reset_tool_call_context(tool_call_token)
+
+                logger.info(
+                    "Tool call end — tool=%s, call_id=%s, result_len=%d",
+                    tool_name,
+                    tc.id,
+                    len(result) if isinstance(result, str) else -1,
+                )
                 callbacks.on_tool_call_end(tool_name, result)
 
                 messages.append(
@@ -232,6 +297,12 @@ async def run_agent(
             if rejected:
                 break
 
+        logger.info(
+            "Agent run complete — run_id=%s, iterations=%d, response_len=%d",
+            run_id,
+            iteration,
+            len(full_response),
+        )
         callbacks.on_complete(full_response)
         return messages
     finally:

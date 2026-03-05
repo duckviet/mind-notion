@@ -4,7 +4,6 @@ import { useMemo, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useNotes } from "@/shared/hooks/useNotes";
 import { SearchField } from "@/features/search-content";
-import { Chatbot, type ChatbotDropPayload } from "@/shared/components/Chatbot";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";
 import { FocusEditModal } from "@/features/note-editing";
 const MasonryGrid = dynamic(
@@ -35,6 +34,7 @@ import { useDebounce } from "use-debounce";
 import { FoldersListPage } from "../folder";
 import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
 import { useTomVisibility } from "@/features/top-of-mind/model/useTomVisibility";
+import { Chatbot, ChatbotDropPayload } from "@/features/chat-bot";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
