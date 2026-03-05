@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import {
-  MultiZoneDndProvider,
+  useGlobalDndHandlers,
   DroppableZone,
   SortableContext,
   SortableItem,
@@ -333,6 +333,11 @@ const DayMode = () => {
   const HOUR_HEIGHT = 80; // pixels per hour - increased for better visibility
   const MIN_EVENT_HEIGHT = 30; // minimum height for events in pixels
 
+  useGlobalDndHandlers({
+    onDragEnd: handleDragEnd,
+    renderOverlay,
+  });
+
   // Helper function to calculate event position and height
   const calculateEventPosition = (event: DayTask) => {
     const startTime = new Date(event.start_time);
@@ -445,140 +450,132 @@ const DayMode = () => {
         <Button onClick={openCreate}>Create Event</Button>
       </div>
 
-      <MultiZoneDndProvider
-        onDragEnd={handleDragEnd}
-        renderOverlay={renderOverlay}
-      >
-        <div className="flex flex-1 overflow-hidden border-t border-border bg-accent rounded-lg">
-          {/* Time column */}
-          <div className="flex-shrink-0 w-20   border-r border-border">
-            <div className="h-16 border-b border-border" />{" "}
-            {/* Spacer for day headers */}
-            <div
-              className="relative"
-              style={{ height: `${HOUR_HEIGHT * 24}px` }}
-            >
-              {TIME_IN_DAYS.map((time, idx) => (
-                <div
-                  key={time}
-                  className="absolute text-xs text-text-secondary text-right pr-3 w-full"
-                  style={{ top: `${idx * HOUR_HEIGHT - 8}px` }}
-                >
-                  {time}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Calendar grid */}
-          <div className="flex-1 overflow-auto  ">
-            {/* Day headers */}
-            <div className="sticky top-0 z-30   border-b border-border grid grid-cols-7">
-              {DAYS.map((day) => (
-                <div
-                  key={day}
-                  className="h-16 flex items-center justify-center font-semibold text-sm capitalize border-l first:border-l-0 border-border"
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
-
-            {/* Time grid with events */}
-            <div
-              className="relative grid grid-cols-7"
-              style={{ height: `${HOUR_HEIGHT * 24}px` }}
-            >
-              {/* Hour grid lines */}
-              {TIME_IN_DAYS.map((time, idx) => (
-                <div
-                  key={`grid-${time}`}
-                  className="col-span-7 border-t border-border absolute w-full pointer-events-none"
-                  style={{ top: `${idx * HOUR_HEIGHT}px` }}
-                />
-              ))}
-
-              {/* Current time indicator */}
-              {(() => {
-                const hours = currentTime.getHours();
-                const minutes = currentTime.getMinutes();
-                const position = (hours + minutes / 60) * HOUR_HEIGHT;
-                return (
-                  <div
-                    className="col-span-7 absolute w-full z-20 pointer-events-none"
-                    style={{ top: `${position}px` }}
-                  >
-                    <div className="relative">
-                      <div className="absolute -left-1 w-3 h-3 -mt-1.5 bg-destructive rounded-full border-2 border-surface" />
-                      <div className="border-t-2 border-destructive" />
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Day columns with events */}
-              {(DAYS as readonly DayName[]).map((day, dayIdx) => {
-                const tasks = columns[day];
-                const eventLayouts = calculateEventLayout(tasks);
-                return (
-                  <div
-                    key={day}
-                    className="relative border-l first:border-l-0 border-border"
-                    style={{ height: `${HOUR_HEIGHT * 24}px` }}
-                  >
-                    <SortableContext
-                      items={tasks.map((task) => task.id.toString())}
-                    >
-                      <DroppableZone
-                        id={getZoneId(day)}
-                        className="absolute inset-0"
-                        activeClassName="bg-accent/10"
-                      >
-                        {/* Positioned events */}
-                        {tasks.map((task) => {
-                          const layout = eventLayouts.get(task.id);
-                          if (!layout) return null;
-
-                          const { top, height, columnIndex, totalColumns } =
-                            layout;
-                          const width =
-                            totalColumns > 1 ? 100 / totalColumns : 100;
-                          const left = columnIndex * width;
-
-                          return (
-                            <div
-                              key={task.id}
-                              className="absolute z-10"
-                              style={{
-                                top: `${top}px`,
-                                height: `${height}px`,
-                                left: `${left}%`,
-                                width: `${width}%`,
-                                padding: "0 2px",
-                              }}
-                            >
-                              <SortableItem
-                                id={task.id.toString()}
-                                style={{ height: "100%" }}
-                              >
-                                <TaskCard
-                                  task={task}
-                                  onClick={() => openEdit(task)}
-                                  compact={height < 60}
-                                />
-                              </SortableItem>
-                            </div>
-                          );
-                        })}
-                      </DroppableZone>
-                    </SortableContext>
-                  </div>
-                );
-              })}
-            </div>
+      <div className="flex flex-1 overflow-hidden border-t border-border bg-accent rounded-lg">
+        {/* Time column */}
+        <div className="flex-shrink-0 w-20   border-r border-border">
+          <div className="h-16 border-b border-border" />{" "}
+          {/* Spacer for day headers */}
+          <div className="relative" style={{ height: `${HOUR_HEIGHT * 24}px` }}>
+            {TIME_IN_DAYS.map((time, idx) => (
+              <div
+                key={time}
+                className="absolute text-xs text-text-secondary text-right pr-3 w-full"
+                style={{ top: `${idx * HOUR_HEIGHT - 8}px` }}
+              >
+                {time}
+              </div>
+            ))}
           </div>
         </div>
-      </MultiZoneDndProvider>
+
+        {/* Calendar grid */}
+        <div className="flex-1 overflow-auto  ">
+          {/* Day headers */}
+          <div className="sticky top-0 z-30   border-b border-border grid grid-cols-7">
+            {DAYS.map((day) => (
+              <div
+                key={day}
+                className="h-16 flex items-center justify-center font-semibold text-sm capitalize border-l first:border-l-0 border-border"
+              >
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Time grid with events */}
+          <div
+            className="relative grid grid-cols-7"
+            style={{ height: `${HOUR_HEIGHT * 24}px` }}
+          >
+            {/* Hour grid lines */}
+            {TIME_IN_DAYS.map((time, idx) => (
+              <div
+                key={`grid-${time}`}
+                className="col-span-7 border-t border-border absolute w-full pointer-events-none"
+                style={{ top: `${idx * HOUR_HEIGHT}px` }}
+              />
+            ))}
+
+            {/* Current time indicator */}
+            {(() => {
+              const hours = currentTime.getHours();
+              const minutes = currentTime.getMinutes();
+              const position = (hours + minutes / 60) * HOUR_HEIGHT;
+              return (
+                <div
+                  className="col-span-7 absolute w-full z-20 pointer-events-none"
+                  style={{ top: `${position}px` }}
+                >
+                  <div className="relative">
+                    <div className="absolute -left-1 w-3 h-3 -mt-1.5 bg-destructive rounded-full border-2 border-surface" />
+                    <div className="border-t-2 border-destructive" />
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Day columns with events */}
+            {(DAYS as readonly DayName[]).map((day, dayIdx) => {
+              const tasks = columns[day];
+              const eventLayouts = calculateEventLayout(tasks);
+              return (
+                <div
+                  key={day}
+                  className="relative border-l first:border-l-0 border-border"
+                  style={{ height: `${HOUR_HEIGHT * 24}px` }}
+                >
+                  <SortableContext
+                    items={tasks.map((task) => task.id.toString())}
+                  >
+                    <DroppableZone
+                      id={getZoneId(day)}
+                      className="absolute inset-0"
+                      activeClassName="bg-accent/10"
+                    >
+                      {/* Positioned events */}
+                      {tasks.map((task) => {
+                        const layout = eventLayouts.get(task.id);
+                        if (!layout) return null;
+
+                        const { top, height, columnIndex, totalColumns } =
+                          layout;
+                        const width =
+                          totalColumns > 1 ? 100 / totalColumns : 100;
+                        const left = columnIndex * width;
+
+                        return (
+                          <div
+                            key={task.id}
+                            className="absolute z-10"
+                            style={{
+                              top: `${top}px`,
+                              height: `${height}px`,
+                              left: `${left}%`,
+                              width: `${width}%`,
+                              padding: "0 2px",
+                            }}
+                          >
+                            <SortableItem
+                              id={task.id.toString()}
+                              style={{ height: "100%" }}
+                            >
+                              <TaskCard
+                                task={task}
+                                onClick={() => openEdit(task)}
+                                compact={height < 60}
+                              />
+                            </SortableItem>
+                          </div>
+                        );
+                      })}
+                    </DroppableZone>
+                  </SortableContext>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       <EventDialog
         mode={dialogMode}
