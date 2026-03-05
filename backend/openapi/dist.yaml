@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: An example API using JWT imported from a separate file.
 servers:
-  - url: 'http://localhost:8080/api/v1'
+  - url: "http://localhost:8080/api/v1"
 security:
   - BearerAuth: []
 paths:
@@ -19,16 +19,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_LoginCredentials'
+              $ref: "#/components/schemas/Req_LoginCredentials"
       responses:
-        '200':
+        "200":
           description: Authentication successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_AuthTokens'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/Res_AuthTokens"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /auth/register:
     post:
       summary: Register a new user
@@ -40,18 +40,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_UserRegistration'
+              $ref: "#/components/schemas/Req_UserRegistration"
       responses:
-        '201':
+        "201":
           description: User registered successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_AuthTokens'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/Res_AuthTokens"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /auth/logout:
     post:
       summary: Logout and invalidate JWT
@@ -61,12 +61,12 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Logout successful
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /auth/check:
     get:
       summary: Check current JWT and return basic info
@@ -76,14 +76,14 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Token is valid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_AuthTokens'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/Res_AuthTokens"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /auth/refresh-token:
     post:
       summary: Refresh a JWT
@@ -101,14 +101,14 @@ paths:
                   type: string
                   example: def50200...
       responses:
-        '200':
+        "200":
           description: Token refreshed successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_AuthTokens'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/Res_AuthTokens"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /ai/runs:
     post:
       summary: Create AI run and stream assistant output
@@ -122,25 +122,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_CreateAIRun'
+              $ref: "#/components/schemas/Req_CreateAIRun"
       responses:
-        '200':
+        "200":
           description: Streaming SSE response from AI run
           content:
             text/event-stream:
               schema:
                 type: string
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/ai/runs/{run_id}/consent':
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/ai/runs/{run_id}/consent":
     patch:
       summary: Provide consent for pending AI tool call
       operationId: provideAiRunConsent
@@ -160,20 +160,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_ProvideAIRunConsent'
+              $ref: "#/components/schemas/Req_ProvideAIRunConsent"
       responses:
-        '200':
+        "200":
           description: Consent applied
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_ProvideAIRunConsent'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/Res_ProvideAIRunConsent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /user/me:
     get:
       summary: Get current user information
@@ -183,18 +183,18 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: User information
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /user/update:
     patch:
       summary: Update current user information
@@ -208,20 +208,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_UpdateProfile'
+              $ref: "#/components/schemas/Req_UpdateProfile"
       responses:
-        '200':
+        "200":
           description: User information updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /user/delete:
     delete:
       summary: Delete current user
@@ -231,14 +231,14 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: User deleted successfully
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /notes:
     post:
       summary: Create a new note
@@ -252,20 +252,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_CreateNote'
+              $ref: "#/components/schemas/Req_CreateNote"
       responses:
-        '201':
+        "201":
           description: Note created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailNote'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/Res_DetailNote"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /notes/list:
     get:
       summary: List user's notes
@@ -275,8 +275,8 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/LimitParam'
-        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
         - name: query
           in: query
           schema:
@@ -297,7 +297,7 @@ paths:
               - archived
           description: Filter notes by status
       responses:
-        '200':
+        "200":
           description: Notes retrieved successfully
           content:
             application/json:
@@ -307,7 +307,7 @@ paths:
                   notes:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Res_DetailNote'
+                      $ref: "#/components/schemas/Res_DetailNote"
                   total:
                     type: integer
                     description: Total number of notes
@@ -320,15 +320,15 @@ paths:
                   query:
                     type: string
                     description: Query to search for
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/notes/{note_id}':
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/notes/{note_id}":
     get:
       summary: Get note by ID
       operationId: getNote
@@ -344,19 +344,19 @@ paths:
             type: string
           description: Note ID
       responses:
-        '200':
+        "200":
           description: Note retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailNote'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/notes/{note_id}/update':
+                $ref: "#/components/schemas/Res_DetailNote"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/notes/{note_id}/update":
     put:
       summary: Update note by ID
       operationId: updateNote
@@ -376,23 +376,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_UpdateNote'
+              $ref: "#/components/schemas/Req_UpdateNote"
       responses:
-        '200':
+        "200":
           description: Note updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailNote'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/notes/{note_id}/delete':
+                $ref: "#/components/schemas/Res_DetailNote"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/notes/{note_id}/delete":
     delete:
       summary: Delete note by ID
       operationId: deleteNote
@@ -408,15 +408,15 @@ paths:
             type: string
           description: Note ID
       responses:
-        '200':
+        "200":
           description: Note deleted successfully
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/notes/{note_id}/public-edit':
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/notes/{note_id}/public-edit":
     get:
       summary: Get public edit settings for a note
       operationId: getPublicEditSettings
@@ -432,18 +432,18 @@ paths:
             type: string
           description: Note ID
       responses:
-        '200':
+        "200":
           description: Public edit settings
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_PublicEditSettings'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/Res_PublicEditSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
     post:
       summary: Update public edit settings for a note
       operationId: updatePublicEditSettings
@@ -463,23 +463,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_PublicEditSettings'
+              $ref: "#/components/schemas/Req_PublicEditSettings"
       responses:
-        '200':
+        "200":
           description: Updated public edit settings
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_PublicEditSettings'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/notes/{note_id}/public-edit/rotate':
+                $ref: "#/components/schemas/Res_PublicEditSettings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/notes/{note_id}/public-edit/rotate":
     post:
       summary: Rotate public edit token for a note
       operationId: rotatePublicEditToken
@@ -495,19 +495,19 @@ paths:
             type: string
           description: Note ID
       responses:
-        '200':
+        "200":
           description: Rotated public edit token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_PublicEditSettings'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/notes/{note_id}/tom':
+                $ref: "#/components/schemas/Res_PublicEditSettings"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/notes/{note_id}/tom":
     put:
       summary: Update note top of mind by ID
       operationId: updateNoteTOM
@@ -530,7 +530,7 @@ paths:
             example: true
           description: Top of mind
       responses:
-        '200':
+        "200":
           description: Note top of mind updated successfully
           content:
             application/json:
@@ -539,18 +539,18 @@ paths:
                 properties:
                   id:
                     type: string
-                    example: '1234567890'
+                    example: "1234567890"
                   top_of_mind:
                     type: boolean
                     example: true
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /notes/list-tom:
     get:
       summary: List user's top of mind notes
@@ -560,19 +560,19 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Top of mind notes retrieved successfully
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Res_DetailNote'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/public/notes/{note_id}':
+                  $ref: "#/components/schemas/Res_DetailNote"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/public/notes/{note_id}":
     get:
       operationId: getPublicNote
       summary: Get a public note by ID (no auth required)
@@ -588,17 +588,17 @@ paths:
             type: string
           description: The note ID
       responses:
-        '200':
+        "200":
           description: Successful response with note details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailNote'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/public/notes/{note_id}/snapshot':
+                $ref: "#/components/schemas/Res_DetailNote"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/public/notes/{note_id}/snapshot":
     post:
       summary: Save HTML snapshot for a note
       operationId: saveNoteSnapshot
@@ -624,22 +624,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_NoteSnapshot'
+              $ref: "#/components/schemas/Req_NoteSnapshot"
       responses:
-        '200':
+        "200":
           description: Snapshot saved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_NoteSnapshot'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/Res_NoteSnapshot"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /public/collab/token:
     post:
       summary: Create collaboration token for a note
@@ -653,23 +653,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_CollabToken'
+              $ref: "#/components/schemas/Req_CollabToken"
       responses:
-        '200':
+        "200":
           description: Collaboration token response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_CollabToken'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/notes/{note_id}/comments':
+                $ref: "#/components/schemas/Res_CollabToken"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/notes/{note_id}/comments":
     post:
       summary: Create a comment on a note
       operationId: createComment
@@ -689,23 +689,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_CreateComment'
+              $ref: "#/components/schemas/Req_CreateComment"
       responses:
-        '201':
+        "201":
           description: Comment created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Comment'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/notes/{note_id}/comments/list':
+                $ref: "#/components/schemas/Comment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/notes/{note_id}/comments/list":
     get:
       summary: List comments for a note
       operationId: listComments
@@ -721,7 +721,7 @@ paths:
             type: string
           description: Note ID
       responses:
-        '200':
+        "200":
           description: Comments retrieved successfully
           content:
             application/json:
@@ -731,17 +731,17 @@ paths:
                   comments:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Comment'
+                      $ref: "#/components/schemas/Comment"
                   total:
                     type: integer
                     description: Total number of comments
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/notes/{note_id}/comments/{comment_id}':
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/notes/{note_id}/comments/{comment_id}":
     put:
       summary: Update a comment
       operationId: updateComment
@@ -767,25 +767,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_UpdateComment'
+              $ref: "#/components/schemas/Req_UpdateComment"
       responses:
-        '200':
+        "200":
           description: Comment updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Comment'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/notes/{note_id}/comments/{comment_id}/delete':
+                $ref: "#/components/schemas/Comment"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/notes/{note_id}/comments/{comment_id}/delete":
     delete:
       summary: Delete a comment
       operationId: deleteComment
@@ -807,17 +807,17 @@ paths:
             type: string
           description: Comment ID
       responses:
-        '204':
+        "204":
           description: Comment deleted successfully
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/comment/{comment_id}':
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/comment/{comment_id}":
     get:
       summary: Get comment by comment Id
       operationId: commentDetail
@@ -833,18 +833,18 @@ paths:
             type: string
           description: Note ID
       responses:
-        '200':
+        "200":
           description: Comment retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Comment'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/Comment"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /folders/create:
     post:
       summary: Create a new folder
@@ -858,20 +858,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_CreateFolder'
+              $ref: "#/components/schemas/Req_CreateFolder"
       responses:
-        '201':
+        "201":
           description: Folder created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailFolder'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/Res_DetailFolder"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /folders/list:
     get:
       summary: List user's folders
@@ -881,15 +881,15 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/LimitParam'
-        - $ref: '#/components/parameters/OffsetParam'
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
         - name: parent_id
           in: query
           schema:
             type: string
           description: Filter folders by parent ID (null for root folders)
       responses:
-        '200':
+        "200":
           description: Folders retrieved successfully
           content:
             application/json:
@@ -899,7 +899,7 @@ paths:
                   folders:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Res_DetailFolder'
+                      $ref: "#/components/schemas/Res_DetailFolder"
                   total:
                     type: integer
                     description: Total number of folders
@@ -909,11 +909,11 @@ paths:
                   offset:
                     type: integer
                     description: Number of folders skipped
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/folders/{id}':
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/folders/{id}":
     get:
       summary: Get folder by ID
       operationId: getFolder
@@ -929,19 +929,19 @@ paths:
             type: string
           description: Folder ID
       responses:
-        '200':
+        "200":
           description: Folder retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailFolder'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/folders/{id}/update':
+                $ref: "#/components/schemas/Res_DetailFolder"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/folders/{id}/update":
     put:
       summary: Update folder by ID
       operationId: updateFolder
@@ -961,23 +961,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_UpdateFolder'
+              $ref: "#/components/schemas/Req_UpdateFolder"
       responses:
-        '200':
+        "200":
           description: Folder updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailFolder'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/folders/{id}/delete':
+                $ref: "#/components/schemas/Res_DetailFolder"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/folders/{id}/delete":
     delete:
       summary: Delete folder by ID
       operationId: deleteFolder
@@ -993,15 +993,15 @@ paths:
             type: string
           description: Folder ID
       responses:
-        '200':
+        "200":
           description: Folder deleted successfully
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/folders/{id}/add-note':
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/folders/{id}/add-note":
     post:
       summary: Add note to folder
       operationId: addNoteToFolder
@@ -1021,22 +1021,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_AddNote'
+              $ref: "#/components/schemas/Req_AddNote"
       responses:
-        '200':
+        "200":
           description: Note added to folder successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailFolder'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/Res_DetailFolder"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /events:
     post:
       summary: Create a new event
@@ -1048,18 +1048,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_CreateEvent'
+              $ref: "#/components/schemas/Req_CreateEvent"
       responses:
-        '201':
+        "201":
           description: Event created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailEvent'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                $ref: "#/components/schemas/Res_DetailEvent"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /events/list:
     get:
       summary: List all events for the current user
@@ -1086,7 +1086,7 @@ paths:
               - completed
               - cancelled
       responses:
-        '200':
+        "200":
           description: List of events
           content:
             application/json:
@@ -1096,10 +1096,10 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Res_DetailEvent'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-  '/events/{id}':
+                      $ref: "#/components/schemas/Res_DetailEvent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  "/events/{id}":
     get:
       summary: Get a specific event by ID
       operationId: getEventById
@@ -1112,17 +1112,17 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Event details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailEvent'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-  '/events/{id}/update':
+                $ref: "#/components/schemas/Res_DetailEvent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  "/events/{id}/update":
     patch:
       summary: Update an event
       operationId: updateEvent
@@ -1139,19 +1139,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_UpdateEvent'
+              $ref: "#/components/schemas/Req_UpdateEvent"
       responses:
-        '200':
+        "200":
           description: Event updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailEvent'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-  '/events/{id}/delete':
+                $ref: "#/components/schemas/Res_DetailEvent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  "/events/{id}/delete":
     delete:
       summary: Delete an event
       operationId: deleteEvent
@@ -1164,12 +1164,12 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        "204":
           description: Event deleted successfully
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
   /events/range:
     get:
       summary: List events within a date/time range
@@ -1201,7 +1201,7 @@ paths:
               - event
               - note
       responses:
-        '200':
+        "200":
           description: List of events in range
           content:
             application/json:
@@ -1211,9 +1211,9 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/Res_DetailEvent'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+                      $ref: "#/components/schemas/Res_DetailEvent"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /templates:
     post:
       summary: Create a new template
@@ -1227,20 +1227,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_CreateTemple'
+              $ref: "#/components/schemas/Req_CreateTemple"
       responses:
-        '201':
+        "201":
           description: Template created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailTemplate'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/Res_DetailTemplate"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /templates/list:
     get:
       summary: List all templates for authenticated user
@@ -1250,7 +1250,7 @@ paths:
       security:
         - BearerAuth: []
       responses:
-        '200':
+        "200":
           description: Templates retrieved successfully
           content:
             application/json:
@@ -1264,7 +1264,7 @@ paths:
                       properties:
                         id:
                           type: string
-                          example: '1234567890'
+                          example: "1234567890"
                         name:
                           type: string
                           example: Meeting Notes Template
@@ -1273,7 +1273,7 @@ paths:
                           example: Calendar
                         content:
                           type: string
-                          example: '<h2>Meeting Notes</h2><p><strong>Date:</strong></p>'
+                          example: "<h2>Meeting Notes</h2><p><strong>Date:</strong></p>"
                         tags:
                           type: array
                           items:
@@ -1283,18 +1283,18 @@ paths:
                             - Work
                         color:
                           type: string
-                          example: '#5a8a7d'
+                          example: "#5a8a7d"
                         user_id:
                           type: string
                           example: user-uuid-123
                         created_at:
                           type: string
                           format: date-time
-                          example: '2021-01-01T00:00:00Z'
+                          example: "2021-01-01T00:00:00Z"
                         updated_at:
                           type: string
                           format: date-time
-                          example: '2021-01-01T00:00:00Z'
+                          example: "2021-01-01T00:00:00Z"
                       required:
                         - id
                         - name
@@ -1304,11 +1304,11 @@ paths:
                         - user_id
                         - created_at
                         - updated_at
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/templates/{id}':
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/templates/{id}":
     get:
       summary: Get template by ID
       operationId: getTemplate
@@ -1324,19 +1324,19 @@ paths:
             type: string
           description: Template ID
       responses:
-        '200':
+        "200":
           description: Template retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailTemplate'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/templates/{id}/update':
+                $ref: "#/components/schemas/Res_DetailTemplate"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/templates/{id}/update":
     put:
       summary: Update template by ID
       operationId: updateTemplate
@@ -1356,23 +1356,23 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Req_UpdateTemplate'
+              $ref: "#/components/schemas/Req_UpdateTemplate"
       responses:
-        '200':
+        "200":
           description: Template updated successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_DetailTemplate'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-  '/templates/{id}/delete':
+                $ref: "#/components/schemas/Res_DetailTemplate"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  "/templates/{id}/delete":
     delete:
       summary: Delete template by ID
       operationId: deleteTemplate
@@ -1388,18 +1388,18 @@ paths:
             type: string
           description: Template ID
       responses:
-        '204':
+        "204":
           description: Template deleted successfully
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
   /media/upload:
     post:
       summary: Upload image to Cloudflare R2
-      description: 'Resizes the image to 1200px width using Lanczos3, re-encodes at quality 80, and uploads to R2.'
+      description: "Resizes the image to 1200px width using Lanczos3, re-encodes at quality 80, and uploads to R2."
       operationId: uploadMedia
       tags:
         - Media
@@ -1419,18 +1419,18 @@ paths:
                   format: binary
                   description: Image file to upload
       responses:
-        '201':
+        "201":
           description: Image uploaded successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Res_UploadedMedia'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
+                $ref: "#/components/schemas/Res_UploadedMedia"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
 components:
   securitySchemes:
     BearerAuth:
@@ -1503,15 +1503,15 @@ components:
         avatar:
           type: string
           format: uri
-          example: 'https://example.com/avatar.png'
+          example: "https://example.com/avatar.png"
         created_at:
           type: string
           format: date-time
-          example: '2021-01-01T00:00:00Z'
+          example: "2021-01-01T00:00:00Z"
         updated_at:
           type: string
           format: date-time
-          example: '2021-01-01T00:00:00Z'
+          example: "2021-01-01T00:00:00Z"
       required:
         - id
         - name
@@ -1532,7 +1532,7 @@ components:
         avatar:
           type: string
           format: uri
-          example: 'https://example.com/avatar.png'
+          example: "https://example.com/avatar.png"
     Req_CreateFolder:
       type: object
       properties:
@@ -1541,7 +1541,7 @@ components:
           example: My Folder
         parent_id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
         is_public:
           type: boolean
           example: true
@@ -1557,7 +1557,7 @@ components:
           example: My Folder
         parent_id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
         is_public:
           type: boolean
           example: false
@@ -1566,10 +1566,10 @@ components:
       properties:
         note_id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
         folder_id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
       required:
         - note_id
         - folder_id
@@ -1578,7 +1578,7 @@ components:
       properties:
         folder_id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
       required:
         - folder_id
     Res_DetailFolder:
@@ -1586,13 +1586,13 @@ components:
       properties:
         id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
         name:
           type: string
           example: My Folder
         parent_id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
         is_public:
           type: boolean
           example: false
@@ -1601,23 +1601,23 @@ components:
           items:
             type: string
           example:
-            - '1234567890'
-            - '1234567891'
+            - "1234567890"
+            - "1234567891"
         children_folders:
           type: array
           items:
             type: string
           example:
-            - '1234567890'
-            - '1234567891'
+            - "1234567890"
+            - "1234567891"
         created_at:
           type: string
           format: date-time
-          example: '2021-01-01T00:00:00Z'
+          example: "2021-01-01T00:00:00Z"
         updated_at:
           type: string
           format: date-time
-          example: '2021-01-01T00:00:00Z'
+          example: "2021-01-01T00:00:00Z"
       required:
         - id
         - name
@@ -1645,7 +1645,7 @@ components:
         thumbnail:
           type: string
           format: uri
-          example: 'https://example.com/thumbnail.png'
+          example: "https://example.com/thumbnail.png"
         tags:
           type: array
           items:
@@ -1673,7 +1673,7 @@ components:
       properties:
         id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
         title:
           type: string
           example: My Note
@@ -1689,7 +1689,7 @@ components:
         thumbnail:
           type: string
           format: uri
-          example: 'https://example.com/thumbnail.png'
+          example: "https://example.com/thumbnail.png"
         tags:
           type: array
           items:
@@ -1711,7 +1711,7 @@ components:
       properties:
         note_id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
       required:
         - note_id
     Res_DetailNote:
@@ -1719,7 +1719,7 @@ components:
       properties:
         id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
         title:
           type: string
           example: My Note
@@ -1738,7 +1738,7 @@ components:
         thumbnail:
           type: string
           format: uri
-          example: 'https://example.com/thumbnail.png'
+          example: "https://example.com/thumbnail.png"
         tags:
           type: array
           items:
@@ -1762,11 +1762,11 @@ components:
         created_at:
           type: string
           format: date-time
-          example: '2021-01-01T00:00:00Z'
+          example: "2021-01-01T00:00:00Z"
         updated_at:
           type: string
           format: date-time
-          example: '2021-01-01T00:00:00Z'
+          example: "2021-01-01T00:00:00Z"
       required:
         - id
         - title
@@ -1816,7 +1816,7 @@ components:
         updated_at:
           type: string
           format: date-time
-          example: '2026-01-24T12:30:00Z'
+          example: "2026-01-24T12:30:00Z"
       required:
         - id
         - updated_at
@@ -1845,7 +1845,7 @@ components:
           properties:
             id:
               type: string
-              example: '1234567890'
+              example: "1234567890"
             title:
               type: string
               example: My Note
@@ -1864,7 +1864,7 @@ components:
             thumbnail:
               type: string
               format: uri
-              example: 'https://example.com/thumbnail.png'
+              example: "https://example.com/thumbnail.png"
             tags:
               type: array
               items:
@@ -1888,11 +1888,11 @@ components:
             created_at:
               type: string
               format: date-time
-              example: '2021-01-01T00:00:00Z'
+              example: "2021-01-01T00:00:00Z"
             updated_at:
               type: string
               format: date-time
-              example: '2021-01-01T00:00:00Z'
+              example: "2021-01-01T00:00:00Z"
           required:
             - id
             - title
@@ -1988,7 +1988,7 @@ components:
           example: John Doe
         user_avatar:
           type: string
-          example: 'https://example.com/avatar.png'
+          example: "https://example.com/avatar.png"
         parent_id:
           type: string
           nullable: true
@@ -1999,15 +1999,15 @@ components:
         created_at:
           type: string
           format: date-time
-          example: '2021-01-01T00:00:00Z'
+          example: "2021-01-01T00:00:00Z"
         updated_at:
           type: string
           format: date-time
-          example: '2021-01-01T00:00:00Z'
+          example: "2021-01-01T00:00:00Z"
         replies:
           type: array
           items:
-            $ref: '#/components/schemas/Comment'
+            $ref: "#/components/schemas/Comment"
           example: []
       required:
         - id
@@ -2052,7 +2052,7 @@ components:
           example: Calendar
         content:
           type: string
-          example: '<h2>Meeting Notes</h2><p><strong>Date:</strong></p>'
+          example: "<h2>Meeting Notes</h2><p><strong>Date:</strong></p>"
         tags:
           type: array
           items:
@@ -2062,7 +2062,7 @@ components:
             - Work
         color:
           type: string
-          example: '#5a8a7d'
+          example: "#5a8a7d"
       required:
         - name
         - icon
@@ -2078,7 +2078,7 @@ components:
           example: Calendar
         content:
           type: string
-          example: '<h2>Meeting Notes</h2><p><strong>Date:</strong></p>'
+          example: "<h2>Meeting Notes</h2><p><strong>Date:</strong></p>"
         tags:
           type: array
           items:
@@ -2088,13 +2088,13 @@ components:
             - Work
         color:
           type: string
-          example: '#5a8a7d'
+          example: "#5a8a7d"
     Res_DetailTemplate:
       type: object
       properties:
         id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
         name:
           type: string
           example: Meeting Notes Template
@@ -2103,7 +2103,7 @@ components:
           example: Calendar
         content:
           type: string
-          example: '<h2>Meeting Notes</h2><p><strong>Date:</strong></p>'
+          example: "<h2>Meeting Notes</h2><p><strong>Date:</strong></p>"
         tags:
           type: array
           items:
@@ -2113,18 +2113,18 @@ components:
             - Work
         color:
           type: string
-          example: '#5a8a7d'
+          example: "#5a8a7d"
         user_id:
           type: string
           example: user-uuid-123
         created_at:
           type: string
           format: date-time
-          example: '2021-01-01T00:00:00Z'
+          example: "2021-01-01T00:00:00Z"
         updated_at:
           type: string
           format: date-time
-          example: '2021-01-01T00:00:00Z'
+          example: "2021-01-01T00:00:00Z"
       required:
         - id
         - name
@@ -2140,7 +2140,7 @@ components:
         templates:
           type: array
           items:
-            $ref: '#/components/schemas/Res_DetailTemplate'
+            $ref: "#/components/schemas/Res_DetailTemplate"
     Req_CreateEvent:
       type: object
       properties:
@@ -2229,7 +2229,7 @@ components:
       properties:
         event_id:
           type: string
-          example: '1234567890'
+          example: "1234567890"
       required:
         - event_id
     Res_DetailEvent:
@@ -2341,7 +2341,7 @@ components:
                 type: string
                 example: Invalid request.
     Unauthorized:
-      description: 'Unauthorized. The provided JWT token is missing, invalid, or expired.'
+      description: "Unauthorized. The provided JWT token is missing, invalid, or expired."
       content:
         application/json:
           schema:
