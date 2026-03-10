@@ -50,6 +50,7 @@ func New(ctx context.Context) (*App, func(), error) {
 	templateRepo := repository.NewTemplateRepository(db)
 	eventRepo := repository.NewEventRepository(db)
 	commentRepo := repository.NewCommentRepository(db)
+	noteChunkRepo := repository.NewNoteChunkRepository(db)
 
 	var (
 		searchService service.SearchService
@@ -77,7 +78,8 @@ func New(ctx context.Context) (*App, func(), error) {
 
 	// Initialize services
 	userService := service.NewUserService(userRepo, cfg)
-	noteService := service.NewNoteService(noteRepo, cfg, searchService)
+	chunkingService := service.NewChunkingService(cfg.AIService, noteChunkRepo)
+	noteService := service.NewNoteService(noteRepo, cfg, searchService, chunkingService)
 	folderService := service.NewFolderService(folderRepo, noteRepo, cfg)
 	templateService := service.NewTemplateService(templateRepo)
 	eventService := service.NewEventService(eventRepo)

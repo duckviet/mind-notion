@@ -1,32 +1,49 @@
-# AI Service Features
+# AI Service (Event-Driven Chunking)
 
-## Overview
-This document outlines the AI-powered features integrated into the application.
+## Mục tiêu
 
-## Key Features
-1. **Intelligent Recommendations**  
-    - Provides personalized suggestions based on user behavior and preferences.
+Service này nhận sự kiện mỗi khi note được lưu và thực hiện:
 
-2. **Natural Language Processing (NLP)**  
-    - Enables the application to understand and process user queries in natural language.
+1. normalize nội dung,
+2. chunk text,
+3. ghi JSONL vào thư mục chunk.
 
-3. **Predictive Analytics**  
-    - Analyzes data to predict trends and user needs.
+## API
 
-4. **Automation**  
-    - Automates repetitive tasks to improve efficiency and user experience.
+### `GET /health`
 
-5. **Real-time Insights**  
-    - Delivers actionable insights instantly based on real-time data.
+Kiểm tra service hoạt động.
 
-## Benefits
-- Enhances user engagement.
-- Improves decision-making with data-driven insights.
-- Saves time with automated processes.
+### `POST /notes/chunk`
 
-## Future Enhancements
-- Expanding NLP capabilities for multilingual support.
-- Integrating advanced machine learning models for better accuracy.
-- Adding voice recognition features.
+Nhận payload save note từ backend:
 
-For more details, refer to the [documentation](./docs).
+- `note_id`
+- `user_id`
+- `title`
+- `content`
+- `status`
+- `content_type`
+- `updated_at`
+- `event`
+
+## Debug log
+
+Service in đầy đủ debug log theo từng bước:
+
+- bắt đầu xử lý sự kiện,
+- cấu hình chunk,
+- số chunk cũ bị purge,
+- số chunk mới ghi,
+- sample chunk đầu tiên,
+- trạng thái hoàn tất.
+
+## Cấu hình
+
+Biến môi trường trong `.env`:
+
+- `CHUNK_SIZE`
+- `CHUNK_OVERLAP`
+- `CHUNKS_OUTPUT_DIR`
+
+Không còn sử dụng cơ chế state/watermark đồng bộ cũ.

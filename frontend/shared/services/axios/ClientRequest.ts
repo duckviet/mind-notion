@@ -103,8 +103,8 @@ export class ClientRequest {
               this.processQueue(null, access_token);
               return this.axiosInstance(originalRequest);
             }
-            throw new Error("Refresh failed");
           } catch (refreshError) {
+            console.log("[ClientRequest] Refresh failed", refreshError);
             this.processQueue(refreshError as Error, null);
             // Xử lý logout nếu refresh thất bại
             Cookies.remove("access_token");

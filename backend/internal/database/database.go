@@ -86,6 +86,7 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 		&models.NoteTag{},
 		&models.Event{},
 		&models.Comment{},
+		&models.NoteChunk{},
 	); err != nil {
 		return nil, fmt.Errorf("failed to auto migrate: %w", err)
 	}

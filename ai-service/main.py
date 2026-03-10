@@ -1,21 +1,23 @@
 from __future__ import annotations
 
-from argparse import Namespace
 from fastapi import FastAPI
 from pydantic import BaseModel, Field
 
-from scripts.postgres_to_chunks import run
+from chunking import chunk_note_event, embed_chunks_for_note
 
 
 app = FastAPI(title="mind-notion ai-service", version="0.1.0")
 
 
-class IngestRequest(BaseModel):
-    full: bool = False
-    user_id: str | None = None
-    batch_size: int = Field(default=200, ge=1)
-    max_batches: int = Field(default=0, ge=0)
-    print_sample: bool = False
+class ChunkNoteRequest(BaseModel):
+    note_id: str
+    user_id: str
+    title: str = ""
+    content: str = ""
+    status: str = "draft"
+    content_type: str = "text"
+    updated_at: str | None = None
+    event: str = Field(default="note.save")
 
 
 @app.get("/health")
@@ -23,14 +25,22 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.post("/ingest")
-def ingest(req: IngestRequest) -> dict[str, str]:
-    args = Namespace(
-        full=req.full,
-        user_id=req.user_id,
-        batch_size=req.batch_size,
-        max_batches=req.max_batches,
-        print_sample=req.print_sample,
-    )
-    run(args)
-    return {"message": "ingest completed"}
+@app.post("/notes/chunk")
+def chunk_note(req: ChunkNoteRequest) -> dict[str, object]:
+    result = chunk_note_event(req.model_dump())
+    return {
+        "message": "chunk completed",
+        "result": result,
+    }
+
+
+@app.post("/notes/embed-chunks")
+def embed_note_chunks(req: ChunkNoteRequest) -> dict[str, object]:
+    """Chunk note and return embeddings for each chunk.
+
+    This endpoint is used by the Go backend to persist chunk vectors into Postgres.
+    """
+
+    result = embed_chunks_for_note(req.model_dump())
+    return result
+

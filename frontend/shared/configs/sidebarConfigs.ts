@@ -22,28 +22,28 @@ export const MAIN_ITEMS = [
   },
 
   {
-    label: "My projects",
+    label: "Folders",
     icon: PackageIcon,
     href: "/folder",
   },
   {
-    label: "Scheduled",
+    label: "Calendar",
     icon: Clock,
     href: "/calendar",
   },
 ];
 
 export const SECONDARY_ITEMS = [
-  {
-    label: "All files",
-    icon: FileIcon,
-    href: "/files",
-  },
-  {
-    label: "Team members",
-    icon: Users,
-    href: "/team",
-  },
+  // {
+  //   label: "All files",
+  //   icon: FileIcon,
+  //   href: "/files",
+  // },
+  // {
+  //   label: "Team members",
+  //   icon: Users,
+  //   href: "/team",
+  // },
   {
     label: "Appearance",
     icon: Palette,
@@ -55,7 +55,7 @@ export const FOOTER_ITEMS = [
   {
     label: "Support",
     icon: HelpCircle,
-    href: "/support",
+    href: "/",
   },
   {
     label: "Settings",

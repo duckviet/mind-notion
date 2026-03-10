@@ -42,3 +42,6 @@ cdn:
 collab:
   token_secret: your-collab-token-secret
   token_ttl_minutes: 60
+
+ai_service.enabled: true
+ai_service.base_url: "http://<host-ai-service>:8000"

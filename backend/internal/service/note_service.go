@@ -34,9 +34,10 @@ type NoteService interface {
 
 // noteService implements NoteService
 type noteService struct {
-	repo          repository.NoteRepository
-	config        *config.Config
-	searchService SearchService
+	repo            repository.NoteRepository
+	config          *config.Config
+	searchService   SearchService
+	chunkingService ChunkingService
 }
 
 // CreateNoteRequest represents the request to create a note
@@ -66,11 +67,12 @@ type UpdateNoteRequest struct {
 }
 
 // NewNoteService creates a new note service
-func NewNoteService(repo repository.NoteRepository, config *config.Config, searchService SearchService) NoteService {
+func NewNoteService(repo repository.NoteRepository, config *config.Config, searchService SearchService, chunkingService ChunkingService) NoteService {
 	return &noteService{
-		repo:          repo,
-		config:        config,
-		searchService: searchService,
+		repo:            repo,
+		config:          config,
+		searchService:   searchService,
+		chunkingService: chunkingService,
 	}
 }
 
@@ -105,6 +107,10 @@ func (s *noteService) CreateNote(ctx context.Context, req CreateNoteRequest) (*m
 		if err := s.searchService.IndexNote(ctx, note); err != nil {
 			log.Printf("Warning: failed to index note %s: %v", note.ID, err)
 		}
+	}
+
+	if s.chunkingService != nil {
+		s.chunkingService.DispatchNoteSaved(ctx, note, "note.create")
 	}
 
 	return note, nil
@@ -166,6 +172,10 @@ func (s *noteService) UpdateNote(ctx context.Context, id string, req UpdateNoteR
 
 	if err := s.repo.Update(ctx, note); err != nil {
 		return nil, ErrInternalServerError
+	}
+
+	if s.chunkingService != nil {
+		s.chunkingService.DispatchNoteSaved(ctx, note, "note.update")
 	}
 
 	return note, nil
@@ -323,6 +333,10 @@ func (s *noteService) SaveNoteSnapshot(ctx context.Context, id string, content s
 	note.Content = content
 	if err := s.repo.Update(ctx, note); err != nil {
 		return nil, ErrInternalServerError
+	}
+
+	if s.chunkingService != nil {
+		s.chunkingService.DispatchNoteSaved(ctx, note, "note.snapshot")
 	}
 
 	return note, nil
