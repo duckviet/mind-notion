@@ -4,7 +4,6 @@ import { useMemo, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useNotes } from "@/shared/hooks/useNotes";
 import { SearchField } from "@/features/search-content";
-import { FloatingActionButton } from "@/shared/components/FloatingActionButton";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";
 import { FocusEditModal } from "@/features/note-editing";
 const MasonryGrid = dynamic(
@@ -21,10 +20,9 @@ import {
 } from "@/shared/services/generated/api";
 import { AnimateCardProvider } from "@/entities/note/ui/AnimateCardProvider";
 import {
-  MultiZoneDndProvider,
+  useGlobalDndHandlers,
   DroppableZone,
   SortableContext,
-  arrayMove,
   rectSortingStrategy,
   DraggableItem,
 } from "@/shared/components/dnd";
@@ -33,8 +31,9 @@ import { DragEndEvent } from "@dnd-kit/core";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import { useDebounce } from "use-debounce";
 import { FoldersListPage } from "../folder";
-import { useEffect, useRef } from "react";
 import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
+import { useTomVisibility } from "@/features/top-of-mind/model/useTomVisibility";
+import { useChatbotSidebarStore } from "@/features/chat-bot/store/chatbot-sidebar.store";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -62,21 +61,20 @@ const TopOfMindSkeleton = () => (
 
 function HomePageContent() {
   const [query, setQuery] = useState("");
-  const [isFabOpen, setIsFabOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [focusEditNoteId, setFocusEditNoteId] = useState<string | null>(null);
+  const setDroppedNotePayload = useChatbotSidebarStore(
+    (state) => state.setDroppedNotePayload,
+  );
   const { isModalOpen, openModal, closeModal } = useModal();
   const [debouncedQuery] = useDebounce(query, 300);
 
   // Ref để track visibility của TopOfMind section
-  const tomRef = useRef<HTMLDivElement>(null);
-  const [isTomVisible, setIsTomVisible] = useState(true);
 
   const {
     notes: notesData,
     isLoading,
-    error,
     deleteNote,
     createNote,
     updateNote,
@@ -86,7 +84,6 @@ function HomePageContent() {
   const {
     data: topOfMindNotesData,
     isLoading: isLoadingTopOfMindNotes,
-    error: errorTopOfMindNotes,
     refetch: refetchTopOfMindNotes,
   } = useListNotesTOM({
     query: {
@@ -94,22 +91,10 @@ function HomePageContent() {
     },
   });
 
-  // IntersectionObserver để check TopOfMind có trong viewport không
-  useEffect(() => {
-    const element = tomRef.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsTomVisible(entry.isIntersecting);
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-    // Re-attach when TOM data loads or skeleton disappears
-  }, [topOfMindNotesData, isLoadingTopOfMindNotes]);
+  const { tomRef, isTomVisible } = useTomVisibility([
+    topOfMindNotesData,
+    isLoadingTopOfMindNotes,
+  ]);
 
   const notes = useMemo(() => {
     return (notesData || []).map((note) => ({
@@ -144,8 +129,14 @@ function HomePageContent() {
     }
   };
 
-  const handleFabToggle = () => {
-    setIsFabOpen(!isFabOpen);
+  const normalizeDragId = (id: string) => {
+    const withoutFloating = id.startsWith("floating-")
+      ? id.slice("floating-".length)
+      : id;
+
+    return withoutFloating.startsWith("tom-")
+      ? withoutFloating.slice(4)
+      : withoutFloating;
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -155,9 +146,7 @@ function HomePageContent() {
     if (!over) return;
 
     const rawActiveId = active.id.toString();
-    const activeId = rawActiveId.startsWith("floating-")
-      ? rawActiveId.slice("floating-".length)
-      : rawActiveId;
+    const activeId = normalizeDragId(rawActiveId);
     const overId = over.id.toString();
 
     console.log("Drag End - activeId:", activeId, "overId:", overId);
@@ -188,6 +177,25 @@ function HomePageContent() {
       return;
     }
 
+    if (overId === "chat-bot" || overId === "chat-bot-sidebar") {
+      const droppedNote =
+        notes.find((n) => n.id === activeId) ||
+        topOfMindNotesData?.find((n) => n.id === activeId);
+
+      if (droppedNote) {
+        setDroppedNotePayload({
+          note: {
+            id: droppedNote.id,
+            title: droppedNote.title,
+            content: droppedNote.content,
+          },
+          droppedAt: Date.now(),
+        });
+      }
+
+      return;
+    }
+
     // Check if dropping into grid zone
     if (overId === "grid-zone") {
       // Remove from top of mind if it was there
@@ -213,9 +221,7 @@ function HomePageContent() {
   const renderOverlay = useCallback(
     (activeId: string | number | null) => {
       const rawId = activeId?.toString();
-      const noteId = rawId?.startsWith("floating-")
-        ? rawId.slice("floating-".length)
-        : rawId;
+      const noteId = rawId ? normalizeDragId(rawId) : rawId;
       const note =
         notes.find((n) => n.id === noteId) ||
         topOfMindNotesData?.find((n) => n.id === noteId);
@@ -225,13 +231,11 @@ function HomePageContent() {
       const previewText = note.title || note.content || "Note";
 
       return (
-        <div className="w-full min-w-[260px] max-w-[320px] rounded-lg border border-border  /90 shadow-md px-4 py-3 opacity-90">
-          <div className="text-xs font-semibold text-text-muted mb-2">
-            Dragging
-          </div>
-          <div className="text-sm font-medium text-text-primary line-clamp-2">
-            {previewText}
-          </div>
+        <div
+          className="opacity-80 w-full min-w-[300px]"
+          style={{ rotate: "5deg" }}
+        >
+          <NoteCard match={{ ...note, score: 1.0 }} onUpdateNote={() => {}} />
         </div>
       );
     },
@@ -274,64 +278,52 @@ function HomePageContent() {
     refetch();
   };
 
+  useGlobalDndHandlers({
+    disabled: isModalOpen,
+    onDragEnd: handleDragEnd,
+    renderOverlay,
+  });
+
   return (
-    <MultiZoneDndProvider
-      disabled={isModalOpen}
-      onDragEnd={handleDragEnd}
-      renderOverlay={(activeId) => {
-        const noteId = activeId?.toString();
-        const note =
-          notes.find((n) => n.id === noteId) ||
-          topOfMindNotesData?.find((n) => n.id === noteId);
-        return note ? (
-          <div
-            className="opacity-80 w-full min-w-[300px]"
-            style={{ rotate: "5deg" }}
-          >
-            <NoteCard match={{ ...note, score: 1.0 }} onUpdateNote={() => {}} />
-          </div>
-        ) : null;
-      }}
-    >
-      <div className="min-h-screen overflow-hidden">
-        <div className="p-6 space-y-6">
-          <SearchField
-            className="rounded-md"
-            query={query}
-            setQuery={setQuery}
-            onEnter={() => {}}
+    <div className="min-h-screen overflow-hidden">
+      <div className="p-6 space-y-6">
+        <SearchField
+          className="rounded-md"
+          query={query}
+          setQuery={setQuery}
+          onEnter={() => {}}
+        />
+
+        {/* Top of Mind Zone with SortableContext */}
+        <SortableContext
+          items={topOfMindNotesData?.map((n) => n.id) || []}
+          strategy={rectSortingStrategy}
+        >
+          {isLoadingTopOfMindNotes && !topOfMindNotesData ? (
+            <TopOfMindSkeleton />
+          ) : (
+            <div ref={tomRef}>
+              <TopOfMind
+                notes={topOfMindNotesData || []}
+                onUnpin={handleUpdateTopOfMindNote}
+                onFocusEdit={handleFocusEdit}
+              />
+            </div>
+          )}
+        </SortableContext>
+
+        {/* Floating TOM Modal - chỉ hiện khi TopOfMind gốc không visible */}
+        <DragAwareTomModal isTomVisible={isTomVisible}>
+          <TopOfMind
+            droppableId="top-of-mind-zone-floating"
+            draggableIdPrefix="floating-"
+            notes={topOfMindNotesData || []}
+            onUnpin={handleUpdateTopOfMindNote}
+            onFocusEdit={handleFocusEdit}
           />
+        </DragAwareTomModal>
 
-          {/* Top of Mind Zone with SortableContext */}
-          <SortableContext
-            items={topOfMindNotesData?.map((n) => n.id) || []}
-            strategy={rectSortingStrategy}
-          >
-            {isLoadingTopOfMindNotes && !topOfMindNotesData ? (
-              <TopOfMindSkeleton />
-            ) : (
-              <div ref={tomRef}>
-                <TopOfMind
-                  notes={topOfMindNotesData || []}
-                  onUnpin={handleUpdateTopOfMindNote}
-                  onFocusEdit={handleFocusEdit}
-                />
-              </div>
-            )}
-          </SortableContext>
-
-          {/* Floating TOM Modal - chỉ hiện khi TopOfMind gốc không visible */}
-          <DragAwareTomModal isTomVisible={isTomVisible}>
-            <TopOfMind
-              droppableId="top-of-mind-zone-floating"
-              draggableIdPrefix="floating-"
-              notes={topOfMindNotesData || []}
-              onUnpin={handleUpdateTopOfMindNote}
-              onFocusEdit={handleFocusEdit}
-            />
-          </DragAwareTomModal>
-
-          {/* 
+        {/* 
           {notes.length === 0 && !isLoading ? (
             <EmptyState
               type={query ? "no-results" : "new"}
@@ -345,86 +337,72 @@ function HomePageContent() {
               }
             />
           ) : ( */}
-          <FoldersListPage />
-          <DroppableZone
-            id="grid-zone"
-            activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
-          >
-            <MasonryGrid data={notes} isLoading={isLoading}>
-              {isLoading && notes.length === 0 ? (
-                <GridSkeleton />
-              ) : (
-                <div key="content-grid">
-                  <AnimateCardProvider>
-                    {/* AddNoteForm */}
-                    <div
-                      key="add-note-form"
-                      className="mb-6 break-inside-avoid"
+        <FoldersListPage />
+        <DroppableZone
+          id="grid-zone"
+          activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
+        >
+          <MasonryGrid data={notes} isLoading={isLoading}>
+            {isLoading && notes.length === 0 ? (
+              <GridSkeleton />
+            ) : (
+              <div key="content-grid">
+                <AnimateCardProvider>
+                  {/* AddNoteForm */}
+                  <div key="add-note-form" className="mb-6 break-inside-avoid">
+                    {isLoading ? (
+                      <SkeletonBlock className="h-28 w-full" />
+                    ) : (
+                      <AddNoteForm onCreate={createNote} />
+                    )}
+                  </div>
+                  {/* Notes & Articles */}
+                  {notes.map((note) => (
+                    <DraggableItem
+                      className="h-fit mb-6 break-inside-avoid"
+                      key={note.id}
+                      id={note.id}
                     >
-                      {isLoading ? (
-                        <SkeletonBlock className="h-28 w-full" />
-                      ) : (
-                        <AddNoteForm onCreate={createNote} />
-                      )}
-                    </div>
-                    {/* Notes & Articles */}
-                    {notes.map((note) => (
-                      <DraggableItem
-                        className="h-fit mb-6 break-inside-avoid"
-                        key={note.id}
-                        id={note.id}
-                      >
-                        {note.content_type === "text" ? (
-                          <NoteCard
-                            match={note}
-                            onDelete={handleDeleteRequest}
-                            onUpdateNote={handleUpdate}
-                            onPin={handleUpdateTopOfMindNote}
-                            onFocusEdit={handleFocusEdit}
-                          />
-                        ) : (
-                          <ArticleCard
-                            match={note}
-                            onDelete={handleDeleteRequest}
-                          />
-                        )}
-                      </DraggableItem>
-                    ))}
-                  </AnimateCardProvider>
-                </div>
-              )}
-            </MasonryGrid>
-          </DroppableZone>
-          {/* )} */}
-        </div>
-
-        <FloatingActionButton isOpen={isFabOpen} onToggle={handleFabToggle} />
-
-        <ConfirmDialog
-          open={!!deleteTargetId}
-          title="Delete this note?"
-          description="This action cannot be undone."
-          confirmLabel={isDeleting ? "Deleting..." : "Delete"}
-          confirmVariant="destructive"
-          isConfirming={isDeleting}
-          onConfirm={handleConfirmDelete}
-          onOpenChange={(open) => {
-            if (!open) {
-              setDeleteTargetId(null);
-            }
-          }}
-        />
-
-        {focusEditNoteId && isModalOpen && (
-          <FocusEditModal
-            isOpen={true}
-            onClose={handleCloseFocusEdit}
-            noteId={focusEditNoteId}
-            onSave={handleUpdate}
-          />
-        )}
+                      <NoteCard
+                        match={note}
+                        onDelete={handleDeleteRequest}
+                        onUpdateNote={handleUpdate}
+                        onPin={handleUpdateTopOfMindNote}
+                        onFocusEdit={handleFocusEdit}
+                      />
+                    </DraggableItem>
+                  ))}
+                </AnimateCardProvider>
+              </div>
+            )}
+          </MasonryGrid>
+        </DroppableZone>
+        {/* )} */}
       </div>
-    </MultiZoneDndProvider>
+      <ConfirmDialog
+        open={!!deleteTargetId}
+        title="Delete this note?"
+        description="This action cannot be undone."
+        confirmLabel={isDeleting ? "Deleting..." : "Delete"}
+        confirmVariant="destructive"
+        isConfirming={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTargetId(null);
+          }
+        }}
+      />
+
+      {focusEditNoteId && isModalOpen && (
+        <FocusEditModal
+          isOpen={true}
+          onClose={handleCloseFocusEdit}
+          noteId={focusEditNoteId}
+          onSave={handleUpdate}
+        />
+      )}
+    </div>
   );
 }
 

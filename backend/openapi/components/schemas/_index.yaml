@@ -44,6 +44,13 @@ Req_CollabToken:
 Res_CollabToken:
   $ref: "./Collab/Res_CollabToken.yaml"
 
+Req_CreateAIRun:
+  $ref: "./AI/Req_CreateAIRun.yaml"
+Req_ProvideAIRunConsent:
+  $ref: "./AI/Req_ProvideAIRunConsent.yaml"
+Res_ProvideAIRunConsent:
+  $ref: "./AI/Res_ProvideAIRunConsent.yaml"
+
 Comment:
   $ref: "./Comment/Comment.yaml"
 Req_CreateComment:

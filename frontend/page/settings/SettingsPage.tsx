@@ -1,30 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  User,
-  Lock,
-  Palette,
-  Keyboard,
-  Settings as SettingsIcon,
-} from "lucide-react";
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import AccountSettings from "./sections/AccountSettings";
-import PasswordSettings from "./sections/PasswordSettings";
-import AppearanceSettings from "./sections/AppearanceSettings";
-import ShortcutsSettings from "./sections/ShortcutsSettings";
-import MiscSettings from "./sections/MiscSettings";
 
-const SettingsPage = () => {
-  const [activeTab, setActiveTab] = useState("account");
+type SettingsPageProps = {
+  children: React.ReactNode;
+};
 
-  const menuItems = [
-    { id: "account", label: "General", icon: User },
-    { id: "password", label: "Password", icon: Lock },
-    { id: "appearance", label: "Appearance", icon: Palette },
-    { id: "shortcuts", label: "Shortcuts", icon: Keyboard },
-    { id: "misc", label: "Misc", icon: SettingsIcon },
-  ];
+const menuItems = [
+  { id: "general", label: "General", href: "/settings/general" },
+  { id: "password", label: "Password", href: "/settings/password" },
+  { id: "appearance", label: "Appearance", href: "/settings/appearance" },
+  { id: "shortcuts", label: "Shortcuts", href: "/settings/shortcuts" },
+  { id: "misc", label: "Misc", href: "/settings/misc" },
+];
+
+const SettingsPage = ({ children }: SettingsPageProps) => {
+  const pathname = usePathname();
+
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <div className="min-h-screen bg-background text-foreground mx-auto max-w-7xl w-full py-6">
@@ -38,18 +35,19 @@ const SettingsPage = () => {
             <div className="sticky top-8">
               <nav className="space-y-1">
                 {menuItems.map((item) => (
-                  <button
+                  <Link
                     key={item.id}
-                    onClick={() => setActiveTab(item.id)}
+                    href={item.href}
+                    aria-current={isActive(item.href) ? "page" : undefined}
                     className={cn(
-                      "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
-                      activeTab === item.id
+                      "block w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+                      isActive(item.href)
                         ? "font-medium text-text-primary bg-accent/10"
                         : " text-text-muted hover:text-foreground hover:bg-accent/5",
                     )}
                   >
                     {item.label}
-                  </button>
+                  </Link>
                 ))}
               </nav>
 
@@ -70,13 +68,7 @@ const SettingsPage = () => {
           </aside>
 
           {/* Main Content */}
-          <main className="flex-1 min-w-0">
-            {activeTab === "account" && <AccountSettings />}
-            {activeTab === "password" && <PasswordSettings />}
-            {activeTab === "appearance" && <AppearanceSettings />}
-            {activeTab === "shortcuts" && <ShortcutsSettings />}
-            {activeTab === "misc" && <MiscSettings />}
-          </main>
+          <main className="flex-1 min-w-0">{children}</main>
         </div>
       </div>
     </div>

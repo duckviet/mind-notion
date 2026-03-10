@@ -2,16 +2,21 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+	"gorm.io/gorm"
 )
+
+var ErrVersionConflict = errors.New("version conflict")
 
 // NoteRepository defines the interface for note data operations
 type NoteRepository interface {
 	Create(ctx context.Context, note *models.Note) error
 	GetByID(ctx context.Context, id string) (*models.Note, error)
 	Update(ctx context.Context, note *models.Note) error
+	UpdateContentWithVersion(ctx context.Context, id string, content string, expectedVersion int) (*models.Note, error)
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, params NoteListParams) ([]*models.Note, int64, error)
 	GetByUserID(ctx context.Context, userID string, params NoteListParams) ([]*models.Note, int64, error)
@@ -51,6 +56,38 @@ func (r *noteRepository) Update(ctx context.Context, note *models.Note) error {
 	return r.db.WithContext(ctx).
 		Omit("User", "Folder", "Tags").
 		Save(note).Error
+}
+
+func (r *noteRepository) UpdateContentWithVersion(ctx context.Context, id string, content string, expectedVersion int) (*models.Note, error) {
+	result := r.db.WithContext(ctx).
+		Model(&models.Note{}).
+		Where("id = ? AND version = ?", id, expectedVersion).
+		Updates(map[string]interface{}{
+			"content": content,
+			"version": gorm.Expr("version + 1"),
+		})
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		var count int64
+		if err := r.db.WithContext(ctx).Model(&models.Note{}).Where("id = ?", id).Count(&count).Error; err != nil {
+			return nil, err
+		}
+		if count == 0 {
+			return nil, gorm.ErrRecordNotFound
+		}
+		return nil, ErrVersionConflict
+	}
+
+	note, err := r.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return note, nil
 }
 
 // Delete deletes a note
@@ -125,7 +162,6 @@ func (r *noteRepository) GetByUserID(ctx context.Context, userID string, params 
 
 	return notes, total, err
 }
-
 
 func (r *noteRepository) UpdateTOM(ctx context.Context, id string, tom bool) error {
 	return r.db.WithContext(ctx).

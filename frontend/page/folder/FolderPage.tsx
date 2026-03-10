@@ -54,7 +54,7 @@ import FoldersListPage from "./FoldersListPage";
 import {
   DragEndEvent,
   DraggableItem,
-  MultiZoneDndProvider,
+  useGlobalDndHandlers,
 } from "@/shared/components/dnd";
 import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
 import { TopOfMind } from "@/features/top-of-mind";
@@ -254,6 +254,33 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     }
   };
 
+  const renderDndOverlay = useCallback(
+    (activeId: string | number | null) => {
+      const noteId = activeId?.toString();
+      const note = notes.find((n) => n.id === noteId) || null;
+
+      if (!note) {
+        return null;
+      }
+
+      return (
+        <div
+          className="opacity-80 w-full min-w-[300px]"
+          style={{ rotate: "5deg" }}
+        >
+          <NoteCard match={{ ...note, score: 1.0 }} onUpdateNote={() => {}} />
+        </div>
+      );
+    },
+    [notes],
+  );
+
+  useGlobalDndHandlers({
+    disabled: isModalOpen || isNotesLoading,
+    onDragEnd: handleDragEnd,
+    renderOverlay: renderDndOverlay,
+  });
+
   if (folderError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
@@ -328,58 +355,38 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
       {isNotesLoading ? (
         <GridSkeleton items={6} />
       ) : (
-        <MultiZoneDndProvider
-          disabled={isModalOpen}
-          onDragEnd={handleDragEnd}
-          renderOverlay={(activeId) => {
-            const noteId = activeId?.toString();
-            const note = notes.find((n) => n.id === noteId) || null;
-            return note ? (
-              <div
-                className="opacity-80 w-full min-w-[300px]"
-                style={{ rotate: "5deg" }}
-              >
-                <NoteCard
-                  match={{ ...note, score: 1.0 }}
-                  onUpdateNote={() => {}}
-                />
-              </div>
-            ) : null;
-          }}
-        >
-          <AnimateCardProvider>
-            <DragAwareTomModal isTomVisible={false}>
-              <TopOfMind
-                droppableId="top-of-mind-zone-floating"
-                draggableIdPrefix="floating-"
-                notes={topOfMindNotesData || []}
-                onUnpin={handleUpdateTopOfMindNote}
-                onFocusEdit={handleFocusEdit}
-              />
-            </DragAwareTomModal>
-            <FoldersListPage parentId={folderId} />
+        <AnimateCardProvider>
+          <DragAwareTomModal isTomVisible={false}>
+            <TopOfMind
+              droppableId="top-of-mind-zone-floating"
+              draggableIdPrefix="floating-"
+              notes={topOfMindNotesData || []}
+              onUnpin={handleUpdateTopOfMindNote}
+              onFocusEdit={handleFocusEdit}
+            />
+          </DragAwareTomModal>
+          <FoldersListPage parentId={folderId} />
 
-            <MasonryGrid data={notes}>
-              <AddNoteForm folder_id={folderId} onCreate={createNote} />
-              {notes.map((note) => (
-                <DraggableItem
-                  className="h-fit mb-6 break-inside-avoid"
-                  key={note.id}
-                  id={note.id}
-                >
-                  <div key={note.id} className="break-inside-avoid ">
-                    <NoteCard
-                      match={note}
-                      onDelete={handleDeleteRequest}
-                      onUpdateNote={handleUpdate}
-                      onFocusEdit={handleFocusEdit}
-                    />
-                  </div>
-                </DraggableItem>
-              ))}
-            </MasonryGrid>
-          </AnimateCardProvider>
-        </MultiZoneDndProvider>
+          <MasonryGrid data={notes}>
+            <AddNoteForm folder_id={folderId} onCreate={createNote} />
+            {notes.map((note) => (
+              <DraggableItem
+                className="h-fit mb-6 break-inside-avoid"
+                key={note.id}
+                id={note.id}
+              >
+                <div key={note.id} className="break-inside-avoid ">
+                  <NoteCard
+                    match={note}
+                    onDelete={handleDeleteRequest}
+                    onUpdateNote={handleUpdate}
+                    onFocusEdit={handleFocusEdit}
+                  />
+                </div>
+              </DraggableItem>
+            ))}
+          </MasonryGrid>
+        </AnimateCardProvider>
       )}
 
       {/* Delete Confirmation Dialog */}

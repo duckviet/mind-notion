@@ -1,0 +1,29 @@
+post:
+  summary: Create AI run and stream assistant output
+  operationId: createAiRun
+  tags: [AI]
+  security:
+    - BearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/AI/Req_CreateAIRun.yaml
+  responses:
+    "200":
+      description: Streaming SSE response from AI run
+      content:
+        text/event-stream:
+          schema:
+            type: string
+    "400":
+      $ref: ../../components/responses/BadRequest.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "403":
+      $ref: ../../components/responses/Forbidden.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

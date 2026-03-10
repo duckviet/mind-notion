@@ -1,0 +1,9 @@
+type: object
+properties:
+  tool_call_id:
+    type: string
+    example: "tool-call-123"
+  approved:
+    type: boolean
+    example: true
+required: [tool_call_id, approved]
