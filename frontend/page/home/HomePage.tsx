@@ -363,20 +363,13 @@ function HomePageContent() {
                       key={note.id}
                       id={note.id}
                     >
-                      {note.content_type === "text" ? (
-                        <NoteCard
-                          match={note}
-                          onDelete={handleDeleteRequest}
-                          onUpdateNote={handleUpdate}
-                          onPin={handleUpdateTopOfMindNote}
-                          onFocusEdit={handleFocusEdit}
-                        />
-                      ) : (
-                        <ArticleCard
-                          match={note}
-                          onDelete={handleDeleteRequest}
-                        />
-                      )}
+                      <NoteCard
+                        match={note}
+                        onDelete={handleDeleteRequest}
+                        onUpdateNote={handleUpdate}
+                        onPin={handleUpdateTopOfMindNote}
+                        onFocusEdit={handleFocusEdit}
+                      />
                     </DraggableItem>
                   ))}
                 </AnimateCardProvider>

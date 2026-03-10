@@ -144,6 +144,8 @@ const Tiptap = ({
     }
   }, [aiMenuState.isOpen, editor]);
 
+  console.log(editor?.getHTML(), editor?.getJSON());
+
   const handleAIAction = async (action: AIAction, customPrompt?: string) => {
     if (!onAIAction || !editor || !aiMenuState.range) return;
 

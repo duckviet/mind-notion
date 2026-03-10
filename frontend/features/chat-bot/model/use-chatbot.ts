@@ -194,6 +194,7 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
       workspace_id: "default-workspace",
       session_id: sessionIdRef.current,
       note_id: selectedNoteId,
+      // queryKeys:[""]
       message: {
         role: "user",
         content: messageContent,
