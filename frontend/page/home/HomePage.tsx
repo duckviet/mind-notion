@@ -11,7 +11,6 @@ const MasonryGrid = dynamic(
   { ssr: false },
 );
 import NoteCard from "@/entities/note/ui/NoteCard";
-import ArticleCard from "@/entities/web-article/ui/ArticleCard";
 import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
 import {
   ReqUpdateNote,
@@ -27,13 +26,17 @@ import {
   DraggableItem,
 } from "@/shared/components/dnd";
 import { TopOfMind } from "@/features/top-of-mind";
-import { DragEndEvent } from "@dnd-kit/core";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import { useDebounce } from "use-debounce";
 import { FoldersListPage } from "../folder";
 import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
 import { useTomVisibility } from "@/features/top-of-mind/model/useTomVisibility";
 import { useChatbotSidebarStore } from "@/features/chat-bot/store/chatbot-sidebar.store";
+import {
+  findNoteById,
+  normalizeHomeDragId,
+  resolveHomeDropAction,
+} from "./home-dnd";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -129,110 +132,84 @@ function HomePageContent() {
     }
   };
 
-  const normalizeDragId = (id: string) => {
-    const withoutFloating = id.startsWith("floating-")
-      ? id.slice("floating-".length)
-      : id;
+  const handleDragEnd = (
+    event: Parameters<typeof resolveHomeDropAction>[0],
+  ) => {
+    const action = resolveHomeDropAction(event);
 
-    return withoutFloating.startsWith("tom-")
-      ? withoutFloating.slice(4)
-      : withoutFloating;
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-
-    console.log("event", event);
-    if (!over) return;
-
-    const rawActiveId = active.id.toString();
-    const activeId = normalizeDragId(rawActiveId);
-    const overId = over.id.toString();
-
-    console.log("Drag End - activeId:", activeId, "overId:", overId);
-
-    // Lấy parent HTML element của activeId
-    // const activeElement = document.querySelector(`[data-id="${activeId}"]`);
-    // const parentElement = activeElement ? activeElement.parentElement : null;
-    // const parentId = parentElement?.getAttribute("id");
-
-    // const overElement = document.querySelector(`[data-id="${overId}"]`);
-    // const overParentElement = overElement ? overElement.parentElement : null;
-    // const overParentId = overParentElement?.getAttribute("id");
-
-    // console.log("activeId", activeId, "overId", overId);
-    // console.log("parentElement", parentId);
-    // console.log("overParentElement", overParentId);
-    // Check if dropping into top-of-mind zone (root or floating)
-    if (
-      overId === "top-of-mind-zone" ||
-      overId === "top-of-mind-zone-floating"
-    ) {
-      // Find the note from main grid
-      const noteToMove = notes.find((n) => n.id === activeId);
-      if (noteToMove && !topOfMindNotesData?.find((n) => n.id === activeId)) {
-        // Add to top of mind if not already there
-        handleUpdateTopOfMindNote(activeId, true);
+    switch (action.type) {
+      case "none": {
+        return;
       }
-      return;
-    }
+      case "to-top-of-mind": {
+        const noteToMove = findNoteById(action.activeId, notes);
+        const alreadyInTopOfMind = findNoteById(
+          action.activeId,
+          topOfMindNotesData,
+        );
 
-    if (overId === "chat-bot" || overId === "chat-bot-sidebar") {
-      const droppedNote =
-        notes.find((n) => n.id === activeId) ||
-        topOfMindNotesData?.find((n) => n.id === activeId);
-
-      if (droppedNote) {
-        setDroppedNotePayload({
-          note: {
-            id: droppedNote.id,
-            title: droppedNote.title,
-            content: droppedNote.content,
-          },
-          droppedAt: Date.now(),
-        });
+        if (noteToMove && !alreadyInTopOfMind) {
+          void handleUpdateTopOfMindNote(action.activeId, true);
+        }
+        return;
       }
+      case "to-chat-bot": {
+        const droppedNote = findNoteById(
+          action.activeId,
+          notes,
+          topOfMindNotesData,
+        );
 
-      return;
-    }
-
-    // Check if dropping into grid zone
-    if (overId === "grid-zone") {
-      // Remove from top of mind if it was there
-      const wasInTopOfMind = topOfMindNotesData?.find((n) => n.id === activeId);
-      if (wasInTopOfMind) {
-        handleUpdateTopOfMindNote(activeId, false);
+        if (droppedNote) {
+          setDroppedNotePayload({
+            note: {
+              id: droppedNote.id,
+              title: droppedNote.title,
+              content: droppedNote.content,
+            },
+            droppedAt: Date.now(),
+          });
+        }
+        return;
       }
-      return;
-    }
+      case "to-grid": {
+        const wasInTopOfMind = findNoteById(
+          action.activeId,
+          topOfMindNotesData,
+        );
 
-    if (overId.startsWith("folder-")) {
-      // Dropped onto a folder
-      const folderId = overId.replace("folder-", "");
-      console.log(`Dropped note ${activeId} onto folder ${folderId}`);
-      // Remove from top of mind if it was there
-      const activeNote = notes.filter((n) => n.id === activeId)[0];
-      if (activeNote) {
-        handleUpdate(activeId, { ...activeNote, folder_id: folderId });
+        if (wasInTopOfMind) {
+          void handleUpdateTopOfMindNote(action.activeId, false);
+        }
+        return;
+      }
+      case "to-folder": {
+        const activeNote = findNoteById(action.activeId, notes);
+
+        if (activeNote) {
+          void handleUpdate(action.activeId, {
+            ...activeNote,
+            folder_id: action.folderId,
+          });
+        }
       }
     }
   };
 
   const renderOverlay = useCallback(
     (activeId: string | number | null) => {
-      const rawId = activeId?.toString();
-      const noteId = rawId ? normalizeDragId(rawId) : rawId;
-      const note =
-        notes.find((n) => n.id === noteId) ||
-        topOfMindNotesData?.find((n) => n.id === noteId);
+      if (!activeId) {
+        return null;
+      }
+
+      const noteId = normalizeHomeDragId(activeId.toString());
+      const note = findNoteById(noteId, notes, topOfMindNotesData);
 
       if (!note) return null;
 
-      const previewText = note.title || note.content || "Note";
-
       return (
         <div
-          className="opacity-80 w-full min-w-[300px]"
+          className="opacity-80 w-full min-w-[300px] scale-70"
           style={{ rotate: "5deg" }}
         >
           <NoteCard match={{ ...note, score: 1.0 }} onUpdateNote={() => {}} />

@@ -28,9 +28,7 @@ export function SortableItem({
     id,
     disabled,
   });
-  useEffect(() => {
-    // console.log("id", id, "isDragging", isDragging);
-  }, [id, isDragging]);
+
   const sortableStyle: CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,

@@ -20,12 +20,9 @@ export type ListParams = {
 };
 
 export function useNotes(
-  params: ListParams = { limit: 50, offset: 0, query: "", folder_id: "" }
+  params: ListParams = { limit: 50, offset: 0, query: "", folder_id: "" },
 ) {
-  const stableParams = useMemo(
-    () => params,
-    [params.limit, params.offset, params.query, params.folder_id]
-  );
+  const stableParams = useMemo(() => params, [params]);
   const queryClient = useQueryClient();
   const queryKey = getListNotesQueryKey(stableParams);
   // Chỉ wrap generated hook - đơn giản và mạnh mẽ

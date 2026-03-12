@@ -43,13 +43,15 @@ export function MenuSidebarHeader({ onOpenChatbot }: MenuSidebarHeaderProps) {
           aria-label="Open chatbot"
           title="Mở chatbot hoặc kéo note vào đây"
         >
-          <Image
-            src="/mind-notion-ai.svg"
-            alt="AI"
-            width={18}
-            height={18}
-            className="rounded"
-          />
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
+            <Image
+              src="/mind-notion-ai.svg"
+              alt="AI"
+              width={28}
+              height={28}
+              className="rounded"
+            />
+          </div>
         </button>
       </DroppableZone>
     </SidebarHeader>

@@ -49,12 +49,12 @@ export default function Chatbot({
   } = useChatbot({ droppedNotePayload });
 
   return (
-    <div className={cn("h-full w-full", className)}>
-      <DroppableZone
-        id={droppableId}
-        className="h-full"
-        activeClassName="ring-2 ring-yellow-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
-      >
+    <DroppableZone
+      id={droppableId}
+      className="h-full"
+      activeClassName="ring-2 ring-yellow-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
+    >
+      <div className={cn("h-full w-full", className)}>
         <section className="h-full w-full bg-background overflow-hidden">
           <div className="h-full flex flex-col">
             <ChatbotPinnedNotes
@@ -86,7 +86,7 @@ export default function Chatbot({
             />
           </div>
         </section>
-      </DroppableZone>
-    </div>
+      </div>
+    </DroppableZone>
   );
 }

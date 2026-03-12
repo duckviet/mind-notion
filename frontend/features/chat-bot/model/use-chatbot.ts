@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
+  getGetNoteQueryKey,
+  getListNotesQueryKey,
+  getListNotesTOMQueryKey,
   provideAiRunConsent,
   type ReqCreateAIRun,
 } from "@/shared/services/generated/api";
@@ -70,6 +74,7 @@ const buildMessageWithPinnedNotes = (
 };
 
 export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
+  const queryClient = useQueryClient();
   const [pinnedNotes, setPinnedNotes] = useState<PinnedNote[]>([]);
   const [activePinnedId, setActivePinnedId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -201,6 +206,28 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
       },
     };
 
+    const refreshNotesData = async () => {
+      const invalidations: Promise<void>[] = [
+        queryClient.invalidateQueries({ queryKey: getListNotesQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getListNotesTOMQueryKey() }),
+        queryClient.invalidateQueries({
+          queryKey: selectedNoteId
+            ? ["collab-session", selectedNoteId]
+            : ["collab-session"],
+        }),
+      ];
+
+      if (selectedNoteId) {
+        invalidations.push(
+          queryClient.invalidateQueries({
+            queryKey: getGetNoteQueryKey(selectedNoteId),
+          }),
+        );
+      }
+
+      await Promise.all(invalidations);
+    };
+
     try {
       await streamAiRun(payload, {
         signal: controller.signal,
@@ -289,6 +316,17 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
             } finally {
               setPendingConsent(null);
               setIsSubmittingConsent(false);
+            }
+
+            return;
+          }
+
+          if (event === "tool.result") {
+            const toolName = payloadObj.tool;
+            const ok = payloadObj.ok;
+
+            if (toolName === "notes.write" && ok === true) {
+              await refreshNotesData();
             }
 
             return;

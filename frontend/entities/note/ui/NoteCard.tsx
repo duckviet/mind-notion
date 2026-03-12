@@ -1,12 +1,8 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-
-import { PreviewOverlay } from "@/shared/components/PreviewOverlay";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuShortcut,
   ContextMenuSub,
   ContextMenuSubContent,
   ContextMenuSubTrigger,
@@ -38,16 +34,10 @@ export default function NoteCard({
   onPin,
   onFocusEdit,
 }: Props) {
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
   const handleDelete = async () => {
     if (onDelete) {
       await onDelete(match.id);
     }
-  };
-
-  const handlePreview = () => {
-    setIsPreviewOpen(true);
   };
 
   const handleFocusEdit = () => {
@@ -102,10 +92,6 @@ export default function NoteCard({
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="  border-border shadow-lg">
-        <ContextMenuItem onSelect={handlePreview} className="hover: -elevated">
-          <Eye className="w-4 h-4 " />
-          <p className="text-sm">Preview</p>
-        </ContextMenuItem>
         <ContextMenuItem
           onSelect={handleFocusEdit}
           className="focus: -elevated"
@@ -137,13 +123,6 @@ export default function NoteCard({
           <p className="text-sm">Pin</p>
         </ContextMenuItem>
       </ContextMenuContent>
-
-      {/* Preview Overlay */}
-      <PreviewOverlay
-        isOpen={isPreviewOpen}
-        onClose={() => setIsPreviewOpen(false)}
-        item={match}
-      />
     </ContextMenu>
   );
 }
