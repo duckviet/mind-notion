@@ -1,9 +1,0 @@
-# Local ONNX artifacts (use HF Hub instead)
-bge-m3-onnx/
-bge-m3-onnx-embed/
-*.onnx
-.env
-
-# Python cache
-__pycache__/
-.pytest_cache/

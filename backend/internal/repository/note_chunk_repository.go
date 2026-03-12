@@ -35,7 +35,7 @@ func NewNoteChunkRepository(db *database.DB) NoteChunkRepository {
 func (r *noteChunkRepository) ReplaceNoteChunks(ctx context.Context, noteID, userID string, chunks []NoteChunkInput) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete existing chunks for this note
-		if err := tx.Where("note_id = ?", noteID).Delete(&models.NoteChunk{}).Error; err != nil {
+		if err := tx.Unscoped().Where("note_id = ?", noteID).Delete(&models.NoteChunk{}).Error; err != nil {
 			return err
 		}
 

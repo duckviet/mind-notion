@@ -28,7 +28,7 @@ def main() -> None:
     _load_dotenv()
     host = os.getenv("AI_SERVICE_HOST", "0.0.0.0")
     port = int(os.getenv("AI_SERVICE_PORT", "8090"))
-    uvicorn.run("agent.server:app", host=host, port=port, reload=False)
+    uvicorn.run("agent.server:app", host=host, port=port, reload=True)
 
 
 if __name__ == "__main__":

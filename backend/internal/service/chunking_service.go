@@ -55,7 +55,7 @@ func NewChunkingService(cfg config.AIServiceConfig, chunkRepo repository.NoteChu
 	}
 }
 
-func (s *chunkingService) `DispatchNoteSaved`(ctx context.Context, note *models.Note, event string) {
+func (s *chunkingService) DispatchNoteSaved(ctx context.Context, note *models.Note, event string) {
 	if note == nil {
 		log.Printf("[CHUNK][DEBUG] skip dispatch: note is nil")
 		return
