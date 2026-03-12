@@ -19,6 +19,7 @@ type Config struct {
 	Cohere   CohereConfig   `mapstructure:"cohere"`
 	CDN      CDNConfig      `mapstructure:"cdn" validate:"required"`
 	Collab   CollabConfig   `mapstructure:"collab" validate:"required"`
+	AIService AIServiceConfig `mapstructure:"ai_service"`
 }
 
 // Nested structs - chỉ cần tag cho field, prefix tự động
@@ -47,6 +48,13 @@ type RedisConfig struct {
 	Port     string `mapstructure:"port" validate:"required"`
 	Password string `mapstructure:"password" validate:"omitempty"`
 	DB       int    `mapstructure:"db" validate:"min=0,max=15"`
+}
+
+type AIServiceConfig struct {
+	Enabled        bool   `mapstructure:"enabled"`
+	BaseURL        string `mapstructure:"base_url" validate:"omitempty,url"`
+	TimeoutSeconds int    `mapstructure:"timeout_seconds" validate:"omitempty,min=1,max=120"`
+	APIKey         string `mapstructure:"api_key" validate:"omitempty"`
 }
 
 type PineconeConfig struct {
@@ -124,6 +132,5 @@ func (c *Config) Validate() error {
 	if c.Cohere.APIKey == "" {
 		log.Println("⚠️  Cohere API key is empty. Text embedding features will be disabled.")
 	}
-
 	return nil
 }

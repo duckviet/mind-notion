@@ -8,9 +8,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
- 
-
- 
 
 func Load() (*Config, error) {
 	// Load file .env nếu có (không bắt buộc trong Production)
@@ -84,6 +81,12 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("redis.port", "6379")
 	v.SetDefault("redis.password", "")
 	v.SetDefault("redis.db", 0)
+
+	// AI service defaults
+	v.SetDefault("ai_service.enabled", true)
+	v.SetDefault("ai_service.base_url", "http://localhost:8000")
+	v.SetDefault("ai_service.timeout_seconds", 5)
+	v.SetDefault("ai_service.api_key", "")
 
 	// Pinecone defaults
 	v.SetDefault("pinecone.api_key", "")
