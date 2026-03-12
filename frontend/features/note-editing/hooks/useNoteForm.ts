@@ -44,7 +44,7 @@ export function useNoteForm(isOpen: boolean, note: ResDetailNote | undefined) {
     setTags(note.tags ?? []);
     setError("");
     initializedNoteIdRef.current = note.id;
-  }, [isOpen, note?.id]);
+  }, [isOpen, note?.id, note?.content, note?.tags, note?.title]);
 
   // Focus title on open
   useEffect(() => {

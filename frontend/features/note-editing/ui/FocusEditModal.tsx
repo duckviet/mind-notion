@@ -39,7 +39,6 @@ export default function FocusEditModal({
   const collabEnabled = Boolean(collabToken);
   const collabPending = isOpen && collabLoading;
 
-  const [isSaving, setIsSaving] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = usePersistentState(
     LocalStorageKeys.FOCUS_EDIT_SIDEBAR_COLLAPSED,
     () => false,
@@ -84,11 +83,6 @@ export default function FocusEditModal({
     initialHtml: note?.content ? sanitizeHtml(note.content) : undefined,
   });
 
-  const { scheduleSnapshot } = useNoteSnapshot({
-    noteId,
-    enabled: isOpen && collabEnabled,
-  });
-
   const handleEditorReady = useCallback(
     (editor: import("@tiptap/react").Editor) => {
       editorRef.current = editor;
@@ -96,15 +90,21 @@ export default function FocusEditModal({
     [],
   );
 
+  const { scheduleSnapshot, markUserEdited } = useNoteSnapshot({
+    noteId,
+    enabled: isOpen && collabEnabled,
+  });
+
   const handleContentUpdate = useCallback(
-    (value: string) => {
+    (value: string, isUserInput: boolean = true) => {
       if (collabEnabled) {
+        if (isUserInput) markUserEdited();
         scheduleSnapshot(value);
       } else {
         handleContentChange(value);
       }
     },
-    [collabEnabled, scheduleSnapshot, handleContentChange],
+    [collabEnabled, scheduleSnapshot, markUserEdited, handleContentChange],
   );
 
   // Wait for Yjs hydration before showing editor
@@ -171,7 +171,7 @@ export default function FocusEditModal({
                   form={form}
                   newTag={newTag}
                   error={error}
-                  isSaving={isSaving}
+                  isSaving={false}
                   isSidebarCollapsed={isSidebarCollapsed}
                   titleRef={titleRef}
                   // note={note}

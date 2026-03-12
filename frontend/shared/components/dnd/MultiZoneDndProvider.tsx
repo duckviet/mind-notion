@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import {
   DndContext,
+  CollisionDetection,
   closestCorners,
+  pointerWithin,
   DragEndEvent,
   DragStartEvent,
   DragOverlay,
@@ -32,6 +34,16 @@ export function MultiZoneDndProvider({
   disabled = false,
 }: MultiZoneDndProviderProps) {
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+
+  const collisionDetection: CollisionDetection = (args) => {
+    // With pointer dragging, only report over when cursor is actually inside a droppable.
+    if (args.pointerCoordinates) {
+      return pointerWithin(args);
+    }
+
+    // Keyboard dragging has no pointer coordinates, keep geometric fallback.
+    return closestCorners(args);
+  };
 
   // Use custom sensors hook that removes Space and Enter keys by default
   // Only allows mouse/touch drag and arrow keys for navigation
@@ -71,7 +83,7 @@ export function MultiZoneDndProvider({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={collisionDetection}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}

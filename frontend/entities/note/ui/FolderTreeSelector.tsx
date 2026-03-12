@@ -49,7 +49,7 @@ export default function FolderTreeSelector({
   const handleSelect = (folderId: string) => {
     console.log("Folder selected in tree selector:", folderId);
     setSelectedFolderId(folderId);
-    onSelect && onSelect(folderId);
+    if (onSelect) onSelect(folderId);
   };
 
   if (isLoading) {

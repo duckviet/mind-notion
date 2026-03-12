@@ -17,6 +17,7 @@ import { Button } from "@/shared/components/ui/button";
 import { updateFolder } from "@/shared/services/generated/api";
 import { toast } from "sonner";
 import { Input } from "@/shared/components/ui/input";
+import { useQueryClient } from "@tanstack/react-query";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -35,6 +36,7 @@ const GridSkeleton = ({ items = 6 }: { items?: number }) => (
 );
 
 const FoldersListPage = ({ parentId }: { parentId?: string }) => {
+  const queryClient = useQueryClient();
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -90,13 +92,14 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
         await updateFolder(id, {
           parent_id: folderId || "",
         });
+        queryClient.invalidateQueries({ queryKey: ["folders", "notes/list"] });
         toast.success("Folder moved successfully");
         refetch();
       } catch (error) {
         console.error("Failed to move folder:", error);
       }
     },
-    [refetch],
+    [refetch, queryClient],
   );
 
   if (error) {

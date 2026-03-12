@@ -17,6 +17,7 @@ export const useNoteSnapshot = ({
 }: UseNoteSnapshotOptions) => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const lastContentRef = useRef<string>("");
+  const hasUserEditedRef = useRef(false);
 
   const sendSnapshot = useCallback(
     async (content: string) => {
@@ -27,26 +28,38 @@ export const useNoteSnapshot = ({
       try {
         await saveNoteSnapshot(noteId, { content: sanitized });
       } catch {
-        // Snapshot errors are non-blocking for editing
+        // non-blocking
       }
     },
-    [noteId, editToken, enabled],
+    [noteId, enabled],
   );
 
   const scheduleSnapshot = useCallback(
     (content: string) => {
       if (!enabled || !noteId) return;
+
+      // Skip snapshots until user has actually edited
+      if (!hasUserEditedRef.current) return;
+
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => sendSnapshot(content), delayMs);
     },
     [enabled, noteId, sendSnapshot, delayMs],
   );
 
+  // Call this when a real user interaction triggers a content change
+  const markUserEdited = useCallback(() => {
+    hasUserEditedRef.current = true;
+  }, []);
+
+  // Reset when noteId changes or modal closes
   useEffect(() => {
+    hasUserEditedRef.current = false;
+    lastContentRef.current = "";
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, []);
+  }, [noteId, enabled]);
 
-  return { scheduleSnapshot };
+  return { scheduleSnapshot, markUserEdited };
 };

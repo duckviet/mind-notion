@@ -47,7 +47,7 @@ export const SECONDARY_ITEMS = [
   {
     label: "Appearance",
     icon: Palette,
-    href: "/settings",
+    href: "/settings/appearance",
   },
 ];
 
