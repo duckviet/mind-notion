@@ -34,7 +34,7 @@ export default function PublicNoteEditPage() {
     initialHtml: note?.content ? sanitizeHtml(note.content) : undefined,
   });
 
-  const { scheduleSnapshot } = useNoteSnapshot({
+  const { scheduleSnapshot, markUserEdited } = useNoteSnapshot({
     noteId,
     editToken,
     enabled: collabEnabled,
@@ -50,10 +50,11 @@ export default function PublicNoteEditPage() {
   const handleContentUpdate = useCallback(
     (value: string) => {
       if (collabEnabled) {
+        markUserEdited();
         scheduleSnapshot(value);
       }
     },
-    [collabEnabled, scheduleSnapshot],
+    [collabEnabled, markUserEdited, scheduleSnapshot],
   );
 
   return (

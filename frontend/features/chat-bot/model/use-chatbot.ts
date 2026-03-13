@@ -224,6 +224,7 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
           }),
         );
       }
+      console.log(invalidations);
 
       await Promise.all(invalidations);
     };
