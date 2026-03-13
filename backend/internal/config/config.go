@@ -19,7 +19,6 @@ type Config struct {
 	Cohere   CohereConfig   `mapstructure:"cohere"`
 	CDN      CDNConfig      `mapstructure:"cdn" validate:"required"`
 	Collab   CollabConfig   `mapstructure:"collab" validate:"required"`
-	AIService AIServiceConfig `mapstructure:"ai_service"`
 }
 
 // Nested structs - chỉ cần tag cho field, prefix tự động
@@ -50,13 +49,6 @@ type RedisConfig struct {
 	DB       int    `mapstructure:"db" validate:"min=0,max=15"`
 }
 
-type AIServiceConfig struct {
-	Enabled        bool   `mapstructure:"enabled"`
-	BaseURL        string `mapstructure:"base_url" validate:"omitempty,url"`
-	TimeoutSeconds int    `mapstructure:"timeout_seconds" validate:"omitempty,min=1,max=120"`
-	APIKey         string `mapstructure:"api_key" validate:"omitempty"`
-}
-
 type PineconeConfig struct {
 	APIKey      string `mapstructure:"api_key" validate:"omitempty,min=1"`     // PINECONE_API_KEY
 	Environment string `mapstructure:"environment" validate:"omitempty,min=1"` // PINECONE_ENVIRONMENT
@@ -84,6 +76,7 @@ type CollabConfig struct {
 }
 
 type AIConfig struct {
+	Enabled          bool   `mapstructure:"enabled"`
 	ServiceURL       string `mapstructure:"service_url" validate:"required,url"`
 	ServiceToken     string `mapstructure:"service_token" validate:"required,min=8"`
 	RequestTimeoutMs int    `mapstructure:"request_timeout_ms" validate:"required,min=1000,max=180000"`

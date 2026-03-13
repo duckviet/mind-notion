@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from chunking import chunk_note_event, embed_chunks_for_note
+from rag.chunking import chunk_note_event, embed_chunks_for_note
 
 
-app = FastAPI(title="mind-notion ai-service", version="0.1.0")
+router = APIRouter()
 
 
 class ChunkNoteRequest(BaseModel):
@@ -20,12 +20,12 @@ class ChunkNoteRequest(BaseModel):
     event: str = Field(default="note.save")
 
 
-@app.get("/health")
+@router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.post("/notes/chunk")
+@router.post("/notes/chunk")
 def chunk_note(req: ChunkNoteRequest) -> dict[str, object]:
     result = chunk_note_event(req.model_dump())
     return {
@@ -34,7 +34,7 @@ def chunk_note(req: ChunkNoteRequest) -> dict[str, object]:
     }
 
 
-@app.post("/notes/embed-chunks")
+@router.post("/notes/embed-chunks")
 def embed_note_chunks(req: ChunkNoteRequest) -> dict[str, object]:
     """Chunk note and return embeddings for each chunk.
 
@@ -43,4 +43,3 @@ def embed_note_chunks(req: ChunkNoteRequest) -> dict[str, object]:
 
     result = embed_chunks_for_note(req.model_dump())
     return result
-

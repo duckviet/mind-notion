@@ -78,7 +78,7 @@ func New(ctx context.Context) (*App, func(), error) {
 
 	// Initialize services
 	userService := service.NewUserService(userRepo, cfg)
-	chunkingService := service.NewChunkingService(cfg.AIService, noteChunkRepo)
+	chunkingService := service.NewChunkingService(cfg.AI, noteChunkRepo)
 	noteService := service.NewNoteService(noteRepo, cfg, searchService, chunkingService)
 	folderService := service.NewFolderService(folderRepo, noteRepo, cfg)
 	templateService := service.NewTemplateService(templateRepo)
