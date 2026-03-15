@@ -143,15 +143,14 @@ export const useTiptapEditor = ({
   const collabEnabled = Boolean(
     collaboration?.document && collaboration?.provider,
   );
+  const collabDocument = collaboration?.document;
+  const collabProvider = collaboration?.provider;
 
   // Memoize collaboration extensions to prevent duplicate keyed plugin registration
   const collabExtensions = useMemo(() => {
-    if (!collabEnabled || !collaboration) return [];
-    return createCollaborationExtensions(
-      collaboration.document,
-      collaboration.provider,
-    );
-  }, [collabEnabled, collaboration?.document, collaboration?.provider]);
+    if (!collabEnabled || !collabDocument || !collabProvider) return [];
+    return createCollaborationExtensions(collabDocument, collabProvider);
+  }, [collabEnabled, collabDocument, collabProvider]);
   const extensions = useMemo(
     () => [
       StarterKit.configure({
@@ -268,7 +267,9 @@ export const useTiptapEditor = ({
     }
   }, [content, editor, collabEnabled]);
 
-  // Handle editor updates with debounce and track user editing state
+  // Handle editor updates.
+  // In collaboration mode, emit immediately and let snapshot hook control cadence.
+  // In non-collab mode, keep lightweight debounce to reduce parent updates.
   useEffect(() => {
     if (!editor) return;
 
@@ -286,9 +287,15 @@ export const useTiptapEditor = ({
       isUserEditingRef.current = false;
     };
 
-    const debouncedUpdate = () => {
+    const handleEditorUpdate = () => {
       // Mark as user editing when content changes
       isUserEditingRef.current = true;
+
+      if (collabEnabled) {
+        handleUpdate();
+        return;
+      }
+
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(handleUpdate, 300);
     };
@@ -305,18 +312,18 @@ export const useTiptapEditor = ({
       }, 100);
     };
 
-    editor.on("update", debouncedUpdate);
+    editor.on("update", handleEditorUpdate);
     editor.on("focus", handleFocus);
     editor.on("blur", handleBlur);
     migrateMathStrings(editor);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
-      editor.off("update", debouncedUpdate);
+      editor.off("update", handleEditorUpdate);
       editor.off("focus", handleFocus);
       editor.off("blur", handleBlur);
     };
-  }, [editor]);
+  }, [editor, collabEnabled]);
 
   useEffect(() => {
     if (!editor) return;

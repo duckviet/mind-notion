@@ -72,7 +72,7 @@ async def _run(question: str, model: str) -> None:
 
 
 def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Smoke test for agent-py")
+    parser = argparse.ArgumentParser(description="Smoke test for ai-services agent")
     parser.add_argument("--question", "-q", type=str, default="", help="Question for the agent")
     parser.add_argument("--model", type=str, default="gpt-5-mini", help="Model name")
     return parser.parse_args()

@@ -9,8 +9,7 @@ venv/
 env/
 
 # Environment variables
-.env
-.env.*
+.env 
 
 # Tooling caches
 .pytest_cache/

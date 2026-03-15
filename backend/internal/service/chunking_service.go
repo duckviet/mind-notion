@@ -21,10 +21,10 @@ type ChunkingService interface {
 }
 
 type chunkingService struct {
-	enabled bool
-	baseURL string
-	apiKey  string
-	client  *http.Client
+	enabled      bool
+	baseURL      string
+	serviceToken string
+	client       *http.Client
 	chunkRepo repository.NoteChunkRepository
 }
 
@@ -40,18 +40,18 @@ type embedChunksResponse struct {
 	Chunks []embedChunk  `json:"chunks"`
 }
 
-func NewChunkingService(cfg config.AIServiceConfig, chunkRepo repository.NoteChunkRepository) ChunkingService {
-	timeout := time.Duration(cfg.TimeoutSeconds) * time.Second
-	if cfg.TimeoutSeconds <= 0 {
-		timeout = 5 * time.Second
+func NewChunkingService(cfg config.AIConfig, chunkRepo repository.NoteChunkRepository) ChunkingService {
+	timeout := time.Duration(cfg.RequestTimeoutMs) * time.Millisecond
+	if cfg.RequestTimeoutMs <= 0 {
+		timeout = 30 * time.Second
 	}
 
 	return &chunkingService{
-		enabled:   cfg.Enabled,
-		baseURL:   strings.TrimRight(cfg.BaseURL, "/"),
-		apiKey:    cfg.APIKey,
-		client:    &http.Client{Timeout: timeout},
-		chunkRepo: chunkRepo,
+		enabled:      cfg.Enabled,
+		baseURL:      strings.TrimRight(cfg.ServiceURL, "/"),
+		serviceToken: cfg.ServiceToken,
+		client:       &http.Client{Timeout: timeout},
+		chunkRepo:    chunkRepo,
 	}
 }
 
@@ -61,11 +61,11 @@ func (s *chunkingService) DispatchNoteSaved(ctx context.Context, note *models.No
 		return
 	}
 	if !s.enabled {
-		log.Printf("[CHUNK][DEBUG] skip dispatch: ai_service.enabled=false")
+		log.Printf("[CHUNK][DEBUG] skip dispatch: ai.enabled=false")
 		return
 	}
 	if s.baseURL == "" {
-		log.Printf("[CHUNK][DEBUG] skip dispatch: ai_service.base_url is empty")
+		log.Printf("[CHUNK][DEBUG] skip dispatch: ai.service_url is empty")
 		return
 	}
 
@@ -100,8 +100,8 @@ func (s *chunkingService) send(payload map[string]any) {
 		return
 	}
 	req.Header.Set("Content-Type", "application/json")
-	if s.apiKey != "" {
-		req.Header.Set("X-Api-Key", s.apiKey)
+	if s.serviceToken != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.serviceToken))
 	}
 
 	resp, err := s.client.Do(req)

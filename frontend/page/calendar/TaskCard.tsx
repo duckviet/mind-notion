@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { DayTask } from "./WeeklyMode";
+import { GoogleBadge } from "@/features/googleCalendar";
 
 const TaskCard = ({
   task,
@@ -33,6 +34,7 @@ const TaskCard = ({
         onClick={onClick}
       >
         <p className="text-xs font-semibold truncate leading-tight">{task.title}</p>
+        {task.source === "google" && <GoogleBadge />}
       </div>
     );
   }
@@ -61,6 +63,8 @@ const TaskCard = ({
           {timeLabel}
         </span>
       )}
+
+      {task.source === "google" && <GoogleBadge />}
     </div>
   );
 };

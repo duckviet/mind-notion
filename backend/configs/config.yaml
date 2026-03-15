@@ -22,6 +22,7 @@ redis:
   db: 0
 
 ai:
+  enabled: true
   service_url: "http://localhost:8090"
   service_token: "dev-ai-service-token"
   request_timeout_ms: 30000
@@ -47,6 +48,3 @@ cdn:
 collab:
   token_secret: your-collab-token-secret
   token_ttl_minutes: 60
-
-ai_service.enabled: true
-ai_service.base_url: "http://<host-ai-service>:8000"

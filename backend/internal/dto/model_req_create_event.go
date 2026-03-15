@@ -36,4 +36,8 @@ type ReqCreateEvent struct {
 	CategoryId int32 `json:"category_id,omitempty"`
 
 	IsAllDay bool `json:"is_all_day,omitempty"`
+
+	GoogleEventId *string `json:"google_event_id,omitempty"`
+
+	Source string `json:"source,omitempty"`
 }

@@ -82,12 +82,6 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("redis.password", "")
 	v.SetDefault("redis.db", 0)
 
-	// AI service defaults
-	v.SetDefault("ai_service.enabled", true)
-	v.SetDefault("ai_service.base_url", "http://localhost:8000")
-	v.SetDefault("ai_service.timeout_seconds", 5)
-	v.SetDefault("ai_service.api_key", "")
-
 	// Pinecone defaults
 	v.SetDefault("pinecone.api_key", "")
 	v.SetDefault("pinecone.environment", "")
@@ -110,8 +104,15 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("collab.token_secret", "your-collab-token-secret")
 	v.SetDefault("collab.token_ttl_minutes", 60)
 
-	// AI service defaults
+	// AI defaults
+	v.SetDefault("ai.enabled", true)
 	v.SetDefault("ai.service_url", "http://localhost:8090")
 	v.SetDefault("ai.service_token", "dev-ai-service-token")
 	v.SetDefault("ai.request_timeout_ms", 30000)
+
+	// Google OAuth defaults
+	v.SetDefault("google.client_id", "")
+	v.SetDefault("google.client_secret", "")
+	v.SetDefault("google.redirect_uri", "http://localhost:8080/api/v1/auth/google/calendar/callback")
+	v.SetDefault("google.login_redirect_uri", "http://localhost:8080/api/v1/auth/google/login/callback")
 }

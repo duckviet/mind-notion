@@ -17,7 +17,6 @@ export default function AddNoteForm({
   const [isFocus, setIsFocus] = useState<boolean>(false); // Focus state
   const [isSaving, setIsSaving] = useState<boolean>(false); // Saving state
   const editorRef = useRef<Editor | null>(null);
-  console.log(content);
   // Handle Ctrl + Enter for saving
   const handleEnter = async (e: KeyboardEvent<HTMLDivElement>) => {
     if (e.ctrlKey && e.key === "Enter") {
@@ -51,8 +50,6 @@ export default function AddNoteForm({
       }
     }
   };
-
-  console.log(content);
 
   const isSaveHintVisible =
     content.trim() && content !== "<p></p>" ? true : false;

@@ -4,6 +4,10 @@ import os
 from pathlib import Path
 
 import uvicorn
+from fastapi import FastAPI
+
+from agent import router as agent_router
+from rag.api import router as rag_router
 
 
 def _load_dotenv() -> None:
@@ -24,11 +28,22 @@ def _load_dotenv() -> None:
             os.environ[key] = value
 
 
+def create_app() -> FastAPI:
+    app = FastAPI(title="mind-notion ai-services", version="0.1.0")
+    app.include_router(agent_router)
+    app.include_router(rag_router)
+    return app
+
+
+app = create_app()
+
+
 def main() -> None:
     _load_dotenv()
     host = os.getenv("AI_SERVICE_HOST", "0.0.0.0")
     port = int(os.getenv("AI_SERVICE_PORT", "8090"))
-    uvicorn.run("agent.server:app", host=host, port=port, reload=True)
+    reload_enabled = os.getenv("AI_SERVICE_RELOAD", "true").lower() in {"1", "true", "yes"}
+    uvicorn.run("main:app", host=host, port=port, reload=reload_enabled)
 
 
 if __name__ == "__main__":

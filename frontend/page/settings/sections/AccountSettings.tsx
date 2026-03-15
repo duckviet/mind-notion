@@ -17,7 +17,7 @@ import { Button } from "@/shared/components/ui/button";
 import { useAuthStore } from "@/features/auth/store/authStore";
 import { useUpdateMe } from "@/shared/services/generated/api";
 import { toast } from "sonner";
-import { User, Mail, Link } from "lucide-react";
+import { User, Mail, Link, BadgeCheck, CircleAlert } from "lucide-react";
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -87,6 +87,38 @@ const AccountSettings = () => {
           </div>
         </CardHeader>
         <CardContent>
+          <div className="mb-6 rounded-lg border border-border bg-background/70 p-4">
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="flex items-start gap-2">
+                <User className="mt-0.5 h-4 w-4 text-text-muted" />
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-text-muted">
+                    Username
+                  </p>
+                  <p className="text-sm font-medium text-text-primary">
+                    {user?.username || "-"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2">
+                {user?.email_verified ? (
+                  <BadgeCheck className="mt-0.5 h-4 w-4 text-green-600" />
+                ) : (
+                  <CircleAlert className="mt-0.5 h-4 w-4 text-amber-600" />
+                )}
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-text-muted">
+                    Email Status
+                  </p>
+                  <p className="text-sm font-medium text-text-primary">
+                    {user?.email_verified ? "Verified" : "Not verified"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <form
             onSubmit={handleSubmitProfile(onSubmitProfile)}
             className="space-y-6"

@@ -8,7 +8,7 @@ This repository is a multi-service monorepo. Keep changes minimal, scoped, and c
 - `frontend/`: Next.js + TypeScript app (Feature-Sliced Design)
 - `collab-server/`: Node.js WebSocket collaboration service
 - `extension/`: Browser extension code
-- `ai-services/agent-py/`: Python AI agent service
+- `ai-services/`: Python AI services (`agent` + `rag`)
 
 ## Global Rules
 
@@ -34,7 +34,7 @@ This repository is a multi-service monorepo. Keep changes minimal, scoped, and c
 - Use strict TypeScript types; avoid `any`.
 - Keep UI consistent with existing component and Tailwind conventions.
 
-### `collab-server/`, `extension/`, `ai-services/agent-py/`
+### `collab-server/`, `extension/`, `ai-services/`
 
 - Match local style and dependency patterns in each service.
 - Avoid introducing new frameworks unless required.

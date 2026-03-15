@@ -1,23 +1,19 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import os
 from dataclasses import dataclass, field
 from typing import Any
 
-from fastapi import FastAPI, Header, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi import HTTPException
 from openai import AsyncOpenAI
 
 from .api_contracts import (
     AgentRunRequest,
     AwaitingConsentEvent,
-    ConsentDecisionRequest,
     DeltaEvent,
     RunCompletedEvent,
     RunFailedEvent,
-    RunStartedEvent,
     ToolCallEvent,
     ToolResultEvent,
 )
@@ -26,13 +22,13 @@ from .run import MODEL_NAME, run_agent
 from .tools import tools
 
 
-def _now_payload(event: Any) -> str:
+def now_payload(event: Any) -> str:
     event_type = getattr(event, "type", "message")
     event_json = event.model_dump_json()
     return f"event: {event_type}\ndata: {event_json}\n\n"
 
 
-def _bearer_token(authorization: str | None) -> str:
+def bearer_token(authorization: str | None) -> str:
     if not authorization:
         return ""
     prefix = "Bearer "
@@ -41,17 +37,86 @@ def _bearer_token(authorization: str | None) -> str:
     return authorization[len(prefix) :].strip()
 
 
-def _internal_token() -> str:
+def internal_token() -> str:
     return os.getenv("AI_INTERNAL_TOKEN", "")
 
 
-def _auth_or_raise(authorization: str | None) -> None:
-    expected = _internal_token()
+def auth_or_raise(authorization: str | None) -> None:
+    expected = internal_token()
     if not expected:
         return
-    provided = _bearer_token(authorization)
+    provided = bearer_token(authorization)
     if provided != expected:
         raise HTTPException(status_code=401, detail="invalid internal token")
+
+
+def tool_call_id_from_args(args: Any) -> str:
+    if not isinstance(args, dict):
+        return ""
+    return str(args.get("_tool_call_id", ""))
+
+
+def queue_event(state: "RunState", event: Any) -> None:
+    state.queue.put_nowait(now_payload(event))
+
+
+def close_queue(state: "RunState") -> None:
+    state.queue.put_nowait(None)
+
+
+def queue_failed_event(
+    state: "RunState",
+    run_id: str,
+    code: str,
+    message: str,
+    retryable: bool = False,
+) -> None:
+    queue_event(
+        state,
+        RunFailedEvent(
+            run_id=run_id,
+            code=code,
+            message=message,
+            retryable=retryable,
+        ),
+    )
+
+
+def usage_payload(usage: TokenUsageInfo | None) -> dict[str, int]:
+    if usage is None:
+        return {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+        }
+    return {
+        "prompt_tokens": usage.input_tokens,
+        "completion_tokens": usage.output_tokens,
+        "total_tokens": usage.total_tokens,
+    }
+
+
+def actor_payload(request: AgentRunRequest) -> dict[str, str]:
+    return {
+        "user_id": request.actor.user_id,
+        "tenant_id": request.actor.tenant_id,
+        "workspace_id": request.actor.workspace_id,
+    }
+
+
+def resource_context_payload(request: AgentRunRequest) -> dict[str, Any]:
+    return {
+        "note_id": request.resource_context.note_id,
+        "note_version": request.resource_context.note_version,
+    }
+
+
+def stream_headers() -> dict[str, str]:
+    return {
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+        "X-Accel-Buffering": "no",
+    }
 
 
 @dataclass(slots=True)
@@ -93,15 +158,13 @@ class StreamCallbacks(AgentCallbacks):
         }
 
     def _emit(self, event: Any) -> None:
-        self.state.queue.put_nowait(_now_payload(event))
+        queue_event(self.state, event)
 
     def on_token(self, token: str) -> None:
         self._emit(DeltaEvent(run_id=self.request.run_id, content=token))
 
     def on_tool_call_start(self, name: str, args: Any) -> None:
-        tool_call_id = ""
-        if isinstance(args, dict):
-            tool_call_id = str(args.get("_tool_call_id", ""))
+        tool_call_id = tool_call_id_from_args(args)
         self._tool_call_by_name[name] = tool_call_id
         self._emit(ToolCallEvent(run_id=self.request.run_id, tool_call_id=tool_call_id, tool=name))
 
@@ -124,9 +187,7 @@ class StreamCallbacks(AgentCallbacks):
         if not requires_consent:
             return True
 
-        tool_call_id = ""
-        if isinstance(args, dict):
-            tool_call_id = str(args.get("_tool_call_id", ""))
+        tool_call_id = tool_call_id_from_args(args)
 
         self._emit(
             AwaitingConsentEvent(
@@ -155,7 +216,7 @@ class StreamCallbacks(AgentCallbacks):
         self.state.last_usage = usage
 
 
-def _prepare_user_message(conversation: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
+def prepare_user_message(conversation: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]]:
     if not conversation:
         return "", []
 
@@ -176,7 +237,7 @@ def _prepare_user_message(conversation: list[dict[str, Any]]) -> tuple[str, list
     return user_message, history
 
 
-def _select_tool_registry(request: AgentRunRequest) -> dict[str, Any]:
+def select_tool_registry(request: AgentRunRequest) -> dict[str, Any]:
     if not request.allowed_tools:
         return tools
     selected: dict[str, Any] = {}
@@ -187,22 +248,19 @@ def _select_tool_registry(request: AgentRunRequest) -> dict[str, Any]:
     return selected
 
 
-async def _run_agent_task(request: AgentRunRequest, state: RunState) -> None:
+async def run_agent_task(request: AgentRunRequest, state: RunState) -> None:
     callbacks = StreamCallbacks(request=request, state=state)
     conversation = [message.model_dump(exclude_none=True) for message in request.conversation]
-    user_message, history = _prepare_user_message(conversation)
+    user_message, history = prepare_user_message(conversation)
 
     if not user_message:
-        state.queue.put_nowait(
-            _now_payload(
-                RunFailedEvent(
-                    run_id=request.run_id,
-                    code="INVALID_INPUT",
-                    message="conversation must include at least one user message",
-                )
-            )
+        queue_failed_event(
+            state,
+            request.run_id,
+            code="INVALID_INPUT",
+            message="conversation must include at least one user message",
         )
-        state.queue.put_nowait(None)
+        close_queue(state)
         return
 
     try:
@@ -214,112 +272,31 @@ async def _run_agent_task(request: AgentRunRequest, state: RunState) -> None:
             client=client,
             model_name=MODEL_NAME,
             run_id=request.run_id,
-            actor={
-                "user_id": request.actor.user_id,
-                "tenant_id": request.actor.tenant_id,
-                "workspace_id": request.actor.workspace_id,
-            },
-            resource_context={
-                "note_id": request.resource_context.note_id,
-                "note_version": request.resource_context.note_version,
-            },
-            tool_registry=_select_tool_registry(request),
+            actor=actor_payload(request),
+            resource_context=resource_context_payload(request),
+            tool_registry=select_tool_registry(request),
         )
 
-        usage = callbacks.state.last_usage
-        payload = {
-            "prompt_tokens": usage.input_tokens if usage else 0,
-            "completion_tokens": usage.output_tokens if usage else 0,
-            "total_tokens": usage.total_tokens if usage else 0,
-        }
-        state.queue.put_nowait(_now_payload(RunCompletedEvent(run_id=request.run_id, usage=payload)))
+        payload = usage_payload(callbacks.state.last_usage)
+        queue_event(state, RunCompletedEvent(run_id=request.run_id, usage=payload))
     except Exception as exc:  # noqa: BLE001
-        state.queue.put_nowait(
-            _now_payload(
-                RunFailedEvent(
-                    run_id=request.run_id,
-                    code="INTERNAL",
-                    message=str(exc),
-                    retryable=False,
-                )
-            )
+        queue_failed_event(
+            state,
+            request.run_id,
+            code="INTERNAL",
+            message=str(exc),
+            retryable=False,
         )
     finally:
-        state.queue.put_nowait(None)
+        close_queue(state)
 
 
-app = FastAPI(title="agent-py-service", version="0.1.0")
-registry = RunRegistry()
-
-
-@app.get("/health")
-async def health() -> dict[str, str]:
-    return {"status": "ok"}
-
-
-@app.post("/internal/v1/agent/runs")
-async def create_run(
-    request: AgentRunRequest,
-    authorization: str | None = Header(default=None),
-) -> StreamingResponse:
-    _auth_or_raise(authorization)
-
-    state = await registry.create(request.run_id)
-    state.queue.put_nowait(_now_payload(RunStartedEvent(run_id=request.run_id)))
-    asyncio.create_task(_run_agent_task(request, state))
-
-    async def event_generator() -> Any:
-        try:
-            while True:
-                item = await state.queue.get()
-                if item is None:
-                    break
-                yield item
-        finally:
-            await registry.remove(request.run_id)
-
-    headers = {
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        "X-Accel-Buffering": "no",
-    }
-    return StreamingResponse(event_generator(), media_type="text/event-stream", headers=headers)
-
-
-@app.patch("/internal/v1/agent/runs/{run_id}/consent")
-async def provide_consent(
-    run_id: str,
-    decision: ConsentDecisionRequest,
-    authorization: str | None = Header(default=None),
-) -> dict[str, Any]:
-    _auth_or_raise(authorization)
-    if run_id != decision.run_id:
-        raise HTTPException(status_code=400, detail="run_id mismatch")
-
-    state = await registry.get(run_id)
-    if state is None:
-        raise HTTPException(status_code=404, detail="run not found")
-
-    waiter = state.pending_consents.get(decision.tool_call_id)
-    if waiter is None:
-        raise HTTPException(status_code=404, detail="consent request not found")
-
-    if not waiter.done():
-        waiter.set_result(decision.approved)
-
-    return {
-        "ok": True,
-        "run_id": run_id,
-        "tool_call_id": decision.tool_call_id,
-        "approved": decision.approved,
-    }
-
-
-@app.get("/internal/v1/agent/runs/{run_id}")
-async def get_run_state(
-    run_id: str,
-    authorization: str | None = Header(default=None),
-) -> dict[str, Any]:
-    _auth_or_raise(authorization)
-    state = await registry.get(run_id)
-    return {"run_id": run_id, "exists": state is not None, "pending_consents": list((state.pending_consents or {}).keys())}
+async def event_generator(registry: RunRegistry, run_id: str, state: RunState) -> Any:
+    try:
+        while True:
+            item = await state.queue.get()
+            if item is None:
+                break
+            yield item
+    finally:
+        await registry.remove(run_id)

@@ -3,6 +3,7 @@ import { register } from "@/shared/services/generated/api";
 import { toast } from "sonner";
 import { useAuthStore } from "../store/authStore";
 import Cookies from "js-cookie"; // Import thư viện quản lý cookie
+import { AxiosError } from "axios";
 
 export const useRegister = () => {
   const { login: loginStore, fetchMe } = useAuthStore();
@@ -30,6 +31,14 @@ export const useRegister = () => {
     },
     onError: (error) => {
       console.error("Registration failed:", error);
+      if (error instanceof AxiosError && error.response?.data) {
+        const responseData = error.response.data as any;
+        const msg =
+          responseData.error || responseData.message || "Registration failed";
+        toast.error(msg);
+        return;
+      }
+
       toast.error("Registration failed");
     },
   });

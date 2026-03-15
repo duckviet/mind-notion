@@ -7,7 +7,7 @@ import { AppSidebar } from "./AppSidebar";
 
 const SidebarWrapper = ({ children }: { children?: React.ReactNode }) => {
   const [mounted, setMounted] = useState(false);
-  const { isAuth } = useAuthStore();
+  const { isAuth, isRefreshing } = useAuthStore();
 
   useEffect(() => {
     setMounted(true);
@@ -16,6 +16,8 @@ const SidebarWrapper = ({ children }: { children?: React.ReactNode }) => {
   if (!mounted) return null;
 
   if (!isAuth) return <>{children}</>;
+
+  if (isRefreshing) return <>{children}</>;
 
   return (
     <SidebarProvider defaultOpen={true}>

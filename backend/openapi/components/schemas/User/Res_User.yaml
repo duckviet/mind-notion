@@ -4,6 +4,9 @@ properties:
     type: string
     description: "User UUID"
     example: "550e8400-e29b-41d4-a716-446655440000"
+  username:
+    type: string
+    example: "john.doe"
   name:
     type: string
     example: "John Doe"
@@ -15,6 +18,17 @@ properties:
     type: string
     format: uri
     example: "https://example.com/avatar.png"
+  avatar_url:
+    type: string
+    format: uri
+    example: "https://example.com/avatar.png"
+  status:
+    type: string
+    enum: [active, inactive, suspended]
+    example: "active"
+  email_verified:
+    type: boolean
+    example: false
   created_at:
     type: string
     format: date-time
@@ -23,4 +37,5 @@ properties:
     type: string
     format: date-time
     example: "2021-01-01T00:00:00Z"
-required: [id, name, email, avatar, created_at, updated_at]
+required:
+  [id, username, name, email, avatar, avatar_url, status, email_verified]

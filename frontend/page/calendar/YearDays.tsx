@@ -138,9 +138,14 @@ function YearDays({
   };
 
   const startDay = currentStartWeekDate;
-  const endDay = currentStartWeekDate.endOf("week").add(1, "day");
+  const endDay = currentStartWeekDate.add(6, "day");
   const weekRange =
     calendarMode === "weekly" ? fullFillDays(startDay, endDay) : [];
+
+  const weeklyApiRange = {
+    start_time: startDay.startOf("day").toISOString(),
+    end_time: endDay.endOf("day").toISOString(),
+  };
 
   const weeklyDaysData =
     calendarMode !== "weekly"
@@ -252,7 +257,7 @@ function YearDays({
           />
         )}
 
-        {calendarMode === "weekly" && <WeeklyMode />}
+        {calendarMode === "weekly" && <WeeklyMode weekRange={weeklyApiRange} />}
       </div>
     </div>
   );
