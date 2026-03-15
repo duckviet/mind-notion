@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Eye, EyeOff, Loader2, User, Lock } from "lucide-react";
+import { Eye, EyeOff, Loader2, User, Lock, Chrome } from "lucide-react";
 import { useLogin } from "../api/useLogin";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -37,6 +37,9 @@ export const LoginForm = ({
 }: LoginFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const loginMutation = useLogin();
+  const backendBaseUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api/v1";
+  const googleLoginUrl = `${backendBaseUrl.replace(/\/$/, "")}/auth/google/login`;
 
   const {
     register,
@@ -162,6 +165,18 @@ export const LoginForm = ({
             ) : (
               "Sign In"
             )}
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-11 border-border hover:bg-accent/50 text-text-primary transition-all flex items-center justify-center gap-2"
+            onClick={() => {
+              window.location.href = googleLoginUrl;
+            }}
+          >
+            <Chrome className="h-5 w-5" />
+            Continue with Google
           </Button>
 
           <div className="relative my-6">

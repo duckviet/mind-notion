@@ -124,7 +124,6 @@ function HomePageContent() {
   };
 
   const handleUpdate = async (id: string, data: ReqUpdateNote) => {
-    console.log("Updating note", id, data);
     try {
       await updateNote({ id, data });
     } catch (error) {

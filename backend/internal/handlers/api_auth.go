@@ -34,7 +34,7 @@ func NewAuthAPI(authService service.AuthService, cfg *config.Config) *AuthAPI {
 }
 
 // Get /api/v1/auth/check
-// Check current JWT and return basic info 
+// Check current JWT and return basic info
 func (api *AuthAPI) CheckAuth(c *gin.Context) {
 	// Lấy token từ header Authorization: Bearer <token>
 	authHeader := c.GetHeader("Authorization")
@@ -56,17 +56,20 @@ func (api *AuthAPI) CheckAuth(c *gin.Context) {
 		return
 	}
 	// Trả về thông tin cơ bản của user
-    c.JSON(http.StatusOK, gin.H{
-        "id":       user.ID,
-        "username": user.Username,
-        "email":    user.Email,
-        "name":     user.Name,
-        "status":   user.Status,
-    })
+	c.JSON(http.StatusOK, gin.H{
+		"id":             user.ID,
+		"username":       user.Username,
+		"email":          user.Email,
+		"name":           user.Name,
+		"avatar":         user.Avatar,
+		"avatar_url":     user.Avatar,
+		"status":         user.Status,
+		"email_verified": user.EmailVerified,
+	})
 }
 
 // Post /api/v1/auth/login
-// Authenticate to receive a JWT 
+// Authenticate to receive a JWT
 func (api *AuthAPI) Login(c *gin.Context) {
 	var req dto.ReqLoginCredentials
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -92,7 +95,7 @@ func (api *AuthAPI) Login(c *gin.Context) {
 }
 
 // Post /api/v1/auth/logout
-// Logout and invalidate JWT 
+// Logout and invalidate JWT
 func (api *AuthAPI) Logout(c *gin.Context) {
 	// Try to get token from Authorization header or cookie
 	token := extractTokenFromRequest(c)
@@ -119,7 +122,7 @@ func (api *AuthAPI) Logout(c *gin.Context) {
 }
 
 // Post /api/v1/auth/register
-// Register a new user 
+// Register a new user
 func (api *AuthAPI) Register(c *gin.Context) {
 	var req dto.ReqUserRegistration
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -142,13 +145,13 @@ func (api *AuthAPI) Register(c *gin.Context) {
 }
 
 // Post /api/v1/auth/refresh-token
-// Refresh a JWT 
+// Refresh a JWT
 func (api *AuthAPI) RefreshToken(c *gin.Context) {
 	var req dto.RefreshTokenRequest
 
 	// 1. Lấy Token: Ưu tiên Cookie (vì HttpOnly an toàn hơn), sau đó mới đến Body
 	refreshToken := getRefreshTokenFromCookie(c)
-	
+
 	if refreshToken == "" {
 		// Nếu cookie không có, thử đọc từ Body (để hỗ trợ các client khác như Mobile)
 		if err := c.ShouldBindJSON(&req); err == nil {
@@ -165,10 +168,10 @@ func (api *AuthAPI) RefreshToken(c *gin.Context) {
 	// 2. Gọi Service để verify và tạo cặp token mới
 	tokens, err := api.authService.RefreshToken(c.Request.Context(), refreshToken)
 	if err != nil {
-		// QUAN TRỌNG: Nếu token hết hạn hoặc không hợp lệ, xóa luôn Cookie cũ 
+		// QUAN TRỌNG: Nếu token hết hạn hoặc không hợp lệ, xóa luôn Cookie cũ
 		// để trình duyệt sạch sẽ và trả về 401.
-		clearAuthCookies(c, api.config) 
-		
+		clearAuthCookies(c, api.config)
+
 		// Trả về 401 để Axios Interceptor bên Frontend biết đường mà Redirect sang /auth
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid or expired refresh token"})
 		return

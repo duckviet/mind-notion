@@ -54,5 +54,13 @@ properties:
   updated_at:
     type: string
     format: date-time
+  google_event_id:
+    type: string
+    nullable: true
+    description: Google Event ID if synced
+  source:
+    type: string
+    description: Event source (local or google)
+    default: "local"
 
 required: [id, user_id, title, type, start_time]

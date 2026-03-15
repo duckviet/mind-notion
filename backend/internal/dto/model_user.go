@@ -18,13 +18,21 @@ type User struct {
 	// User UUID
 	Id string `json:"id"`
 
+	Username string `json:"username"`
+
 	Name string `json:"name"`
 
 	Email string `json:"email"`
 
 	Avatar string `json:"avatar"`
 
-	CreatedAt time.Time `json:"created_at"`
+	AvatarUrl string `json:"avatar_url"`
 
-	UpdatedAt time.Time `json:"updated_at"`
+	Status string `json:"status"`
+
+	EmailVerified bool `json:"email_verified"`
+
+	CreatedAt time.Time `json:"created_at,omitempty"`
+
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }

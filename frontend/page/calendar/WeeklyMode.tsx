@@ -21,8 +21,16 @@ import { EventDialog } from "@/features/event/components";
 import type { ResDetailEvent } from "@/features/event/types";
 import type { ReqCreateEvent, ReqUpdateEvent } from "@/features/event/api";
 import { Button } from "@/shared/components/ui/button";
+import {
+  GoogleCalendarToolbar,
+  useGoogleCalendarPush,
+} from "@/features/googleCalendar";
 
 type DayName = (typeof DAYS)[number];
+type WeekRange = {
+  start_time: string;
+  end_time: string;
+};
 
 export type DayTask = ResDetailEvent;
 
@@ -44,13 +52,21 @@ const getWeekRange = () => {
   };
 };
 
-const DayMode = () => {
+type DayModeProps = {
+  weekRange?: WeekRange;
+};
+
+const DayMode = ({ weekRange: externalWeekRange }: DayModeProps) => {
   const queryClient = useQueryClient();
-  const weekRange = useMemo(() => getWeekRange(), []);
+  const weekRange = useMemo(
+    () => externalWeekRange ?? getWeekRange(),
+    [externalWeekRange],
+  );
   const eventsQuery = useEventsRange(weekRange);
   const { data: eventsData, isLoading, queryKey } = eventsQuery;
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
+  const pushToGoogle = useGoogleCalendarPush();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
@@ -133,14 +149,25 @@ const DayMode = () => {
     setDialogOpen(true);
   };
 
-  const handleSubmit = async (payload: ReqCreateEvent | ReqUpdateEvent) => {
+  const handleSubmit = async (
+    payload: ReqCreateEvent | ReqUpdateEvent,
+    syncToGoogle: boolean,
+  ) => {
+    let eventIdToSync = selectedEvent?.id;
+
     if (dialogMode === "create") {
-      await createEvent.mutateAsync(payload as ReqCreateEvent);
+      const res = await createEvent.mutateAsync(payload as ReqCreateEvent);
+      // Depending on API generation, res might be the event itself or { data: event }
+      eventIdToSync = (res as any)?.id || (res as any)?.data?.id;
     } else if (selectedEvent?.id) {
       await updateEvent.mutateAsync({
         id: selectedEvent.id,
         data: payload,
       });
+    }
+
+    if (syncToGoogle && eventIdToSync) {
+      pushToGoogle.mutate(eventIdToSync);
     }
     if (queryKey) {
       await queryClient.invalidateQueries({ queryKey });
@@ -447,7 +474,10 @@ const DayMode = () => {
       {/* Header with Create button */}
       <div className="flex-shrink-0  py-4   border-b border-border flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text-primary">Weekly</h2>
-        <Button onClick={openCreate}>Create Event</Button>
+        <div className="flex items-center gap-2">
+          <GoogleCalendarToolbar />
+          <Button onClick={openCreate}>Create Event</Button>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden border-t border-border bg-accent rounded-lg">

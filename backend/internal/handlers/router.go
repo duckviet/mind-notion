@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -12,12 +13,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Public paths that don't require authentication
-var publicPaths = []string{
+// Public paths that don't require authentication (exact match)
+var publicExactPaths = []string{
 	"/health",
 	"/ws",
-	"/api/v1/auth",
-	"/auth",
+	"/api/v1/auth/login",
+	"/api/v1/auth/register",
+	"/api/v1/auth/logout",
+	"/api/v1/auth/check",
+	"/api/v1/auth/refresh-token",
+	"/api/v1/auth/google/calendar/callback",
+	"/api/v1/auth/google/login",
+	"/api/v1/auth/google/login/callback",
+}
+
+// Prefix-matched public paths
+var publicPrefixPaths = []string{
 	"/api/v1/public/notes",
 	"/api/v1/public/collab",
 	"/internal/v1/ai",
@@ -38,6 +49,8 @@ func SetupRouter(
 	aiInternalAPI *AIInternalAPI,
 	wsHandler *WebSocketHandler,
 	searchHandler *SearchHandler,
+	googleCalendarAPI *GoogleCalendarAPI,
+	googleLoginAPI *GoogleLoginAPI,
 ) *gin.Engine {
 	gin.SetMode(cfg.Server.Mode)
 	router := gin.Default()
@@ -64,6 +77,22 @@ func SetupRouter(
 
 	if aiInternalAPI != nil {
 		router.POST("/internal/v1/ai/tools/execute", aiInternalAPI.ExecuteTool)
+	}
+
+	// Google Calendar routes
+	if googleCalendarAPI != nil {
+		router.GET("/api/v1/auth/google/calendar", googleCalendarAPI.InitiateOAuth)
+		router.GET("/api/v1/auth/google/calendar/callback", googleCalendarAPI.OAuthCallback)
+		router.GET("/api/v1/auth/google/calendar/status", googleCalendarAPI.GetStatus)
+		router.DELETE("/api/v1/auth/google/calendar", googleCalendarAPI.Disconnect)
+		router.POST("/api/v1/calendar/google/sync", googleCalendarAPI.SyncFromGoogle)
+		router.POST("/api/v1/calendar/google/push/:id", googleCalendarAPI.PushToGoogle)
+	}
+
+	// Google Login routes
+	if googleLoginAPI != nil {
+		router.GET("/api/v1/auth/google/login", googleLoginAPI.InitiateOAuth)
+		router.GET("/api/v1/auth/google/login/callback", googleLoginAPI.OAuthCallback)
 	}
 
 	// API handlers
@@ -151,9 +180,11 @@ func authMiddleware(authService service.AuthService) gin.HandlerFunc {
 		path := c.Request.URL.Path
 
 		if isPublicPath(path) {
+			log.Println("Public path: ", path)
 			c.Next()
 			return
 		}
+		log.Println("Not Public path: ", path)
 
 		// Ưu tiên Authorization header, fallback sang HttpOnly cookie (access_token)
 		token := extractTokenFromRequest(c)
@@ -174,11 +205,18 @@ func authMiddleware(authService service.AuthService) gin.HandlerFunc {
 }
 
 func isPublicPath(path string) bool {
-	for _, p := range publicPaths {
+	for _, p := range publicExactPaths {
+		if path == p {
+			return true
+		}
+	}
+
+	for _, p := range publicPrefixPaths {
 		if path == p || strings.HasPrefix(path, p+"/") {
 			return true
 		}
 	}
+
 	return false
 }
 

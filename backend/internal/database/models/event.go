@@ -45,9 +45,11 @@ type Event struct {
 	Status      string     `gorm:"default:'pending'" json:"status"`
 	Priority    string     `gorm:"default:'medium'" json:"priority"`
 	CategoryID  *string    `gorm:"type:uuid;index" json:"category_id"`
-	IsAllDay    bool       `gorm:"default:false" json:"is_all_day"`
-	CreatedAt   time.Time  `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt   time.Time  `gorm:"autoUpdateTime" json:"updated_at"`
+	IsAllDay      bool       `gorm:"default:false" json:"is_all_day"`
+	GoogleEventID *string   `gorm:"type:text;index" json:"google_event_id,omitempty"`
+	Source        string    `gorm:"default:'local'" json:"source"` // "local" | "google"
+	CreatedAt     time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt     time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 	
 	User        *User      `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE" json:"user,omitempty"`
 }

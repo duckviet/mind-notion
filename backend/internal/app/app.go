@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database"
@@ -45,6 +46,7 @@ func New(ctx context.Context) (*App, func(), error) {
 
 	// Initialize repositories
 	userRepo := repository.NewUserRepository(db)
+	accountRepo := repository.NewAccountRepository(db)
 	noteRepo := repository.NewNoteRepository(db)
 	folderRepo := repository.NewFolderRepository(db)
 	templateRepo := repository.NewTemplateRepository(db)
@@ -83,7 +85,7 @@ func New(ctx context.Context) (*App, func(), error) {
 	folderService := service.NewFolderService(folderRepo, noteRepo, cfg)
 	templateService := service.NewTemplateService(templateRepo)
 	eventService := service.NewEventService(eventRepo)
-	authService := service.NewAuthService(userRepo, cfg)
+	authService := service.NewAuthService(userRepo, accountRepo, cfg)
 	commentService := service.NewCommentService(commentRepo, noteRepo, userRepo)
 	aiRunAPI := handlers.NewAIRunAPI(cfg, noteService)
 	aiInternalAPI := handlers.NewAIInternalAPI(noteService, cfg)
@@ -98,8 +100,38 @@ func New(ctx context.Context) (*App, func(), error) {
 	collabService := service.NewCollaborationService(userRepo, noteRepo, clientRepo, userService, noteService)
 	wsHandler := handlers.NewWebSocketHandler(collabService)
 
+	// Initialize Google Calendar service (optional - only if credentials are configured)
+	var googleCalendarAPI *handlers.GoogleCalendarAPI
+	var googleLoginAPI *handlers.GoogleLoginAPI // Added GoogleLoginAPI
+	if cfg.Google.ClientID != "" && cfg.Google.ClientSecret != "" {
+		gcalService := service.NewGoogleCalendarService(db.DB, accountRepo, cfg.Google)
+		googleCalendarAPI = handlers.NewGoogleCalendarAPI(gcalService, authService)
+		log.Printf("📅 Google Calendar integration: ✅ Enabled")
+
+		// Also initialize Google Login since we have credentials
+		googleLoginAPI = handlers.NewGoogleLoginAPI(authService, cfg)
+		log.Printf("🔑 Google Login integration: ✅ Enabled")
+
+		// Start background auto-sync goroutine (every 15 minutes)
+		go func() {
+			ticker := time.NewTicker(15 * time.Minute)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-ticker.C:
+					log.Printf("🔄 Google Calendar: running auto-sync for all users...")
+					gcalService.SyncAllUsers(context.Background())
+				case <-ctx.Done():
+					return
+				}
+			}
+		}()
+	} else {
+		log.Printf("📅 Google Calendar integration: ⚠️  Disabled (missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET)")
+	}
+
 	// Initialize handlers
-	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, templateService, *eventService, mediaService, commentService, aiRunAPI, aiInternalAPI, wsHandler, searchHandler)
+	router := handlers.SetupRouter(cfg, authService, userService, noteService, folderService, templateService, *eventService, mediaService, commentService, aiRunAPI, aiInternalAPI, wsHandler, searchHandler, googleCalendarAPI, googleLoginAPI)
 
 	app := &App{
 		router: router,

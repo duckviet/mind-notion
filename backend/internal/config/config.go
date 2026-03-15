@@ -19,6 +19,7 @@ type Config struct {
 	Cohere   CohereConfig   `mapstructure:"cohere"`
 	CDN      CDNConfig      `mapstructure:"cdn" validate:"required"`
 	Collab   CollabConfig   `mapstructure:"collab" validate:"required"`
+	Google   GoogleConfig   `mapstructure:"google"`
 }
 
 // Nested structs - chỉ cần tag cho field, prefix tự động
@@ -68,6 +69,13 @@ type CDNConfig struct {
 	Region          string `mapstructure:"region" validate:"required,min=1"`
 	BucketName      string `mapstructure:"bucket_name" validate:"required,min=1"`
 	PublicBaseURL   string `mapstructure:"public_base_url" validate:"omitempty,url"`
+}
+
+type GoogleConfig struct {
+	ClientID         string `mapstructure:"client_id"`
+	ClientSecret     string `mapstructure:"client_secret"`
+	RedirectURI      string `mapstructure:"redirect_uri"` // For Calendar
+	LoginRedirectURI string `mapstructure:"login_redirect_uri"` // For Auth Login
 }
 
 type CollabConfig struct {

@@ -82,13 +82,15 @@ func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest) (*m
 	}
 
 	// Create user
+	hashedPasswordStr := string(hashedPassword)
 	user := &models.User{
-		Username: req.Username,
-		Email:    req.Email,
-		Password: string(hashedPassword),
-		Name:     req.Name,
-		Avatar:   req.Avatar,
-		Status:   models.UserStatusActive,
+		Username:      req.Username,
+		Email:         req.Email,
+		Password:      &hashedPasswordStr,
+		Name:          req.Name,
+		Avatar:        req.Avatar,
+		Status:        models.UserStatusActive,
+		EmailVerified: false,
 	}
 
 	if err := s.repo.Create(ctx, user); err != nil {
@@ -197,7 +199,10 @@ func (s *userService) Authenticate(ctx context.Context, email, password string) 
 	}
 
 	// Check password
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+	if user.Password == nil || *user.Password == "" {
+		return nil, ErrInvalidCredentials
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(password)); err != nil {
 		return nil, ErrInvalidCredentials
 	}
 

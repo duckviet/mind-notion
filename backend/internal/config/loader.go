@@ -109,4 +109,10 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("ai.service_url", "http://localhost:8090")
 	v.SetDefault("ai.service_token", "dev-ai-service-token")
 	v.SetDefault("ai.request_timeout_ms", 30000)
+
+	// Google OAuth defaults
+	v.SetDefault("google.client_id", "")
+	v.SetDefault("google.client_secret", "")
+	v.SetDefault("google.redirect_uri", "http://localhost:8080/api/v1/auth/google/calendar/callback")
+	v.SetDefault("google.login_redirect_uri", "http://localhost:8080/api/v1/auth/google/login/callback")
 }

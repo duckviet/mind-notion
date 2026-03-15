@@ -53,8 +53,9 @@ export const useLogin = () => {
     onError: (error) => {
       // Xử lý hiển thị lỗi chi tiết từ Backend
       if (error instanceof AxiosError && error.response?.data) {
-        // Giả sử backend trả về { message: "Wrong password" }
-        const msg = (error.response.data as any).message || "Login failed";
+        const responseData = error.response.data as any;
+        const msg =
+          responseData.error || responseData.message || "Login failed";
         toast.error(msg);
       } else {
         toast.error("Something went wrong. Please try again.");

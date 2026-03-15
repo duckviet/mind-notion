@@ -23,35 +23,37 @@ type UserAPI struct {
 }
 
 // Delete /api/v1/user/delete
-// Delete current user 
+// Delete current user
 func (api *UserAPI) DeleteMe(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
 
 // Get /api/v1/user/me
-// Get current user information 
+// Get current user information
 func (api *UserAPI) GetMe(c *gin.Context) {
 	userVal, ok := c.Get("user")
-    if !ok {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-        return
-    }
-    u := userVal.(*dbmodels.User)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	u := userVal.(*dbmodels.User)
 
 	c.JSON(200, gin.H{
-		"id": u.ID,
-		"username": u.Username,
-		"email": u.Email,
-		"name": u.Name,
-		"status": u.Status,
+		"id":             u.ID,
+		"username":       u.Username,
+		"email":          u.Email,
+		"name":           u.Name,
+		"avatar":         u.Avatar,
+		"avatar_url":     u.Avatar,
+		"status":         u.Status,
+		"email_verified": u.EmailVerified,
 	})
 }
 
 // Patch /api/v1/user/update
-// Update current user information 
+// Update current user information
 func (api *UserAPI) UpdateMe(c *gin.Context) {
 	// Your handler implementation
 	c.JSON(200, gin.H{"status": "OK"})
 }
-

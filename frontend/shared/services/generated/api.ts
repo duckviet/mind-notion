@@ -38,14 +38,27 @@ export interface ReqUserRegistration {
   email: string;
 }
 
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UserStatus = {
+  active: "active",
+  inactive: "inactive",
+  suspended: "suspended",
+} as const;
+
 export interface User {
   /** User UUID */
   id: string;
+  username: string;
   name: string;
   email: string;
   avatar: string;
-  created_at: string;
-  updated_at: string;
+  avatar_url: string;
+  status: UserStatus;
+  email_verified: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ReqUpdateProfile {
@@ -318,6 +331,9 @@ export interface ReqCreateEvent {
   priority?: ReqCreateEventPriority;
   category_id?: number;
   is_all_day?: boolean;
+  /** @nullable */
+  google_event_id?: string | null;
+  source?: string;
 }
 
 export type ReqUpdateEventStatus =
@@ -425,6 +441,13 @@ export interface ResDetailEvent {
   is_all_day?: boolean;
   created_at?: string;
   updated_at?: string;
+  /**
+   * Google Event ID if synced
+   * @nullable
+   */
+  google_event_id?: string | null;
+  /** Event source (local or google) */
+  source?: string;
 }
 
 export interface ResUploadedMedia {
@@ -901,11 +924,7 @@ export const useLogout = <
  * @summary Check current JWT and return basic info
  */
 export const checkAuth = (signal?: AbortSignal) => {
-  return customInstance<ResAuthTokens>({
-    url: `/auth/check`,
-    method: "GET",
-    signal,
-  });
+  return customInstance<User>({ url: `/auth/check`, method: "GET", signal });
 };
 
 export const getCheckAuthQueryKey = () => {
