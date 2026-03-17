@@ -7,6 +7,7 @@ import {
   Heading3,
   List,
   ListOrdered,
+  PencilRuler,
   Quote,
 } from "lucide-react";
 import { SlashCommand } from "./SplashCommand";
@@ -58,6 +59,12 @@ export const BASE_SLASH_COMMANDS: SlashCommand[] = [
     action: (editor) => editor.chain().focus().toggleCodeBlock().run(),
   },
   {
+    label: "Drawing",
+    description: "Insert collaborative whiteboard block",
+    icon: <PencilRuler size={16} />,
+    action: (editor) => editor.commands.insertDrawing(),
+  },
+  {
     label: "Bold",
     description: "Emphasize text",
     icon: <Bold size={16} />,
@@ -66,7 +73,7 @@ export const BASE_SLASH_COMMANDS: SlashCommand[] = [
 ];
 
 export function createTemplateCommand(
-  onOpenTemplates: () => void
+  onOpenTemplates: () => void,
 ): SlashCommand {
   return {
     label: "Browse Templates",

@@ -6,6 +6,7 @@ const TOP_OF_MIND_ZONE_IDS = new Set([
 ]);
 
 const CHAT_BOT_ZONE_IDS = new Set(["chat-bot", "chat-bot-sidebar"]);
+const SIDEBAR_FOLDER_SORT_PREFIX = "tree-folder-sort-";
 
 export type HomeDropAction =
   | { type: "none" }
@@ -51,6 +52,14 @@ export function resolveHomeDropAction(event: DragEndEvent): HomeDropAction {
       type: "to-folder",
       activeId,
       folderId: overId.replace("folder-", ""),
+    };
+  }
+
+  if (overId.startsWith(SIDEBAR_FOLDER_SORT_PREFIX)) {
+    return {
+      type: "to-folder",
+      activeId,
+      folderId: overId.replace(SIDEBAR_FOLDER_SORT_PREFIX, ""),
     };
   }
 

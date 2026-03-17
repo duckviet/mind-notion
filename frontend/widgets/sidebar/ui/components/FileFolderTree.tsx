@@ -1,15 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import {
-  closestCenter,
-  DndContext,
-  DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
+import { DragEndEvent } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
@@ -25,7 +18,7 @@ import {
   GripVertical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SortableItem } from "@/shared/components/dnd";
+import { SortableItem, useGlobalDndHandlers } from "@/shared/components/dnd";
 import { useFolders } from "@/shared/hooks/useFolders";
 import { useNotes } from "@/shared/hooks/useNotes";
 import { reorderFolders as apiReorderFolders } from "@/shared/services/generated/api";
@@ -36,6 +29,7 @@ type FolderNode = {
   parentId: string;
   order: number;
   children: FolderNode[];
+  notes?: { id: string; name: string }[];
 };
 
 type FileFolderTreeProps = {
@@ -43,6 +37,19 @@ type FileFolderTreeProps = {
 };
 
 const ROOT_PARENT_KEY = "__root__";
+const FOLDER_SORTABLE_PREFIX = "tree-folder-sort-";
+
+function getFolderSortableId(folderId: string): string {
+  return `${FOLDER_SORTABLE_PREFIX}${folderId}`;
+}
+
+function parseFolderSortableId(sortableId: string): string | null {
+  if (!sortableId.startsWith(FOLDER_SORTABLE_PREFIX)) {
+    return null;
+  }
+
+  return sortableId.slice(FOLDER_SORTABLE_PREFIX.length);
+}
 
 function isFolderRoute(pathname: string, folderId: string): boolean {
   return pathname === `/folder/${folderId}`;
@@ -59,12 +66,6 @@ export function FileFolderTree({ pathname }: FileFolderTreeProps) {
   const [isReordering, setIsReordering] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
     new Set(),
-  );
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
-    }),
   );
 
   const {
@@ -113,6 +114,7 @@ export function FileFolderTree({ pathname }: FileFolderTreeProps) {
         parentId: folder.parent_id,
         order: folder.order,
         children: [],
+        notes: folder.notes || [],
       };
     }
 
@@ -142,6 +144,11 @@ export function FileFolderTree({ pathname }: FileFolderTreeProps) {
       grouped.set(folderId, existing);
     }
 
+    for (const [folderId, folderNotes] of grouped) {
+      if (map[folderId]) {
+        map[folderId].notes = folderNotes;
+      }
+    }
     return {
       rootFolders: roots,
       notesByFolder: grouped,
@@ -152,26 +159,6 @@ export function FileFolderTree({ pathname }: FileFolderTreeProps) {
   }, [folders, notes]);
 
   const isLoading = isLoadingFolders || isLoadingNotes;
-
-  useEffect(() => {
-    if (!folders.length) {
-      return;
-    }
-
-    setExpandedFolders((prev) => {
-      if (prev.size > 0) {
-        return prev;
-      }
-
-      const next = new Set<string>();
-      for (const folder of folders) {
-        if (!folder.parent_id) {
-          next.add(folder.id);
-        }
-      }
-      return next;
-    });
-  }, [folders]);
 
   const toggleFolder = (folderId: string) => {
     setExpandedFolders((prev) => {
@@ -185,81 +172,114 @@ export function FileFolderTree({ pathname }: FileFolderTreeProps) {
     });
   };
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || isReordering) {
-      return;
-    }
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || isReordering) {
+        return;
+      }
 
-    const activeId = active.id.toString();
-    const overId = over.id.toString();
-    if (activeId === overId) {
-      return;
-    }
+      const activeId = parseFolderSortableId(active.id.toString());
+      const overId = parseFolderSortableId(over.id.toString());
+      if (!activeId || !overId || activeId === overId) {
+        return;
+      }
 
-    const activeParent = parentByFolderId[activeId];
-    const overParent = parentByFolderId[overId];
-    if (!activeParent || !overParent || activeParent !== overParent) {
-      return;
-    }
+      const activeParent = parentByFolderId[activeId];
+      const overParent = parentByFolderId[overId];
+      if (!activeParent || !overParent || activeParent !== overParent) {
+        return;
+      }
 
-    const currentSiblingIDs = siblingsByParent.get(activeParent) || [];
-    const oldIndex = currentSiblingIDs.indexOf(activeId);
-    const newIndex = currentSiblingIDs.indexOf(overId);
-    if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) {
-      return;
-    }
+      const currentSiblingIDs = siblingsByParent.get(activeParent) || [];
+      const oldIndex = currentSiblingIDs.indexOf(activeId);
+      const newIndex = currentSiblingIDs.indexOf(overId);
+      if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) {
+        return;
+      }
 
-    const reorderedIDs = arrayMove(currentSiblingIDs, oldIndex, newIndex);
+      const reorderedIDs = arrayMove(currentSiblingIDs, oldIndex, newIndex);
 
-    setIsReordering(true);
-    try {
-      await apiReorderFolders({
-        parent_id: activeParent === ROOT_PARENT_KEY ? "" : activeParent,
-        folder_ids: reorderedIDs,
-      });
-      await refetch();
-    } catch (error) {
-      console.error("Failed to reorder folders:", error);
-    } finally {
-      setIsReordering(false);
-    }
-  };
+      setIsReordering(true);
+      try {
+        await apiReorderFolders({
+          parent_id: activeParent === ROOT_PARENT_KEY ? "" : activeParent,
+          folder_ids: reorderedIDs,
+        });
+        await refetch();
+      } catch (error) {
+        console.error("Failed to reorder folders:", error);
+      } finally {
+        setIsReordering(false);
+      }
+    },
+    [isReordering, parentByFolderId, refetch, siblingsByParent],
+  );
+
+  useGlobalDndHandlers(
+    useMemo(
+      () => ({
+        onDragEnd: (event) => {
+          void handleDragEnd(event);
+        },
+      }),
+      [handleDragEnd],
+    ),
+  );
 
   const renderNote = (note: { id: string; name: string }, depth: number) => {
     const isActive = isNoteRoute(pathname, note.id);
     return (
-      <div
+      <SortableItem
         key={note.id}
+        id={note.id}
+        // disabled={isReordering}
+        useDragHandle
         className="pr-2"
         style={{ paddingLeft: `${depth * 16 + 36}px` }}
       >
-        <Link
-          href={`/note/${note.id}/edit`}
-          className={cn(
-            "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-            isActive
-              ? "bg-surface-100 text-text-primary font-medium"
-              : "text-text-muted hover:bg-surface-100/60 hover:text-text-primary",
-          )}
-        >
-          <FileText className="size-4 shrink-0" />
-          <span className="truncate">{note.name}</span>
-        </Link>
-      </div>
+        {({ dragHandleProps }) => (
+          <div className="flex items-center w-full justify-between">
+            <Link
+              href={`/note/${note.id}/edit`}
+              className={cn(
+                "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors w-full max-w-[170px]",
+                isActive
+                  ? "bg-surface-100 text-text-primary font-medium"
+                  : "text-text-muted hover:bg-surface-100/60 hover:text-text-primary",
+              )}
+            >
+              <FileText className="size-4 shrink-0" />
+              <span className="truncate">{note.name}</span>
+            </Link>
+            <button
+              type="button"
+              {...dragHandleProps}
+              onClick={(event) => event.preventDefault()}
+              className="inline-flex size-6 items-center justify-center rounded-md text-text-muted hover:bg-surface-100/70 cursor-grab active:cursor-grabbing touch-none"
+              aria-label="Drag folder to reorder"
+            >
+              <GripVertical className="size-4" />
+            </button>
+          </div>
+        )}
+      </SortableItem>
     );
   };
 
   const renderFolder = (folder: FolderNode, depth: number) => {
     const folderNotes = notesByFolder.get(folder.id) || [];
-    const hasChildren = folder.children.length > 0 || folderNotes.length > 0;
+    const hasChildren =
+      folder.children.length > 0 ||
+      folderNotes.length > 0 ||
+      (folder.notes && folder.notes.length > 0);
     const isExpanded = expandedFolders.has(folder.id);
     const isActive = isFolderRoute(pathname, folder.id);
 
     return (
       <SortableItem
         key={folder.id}
-        id={folder.id}
+        id={getFolderSortableId(folder.id)}
         disabled={isReordering}
         useDragHandle
       >
@@ -314,21 +334,27 @@ export function FileFolderTree({ pathname }: FileFolderTreeProps) {
               </button>
             </div>
 
-            {isExpanded ? (
+            {isExpanded && (
               <div className="w-full">
-                {folder.children.length > 0 ? (
+                {/* Render sub-folders */}
+                {folder.children.length > 0 && (
                   <SortableContext
-                    items={folder.children.map((child) => child.id)}
+                    items={folder.children.map((child) =>
+                      getFolderSortableId(child.id),
+                    )}
                     strategy={verticalListSortingStrategy}
                   >
                     {folder.children.map((child) =>
                       renderFolder(child, depth + 1),
                     )}
                   </SortableContext>
-                ) : null}
-                {folderNotes.map((note) => renderNote(note, depth + 1))}
+                )}
+
+                {folder.notes && folder.notes.length > 0 && isExpanded && (
+                  <>{folder.notes.map((note) => renderNote(note, depth + 1))}</>
+                )}
               </div>
-            ) : null}
+            )}
           </div>
         )}
       </SortableItem>
@@ -345,25 +371,19 @@ export function FileFolderTree({ pathname }: FileFolderTreeProps) {
       ) : rootFolders.length === 0 && rootNotes.length === 0 ? (
         <p className="px-2 py-2 text-xs text-text-muted">No folders or files</p>
       ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={(event) => {
-            void handleDragEnd(event);
-          }}
-        >
-          <div className="space-y-0.5">
-            {rootFolders.length > 0 ? (
-              <SortableContext
-                items={rootFolders.map((folder) => folder.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {rootFolders.map((folder) => renderFolder(folder, 0))}
-              </SortableContext>
-            ) : null}
-            {rootNotes.map((note) => renderNote(note, 0))}
-          </div>
-        </DndContext>
+        <div className="space-y-0.5">
+          {rootFolders.length > 0 ? (
+            <SortableContext
+              items={rootFolders.map((folder) =>
+                getFolderSortableId(folder.id),
+              )}
+              strategy={verticalListSortingStrategy}
+            >
+              {rootFolders.map((folder) => renderFolder(folder, 0))}
+            </SortableContext>
+          ) : null}
+          {rootNotes.map((note) => renderNote(note, 0))}
+        </div>
       )}
     </SidebarTreeSection>
   );

@@ -2,7 +2,8 @@ import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Placeholder } from "@tiptap/extensions";
+import { Placeholder } from "@tiptap/extensions/placeholder";
+
 import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
 import { LocalStorageKeys } from "@/shared/configs/localStorageKeys";
 import createCollaborationExtensions from "./Extensions/ExtCollaboration";
@@ -28,6 +29,7 @@ import {
   ExtLink,
   ExtComment,
   ExtTaskList,
+  ExtDrawing,
 } from "./Extensions";
 import { migrateMathStrings } from "@tiptap/extension-mathematics";
 import { useSearchParams } from "next/navigation";
@@ -185,6 +187,13 @@ export const useTiptapEditor = ({
           return res.url;
         },
       }),
+      ExtDrawing.configure({
+        syncUri: process.env.NEXT_PUBLIC_TLDRAW_SYNC_URL || "",
+        uploadPreviewFn: async (file: File) => {
+          const res = await uploadMediaRef.current({ data: { file } });
+          return res.url;
+        },
+      }),
       ExtSplitView,
       SplitViewColumn,
       ExtAI.configure({
@@ -214,7 +223,7 @@ export const useTiptapEditor = ({
           ),
           "data-note-id": noteId ?? "",
         },
-        handleKeyDown: (_view, event) => {
+        handleKeyDown: (_view: unknown, event: KeyboardEvent) => {
           onKeyDownRef.current?.(
             event as unknown as React.KeyboardEvent<HTMLDivElement>,
           );

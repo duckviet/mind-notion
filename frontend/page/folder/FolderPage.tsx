@@ -59,6 +59,8 @@ import {
 import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
 import { TopOfMind } from "@/features/top-of-mind";
 
+const SIDEBAR_FOLDER_SORT_PREFIX = "tree-folder-sort-";
+
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
     className={`animate-pulse rounded-md  -elevated/50 ${className ?? ""}`}
@@ -242,14 +244,19 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     const activeId = active.id.toString();
     const overId = over.id.toString();
 
-    if (overId.startsWith("folder-")) {
+    const targetFolderId = overId.startsWith("folder-")
+      ? overId.replace("folder-", "")
+      : overId.startsWith(SIDEBAR_FOLDER_SORT_PREFIX)
+        ? overId.replace(SIDEBAR_FOLDER_SORT_PREFIX, "")
+        : null;
+
+    if (targetFolderId) {
       // Dropped onto a folder
-      const folderId = overId.replace("folder-", "");
-      console.log(`Dropped note ${activeId} onto folder ${folderId}`);
+      console.log(`Dropped note ${activeId} onto folder ${targetFolderId}`);
       // Remove from top of mind if it was there
       const activeNote = notes.filter((n) => n.id === activeId)[0];
       if (activeNote) {
-        handleUpdate(activeId, { ...activeNote, folder_id: folderId });
+        handleUpdate(activeId, { ...activeNote, folder_id: targetFolderId });
       }
     }
   };

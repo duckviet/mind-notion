@@ -13,3 +13,4 @@ export { default as ExtSplitView, SplitViewColumn } from "./ExtSplitView";
 export { default as ExtBlockQuote } from "./ExtQuote";
 export { default as ExtHighLight } from "./ExtHighLight";
 export { default as ExtAI } from "./ExtAI";
+export { default as ExtDrawing } from "./ExtDrawing";
