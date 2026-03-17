@@ -24,6 +24,46 @@ type FolderAPI struct {
 	folderService service.FolderService
 }
 
+// Post /api/v1/folders/reorder
+// Reorder folders by parent in a single request
+func (api *FolderAPI) ReorderFolders(c *gin.Context) {
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	u := userVal.(*dbmodels.User)
+
+	var body struct {
+		ParentID  *string  `json:"parent_id"`
+		FolderIDs []string `json:"folder_ids" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
+		return
+	}
+
+	if err := api.folderService.ReorderFolders(c.Request.Context(), u.ID, body.ParentID, body.FolderIDs); err != nil {
+		if errors.Is(err, service.ErrInvalidFolderReorder) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	parentID := ""
+	if body.ParentID != nil {
+		parentID = *body.ParentID
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"ok":         true,
+		"parent_id":  parentID,
+		"folder_ids": body.FolderIDs,
+	})
+}
+
 // Post /api/v1/folders/:id/add-note
 // Add note to folder
 func (api *FolderAPI) AddNoteToFolder(c *gin.Context) {
@@ -93,6 +133,7 @@ func (api *FolderAPI) CreateFolder(c *gin.Context) {
 		Name     string `json:"name" binding:"required"`
 		ParentID string `json:"parent_id"`
 		IsPublic bool   `json:"is_public"`
+		Order    *int   `json:"order"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
@@ -110,6 +151,7 @@ func (api *FolderAPI) CreateFolder(c *gin.Context) {
 		IsPublic: body.IsPublic,
 		UserID:   u.ID,
 		ParentID: parentID,
+		Order:    body.Order,
 	})
 	if err != nil {
 		if errors.Is(err, service.ErrFolderNotFound) {
@@ -292,18 +334,19 @@ func (api *FolderAPI) UpdateFolder(c *gin.Context) {
 		Name     string  `json:"name"`
 		ParentID *string `json:"parent_id"`
 		IsPublic *bool   `json:"is_public"`
+		Order    *int    `json:"order"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
 		return
 	}
 
-
 	// Prepare update request
 	updateReq := service.UpdateFolderRequest{
 		Name:     body.Name,
 		IsPublic: body.IsPublic,
 		ParentID: body.ParentID,
+		Order:    body.Order,
 	}
 
 	folder, err := api.folderService.UpdateFolder(c.Request.Context(), folderID, updateReq)
@@ -321,26 +364,32 @@ func (api *FolderAPI) UpdateFolder(c *gin.Context) {
 
 // FolderResponse represents the API response for a folder
 type FolderResponse struct {
-	ID              string   `json:"id"`
-	Name            string   `json:"name"`
-	ParentID        string   `json:"parent_id"`
-	IsPublic        bool     `json:"is_public"`
-	Notes           []string `json:"notes"`
-	ChildrenFolders []string `json:"children_folders"`
-	CreatedAt       string   `json:"created_at"`
-	UpdatedAt       string   `json:"updated_at"`
+	ID              string      `json:"id"`
+	Name            string      `json:"name"`
+	ParentID        string      `json:"parent_id"`
+	IsPublic        bool        `json:"is_public"`
+	Order           int         `json:"order"`
+	Notes           []FolderRef `json:"notes"`
+	ChildrenFolders []FolderRef `json:"children_folders"`
+	CreatedAt       string      `json:"created_at"`
+	UpdatedAt       string      `json:"updated_at"`
+}
+
+type FolderRef struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // toFolderResponse converts a folder model to API response
 func toFolderResponse(folder *dbmodels.Folder) FolderResponse {
-	noteIDs := make([]string, len(folder.Notes))
+	noteRefs := make([]FolderRef, len(folder.Notes))
 	for i, note := range folder.Notes {
-		noteIDs[i] = note.ID
+		noteRefs[i] = FolderRef{ID: note.ID, Name: note.Title}
 	}
 
-	childrenIDs := make([]string, len(folder.Children))
+	childrenRefs := make([]FolderRef, len(folder.Children))
 	for i, child := range folder.Children {
-		childrenIDs[i] = child.ID
+		childrenRefs[i] = FolderRef{ID: child.ID, Name: child.Name}
 	}
 
 	parentID := ""
@@ -353,8 +402,9 @@ func toFolderResponse(folder *dbmodels.Folder) FolderResponse {
 		Name:            folder.Name,
 		ParentID:        parentID,
 		IsPublic:        folder.IsPublic,
-		Notes:           noteIDs,
-		ChildrenFolders: childrenIDs,
+		Order:           folder.SortOrder,
+		Notes:           noteRefs,
+		ChildrenFolders: childrenRefs,
 		CreatedAt:       folder.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt:       folder.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}

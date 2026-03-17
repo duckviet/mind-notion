@@ -61,7 +61,7 @@ export function AppSidebar() {
       // side={isChatbotMode ? "right" : "left"}
       collapsible={isChatbotMode ? "offcanvas" : "icon"}
       variant="floating"
-      className="sticky text-text-primary ml-2 py-6"
+      className="sticky text-text-primary ml-2 py-6 max-w-[400px]"
     >
       {isChatbotMode ? (
         <ChatbotSidebarHeader onOpenMenu={openMenu} />

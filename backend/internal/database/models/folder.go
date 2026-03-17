@@ -3,8 +3,9 @@ package models
 // Folder represents a folder in the system
 type Folder struct {
 	BaseModel
-	Name      string    `gorm:"type:varchar(100);not null" json:"name"`
-	IsPublic  bool      `gorm:"default:false" json:"is_public"`
+	Name      string `gorm:"type:varchar(100);not null" json:"name"`
+	IsPublic  bool   `gorm:"default:false" json:"is_public"`
+	SortOrder int    `gorm:"column:order_index;not null;default:1;index" json:"order"`
 
 	// Foreign Keys
 	UserID   string  `gorm:"type:uuid;not null" json:"user_id"`

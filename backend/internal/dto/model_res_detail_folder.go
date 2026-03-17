@@ -23,9 +23,11 @@ type ResDetailFolder struct {
 
 	IsPublic bool `json:"is_public"`
 
-	Notes []string `json:"notes"`
+	Order int32 `json:"order"`
 
-	ChildrenFolders []string `json:"children_folders"`
+	Notes []ResDetailFolderNotesInner `json:"notes"`
+
+	ChildrenFolders []ResDetailFolderChildrenFoldersInner `json:"children_folders"`
 
 	CreatedAt time.Time `json:"created_at"`
 

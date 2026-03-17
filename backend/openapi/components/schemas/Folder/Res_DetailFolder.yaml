@@ -12,17 +12,45 @@ properties:
   is_public:
     type: boolean
     example: false
+  order:
+    type: integer
+    minimum: 1
+    example: 1
 
   notes:
     type: array
     items:
-      type: string
-    example: ["1234567890", "1234567891"]
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1234567890"
+        name:
+          type: string
+          example: "My Note"
+      required: [id, name]
+    example:
+      - id: "1234567890"
+        name: "My Note"
+      - id: "1234567891"
+        name: "Meeting Summary"
   children_folders:
     type: array
     items:
-      type: string
-    example: ["1234567890", "1234567891"]
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1234567890"
+        name:
+          type: string
+          example: "Work"
+      required: [id, name]
+    example:
+      - id: "1234567890"
+        name: "Work"
+      - id: "1234567891"
+        name: "Personal"
 
   created_at:
     type: string
@@ -39,6 +67,7 @@ required:
     name,
     parent_id,
     is_public,
+    order,
     notes,
     children_folders,
     created_at,

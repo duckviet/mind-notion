@@ -913,6 +913,48 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /folders/reorder:
+    post:
+      summary: Reorder folders by parent
+      operationId: reorderFolders
+      tags:
+        - Folder
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Req_ReorderFolders'
+      responses:
+        '200':
+          description: Folders reordered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  parent_id:
+                    type: string
+                    example: ''
+                  folder_ids:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - ok
+                  - parent_id
+                  - folder_ids
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   '/folders/{id}':
     get:
       summary: Get folder by ID
@@ -1564,10 +1606,32 @@ components:
         is_public:
           type: boolean
           example: true
+        order:
+          type: integer
+          minimum: 1
+          example: 1
       required:
         - name
         - parent_id
         - is_public
+    Req_ReorderFolders:
+      type: object
+      properties:
+        parent_id:
+          type: string
+          description: Parent folder ID. Use empty string for root folders.
+          example: ''
+        folder_ids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          example:
+            - folder-1
+            - folder-2
+            - folder-3
+      required:
+        - folder_ids
     Req_UpdateFolder:
       type: object
       properties:
@@ -1580,6 +1644,10 @@ components:
         is_public:
           type: boolean
           example: false
+        order:
+          type: integer
+          minimum: 1
+          example: 1
     Req_AddNote:
       type: object
       properties:
@@ -1615,20 +1683,48 @@ components:
         is_public:
           type: boolean
           example: false
+        order:
+          type: integer
+          minimum: 1
+          example: 1
         notes:
           type: array
           items:
-            type: string
+            type: object
+            properties:
+              id:
+                type: string
+                example: '1234567890'
+              name:
+                type: string
+                example: My Note
+            required:
+              - id
+              - name
           example:
-            - '1234567890'
-            - '1234567891'
+            - id: '1234567890'
+              name: My Note
+            - id: '1234567891'
+              name: Meeting Summary
         children_folders:
           type: array
           items:
-            type: string
+            type: object
+            properties:
+              id:
+                type: string
+                example: '1234567890'
+              name:
+                type: string
+                example: Work
+            required:
+              - id
+              - name
           example:
-            - '1234567890'
-            - '1234567891'
+            - id: '1234567890'
+              name: Work
+            - id: '1234567891'
+              name: Personal
         created_at:
           type: string
           format: date-time
@@ -1642,6 +1738,7 @@ components:
         - name
         - parent_id
         - is_public
+        - order
         - notes
         - children_folders
         - created_at

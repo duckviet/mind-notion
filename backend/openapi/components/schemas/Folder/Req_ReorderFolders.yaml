@@ -1,0 +1,13 @@
+type: object
+properties:
+  parent_id:
+    type: string
+    description: Parent folder ID. Use empty string for root folders.
+    example: ""
+  folder_ids:
+    type: array
+    minItems: 1
+    items:
+      type: string
+    example: ["folder-1", "folder-2", "folder-3"]
+required: [folder_ids]

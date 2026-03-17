@@ -71,12 +71,23 @@ export interface ReqCreateFolder {
   name: string;
   parent_id: string;
   is_public: boolean;
+  /** @minimum 1 */
+  order?: number;
+}
+
+export interface ReqReorderFolders {
+  /** Parent folder ID. Use empty string for root folders. */
+  parent_id?: string;
+  /** @minItems 1 */
+  folder_ids: string[];
 }
 
 export interface ReqUpdateFolder {
   name?: string;
   parent_id?: string;
   is_public?: boolean;
+  /** @minimum 1 */
+  order?: number;
 }
 
 export interface ReqAddNote {
@@ -88,13 +99,25 @@ export interface ReqRemoveFolder {
   folder_id: string;
 }
 
+export type ResDetailFolderNotesItem = {
+  id: string;
+  name: string;
+};
+
+export type ResDetailFolderChildrenFoldersItem = {
+  id: string;
+  name: string;
+};
+
 export interface ResDetailFolder {
   id: string;
   name: string;
   parent_id: string;
   is_public: boolean;
-  notes: string[];
-  children_folders: string[];
+  /** @minimum 1 */
+  order: number;
+  notes: ResDetailFolderNotesItem[];
+  children_folders: ResDetailFolderChildrenFoldersItem[];
   created_at: string;
   updated_at: string;
 }
@@ -589,6 +612,12 @@ export type ListFolders200 = {
   limit?: number;
   /** Number of folders skipped */
   offset?: number;
+};
+
+export type ReorderFolders200 = {
+  ok: boolean;
+  parent_id: string;
+  folder_ids: string[];
 };
 
 export type ListEventsParams = {
@@ -4000,6 +4029,101 @@ export function useListFolders<
 
   return query;
 }
+
+/**
+ * @summary Reorder folders by parent
+ */
+export const reorderFolders = (
+  reqReorderFolders: ReqReorderFolders,
+  signal?: AbortSignal,
+) => {
+  return customInstance<ReorderFolders200>({
+    url: `/folders/reorder`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: reqReorderFolders,
+    signal,
+  });
+};
+
+export const getReorderFoldersMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof reorderFolders>>,
+    TError,
+    { data: ReqReorderFolders },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof reorderFolders>>,
+  TError,
+  { data: ReqReorderFolders },
+  TContext
+> => {
+  const mutationKey = ["reorderFolders"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof reorderFolders>>,
+    { data: ReqReorderFolders }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return reorderFolders(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ReorderFoldersMutationResult = NonNullable<
+  Awaited<ReturnType<typeof reorderFolders>>
+>;
+export type ReorderFoldersMutationBody = ReqReorderFolders;
+export type ReorderFoldersMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Reorder folders by parent
+ */
+export const useReorderFolders = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof reorderFolders>>,
+      TError,
+      { data: ReqReorderFolders },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof reorderFolders>>,
+  TError,
+  { data: ReqReorderFolders },
+  TContext
+> => {
+  const mutationOptions = getReorderFoldersMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
 
 /**
  * @summary Get folder by ID

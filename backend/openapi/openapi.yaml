@@ -85,6 +85,8 @@ paths:
     $ref: "./paths/folder/create.yaml"
   /folders/list:
     $ref: "./paths/folder/list.yaml"
+  /folders/reorder:
+    $ref: "./paths/folder/reorder.yaml"
   /folders/{id}:
     $ref: "./paths/folder/get.yaml"
   /folders/{id}/update:

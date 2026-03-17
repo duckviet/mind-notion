@@ -9,13 +9,9 @@
 
 package dto
 
-type ReqUpdateFolder struct {
+type ResDetailFolderNotesInner struct {
 
-	Name string `json:"name,omitempty"`
+	Id string `json:"id"`
 
-	ParentId string `json:"parent_id,omitempty"`
-
-	IsPublic bool `json:"is_public,omitempty"`
-
-	Order int32 `json:"order,omitempty"`
+	Name string `json:"name"`
 }

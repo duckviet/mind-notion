@@ -9,13 +9,11 @@
 
 package dto
 
-type ReqUpdateFolder struct {
+type ReorderFolders200Response struct {
 
-	Name string `json:"name,omitempty"`
+	Ok bool `json:"ok"`
 
-	ParentId string `json:"parent_id,omitempty"`
+	ParentId string `json:"parent_id"`
 
-	IsPublic bool `json:"is_public,omitempty"`
-
-	Order int32 `json:"order,omitempty"`
+	FolderIds []string `json:"folder_ids"`
 }
