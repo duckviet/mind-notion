@@ -189,56 +189,86 @@ async def run_agent(
             iteration += 1
             logger.debug("LLM call #%d — messages in context: %d", iteration, len(messages))
 
-            completion = await client.chat.completions.create(
+            stream = await client.chat.completions.create(
                 model=model_name,
                 messages=messages,
                 tools=_tool_definitions(active_tools, internal_to_provider),
                 tool_choice="auto",
+                stream=True,
             )
 
-            assistant = completion.choices[0].message
-            current_text = assistant.content or ""
-            if current_text:
-                callbacks.on_token(current_text)
-                full_response += current_text
+            current_text = ""
+            tool_calls_by_index: dict[int, dict[str, Any]] = {}
 
-            tool_calls = assistant.tool_calls or []
+            async for chunk in stream:
+                if not chunk.choices:
+                    continue
+
+                delta = chunk.choices[0].delta
+                if delta is None:
+                    continue
+
+                if delta.content:
+                    callbacks.on_token(delta.content)
+                    current_text += delta.content
+                    full_response += delta.content
+
+                if not delta.tool_calls:
+                    continue
+
+                for tc_delta in delta.tool_calls:
+                    index = tc_delta.index if tc_delta.index is not None else 0
+                    if index not in tool_calls_by_index:
+                        tool_calls_by_index[index] = {
+                            "id": tc_delta.id or "",
+                            "type": "function",
+                            "function": {
+                                "name": tc_delta.function.name if tc_delta.function else "",
+                                "arguments": "",
+                            },
+                        }
+                    else:
+                        if tc_delta.id:
+                            tool_calls_by_index[index]["id"] = tc_delta.id
+                        if tc_delta.function and tc_delta.function.name:
+                            tool_calls_by_index[index]["function"]["name"] += tc_delta.function.name
+
+                    if tc_delta.function and tc_delta.function.arguments:
+                        tool_calls_by_index[index]["function"]["arguments"] += tc_delta.function.arguments
+
+            tool_calls_list = [
+                tool_calls_by_index[idx] for idx in sorted(tool_calls_by_index.keys())
+            ]
+
+            for idx, tool_call in enumerate(tool_calls_list):
+                if not tool_call["id"]:
+                    tool_call["id"] = f"tool_call_{iteration}_{idx}"
 
             assistant_message: dict[str, Any] = {
                 "role": "assistant",
                 "content": current_text,
             }
-            if tool_calls:
-                assistant_message["tool_calls"] = [
-                    {
-                        "id": tc.id,
-                        "type": "function",
-                        "function": {
-                            "name": tc.function.name,
-                            "arguments": tc.function.arguments,
-                        },
-                    }
-                    for tc in tool_calls
-                ]
+            if tool_calls_list:
+                assistant_message["tool_calls"] = tool_calls_list
 
             messages.append(assistant_message)
             _report_token_usage(callbacks, messages, model_limits.context_window)
 
-            if not tool_calls:
+            if not tool_calls_list:
                 logger.debug("No tool calls returned — ending agent loop")
                 break
 
             logger.info(
                 "Tool calls requested (%d): %s",
-                len(tool_calls),
-                [tc.function.name for tc in tool_calls],
+                len(tool_calls_list),
+                [tc["function"]["name"] for tc in tool_calls_list],
             )
 
             rejected = False
-            for tc in tool_calls:
-                provider_tool_name = tc.function.name
+            for tc in tool_calls_list:
+                provider_tool_name = tc["function"]["name"]
                 tool_name = provider_to_internal.get(provider_tool_name, provider_tool_name)
-                raw_args = tc.function.arguments or "{}"
+                raw_args = tc["function"]["arguments"] or "{}"
                 try:
                     parsed_args = json.loads(raw_args)
                     if not isinstance(parsed_args, dict):
@@ -247,29 +277,33 @@ async def run_agent(
                     parsed_args = {}
 
                 callback_args = dict(parsed_args)
-                callback_args["_tool_call_id"] = tc.id
+                callback_args["_tool_call_id"] = tc["id"]
 
                 logger.info(
                     "Tool call start — tool=%s, call_id=%s, args=%s",
                     tool_name,
-                    tc.id,
+                    tc["id"],
                     parsed_args,
                 )
                 callbacks.on_tool_call_start(tool_name, callback_args)
 
-                logger.debug("Awaiting approval — tool=%s, call_id=%s", tool_name, tc.id)
+                logger.debug(
+                    "Awaiting approval — tool=%s, call_id=%s", tool_name, tc["id"]
+                )
                 approved = await callbacks.on_tool_approval(tool_name, callback_args)
                 if not approved:
                     logger.warning(
                         "Tool call rejected by user — tool=%s, call_id=%s",
                         tool_name,
-                        tc.id,
+                        tc["id"],
                     )
                     rejected = True
                     break
 
-                logger.debug("Tool call approved — tool=%s, call_id=%s", tool_name, tc.id)
-                tool_call_token = set_tool_call_context(tc.id)
+                logger.debug(
+                    "Tool call approved — tool=%s, call_id=%s", tool_name, tc["id"]
+                )
+                tool_call_token = set_tool_call_context(tc["id"])
                 try:
                     result = await execute_tool(
                         tool_name, parsed_args, tool_registry=active_tools
@@ -280,7 +314,7 @@ async def run_agent(
                 logger.info(
                     "Tool call end — tool=%s, call_id=%s, result_len=%d",
                     tool_name,
-                    tc.id,
+                    tc["id"],
                     len(result) if isinstance(result, str) else -1,
                 )
                 callbacks.on_tool_call_end(tool_name, result)
@@ -288,7 +322,7 @@ async def run_agent(
                 messages.append(
                     {
                         "role": "tool",
-                        "tool_call_id": tc.id,
+                        "tool_call_id": tc["id"],
                         "content": result,
                     }
                 )
