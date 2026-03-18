@@ -2,6 +2,8 @@
 "use client";
 import { useMemo, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
+import { arrayMove } from "@dnd-kit/sortable";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNotes } from "@/shared/hooks/useNotes";
 import { SearchField } from "@/features/search-content";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";
@@ -13,6 +15,10 @@ const MasonryGrid = dynamic(
 import NoteCard from "@/entities/note/ui/NoteCard";
 import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
 import {
+  getListFoldersQueryKey,
+  getListNotesQueryKey,
+  getListNotesTOMQueryKey,
+  ListNotesTOMQueryResult,
   ReqUpdateNote,
   updateNoteTOM,
   useListNotesTOM,
@@ -72,6 +78,7 @@ function HomePageContent() {
   );
   const { isModalOpen, openModal, closeModal } = useModal();
   const [debouncedQuery] = useDebounce(query, 300);
+  const queryClient = useQueryClient();
 
   // Ref để track visibility của TopOfMind section
 
@@ -99,6 +106,33 @@ function HomePageContent() {
     isLoadingTopOfMindNotes,
   ]);
 
+  const topOfMindNotes = useMemo(() => {
+    return [...(topOfMindNotesData ?? [])].sort((a, b) => {
+      const orderA = a.top_of_mind ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b.top_of_mind ?? Number.MAX_SAFE_INTEGER;
+
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+
+      return (
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
+    });
+  }, [topOfMindNotesData]);
+
+  const getNextTopOfMindOrder = useCallback(() => {
+    const maxOrder = topOfMindNotes.reduce((max, note) => {
+      if (typeof note.top_of_mind !== "number") {
+        return max;
+      }
+
+      return note.top_of_mind > max ? note.top_of_mind : max;
+    }, 0);
+
+    return maxOrder + 1;
+  }, [topOfMindNotes]);
+
   const notes = useMemo(() => {
     return (notesData || []).map((note) => ({
       ...note,
@@ -124,7 +158,6 @@ function HomePageContent() {
   };
 
   const handleUpdate = async (id: string, data: ReqUpdateNote) => {
-    console.log("Updating note", id, data);
     try {
       await updateNote({ id, data });
     } catch (error) {
@@ -145,19 +178,56 @@ function HomePageContent() {
         const noteToMove = findNoteById(action.activeId, notes);
         const alreadyInTopOfMind = findNoteById(
           action.activeId,
-          topOfMindNotesData,
+          topOfMindNotes,
         );
 
         if (noteToMove && !alreadyInTopOfMind) {
-          void handleUpdateTopOfMindNote(action.activeId, true);
+          void handleUpdateTopOfMindNote(
+            action.activeId,
+            getNextTopOfMindOrder(),
+          );
         }
+        return;
+      }
+      case "reorder-top-of-mind": {
+        const oldIndex = topOfMindNotes.findIndex(
+          (note) => note.id === action.activeId,
+        );
+        const newIndex = topOfMindNotes.findIndex(
+          (note) => note.id === action.overId,
+        );
+
+        if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) {
+          return;
+        }
+
+        const previousTopOfMindNotes = topOfMindNotes;
+        const reorderedNotes = arrayMove(
+          topOfMindNotes,
+          oldIndex,
+          newIndex,
+        ).map((note, index) => ({
+          ...note,
+          top_of_mind: index + 1,
+        }));
+
+        queryClient.setQueryData<ListNotesTOMQueryResult>(
+          getListNotesTOMQueryKey(),
+          reorderedNotes,
+        );
+
+        void handleReorderTopOfMindNote(
+          action.activeId,
+          newIndex + 1,
+          previousTopOfMindNotes,
+        );
         return;
       }
       case "to-chat-bot": {
         const droppedNote = findNoteById(
           action.activeId,
           notes,
-          topOfMindNotesData,
+          topOfMindNotes,
         );
 
         if (droppedNote) {
@@ -173,13 +243,10 @@ function HomePageContent() {
         return;
       }
       case "to-grid": {
-        const wasInTopOfMind = findNoteById(
-          action.activeId,
-          topOfMindNotesData,
-        );
+        const wasInTopOfMind = findNoteById(action.activeId, topOfMindNotes);
 
         if (wasInTopOfMind) {
-          void handleUpdateTopOfMindNote(action.activeId, false);
+          void handleUpdateTopOfMindNote(action.activeId, null);
         }
         return;
       }
@@ -203,7 +270,7 @@ function HomePageContent() {
       }
 
       const noteId = normalizeHomeDragId(activeId.toString());
-      const note = findNoteById(noteId, notes, topOfMindNotesData);
+      const note = findNoteById(noteId, notes, topOfMindNotes);
 
       if (!note) return null;
 
@@ -216,7 +283,7 @@ function HomePageContent() {
         </div>
       );
     },
-    [notes, topOfMindNotesData],
+    [notes, topOfMindNotes],
   );
 
   // if (error) {
@@ -227,7 +294,10 @@ function HomePageContent() {
   //   );
   // }
 
-  const handleUpdateTopOfMindNote = async (id: string, tom: boolean) => {
+  const handleUpdateTopOfMindNote = async (
+    id: string,
+    tomOrder: number | null,
+  ) => {
     try {
       // Strip "tom-" prefix if present (used for drag-and-drop identification)
       const normalizedId = id.startsWith("tom-") ? id.slice(4) : id;
@@ -235,12 +305,39 @@ function HomePageContent() {
         ? normalizedId.slice("floating-".length)
         : normalizedId;
       await updateNoteTOM(noteId, {
-        tom,
+        tom: tomOrder,
       });
-      refetchTopOfMindNotes();
-      refetch();
+      const invalidations: Promise<void>[] = [
+        queryClient.invalidateQueries({ queryKey: getListNotesQueryKey() }),
+        queryClient.invalidateQueries({ queryKey: getListNotesTOMQueryKey() }),
+        queryClient.invalidateQueries({
+          queryKey: getListFoldersQueryKey(),
+        }),
+      ];
+
+      await Promise.all(invalidations);
     } catch (error) {
       console.error("Failed to update top of mind note:", error);
+    }
+  };
+
+  const handleReorderTopOfMindNote = async (
+    noteId: string,
+    tomOrder: number,
+    previousTopOfMindNotes: ListNotesTOMQueryResult,
+  ) => {
+    try {
+      await updateNoteTOM(noteId, {
+        tom: tomOrder,
+      });
+
+      // await refetchTopOfMindNotes();
+    } catch (error) {
+      queryClient.setQueryData<ListNotesTOMQueryResult>(
+        getListNotesTOMQueryKey(),
+        previousTopOfMindNotes,
+      );
+      console.error("Failed to reorder top of mind note:", error);
     }
   };
 
@@ -273,7 +370,7 @@ function HomePageContent() {
 
         {/* Top of Mind Zone with SortableContext */}
         <SortableContext
-          items={topOfMindNotesData?.map((n) => n.id) || []}
+          items={topOfMindNotes.map((n) => n.id)}
           strategy={rectSortingStrategy}
         >
           {isLoadingTopOfMindNotes && !topOfMindNotesData ? (
@@ -281,7 +378,7 @@ function HomePageContent() {
           ) : (
             <div ref={tomRef}>
               <TopOfMind
-                notes={topOfMindNotesData || []}
+                notes={topOfMindNotes}
                 onUnpin={handleUpdateTopOfMindNote}
                 onFocusEdit={handleFocusEdit}
               />
@@ -294,7 +391,7 @@ function HomePageContent() {
           <TopOfMind
             droppableId="top-of-mind-zone-floating"
             draggableIdPrefix="floating-"
-            notes={topOfMindNotesData || []}
+            notes={topOfMindNotes}
             onUnpin={handleUpdateTopOfMindNote}
             onFocusEdit={handleFocusEdit}
           />
@@ -344,7 +441,12 @@ function HomePageContent() {
                         match={note}
                         onDelete={handleDeleteRequest}
                         onUpdateNote={handleUpdate}
-                        onPin={handleUpdateTopOfMindNote}
+                        onPin={(id, tom) =>
+                          void handleUpdateTopOfMindNote(
+                            id,
+                            tom ? getNextTopOfMindOrder() : null,
+                          )
+                        }
                         onFocusEdit={handleFocusEdit}
                       />
                     </DraggableItem>

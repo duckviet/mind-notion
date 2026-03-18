@@ -13,6 +13,8 @@ Req_UpdateProfile:
 
 Req_CreateFolder:
   $ref: "./Folder/Req_CreateFolder.yaml"
+Req_ReorderFolders:
+  $ref: "./Folder/Req_ReorderFolders.yaml"
 Req_UpdateFolder:
   $ref: "./Folder/Req_UpdateFolder.yaml"
 Req_AddNote:

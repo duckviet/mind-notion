@@ -1,5 +1,4 @@
 import { Editor } from "@tiptap/react";
-import { is } from "date-fns/locale";
 import {
   Bold,
   Italic,
@@ -22,6 +21,7 @@ import {
   Columns2,
   Unlink,
   MessageSquareMore,
+  PencilRuler,
 } from "lucide-react";
 import TableSizeDropdown from "./TableSizeDropdown";
 import CommentPopover from "./CommentPopover";
@@ -48,7 +48,7 @@ export interface ToolbarGroup {
 
 export interface ToolbarConfigProps {
   editor: Editor;
-  options: { onAddImage?: () => void };
+  options: { onAddImage?: () => void; onAddDrawing?: () => void };
 }
 
 export const getHeaderToolbarConfigs = ({
@@ -56,6 +56,8 @@ export const getHeaderToolbarConfigs = ({
   options,
 }: ToolbarConfigProps): ToolbarGroup[] => {
   const onAddImage = options.onAddImage ?? (() => {});
+  const onAddDrawing =
+    options.onAddDrawing ?? (() => editor.commands.insertDrawing());
 
   return [
     {
@@ -173,6 +175,12 @@ export const getHeaderToolbarConfigs = ({
           tooltip: "Add Image",
           isActive: () => false,
           onClick: onAddImage,
+        },
+        {
+          icon: <PencilRuler size={16} />,
+          tooltip: "Add Drawing",
+          isActive: () => false,
+          onClick: onAddDrawing,
         },
         {
           icon: <Columns2 size={16} />,

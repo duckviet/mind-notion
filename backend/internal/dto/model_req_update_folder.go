@@ -16,4 +16,6 @@ type ReqUpdateFolder struct {
 	ParentId string `json:"parent_id,omitempty"`
 
 	IsPublic bool `json:"is_public,omitempty"`
+
+	Order int32 `json:"order,omitempty"`
 }

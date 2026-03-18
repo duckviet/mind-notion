@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run main.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/ai-services/main.py",
+      "cwd": "${workspaceFolder}/ai-services",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    }
+  ]
+}

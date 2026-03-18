@@ -6,29 +6,41 @@ type UseNoteSnapshotOptions = {
   noteId: string;
   editToken?: string;
   enabled?: boolean;
-  delayMs?: number;
+  intervalMs?: number;
+  idleMs?: number;
 };
 
 export const useNoteSnapshot = ({
   noteId,
-  editToken,
   enabled = true,
-  delayMs = 4000,
+  intervalMs = 2000,
+  idleMs = 500,
 }: UseNoteSnapshotOptions) => {
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const lastContentRef = useRef<string>("");
+  const loopRef = useRef<NodeJS.Timeout | null>(null);
+  const idleStopRef = useRef<NodeJS.Timeout | null>(null);
+  const latestContentRef = useRef<string>("");
+  const lastSentContentRef = useRef<string>("");
   const hasUserEditedRef = useRef(false);
+  const isSendingRef = useRef(false);
 
   const sendSnapshot = useCallback(
     async (content: string) => {
-      if (!enabled || !noteId) return;
+      if (!enabled || !noteId || isSendingRef.current) return;
+
       const sanitized = sanitizeHtml(content);
-      if (sanitized === lastContentRef.current) return;
-      lastContentRef.current = sanitized;
+      if (sanitized === lastSentContentRef.current) return;
+
+      lastSentContentRef.current = sanitized;
+      isSendingRef.current = true;
+
       try {
-        await saveNoteSnapshot(noteId, { content: sanitized });
+        await saveNoteSnapshot(noteId, {
+          content: sanitized,
+        });
       } catch {
         // non-blocking
+      } finally {
+        isSendingRef.current = false;
       }
     },
     [noteId, enabled],
@@ -37,29 +49,67 @@ export const useNoteSnapshot = ({
   const scheduleSnapshot = useCallback(
     (content: string) => {
       if (!enabled || !noteId) return;
-
-      // Skip snapshots until user has actually edited
       if (!hasUserEditedRef.current) return;
 
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => sendSnapshot(content), delayMs);
+      latestContentRef.current = content;
+
+      // Start interval loop while user is typing
+      if (!loopRef.current) {
+        loopRef.current = setInterval(() => {
+          const latest = latestContentRef.current;
+          if (!latest) return;
+          void sendSnapshot(latest);
+        }, intervalMs);
+      }
+
+      // Reset idle timer on every input
+      if (idleStopRef.current) clearTimeout(idleStopRef.current);
+      idleStopRef.current = setTimeout(() => {
+        // Stop the loop
+        if (loopRef.current) {
+          clearInterval(loopRef.current);
+          loopRef.current = null;
+        }
+
+        // Flush the last snapshot
+        const latest = latestContentRef.current;
+        if (latest) {
+          void sendSnapshot(latest);
+        }
+
+        idleStopRef.current = null;
+      }, idleMs);
     },
-    [enabled, noteId, sendSnapshot, delayMs],
+    [enabled, noteId, sendSnapshot, intervalMs, idleMs],
   );
 
-  // Call this when a real user interaction triggers a content change
   const markUserEdited = useCallback(() => {
     hasUserEditedRef.current = true;
   }, []);
 
-  // Reset when noteId changes or modal closes
+  // Reset when noteId changes or hook is disabled
   useEffect(() => {
     hasUserEditedRef.current = false;
-    lastContentRef.current = "";
+    latestContentRef.current = "";
+    lastSentContentRef.current = "";
+
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      // Flush before cleanup
+      const latest = latestContentRef.current;
+      if (latest && hasUserEditedRef.current) {
+        void sendSnapshot(latest);
+      }
+
+      if (loopRef.current) {
+        clearInterval(loopRef.current);
+        loopRef.current = null;
+      }
+      if (idleStopRef.current) {
+        clearTimeout(idleStopRef.current);
+        idleStopRef.current = null;
+      }
     };
-  }, [noteId, enabled]);
+  }, [noteId, enabled, sendSnapshot]);
 
   return { scheduleSnapshot, markUserEdited };
 };

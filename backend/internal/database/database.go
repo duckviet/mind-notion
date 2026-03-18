@@ -25,7 +25,7 @@ type DB struct {
 func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 	var dsn string
 	var err error
-	
+
 	// Check for Heroku DATABASE_URL first (highest priority)
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL != "" {
@@ -38,10 +38,10 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 		// Fallback to config
 		dsn = buildDSN(cfg)
 	}
-	
+
 	// Configure GORM logger
 	gormLogger := logger.Default.LogMode(logger.Info)
-	
+
 	// Connect to database
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: gormLogger,
@@ -52,23 +52,23 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
-	
+
 	// Get underlying sql.DB for connection pool settings
 	sqlDB, err := db.DB()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get underlying sql.DB: %w", err)
 	}
-	
+
 	// Set connection pool settings
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(30 * time.Minute)
-	
+
 	// Ping database to check connection
 	if err := sqlDB.PingContext(ctx); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
-	
+
 	// Auto migrate models
 	// If schema exists from previous run with bigint IDs, drop and recreate (empty DB scenario)
 	// if err := db.Exec(`CREATE EXTENSION IF NOT EXISTS "pgcrypto"`).Error; err != nil {
@@ -77,8 +77,13 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 	// _ = db.Migrator().DropTable(&models.FolderNote{}, &models.NoteTag{})
 	// _ = db.Migrator().DropTable(&models.Folder{}, &models.Note{}, &models.User{}, &models.Tag{})
 
+	if err := migrateUserSchema(db); err != nil {
+		return nil, fmt.Errorf("failed to migrate user schema: %w", err)
+	}
+
 	if err := db.AutoMigrate(
 		&models.User{},
+		&models.Account{},
 		&models.Folder{},
 		&models.Note{},
 		&models.Tag{},
@@ -90,8 +95,42 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 	); err != nil {
 		return nil, fmt.Errorf("failed to auto migrate: %w", err)
 	}
-	
+
 	return &DB{db}, nil
+}
+
+func migrateUserSchema(db *gorm.DB) error {
+	queries := []string{
+		`DO $$
+BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.columns
+		WHERE table_schema = 'public'
+			AND table_name = 'notes'
+			AND column_name = 'top_of_mind'
+			AND data_type = 'boolean'
+	) THEN
+		ALTER TABLE notes
+			ALTER COLUMN top_of_mind DROP DEFAULT;
+
+		ALTER TABLE notes
+			ALTER COLUMN top_of_mind TYPE integer
+			USING CASE
+				WHEN top_of_mind = true THEN 1
+				ELSE NULL
+			END;
+	END IF;
+END $$;`,
+	}
+
+	for _, query := range queries {
+		if err := db.Exec(query).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // parseDatabaseURL parses Heroku DATABASE_URL format
@@ -137,11 +176,11 @@ func (db *DB) Close() error {
 	if err != nil {
 		return fmt.Errorf("failed to get underlying sql.DB: %w", err)
 	}
-	
+
 	if err := sqlDB.Close(); err != nil {
 		return fmt.Errorf("failed to close database connection: %w", err)
 	}
-	
+
 	return nil
 }
 

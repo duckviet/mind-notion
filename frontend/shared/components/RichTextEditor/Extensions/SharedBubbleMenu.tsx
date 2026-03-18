@@ -3,9 +3,6 @@
 import { useCallback, useMemo } from "react";
 import { Editor, useEditorState } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
-import { MessageSquarePlus, Trash2 } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import LinkBubbleMenuContent from "./ExtLink/LinkPopup";
 import { Toolbar } from "../Toolbar";
 import {
   getBubbleToolbarConfigs,
@@ -53,7 +50,7 @@ const SharedBubbleMenu = ({ editor }: SharedBubbleMenuProps) => {
 
   const content = useMemo(() => {
     if (isLinkActive) {
-      return <LinkBubbleMenuContent editor={editor} isActive={isLinkActive} />;
+      return;
     }
 
     if (isCommentActive) {
@@ -61,15 +58,7 @@ const SharedBubbleMenu = ({ editor }: SharedBubbleMenuProps) => {
     }
 
     return <Toolbar editor={editor} getConfig={getBubbleToolbarConfigs} />;
-  }, [
-    commentId,
-    editor,
-    handleAddComment,
-    handleRemoveComment,
-    hasSelection,
-    isCommentActive,
-    isLinkActive,
-  ]);
+  }, [editor, isCommentActive, isLinkActive]);
 
   if (!content) return null;
 

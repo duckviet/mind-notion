@@ -24,36 +24,76 @@ type GlobalDndHandlers = {
 };
 
 type GlobalDndContextValue = {
-  registerHandlers: (handlers: GlobalDndHandlers | null) => void;
+  registerHandlers: (id: string, handlers: GlobalDndHandlers | null) => void;
 };
 
 const GlobalDndContext = createContext<GlobalDndContextValue | null>(null);
 
 export function GlobalDndProvider({ children }: { children: React.ReactNode }) {
-  const handlersRef = useRef<GlobalDndHandlers | null>(null);
+  const handlersRef = useRef<Map<string, GlobalDndHandlers>>(new Map());
   const [isDisabled, setIsDisabled] = useState(false);
 
-  const registerHandlers = useCallback((handlers: GlobalDndHandlers | null) => {
-    handlersRef.current = handlers;
-    setIsDisabled(Boolean(handlers?.disabled));
+  const registerHandlers = useCallback(
+    (id: string, handlers: GlobalDndHandlers | null) => {
+      if (handlers) {
+        handlersRef.current.set(id, handlers);
+      } else {
+        handlersRef.current.delete(id);
+      }
+
+      const hasDisabledHandler = [...handlersRef.current.values()].some(
+        (entry) => Boolean(entry.disabled),
+      );
+      setIsDisabled(hasDisabledHandler);
+    },
+    [],
+  );
+
+  const getHandlers = useCallback(() => {
+    return [...handlersRef.current.values()];
   }, []);
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    handlersRef.current?.onDragStart?.(event);
-  }, []);
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      getHandlers().forEach((handler) => {
+        handler.onDragStart?.(event);
+      });
+    },
+    [getHandlers],
+  );
 
-  const handleDragOver = useCallback((event: DragOverEvent) => {
-    handlersRef.current?.onDragOver?.(event);
-  }, []);
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      getHandlers().forEach((handler) => {
+        handler.onDragOver?.(event);
+      });
+    },
+    [getHandlers],
+  );
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    handlersRef.current?.onDragEnd?.(event);
-  }, []);
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      getHandlers().forEach((handler) => {
+        handler.onDragEnd?.(event);
+      });
+    },
+    [getHandlers],
+  );
 
   const handleRenderOverlay = useCallback(
-    (activeId: UniqueIdentifier | null) =>
-      handlersRef.current?.renderOverlay?.(activeId) ?? null,
-    [],
+    (activeId: UniqueIdentifier | null) => {
+      const handlers = getHandlers();
+
+      for (let index = handlers.length - 1; index >= 0; index -= 1) {
+        const overlay = handlers[index].renderOverlay?.(activeId);
+        if (overlay) {
+          return overlay;
+        }
+      }
+
+      return null;
+    },
+    [getHandlers],
   );
 
   return (
@@ -81,12 +121,15 @@ export function useGlobalDndHandlers(handlers: GlobalDndHandlers | null) {
   }
 
   const { registerHandlers } = context;
+  const handlerIdRef = useRef(
+    `global-dnd-${Math.random().toString(36).slice(2, 10)}`,
+  );
 
   React.useEffect(() => {
-    registerHandlers(handlers);
+    registerHandlers(handlerIdRef.current, handlers);
 
     return () => {
-      registerHandlers(null);
+      registerHandlers(handlerIdRef.current, null);
     };
   }, [registerHandlers, handlers]);
 }

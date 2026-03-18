@@ -31,6 +31,12 @@ properties:
   is_all_day:
     type: boolean
     default: false
+  google_event_id:
+    type: string
+    nullable: true
+  source:
+    type: string
+    default: "local"
 required:
   - title
   - type

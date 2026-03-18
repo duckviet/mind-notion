@@ -25,6 +25,7 @@ import type {
   ReqCreateEventStatus,
   ReqCreateEventPriority,
 } from "@/shared/services/generated/api";
+import { useGoogleCalendarStatus } from "@/features/google-calendar";
 
 export type EventFormValues = {
   title: string;
@@ -66,7 +67,10 @@ type EventDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialEvent?: ResDetailEvent;
-  onSubmit: (payload: ReqCreateEvent | ReqUpdateEvent) => Promise<void> | void;
+  onSubmit: (
+    payload: ReqCreateEvent | ReqUpdateEvent,
+    syncToGoogle: boolean,
+  ) => Promise<void> | void;
   submitting?: boolean;
 };
 
@@ -80,6 +84,8 @@ export function EventDialog({
 }: EventDialogProps) {
   const [formValues, setFormValues] =
     useState<EventFormValues>(defaultFormValues);
+  const [syncToGoogle, setSyncToGoogle] = useState(false);
+  const { data: status } = useGoogleCalendarStatus();
 
   useEffect(() => {
     if (!initialEvent) {
@@ -97,6 +103,7 @@ export function EventDialog({
       priority: initialEvent.priority as ReqCreateEventPriority,
       is_all_day: Boolean(initialEvent.is_all_day),
     });
+    setSyncToGoogle(false);
   }, [initialEvent]);
 
   const dialogTitle = useMemo(
@@ -124,7 +131,7 @@ export function EventDialog({
       is_all_day: formValues.is_all_day,
     };
 
-    await onSubmit(payload);
+    await onSubmit(payload, syncToGoogle);
   };
 
   return (
@@ -269,6 +276,22 @@ export function EventDialog({
                 />
               </div>
             </div>
+
+            {mode === "create" && status?.connected && (
+              <div className="flex items-center space-x-2 border border-border p-3 rounded-md mt-2">
+                <Switch
+                  id="sync-google"
+                  checked={syncToGoogle}
+                  onCheckedChange={setSyncToGoogle}
+                />
+                <label
+                  htmlFor="sync-google"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Sync to Google Calendar
+                </label>
+              </div>
+            )}
           </div>
 
           <DialogFooter className="pt-2">

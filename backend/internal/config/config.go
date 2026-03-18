@@ -19,7 +19,7 @@ type Config struct {
 	Cohere   CohereConfig   `mapstructure:"cohere"`
 	CDN      CDNConfig      `mapstructure:"cdn" validate:"required"`
 	Collab   CollabConfig   `mapstructure:"collab" validate:"required"`
-	AIService AIServiceConfig `mapstructure:"ai_service"`
+	Google   GoogleConfig   `mapstructure:"google"`
 }
 
 // Nested structs - chỉ cần tag cho field, prefix tự động
@@ -50,13 +50,6 @@ type RedisConfig struct {
 	DB       int    `mapstructure:"db" validate:"min=0,max=15"`
 }
 
-type AIServiceConfig struct {
-	Enabled        bool   `mapstructure:"enabled"`
-	BaseURL        string `mapstructure:"base_url" validate:"omitempty,url"`
-	TimeoutSeconds int    `mapstructure:"timeout_seconds" validate:"omitempty,min=1,max=120"`
-	APIKey         string `mapstructure:"api_key" validate:"omitempty"`
-}
-
 type PineconeConfig struct {
 	APIKey      string `mapstructure:"api_key" validate:"omitempty,min=1"`     // PINECONE_API_KEY
 	Environment string `mapstructure:"environment" validate:"omitempty,min=1"` // PINECONE_ENVIRONMENT
@@ -78,12 +71,20 @@ type CDNConfig struct {
 	PublicBaseURL   string `mapstructure:"public_base_url" validate:"omitempty,url"`
 }
 
+type GoogleConfig struct {
+	ClientID         string `mapstructure:"client_id"`
+	ClientSecret     string `mapstructure:"client_secret"`
+	RedirectURI      string `mapstructure:"redirect_uri"` // For Calendar
+	LoginRedirectURI string `mapstructure:"login_redirect_uri"` // For Auth Login
+}
+
 type CollabConfig struct {
 	TokenSecret     string `mapstructure:"token_secret" validate:"required,min=8"`
 	TokenTTLMinutes int    `mapstructure:"token_ttl_minutes" validate:"required,min=5,max=1440"`
 }
 
 type AIConfig struct {
+	Enabled          bool   `mapstructure:"enabled"`
 	ServiceURL       string `mapstructure:"service_url" validate:"required,url"`
 	ServiceToken     string `mapstructure:"service_token" validate:"required,min=8"`
 	RequestTimeoutMs int    `mapstructure:"request_timeout_ms" validate:"required,min=1000,max=180000"`

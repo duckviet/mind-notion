@@ -58,7 +58,10 @@ const Toolbar = ({
       getConfig
         ? getConfig({
             editor,
-            options: { onAddImage: () => fileInputRef.current?.click() },
+            options: {
+              onAddImage: () => fileInputRef.current?.click(),
+              onAddDrawing: () => editor.commands.insertDrawing(),
+            },
           })
         : [],
     [editor, getConfig],

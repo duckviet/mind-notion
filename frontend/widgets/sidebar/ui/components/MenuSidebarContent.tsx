@@ -16,12 +16,15 @@ import {
   MAIN_ITEMS,
   SECONDARY_ITEMS,
 } from "@/shared/configs/sidebarConfigs";
+import { FileFolderTree } from "./FileFolderTree";
 
 interface MenuSidebarContentProps {
   pathname: string;
 }
 
 export function MenuSidebarContent({ pathname }: MenuSidebarContentProps) {
+  const primaryItems = MAIN_ITEMS.filter((item) => item.href !== "/folder");
+
   return (
     <>
       <div className="p-2 group-data-[collapsible=icon]:hidden">
@@ -35,11 +38,13 @@ export function MenuSidebarContent({ pathname }: MenuSidebarContentProps) {
         </div>
       </div>
 
-      <SidebarContent>
+      <SidebarContent
+        style={{ scrollbarGutter: "stable", scrollbarWidth: "none" }}
+      >
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1">
-              {MAIN_ITEMS.map((item) => {
+            <SidebarMenu className="gap-1 px-2">
+              {primaryItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <SidebarMenuItem key={item.label}>
@@ -78,6 +83,10 @@ export function MenuSidebarContent({ pathname }: MenuSidebarContentProps) {
                 );
               })}
             </SidebarMenu>
+
+            <div className="py-2 pl-2 w-[250px]">
+              <FileFolderTree pathname={pathname} />
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -85,7 +94,7 @@ export function MenuSidebarContent({ pathname }: MenuSidebarContentProps) {
           <div className="h-px w-full bg-sidebar-border/50"></div>
         </div>
 
-        <SidebarGroup>
+        <SidebarGroup className="p-2">
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
               {SECONDARY_ITEMS.map((item) => {
@@ -132,7 +141,7 @@ export function MenuSidebarContent({ pathname }: MenuSidebarContentProps) {
 
         <div className="flex-1" />
 
-        <SidebarGroup className="mt-auto">
+        <SidebarGroup className="mt-auto p-2">
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
               {FOOTER_ITEMS.map((item) => {

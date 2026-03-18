@@ -1,4 +1,4 @@
-import React, { use, useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
 import { useNoteComment } from "../hooks/useNoteComment";
@@ -43,17 +43,6 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
-
-  // useEffect(() => {
-  //   if (isOpen) {
-  //     // Sử dụng setTimeout 0 hoặc requestAnimationFrame để đảm bảo
-  //     // DOM đã render xong hoàn toàn sau animation ban đầu
-  //     const timer = setTimeout(() => {
-  //       // textareaRef.current?.focus();
-  //     }, 50);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [isOpen]);
 
   useEffect(() => {
     if (!canComment && isOpen) {
@@ -103,16 +92,11 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
       (savedSelectionRef.current && !editor.state.selection.empty)
     ) {
       setIsOpen(true);
-      // editor.chain().focus().setHighlight({ color: "#bbcff5" }).run();
     }
   };
 
-  // Cập nhật lại handleSubmit và handleCancel (hoặc useEffect click outside)
   const closeAndCleanup = () => {
-    // Xóa highlight tạm thời khi đóng popover
-
     setIsOpen(false);
-    // editor.chain().focus().unsetHighlight().run();
   };
   return (
     <div className={cn("relative", className)} ref={containerRef}>
@@ -125,7 +109,7 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
         }}
         className={cn(
           "flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors hover:bg-accent-foreground/40 hover:text-primary-foreground",
-          isOpen && "bg-[#a55252] text-primary",
+          isOpen && "bg-[#a55252] text-primary-foreground",
         )}
       >
         <MessageSquareMoreIcon size={14} /> Comment

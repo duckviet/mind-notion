@@ -13,5 +13,5 @@ type UpdateNoteTom200Response struct {
 
 	Id string `json:"id,omitempty"`
 
-	TopOfMind bool `json:"top_of_mind,omitempty"`
+	TopOfMind *int32 `json:"top_of_mind,omitempty"`
 }

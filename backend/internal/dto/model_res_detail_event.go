@@ -57,4 +57,10 @@ type ResDetailEvent struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+
+	// Google Event ID if synced
+	GoogleEventId *string `json:"google_event_id,omitempty"`
+
+	// Event source (local or google)
+	Source string `json:"source,omitempty"`
 }

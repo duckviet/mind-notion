@@ -54,6 +54,22 @@ export const useCollabProvider = ({
     color: getRandomColor(),
   });
 
+  const tryHydrateFromInitialHtml = useCallback(() => {
+    const doc = docRef.current;
+    const html = initialHtmlRef.current;
+
+    if (!doc || !html || !isYDocEmpty(doc)) {
+      return false;
+    }
+
+    const success = hydrateYDocFromHtml(doc, html, PARSE_EXTENSIONS);
+    if (success) {
+      console.log("[useCollabProvider] Hydrated Yjs doc from initial HTML");
+    }
+
+    return success;
+  }, []);
+
   // Keep initialHtml ref updated
   useEffect(() => {
     initialHtmlRef.current = initialHtml;
@@ -80,17 +96,8 @@ export const useCollabProvider = ({
       setIsSynced(synced);
 
       // Hydrate on first sync if doc is empty and we have initial content
-      if (synced && isYDocEmpty(doc) && initialHtmlRef.current) {
-        const success = hydrateYDocFromHtml(
-          doc,
-          initialHtmlRef.current,
-          PARSE_EXTENSIONS,
-        );
-        setIsHydrated(true);
-        if (success) {
-          console.log("[useCollabProvider] Hydrated Yjs doc from initial HTML");
-        }
-      } else if (synced) {
+      if (synced) {
+        tryHydrateFromInitialHtml();
         setIsHydrated(true);
       }
     };
@@ -106,7 +113,13 @@ export const useCollabProvider = ({
       setIsSynced(false);
       setIsHydrated(false);
     };
-  }, [enabled, noteId, token, collabUrl]);
+  }, [enabled, noteId, token, collabUrl, tryHydrateFromInitialHtml]);
+
+  // Handle late-arriving initialHtml after websocket has already synced.
+  useEffect(() => {
+    if (!enabled || !isSynced) return;
+    tryHydrateFromInitialHtml();
+  }, [enabled, isSynced, initialHtml, tryHydrateFromInitialHtml]);
 
   useEffect(() => {
     const provider = providerRef.current;

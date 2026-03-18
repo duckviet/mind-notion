@@ -6,10 +6,12 @@ const TOP_OF_MIND_ZONE_IDS = new Set([
 ]);
 
 const CHAT_BOT_ZONE_IDS = new Set(["chat-bot", "chat-bot-sidebar"]);
+const SIDEBAR_FOLDER_SORT_PREFIX = "tree-folder-sort-";
 
 export type HomeDropAction =
   | { type: "none" }
   | { type: "to-top-of-mind"; activeId: string }
+  | { type: "reorder-top-of-mind"; activeId: string; overId: string }
   | { type: "to-chat-bot"; activeId: string }
   | { type: "to-grid"; activeId: string }
   | { type: "to-folder"; activeId: string; folderId: string };
@@ -33,6 +35,7 @@ export function resolveHomeDropAction(event: DragEndEvent): HomeDropAction {
 
   const activeId = normalizeHomeDragId(active.id.toString());
   const overId = over.id.toString();
+  const normalizedOverId = normalizeHomeDragId(overId);
 
   if (TOP_OF_MIND_ZONE_IDS.has(overId)) {
     return { type: "to-top-of-mind", activeId };
@@ -51,6 +54,22 @@ export function resolveHomeDropAction(event: DragEndEvent): HomeDropAction {
       type: "to-folder",
       activeId,
       folderId: overId.replace("folder-", ""),
+    };
+  }
+
+  if (overId.startsWith(SIDEBAR_FOLDER_SORT_PREFIX)) {
+    return {
+      type: "to-folder",
+      activeId,
+      folderId: overId.replace(SIDEBAR_FOLDER_SORT_PREFIX, ""),
+    };
+  }
+
+  if (activeId !== normalizedOverId) {
+    return {
+      type: "reorder-top-of-mind",
+      activeId,
+      overId: normalizedOverId,
     };
   }
 

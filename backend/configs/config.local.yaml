@@ -22,6 +22,7 @@ redis:
   db: 0
 
 ai:
+  enabled: true
   service_url: "http://localhost:8090"
   service_token: "dev-ai-service-token"
   request_timeout_ms: 30000

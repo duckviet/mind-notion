@@ -26,7 +26,7 @@ type NoteService interface {
 	GetNotesByUserID(ctx context.Context, userID string, params repository.NoteListParams) ([]*models.Note, int64, error)
 	AddTagToNote(ctx context.Context, noteID, tagID string) error
 	RemoveTagFromNote(ctx context.Context, noteID, tagID string) error
-	UpdateNoteTOM(ctx context.Context, id string, tom bool) (*models.Note, error)
+	UpdateNoteTOM(ctx context.Context, id string, tom *int32) (*models.Note, error)
 	ListNotesTOM(ctx context.Context, userID string) ([]*models.Note, error)
 	UpdatePublicEditSettings(ctx context.Context, id string, enabled bool) (*models.Note, error)
 	RotatePublicEditToken(ctx context.Context, id string) (*models.Note, error)
@@ -92,7 +92,7 @@ func (s *noteService) CreateNote(ctx context.Context, req CreateNoteRequest) (*m
 		Content:     req.Content,
 		ContentType: req.ContentType,
 		Status:      models.NoteStatus(req.Status),
-		TopOfMind:   false,
+		TopOfMind:   nil,
 		Thumbnail:   req.Thumbnail,
 		FolderID:    req.FolderID,
 		IsPublic:    req.IsPublic,
@@ -270,7 +270,7 @@ func (s *noteService) RemoveTagFromNote(ctx context.Context, noteID, tagID strin
 }
 
 // UpdateNoteTOM updates a note top of mind by ID
-func (s *noteService) UpdateNoteTOM(ctx context.Context, id string, tom bool) (*models.Note, error) {
+func (s *noteService) UpdateNoteTOM(ctx context.Context, id string, tom *int32) (*models.Note, error) {
 	note, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -278,13 +278,66 @@ func (s *noteService) UpdateNoteTOM(ctx context.Context, id string, tom bool) (*
 		}
 		return nil, ErrInternalServerError
 	}
-	note.TopOfMind = tom
-	if err := s.repo.Update(ctx, note); err != nil {
+
+	tomNotes, err := s.repo.ListTOM(ctx, note.UserID)
+	if err != nil {
 		return nil, ErrInternalServerError
 	}
+
+	orderedNotes := make([]*models.Note, 0, len(tomNotes))
+	for _, tomNote := range tomNotes {
+		if tomNote.ID == note.ID {
+			continue
+		}
+		orderedNotes = append(orderedNotes, tomNote)
+	}
+
+	if tom != nil {
+		targetOrder := int(*tom)
+		if targetOrder < 1 {
+			targetOrder = 1
+		}
+
+		maxOrder := len(orderedNotes) + 1
+		if targetOrder > maxOrder {
+			targetOrder = maxOrder
+		}
+
+		targetIndex := targetOrder - 1
+		orderedNotes = append(orderedNotes, nil)
+		copy(orderedNotes[targetIndex+1:], orderedNotes[targetIndex:])
+		orderedNotes[targetIndex] = note
+	}
+
+	for index, orderedNote := range orderedNotes {
+		desiredOrder := int32(index + 1)
+		if orderedNote.TopOfMind != nil && *orderedNote.TopOfMind == desiredOrder {
+			continue
+		}
+
+		orderToPersist := desiredOrder
+		if err := s.repo.UpdateTOM(ctx, orderedNote.ID, &orderToPersist); err != nil {
+			return nil, ErrInternalServerError
+		}
+	}
+
+	if tom == nil && note.TopOfMind != nil {
+		if err := s.repo.UpdateTOM(ctx, note.ID, nil); err != nil {
+			return nil, ErrInternalServerError
+		}
+	}
+
+	updatedNote, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNoteNotFound
+		}
+		return nil, ErrInternalServerError
+	}
+
 	// Format preview for TOM note as well
-	utils.FormatNotePreviews([]*models.Note{note}, utils.DefaultNotePreviewLength)
-	return note, nil
+	utils.FormatNotePreviews([]*models.Note{updatedNote}, utils.DefaultNotePreviewLength)
+	return updatedNote, nil
 }
 
 func (s *noteService) ListNotesTOM(ctx context.Context, userID string) ([]*models.Note, error) {

@@ -1,5 +1,5 @@
 import React from "react";
-import { DraggableItem, DroppableZone } from "@/shared/components/dnd";
+import { DroppableZone, SortableItem } from "@/shared/components/dnd";
 import { ResDetailNote } from "@/shared/services/generated/api";
 import TopOfMindCard from "./TopOfMindCard";
 
@@ -7,7 +7,7 @@ type Props = {
   notes: ResDetailNote[];
   onDelete?: (id: string) => void;
   onUpdate?: (id: string, note: ResDetailNote) => void;
-  onUnpin?: (id: string, tom: boolean) => void;
+  onUnpin?: (id: string, tomOrder: number | null) => void;
   onFocusEdit?: (id: string) => void;
   dragDisabled?: boolean;
   droppableId?: string;
@@ -44,18 +44,18 @@ const TopOfMind = ({
         ) : (
           notes.map((note) => (
             // <SortableItem key={note.id} id={note.id}>
-            <DraggableItem
+            <SortableItem
               key={note.id}
               id={`${draggableIdPrefix}${note.id}`}
               disabled={dragDisabled}
-              type="tom-note"
+              // type="tom-note"
             >
               <TopOfMindCard
                 note={note}
-                onUnpin={() => onUnpin?.(note.id, false)}
+                onUnpin={() => onUnpin?.(note.id, null)}
                 onFocusEdit={() => onFocusEdit?.(note.id)}
               />
-            </DraggableItem>
+            </SortableItem>
             // </SortableItem>
           ))
         )}

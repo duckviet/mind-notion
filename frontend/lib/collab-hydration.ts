@@ -1,7 +1,10 @@
 import type * as Y from "yjs";
 import type { Editor, Extensions } from "@tiptap/react";
 import { generateJSON } from "@tiptap/html";
-import { prosemirrorJSONToYXmlFragment } from "y-prosemirror";
+import {
+  prosemirrorJSONToYXmlFragment,
+  yXmlFragmentToProsemirrorJSON,
+} from "y-prosemirror";
 import { Schema } from "@tiptap/pm/model";
 import { getSchema } from "@tiptap/core";
 
@@ -13,7 +16,31 @@ const PROSEMIRROR_FRAGMENT = "default";
 export const isYDocEmpty = (doc: Y.Doc | null | undefined): boolean => {
   if (!doc) return true;
   const fragment = doc.getXmlFragment(PROSEMIRROR_FRAGMENT);
-  return fragment.length === 0;
+  if (fragment.length === 0) return true;
+
+  try {
+    const json = yXmlFragmentToProsemirrorJSON(fragment) as {
+      content?: Array<{
+        type?: string;
+        content?: unknown[];
+      }>;
+    };
+
+    if (!json.content || json.content.length === 0) return true;
+    if (json.content.length === 1) {
+      const node = json.content[0];
+      if (
+        node.type === "paragraph" &&
+        (!node.content || node.content.length === 0)
+      ) {
+        return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+
+  return false;
 };
 
 /**
@@ -47,7 +74,7 @@ export const hydrateYDocFromHtml = (
   if (!doc || !html) return false;
 
   const fragment = doc.getXmlFragment(PROSEMIRROR_FRAGMENT);
-  if (fragment.length > 0) return false; // Already has content
+  if (!isYDocEmpty(doc)) return false;
 
   try {
     // Parse HTML to ProseMirror JSON
@@ -61,6 +88,9 @@ export const hydrateYDocFromHtml = (
 
     // Convert to Yjs and apply to fragment
     doc.transact(() => {
+      if (fragment.length > 0) {
+        fragment.delete(0, fragment.length);
+      }
       prosemirrorJSONToYXmlFragment(schema, json, fragment);
     });
     console.log("after hydrate", fragment);

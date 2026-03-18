@@ -9,4 +9,8 @@ properties:
   is_public:
     type: boolean
     example: true
+  order:
+    type: integer
+    minimum: 1
+    example: 1
 required: [name, parent_id, is_public]

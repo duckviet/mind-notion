@@ -231,6 +231,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.FolderAPI.ListFolders,
 		},
 		{
+			"ReorderFolders",
+			http.MethodPost,
+			"/api/v1/folders/reorder",
+			handleFunctions.FolderAPI.ReorderFolders,
+		},
+		{
 			"UpdateFolder",
 			http.MethodPut,
 			"/api/v1/folders/:id/update",

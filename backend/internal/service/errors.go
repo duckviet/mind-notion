@@ -16,7 +16,8 @@ var (
 	ErrVersionConflict = errors.New("version conflict")
 
 	// Folder errors
-	ErrFolderNotFound = errors.New("folder not found")
+	ErrFolderNotFound       = errors.New("folder not found")
+	ErrInvalidFolderReorder = errors.New("invalid folder reorder payload")
 
 	// Template errors
 	ErrTemplateNotFound = errors.New("template not found")

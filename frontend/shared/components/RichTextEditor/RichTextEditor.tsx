@@ -20,6 +20,7 @@ import { AIMenu } from "./Extensions/ExtAI";
 import type { AIAction } from "./Extensions/ExtAI";
 import SharedBubbleMenu from "./Extensions/SharedBubbleMenu";
 import { getHeaderToolbarConfigs } from "./Toolbar/ToolbarConfig";
+import LinkHoverPopup from "./Extensions/ExtLink/LinkHoverPopup";
 
 interface TiptapProps {
   noteId?: string;
@@ -144,8 +145,6 @@ const Tiptap = ({
     }
   }, [aiMenuState.isOpen, editor]);
 
-  console.log(editor?.getHTML(), editor?.getJSON());
-
   const handleAIAction = async (action: AIAction, customPrompt?: string) => {
     if (!onAIAction || !editor || !aiMenuState.range) return;
 
@@ -192,7 +191,7 @@ const Tiptap = ({
       )}
 
       {showEditor ? (
-        <div ref={contentRef} className="relative flex gap-6 cursor-text px-6">
+        <div ref={contentRef} className="relative flex gap-6 px-6">
           <div className="flex-1">
             <EditorContent
               ref={ref}
@@ -235,6 +234,14 @@ const Tiptap = ({
             )}
 
             <SharedBubbleMenu editor={editor} />
+
+            <LinkHoverPopup
+              editor={editor}
+              onEdit={(href, text, from, to) => {
+                // Optional: focus vào link để trigger BubbleMenu edit mode
+                editor.chain().focus().setTextSelection({ from, to }).run();
+              }}
+            />
           </div>
 
           <TableOfContents editor={editor} />

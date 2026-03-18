@@ -9,3 +9,7 @@ properties:
   is_public:
     type: boolean
     example: false
+  order:
+    type: integer
+    minimum: 1
+    example: 1
