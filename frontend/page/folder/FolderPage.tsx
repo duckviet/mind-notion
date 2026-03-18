@@ -143,6 +143,21 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     },
   });
 
+  const topOfMindNotes = useMemo(() => {
+    return [...(topOfMindNotesData ?? [])].sort((a, b) => {
+      const orderA = a.top_of_mind ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b.top_of_mind ?? Number.MAX_SAFE_INTEGER;
+
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+
+      return (
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
+    });
+  }, [topOfMindNotesData]);
+
   const notes = useMemo(() => {
     return (notesData || []).map((note) => ({
       ...note,
@@ -166,7 +181,10 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
       setDeleteTargetId(null);
     }
   };
-  const handleUpdateTopOfMindNote = async (id: string, tom: boolean) => {
+  const handleUpdateTopOfMindNote = async (
+    id: string,
+    tomOrder: number | null,
+  ) => {
     try {
       // Strip "tom-" prefix if present (used for drag-and-drop identification)
       const normalizedId = id.startsWith("tom-") ? id.slice(4) : id;
@@ -174,10 +192,10 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
         ? normalizedId.slice("floating-".length)
         : normalizedId;
       await updateNoteTOM(noteId, {
-        tom,
+        tom: tomOrder,
       });
-      refetchTopOfMindNotes();
-      refetch();
+      await refetchTopOfMindNotes();
+      await refetchNotes();
     } catch (error) {
       console.error("Failed to update top of mind note:", error);
     }
@@ -367,7 +385,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
             <TopOfMind
               droppableId="top-of-mind-zone-floating"
               draggableIdPrefix="floating-"
-              notes={topOfMindNotesData || []}
+              notes={topOfMindNotes}
               onUnpin={handleUpdateTopOfMindNote}
               onFocusEdit={handleFocusEdit}
             />

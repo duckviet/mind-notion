@@ -77,6 +77,10 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 	// _ = db.Migrator().DropTable(&models.FolderNote{}, &models.NoteTag{})
 	// _ = db.Migrator().DropTable(&models.Folder{}, &models.Note{}, &models.User{}, &models.Tag{})
 
+	if err := migrateUserSchema(db); err != nil {
+		return nil, fmt.Errorf("failed to migrate user schema: %w", err)
+	}
+
 	if err := db.AutoMigrate(
 		&models.User{},
 		&models.Account{},
@@ -92,15 +96,32 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 		return nil, fmt.Errorf("failed to auto migrate: %w", err)
 	}
 
-	if err := migrateUserSchema(db); err != nil {
-		return nil, fmt.Errorf("failed to migrate user schema: %w", err)
-	}
-
 	return &DB{db}, nil
 }
 
 func migrateUserSchema(db *gorm.DB) error {
-	queries := []string{ 
+	queries := []string{
+		`DO $$
+BEGIN
+	IF EXISTS (
+		SELECT 1
+		FROM information_schema.columns
+		WHERE table_schema = 'public'
+			AND table_name = 'notes'
+			AND column_name = 'top_of_mind'
+			AND data_type = 'boolean'
+	) THEN
+		ALTER TABLE notes
+			ALTER COLUMN top_of_mind DROP DEFAULT;
+
+		ALTER TABLE notes
+			ALTER COLUMN top_of_mind TYPE integer
+			USING CASE
+				WHEN top_of_mind = true THEN 1
+				ELSE NULL
+			END;
+	END IF;
+END $$;`,
 	}
 
 	for _, query := range queries {

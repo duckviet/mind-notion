@@ -25,7 +25,7 @@ import type {
   ReqCreateEventStatus,
   ReqCreateEventPriority,
 } from "@/shared/services/generated/api";
-import { useGoogleCalendarStatus } from "@/features/googleCalendar";
+import { useGoogleCalendarStatus } from "@/features/google-calendar";
 
 export type EventFormValues = {
   title: string;

@@ -24,7 +24,7 @@ import { Button } from "@/shared/components/ui/button";
 import {
   GoogleCalendarToolbar,
   useGoogleCalendarPush,
-} from "@/features/googleCalendar";
+} from "@/features/google-calendar";
 
 type DayName = (typeof DAYS)[number];
 type WeekRange = {

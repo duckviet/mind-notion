@@ -524,11 +524,12 @@ paths:
           description: Note ID
         - name: tom
           in: query
-          required: true
+          required: false
           schema:
-            type: boolean
-            example: true
-          description: Top of mind
+            type: integer
+            nullable: true
+            example: 1
+          description: Top of mind order (null to unpin)
       responses:
         '200':
           description: Note top of mind updated successfully
@@ -541,8 +542,9 @@ paths:
                     type: string
                     example: '1234567890'
                   top_of_mind:
-                    type: boolean
-                    example: true
+                    type: integer
+                    nullable: true
+                    example: 1
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -1849,8 +1851,9 @@ components:
           type: string
           example: draft/published/archived
         top_of_mind:
-          type: boolean
-          example: false
+          type: integer
+          nullable: true
+          example: 1
         thumbnail:
           type: string
           format: uri
@@ -1975,8 +1978,9 @@ components:
               type: string
               example: draft/published/archived
             top_of_mind:
-              type: boolean
-              example: false
+              type: integer
+              nullable: true
+              example: 1
             thumbnail:
               type: string
               format: uri

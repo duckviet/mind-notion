@@ -16,8 +16,9 @@ properties:
     type: string
     example: "draft/published/archived"
   top_of_mind:
-    type: boolean
-    example: false
+    type: integer
+    nullable: true
+    example: 1
   thumbnail:
     type: string
     format: uri

@@ -1,64 +1,18 @@
+import { useEffect } from "react";
 import { useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Placeholder } from "@tiptap/extensions/placeholder";
 
-import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
-import { LocalStorageKeys } from "@/shared/configs/localStorageKeys";
-import createCollaborationExtensions from "./Extensions/ExtCollaboration";
+import { UseTiptapEditorProps } from "./types";
+import { useStableRef } from "./hooks/useStableRef";
+import { useEditToken } from "./hooks/useEditToken";
+import { useAIMenu } from "./hooks/useAIMenu";
+import { useUploadMediaRef } from "./hooks/useUploadMediaRef";
+import { useEditorExtensions } from "./hooks/useEditorExtensions";
+import { useContentSync } from "./hooks/useContentSync";
+import { useEditorUpdates } from "./hooks/useEditorUpdates";
+import { useActiveComment } from "./hooks/useActiveComment";
 
-import type { WebsocketProvider } from "y-websocket";
-import type * as Y from "yjs";
-import ExtImage from "./Extensions/ExtImage/ExtImage";
-import { toast } from "sonner";
-import { useUploadMedia } from "@/shared/services/generated/api";
-import {
-  ExtCustomCodeBlock,
-  ExtHeading,
-  ExtImageUpload,
-  ExtListKit,
-  ExtMathematics,
-  ExtTableKit,
-  ExtTableOfContents,
-  ExtSplitView,
-  SplitViewColumn,
-  ExtBlockQuote,
-  ExtHighLight,
-  ExtAI,
-  ExtLink,
-  ExtComment,
-  ExtTaskList,
-  ExtDrawing,
-} from "./Extensions";
-import { migrateMathStrings } from "@tiptap/extension-mathematics";
-import { useSearchParams } from "next/navigation";
-import { useEditTokenStore } from "@/shared/stores/editTokenStore";
-
-interface UseTiptapEditorProps {
-  noteId?: string;
-  content?: string;
-  placeholder?: string;
-  onUpdate?: (content: string) => void;
-  editable?: boolean;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
-  collaboration?: CollaborationConfig;
-  onActiveCommentChange?: (commentId: string | null) => void;
-  onAIAction?: (
-    action: string,
-    selectedText: string,
-    customPrompt?: string,
-  ) => Promise<string>;
-}
-
-export type CollaborationConfig = {
-  document: Y.Doc;
-  provider: WebsocketProvider;
-  user?: {
-    name: string;
-    color: string;
-  };
-};
+export type { CollaborationConfig, UseTiptapEditorProps } from "./types";
 
 export const useTiptapEditor = ({
   noteId,
@@ -69,149 +23,30 @@ export const useTiptapEditor = ({
   onKeyDown,
   collaboration,
   onActiveCommentChange,
-  onAIAction,
 }: UseTiptapEditorProps) => {
-  const [aiMenuState, setAIMenuState] = useState<{
-    isOpen: boolean;
-    selection: string;
-    range: { from: number; to: number } | null;
-  }>({ isOpen: false, selection: "", range: null });
+  // --- Stable refs for callbacks ---
+  const onUpdateRef = useStableRef(onUpdate);
+  const onKeyDownRef = useStableRef(onKeyDown);
+  const onActiveCommentChangeRef = useStableRef(onActiveCommentChange);
 
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const onUpdateRef = useRef(onUpdate);
-  const onKeyDownRef = useRef(onKeyDown);
-  const onAIActionRef = useRef(onAIAction);
-  const onActiveCommentChangeRef = useRef(onActiveCommentChange);
-  // Track if user is actively editing to prevent race conditions
-  const isUserEditingRef = useRef(false);
-  // Track the last content we sent to parent to detect external changes
-  const lastSentContentRef = useRef<string>(content);
-  // Track the last content we received from props
-  const lastReceivedContentRef = useRef<string>(content);
+  // --- Side-effect hooks ---
+  useEditToken();
 
-  const [toc, setToc] = usePersistentState(
-    LocalStorageKeys.FOCUS_EDIT_TOC_COLLAPSED,
-    false,
-  );
-  const searchParams = useSearchParams();
+  const { aiMenuState, openAIMenu, closeAIMenu } = useAIMenu();
+  const uploadMediaRef = useUploadMediaRef();
 
-  const { setEditToken } = useEditTokenStore();
-
-  // Khi vào trang có edit token từ URL
-  useEffect(() => {
-    const token = searchParams.get("token");
-    if (token) setEditToken(token);
-
-    return () => setEditToken(null); // Cleanup khi rời trang
-  }, [searchParams, setEditToken]);
-  const { mutateAsync: uploadMedia } = useUploadMedia({
-    mutation: {
-      onError: () => toast.error("Failed to upload image"),
-    },
+  const { extensions, collabEnabled } = useEditorExtensions({
+    placeholder,
+    collaboration,
+    uploadMediaRef,
+    onOpenAI: openAIMenu,
   });
 
-  // Use refs for unstable callbacks to prevent extensions from recreating
-  const uploadMediaRef = useRef(uploadMedia);
-  const setTocRef = useRef(setToc);
-  const tocRef = useRef(toc);
-
-  useEffect(() => {
-    uploadMediaRef.current = uploadMedia;
-  }, [uploadMedia]);
-
-  useEffect(() => {
-    setTocRef.current = setToc;
-    tocRef.current = toc;
-  }, [setToc, toc]);
-
-  useEffect(() => {
-    onUpdateRef.current = onUpdate;
-  }, [onUpdate]);
-
-  useEffect(() => {
-    onKeyDownRef.current = onKeyDown;
-  }, [onKeyDown]);
-
-  useEffect(() => {
-    onAIActionRef.current = onAIAction;
-  }, [onAIAction]);
-
-  useEffect(() => {
-    onActiveCommentChangeRef.current = onActiveCommentChange;
-  }, [onActiveCommentChange]);
-
-  // IMPORTANT: Use minimal dependencies to prevent editor recreation
-  // Callbacks use refs so they stay stable
-  const collabEnabled = Boolean(
-    collaboration?.document && collaboration?.provider,
-  );
-  const collabDocument = collaboration?.document;
-  const collabProvider = collaboration?.provider;
-
-  // Memoize collaboration extensions to prevent duplicate keyed plugin registration
-  const collabExtensions = useMemo(() => {
-    if (!collabEnabled || !collabDocument || !collabProvider) return [];
-    return createCollaborationExtensions(collabDocument, collabProvider);
-  }, [collabEnabled, collabDocument, collabProvider]);
-  const extensions = useMemo(
-    () => [
-      StarterKit.configure({
-        bulletList: false,
-        orderedList: false,
-        listItem: false,
-        codeBlock: false,
-        heading: false,
-        link: false,
-        blockquote: false,
-        undoRedo: false,
-      }),
-      ...ExtListKit,
-      ...ExtTaskList,
-      ExtLink,
-      ExtComment,
-      ExtCustomCodeBlock,
-      ExtHeading,
-      ExtMathematics,
-      ExtBlockQuote,
-      ExtHighLight,
-      ...ExtTableKit,
-      ExtTableOfContents.configure({
-        initialToc: tocRef.current ?? false,
-        onToggle: (newTocValue: boolean) => setTocRef.current(newTocValue),
-      }),
-      Placeholder.configure({ placeholder }),
-      ExtImage,
-      ExtImageUpload.configure({
-        uploadFn: async (file: File) => {
-          const res = await uploadMediaRef.current({ data: { file } });
-          return res.url;
-        },
-      }),
-      ExtDrawing.configure({
-        syncUri: process.env.NEXT_PUBLIC_TLDRAW_SYNC_URL || "",
-        uploadPreviewFn: async (file: File) => {
-          const res = await uploadMediaRef.current({ data: { file } });
-          return res.url;
-        },
-      }),
-      ExtSplitView,
-      SplitViewColumn,
-      ExtAI.configure({
-        onOpenAI: (selection: string, range: { from: number; to: number }) => {
-          setAIMenuState({ isOpen: true, selection, range });
-        },
-      }),
-      ...collabExtensions,
-    ],
-    // Only recreate extensions when placeholder or collabExtensions changes
-    // toc, setToc, uploadMedia are accessed via refs
-    [placeholder, collabExtensions],
-  );
-
+  // --- Create editor ---
   const editor = useEditor(
     {
       extensions,
-      content: collabEnabled ? undefined : content, // Chỉ dùng cho initial value
+      content: collabEnabled ? undefined : content,
       immediatelyRender: false,
       editable,
       injectCSS: false,
@@ -234,149 +69,27 @@ export const useTiptapEditor = ({
     [editable, extensions],
   );
 
-  // Update editor content when content prop changes from EXTERNAL source
-  // Only sync if: content changed, not from our own update, and user is not actively editing
-  useEffect(() => {
-    if (!editor) return;
-    if (collabEnabled) return;
+  // --- Content sync (external prop → editor) ---
+  const { isUserEditingRef, lastSentContentRef, useSyncEffect } =
+    useContentSync({ editor, content, collabEnabled });
+  useSyncEffect();
 
-    // Store the received content for reference
-    lastReceivedContentRef.current = content;
+  // --- Editor updates (editor → parent callback) ---
+  useEditorUpdates({
+    editor,
+    collabEnabled,
+    onUpdateRef,
+    isUserEditingRef,
+    lastSentContentRef,
+  });
 
-    // Skip if this content is what we just sent (echo from parent)
-    if (content === lastSentContentRef.current) {
-      return;
-    }
+  // --- Active comment tracking ---
+  useActiveComment(editor, onActiveCommentChangeRef);
 
-    // Skip if user is actively editing (prevents race condition)
-    if (isUserEditingRef.current) {
-      return;
-    }
-
-    const currentContent = editor.getHTML();
-    // Only update if content actually differs
-    if (content && currentContent !== content) {
-      // Use requestAnimationFrame to avoid flushSync warning and ensure smooth update
-      requestAnimationFrame(() => {
-        if (!editor.isDestroyed && !isUserEditingRef.current) {
-          // Preserve cursor position if possible
-          const { from, to } = editor.state.selection;
-          editor.commands.setContent(content, { emitUpdate: false });
-          // Try to restore cursor position
-          try {
-            const docSize = editor.state.doc.content.size;
-            const safeFrom = Math.min(from, docSize);
-            const safeTo = Math.min(to, docSize);
-            editor.commands.setTextSelection({ from: safeFrom, to: safeTo });
-          } catch {
-            // Ignore selection restoration errors
-          }
-        }
-      });
-    }
-  }, [content, editor, collabEnabled]);
-
-  // Handle editor updates.
-  // In collaboration mode, emit immediately and let snapshot hook control cadence.
-  // In non-collab mode, keep lightweight debounce to reduce parent updates.
-  useEffect(() => {
-    if (!editor) return;
-
-    let lastContent = editor.getHTML();
-
-    const handleUpdate = () => {
-      const html = editor.getHTML();
-      if (html !== lastContent) {
-        lastContent = html;
-        // Track the content we're sending to parent to detect echoes
-        lastSentContentRef.current = html;
-        onUpdateRef.current?.(html);
-      }
-      // Reset editing flag after update is sent
-      isUserEditingRef.current = false;
-    };
-
-    const handleEditorUpdate = () => {
-      // Mark as user editing when content changes
-      isUserEditingRef.current = true;
-
-      if (collabEnabled) {
-        handleUpdate();
-        return;
-      }
-
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(handleUpdate, 300);
-    };
-
-    // Track focus state to prevent content sync while typing
-    const handleFocus = () => {
-      isUserEditingRef.current = true;
-    };
-
-    const handleBlur = () => {
-      // Small delay to allow pending updates to complete
-      setTimeout(() => {
-        isUserEditingRef.current = false;
-      }, 100);
-    };
-
-    editor.on("update", handleEditorUpdate);
-    editor.on("focus", handleFocus);
-    editor.on("blur", handleBlur);
-    migrateMathStrings(editor);
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      editor.off("update", handleEditorUpdate);
-      editor.off("focus", handleFocus);
-      editor.off("blur", handleBlur);
-    };
-  }, [editor, collabEnabled]);
-
-  useEffect(() => {
-    if (!editor) return;
-    if (!onActiveCommentChangeRef.current) return;
-
-    let lastActiveId: string | null = null;
-
-    const emitActiveComment = () => {
-      const isCommentActive = editor.isActive("comment");
-      const nextId = isCommentActive
-        ? ((editor.getAttributes("comment")?.id as string | undefined) ?? null)
-        : null;
-
-      if (nextId !== lastActiveId) {
-        lastActiveId = nextId;
-        onActiveCommentChangeRef.current?.(nextId);
-      }
-    };
-
-    const handleBlur = () => {
-      if (lastActiveId !== null) {
-        lastActiveId = null;
-        onActiveCommentChangeRef.current?.(null);
-      }
-    };
-
-    emitActiveComment();
-    editor.on("selectionUpdate", emitActiveComment);
-    editor.on("blur", handleBlur);
-
-    return () => {
-      editor.off("selectionUpdate", emitActiveComment);
-      editor.off("blur", handleBlur);
-    };
-  }, [editor]);
-
+  // --- Cleanup ---
   useEffect(() => {
     return () => editor?.destroy();
   }, [editor]);
 
-  return {
-    editor,
-    aiMenuState,
-    closeAIMenu: () =>
-      setAIMenuState({ isOpen: false, selection: "", range: null }),
-  };
+  return { editor, aiMenuState, closeAIMenu };
 };

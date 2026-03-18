@@ -157,7 +157,8 @@ export interface ResDetailNote {
   content: string;
   content_type: string;
   status: string;
-  top_of_mind: boolean;
+  /** @nullable */
+  top_of_mind: number | null;
   thumbnail: string;
   tags: string[];
   /** @nullable */
@@ -198,7 +199,8 @@ export type ResCollabTokenNote = {
   content: string;
   content_type: string;
   status: string;
-  top_of_mind: boolean;
+  /** @nullable */
+  top_of_mind: number | null;
   thumbnail: string;
   tags: string[];
   /** @nullable */
@@ -570,14 +572,16 @@ export type ListNotes200 = {
 
 export type UpdateNoteTOMParams = {
   /**
-   * Top of mind
+   * Top of mind order (null to unpin)
+   * @nullable
    */
-  tom: boolean;
+  tom?: number | null;
 };
 
 export type UpdateNoteTOM200 = {
   id?: string;
-  top_of_mind?: boolean;
+  /** @nullable */
+  top_of_mind?: number | null;
 };
 
 export type ListComments200 = {
@@ -2629,7 +2633,7 @@ export const useRotatePublicEditToken = <
 /**
  * @summary Update note top of mind by ID
  */
-export const updateNoteTOM = (noteId: string, params: UpdateNoteTOMParams) => {
+export const updateNoteTOM = (noteId: string, params?: UpdateNoteTOMParams) => {
   return customInstance<UpdateNoteTOM200>({
     url: `/notes/${noteId}/tom`,
     method: "PUT",
@@ -2648,13 +2652,13 @@ export const getUpdateNoteTOMMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateNoteTOM>>,
     TError,
-    { noteId: string; params: UpdateNoteTOMParams },
+    { noteId: string; params?: UpdateNoteTOMParams },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateNoteTOM>>,
   TError,
-  { noteId: string; params: UpdateNoteTOMParams },
+  { noteId: string; params?: UpdateNoteTOMParams },
   TContext
 > => {
   const mutationKey = ["updateNoteTOM"];
@@ -2668,7 +2672,7 @@ export const getUpdateNoteTOMMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateNoteTOM>>,
-    { noteId: string; params: UpdateNoteTOMParams }
+    { noteId: string; params?: UpdateNoteTOMParams }
   > = (props) => {
     const { noteId, params } = props ?? {};
 
@@ -2703,7 +2707,7 @@ export const useUpdateNoteTOM = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateNoteTOM>>,
       TError,
-      { noteId: string; params: UpdateNoteTOMParams },
+      { noteId: string; params?: UpdateNoteTOMParams },
       TContext
     >;
   },
@@ -2711,7 +2715,7 @@ export const useUpdateNoteTOM = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateNoteTOM>>,
   TError,
-  { noteId: string; params: UpdateNoteTOMParams },
+  { noteId: string; params?: UpdateNoteTOMParams },
   TContext
 > => {
   const mutationOptions = getUpdateNoteTOMMutationOptions(options);

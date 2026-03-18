@@ -20,7 +20,7 @@ type NoteRepository interface {
 	Delete(ctx context.Context, id string) error
 	List(ctx context.Context, params NoteListParams) ([]*models.Note, int64, error)
 	GetByUserID(ctx context.Context, userID string, params NoteListParams) ([]*models.Note, int64, error)
-	UpdateTOM(ctx context.Context, id string, tom bool) error
+	UpdateTOM(ctx context.Context, id string, tom *int32) error
 	ListTOM(ctx context.Context, userID string) ([]*models.Note, error)
 }
 
@@ -103,7 +103,7 @@ func (r *noteRepository) List(ctx context.Context, params NoteListParams) ([]*mo
 	query := r.db.WithContext(ctx).Model(&models.Note{})
 
 	// Exclude top_of_mind notes from regular list
-	query = query.Where("top_of_mind = ?", false)
+	query = query.Where("top_of_mind IS NULL")
 
 	// Apply filters
 	if params.Status != nil {
@@ -136,7 +136,7 @@ func (r *noteRepository) GetByUserID(ctx context.Context, userID string, params 
 
 	query := r.db.WithContext(ctx).Model(&models.Note{}).
 		Where("user_id = ?", userID).
-		Where("top_of_mind = ?", false)
+		Where("top_of_mind IS NULL")
 
 	// Filter by folder - if nil, get root notes (folder_id IS NULL)
 	if params.FolderID != nil {
@@ -163,22 +163,23 @@ func (r *noteRepository) GetByUserID(ctx context.Context, userID string, params 
 	return notes, total, err
 }
 
-func (r *noteRepository) UpdateTOM(ctx context.Context, id string, tom bool) error {
+func (r *noteRepository) UpdateTOM(ctx context.Context, id string, tom *int32) error {
 	return r.db.WithContext(ctx).
 		Model(&models.Note{}).
 		Where("id = ?", id).
 		Update("top_of_mind", tom).Error
 }
 
-// ListTOM lists all notes where TopOfMind is true for a specific user
+// ListTOM lists all notes where TopOfMind has an order for a specific user
 func (r *noteRepository) ListTOM(ctx context.Context, userID string) ([]*models.Note, error) {
 	var notes []*models.Note
 	err := r.db.WithContext(ctx).
 		Model(&models.Note{}).
-		Where("top_of_mind = ? AND user_id = ?", true, userID).
+		Where("top_of_mind IS NOT NULL AND user_id = ?", userID).
 		Preload("Tags").
 		Preload("Folder").
-		Order("updated_at DESC"). // Sort by most recently updated
+		Order("top_of_mind ASC").
+		Order("updated_at DESC").
 		Find(&notes).Error
 	return notes, err
 }

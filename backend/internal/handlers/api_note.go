@@ -14,6 +14,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
@@ -248,8 +249,23 @@ func (api *NoteAPI) UpdateNote(c *gin.Context) {
 // Update note top of mind by ID
 func (api *NoteAPI) UpdateNoteTOM(c *gin.Context) {
     idStr := c.Param("note_id")
-    tomStr := c.Query("tom")
-    tom := tomStr == "true"
+    tomStr, tomProvided := c.GetQuery("tom")
+
+    var tom *int32
+    if tomProvided {
+        normalized := strings.TrimSpace(tomStr)
+        if normalized != "" && !strings.EqualFold(normalized, "null") {
+            parsed, err := strconv.Atoi(normalized)
+            if err != nil || parsed <= 0 {
+                c.JSON(http.StatusBadRequest, gin.H{"error": "tom must be a positive integer or null"})
+                return
+            }
+
+            tomVal := int32(parsed)
+            tom = &tomVal
+        }
+    }
+
     fmt.Println("UpdateNoteTOM request:", tomStr, tom)
     updated, err := api.noteService.UpdateNoteTOM(c.Request.Context(), idStr, tom)
     if err != nil {

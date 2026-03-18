@@ -1,36 +1,45 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { NodeViewWrapper } from "@tiptap/react";
+import React, { useEffect, useRef, useState } from "react";
+import { NodeViewProps, NodeViewWrapper } from "@tiptap/react";
 import { PencilRuler, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DrawingEditorModal, {
   type DrawingSavePayload,
 } from "./DrawingEditorModal";
+import ResizableMediaContainer, {
+  type ResizeDimensions,
+  type ResizeResult,
+} from "../ResizableMediaContainer";
 
 type UploadPreviewFn = (file: File) => Promise<string | null>;
 
-type DrawingNodeViewProps = {
-  node: {
-    attrs: Record<string, unknown>;
-  };
-  selected: boolean;
-  editor: {
-    isEditable: boolean;
-  };
-  updateAttributes: (attributes: Record<string, unknown>) => void;
-  extension: {
-    options: Record<string, unknown>;
-  };
+const parseDimension = (value: unknown, fallback: number) => {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return Math.round(value);
+  }
+
+  if (typeof value === "string") {
+    const parsed = Number.parseFloat(value);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return Math.round(parsed);
+    }
+  }
+
+  return fallback;
 };
 
-const DrawingNodeView: React.FC<DrawingNodeViewProps> = ({
+const DrawingNodeView: React.FC<NodeViewProps> = ({
   node,
   selected,
   editor,
   updateAttributes,
   extension,
 }) => {
+  const [dimensions, setDimensions] = useState({
+    width: node.attrs.width || "auto",
+    height: node.attrs.height || "auto",
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const hasOpenedRef = useRef(false);
 
@@ -48,13 +57,6 @@ const DrawingNodeView: React.FC<DrawingNodeViewProps> = ({
   const maxSnapshotSize =
     (extension.options.maxSnapshotSize as number | undefined) || 1024 * 1024;
 
-  const aspectRatio = useMemo(() => {
-    const width = Number(node.attrs.width) || 16;
-    const height = Number(node.attrs.height) || 9;
-
-    return `${Math.max(width, 1)} / ${Math.max(height, 1)}`;
-  }, [node.attrs.height, node.attrs.width]);
-
   useEffect(() => {
     if (hasOpenedRef.current) return;
     if (!isEditable) return;
@@ -64,28 +66,76 @@ const DrawingNodeView: React.FC<DrawingNodeViewProps> = ({
     setIsModalOpen(true);
   }, [isEditable, previewUrl, snapshot]);
 
+  useEffect(() => {
+    setDimensions({
+      width: node.attrs.width || "auto",
+      height: node.attrs.height || "auto",
+    });
+  }, [node.attrs.width, node.attrs.height]);
+
   const handleSave = (payload: DrawingSavePayload) => {
+    const currentWidth = parseDimension(
+      dimensions.width,
+      parseDimension(node.attrs.width, 960),
+    );
+    const currentHeight = parseDimension(
+      dimensions.height,
+      parseDimension(node.attrs.height, 540),
+    );
+
     updateAttributes({
       snapshot: payload.snapshot,
       previewUrl: payload.previewUrl || previewUrl,
-      width: payload.width || node.attrs.width || 960,
-      height: payload.height || node.attrs.height || 540,
+      // Keep the outer frame size stable; preview image will be fit-scaled inside it.
+      width: currentWidth,
+      height: currentHeight,
       updatedAt: new Date().toISOString(),
       snapshotVersion: 1,
     });
   };
 
+  const handleResize = (nextDimensions: ResizeDimensions) => {
+    setDimensions(nextDimensions);
+  };
+
+  const handleResizeEnd = ({
+    width,
+    height,
+    widthPx,
+    heightPx,
+  }: ResizeResult) => {
+    const finalDimensions = {
+      width: widthPx,
+      height: heightPx,
+    };
+
+    setDimensions(finalDimensions);
+    updateAttributes({
+      width,
+      height,
+      updatedAt: new Date().toISOString(),
+    });
+  };
   return (
     <>
       <NodeViewWrapper
         className={cn(
-          "my-3 overflow-hidden rounded-lg border border-border bg-white",
+          "my-3 overflow-hidden relative group",
           selected && "ring-2 ring-accent/30",
         )}
       >
-        <div contentEditable={false} className="space-y-3 p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm font-medium text-text-primary">
+        <ResizableMediaContainer
+          width={dimensions.width}
+          height={dimensions.height}
+          selected={selected}
+          isEditable={isEditable}
+          minWidth={240}
+          minHeight={160}
+          onResize={handleResize}
+          onResizeEnd={handleResizeEnd}
+        >
+          <div className="flex items-center justify-between absolute top-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+            <div className="inline-flex items-center rounded-md border border-border px-2.5 py-1 text-xs text-text-primary hover:bg-muted gap-2">
               <PencilRuler className="h-4 w-4" />
               Drawing
             </div>
@@ -94,7 +144,7 @@ const DrawingNodeView: React.FC<DrawingNodeViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="inline-flex items-center rounded-md border border-border px-2.5 py-1 text-xs text-text-primary hover:bg-muted"
+                className="pointer-events-auto inline-flex items-center rounded-md border border-border px-2.5 py-1 text-xs text-text-primary hover:bg-muted"
               >
                 {snapshot ? (
                   <>
@@ -110,17 +160,11 @@ const DrawingNodeView: React.FC<DrawingNodeViewProps> = ({
               </button>
             )}
           </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (isEditable) setIsModalOpen(true);
-            }}
+          <div
             className={cn(
-              "relative block w-full overflow-hidden rounded-md border border-dashed border-border",
+              "relative block h-full w-full overflow-hidden rounded-md border border-dashed border-border",
               isEditable && "hover:border-accent/60",
             )}
-            style={{ aspectRatio }}
           >
             {previewUrl ? (
               /* eslint-disable-next-line @next/next/no-img-element */
@@ -138,8 +182,8 @@ const DrawingNodeView: React.FC<DrawingNodeViewProps> = ({
                   : "No drawing yet, click Create to start"}
               </div>
             )}
-          </button>
-        </div>
+          </div>
+        </ResizableMediaContainer>
       </NodeViewWrapper>
 
       <DrawingEditorModal

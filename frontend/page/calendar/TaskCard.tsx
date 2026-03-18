@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { DayTask } from "./WeeklyMode";
-import { GoogleBadge } from "@/features/googleCalendar";
+import { GoogleBadge } from "@/features/google-calendar";
 
 const TaskCard = ({
   task,
@@ -29,11 +29,13 @@ const TaskCard = ({
             "bg-sky-50 border-l-sky-500": task.type === "event",
             "bg-emerald-50 border-l-emerald-500": task.type === "task",
             "bg-amber-50 border-l-amber-500": task.type === "note",
-          }
+          },
         )}
         onClick={onClick}
       >
-        <p className="text-xs font-semibold truncate leading-tight">{task.title}</p>
+        <p className="text-xs font-semibold truncate leading-tight">
+          {task.title}
+        </p>
         {task.source === "google" && <GoogleBadge />}
       </div>
     );
@@ -47,11 +49,13 @@ const TaskCard = ({
           "bg-sky-50 border-l-sky-500": task.type === "event",
           "bg-emerald-50 border-l-emerald-500": task.type === "task",
           "bg-amber-50 border-l-amber-500": task.type === "note",
-        }
+        },
       )}
       onClick={onClick}
     >
-      <p className="text-sm font-semibold line-clamp-2 leading-tight mb-1">{task.title}</p>
+      <p className="text-sm font-semibold line-clamp-2 leading-tight mb-1">
+        {task.title}
+      </p>
       {task.description && (
         <p className="text-xs text-muted-foreground line-clamp-2 mb-1">
           {task.description}

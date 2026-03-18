@@ -37,7 +37,7 @@ const CodeBlockComponent = (props: any) => {
     if (node.attrs.language !== language) {
       setLanguage(node.attrs.language || "plaintext");
     }
-  }, [node.attrs.language]);
+  }, [node.attrs.language, language]);
 
   const handleChange = (e: React.ChangeEvent<HTMLButtonElement>) => {
     setLanguage(e.target.value);
