@@ -37,12 +37,17 @@ def create_app() -> FastAPI:
 
 app = create_app()
 
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {"status": "ok"}
 
 def main() -> None:
     _load_dotenv()
     host = os.getenv("AI_SERVICE_HOST", "0.0.0.0")
-    port = int(os.getenv("AI_SERVICE_PORT", "8090"))
-    reload_enabled = os.getenv("AI_SERVICE_RELOAD", "true").lower() in {"1", "true", "yes"}
+    port = int(os.getenv("PORT", os.getenv("AI_SERVICE_PORT", "8090")))
+    reload_enabled = (
+        os.getenv("AI_SERVICE_RELOAD", "false").lower() in {"1", "true", "yes"}
+    )
     uvicorn.run("main:app", host=host, port=port, reload=reload_enabled)
 
 
