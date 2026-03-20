@@ -58,7 +58,7 @@ export default function TableSizeDropdown({ editor }: { editor: Editor }) {
         onClick={() => setIsOpen(!isOpen)}
         title="Insert Table"
         className={cn(
-          "p-1 items-center justify-center rounded transition-colors hover:bg-accent-foreground/40 hover:text-primary-foreground",
+          "p-1 mt-1 items-center justify-center rounded transition-colors hover:bg-accent-foreground/40 hover:text-primary-foreground",
           isOpen && "bg-[#a55252] text-primary-foreground",
         )}
       >

@@ -1,55 +1,38 @@
+// SlashCommandMenu.tsx
 import React from "react";
-import { cn } from "@/lib/utils";
-import { Editor } from "@tiptap/react";
+import { type Editor } from "@tiptap/react";
+import { Toolbar } from "./Toolbar";
+import { getSplashMenuToolbarConfigs } from "./Toolbar/ToolbarConfig";
 
-export type SlashCommand = {
-  label: string;
-  description: string;
-  icon: React.ReactNode;
-  action: (editor: Editor) => void;
-};
+interface SlashCommandMenuProps {
+  menuRef: React.RefObject<HTMLDivElement | null>;
+  editor: Editor;
+  position: { x: number; y: number };
+  selectedIndex: number;
+}
 
 export const SlashCommandMenu = ({
+  menuRef,
+  editor,
   position,
-  commands,
   selectedIndex,
-  onSelect,
-}: {
-  position: { x: number; y: number };
-  commands: SlashCommand[];
-  selectedIndex: number;
-  onSelect: (command: SlashCommand) => void;
-}) => {
+}: SlashCommandMenuProps) => {
   return (
     <div
-      className="fixed z-100 w-64 rounded-lg border border-border bg-card  shadow-xl"
+      ref={menuRef}
+      className="fixed"
       style={{ top: position.y, left: position.x }}
+      onMouseDown={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
     >
-      <div className="flex flex-col py-2">
-        {commands.map((command, index) => (
-          <button
-            key={command.label}
-            onMouseDown={(event) => {
-              event.preventDefault();
-              onSelect(command);
-            }}
-            className={cn(
-              "flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-text-primary hover:bg-gray-100",
-              index === selectedIndex && " -lowered/20",
-            )}
-          >
-            <div className="flex h-6 w-6 items-center justify-center rounded-md border border-border text-text-primary">
-              {command.icon}
-            </div>
-            <div className="flex justify-between w-full items-center">
-              <span className="font-medium text-text-primary text-sm">
-                {command.label}
-              </span>
-              {/* <span className="text-xs text-gray-500">K</span> */}
-            </div>
-          </button>
-        ))}
-      </div>
+      <Toolbar
+        editor={editor}
+        getConfig={getSplashMenuToolbarConfigs}
+        selectedIndex={selectedIndex}
+        direction="horizontal"
+      />
     </div>
   );
 };
