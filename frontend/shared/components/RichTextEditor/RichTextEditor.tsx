@@ -1,13 +1,11 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { EditorContent, type Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
 import { useTiptapEditor } from "./useTiptapEditor";
 import type { CollaborationConfig } from "./useTiptapEditor";
 import { SlashCommandMenu } from "./SplashCommand";
-import Portal from "@/shared/components/PortalModal/PortalModal";
-import { TemplatesModal } from "./TemplatesModal";
 import { ManageTemplatesModal } from "../../../features/template-management/ui/ManageTemplatesModal";
 import { TableOfContents } from "./TableOfContents";
 import { useSlashMenu } from "./hooks/useSlashMenu";
@@ -20,10 +18,6 @@ import type { AIAction } from "./Extensions/ExtAI";
 import SharedBubbleMenu from "./Extensions/SharedBubbleMenu";
 import { getHeaderToolbarConfigs } from "./Toolbar/ToolbarConfig";
 import LinkHoverPopup from "./Extensions/ExtLink/LinkHoverPopup";
-import {
-  BASE_SLASH_COMMANDS,
-  createTemplateCommand,
-} from "./config/slashCommands";
 
 interface TiptapProps {
   noteId?: string;
@@ -85,11 +79,6 @@ const Tiptap = ({
     closeManageTemplates,
     applyTemplate,
   } = useTemplateModals(editorRef.current);
-
-  const slashCommands = useMemo(
-    () => [...BASE_SLASH_COMMANDS, createTemplateCommand(openTemplatesModal)],
-    [openTemplatesModal],
-  );
 
   const { menuRef, slashMenu, closeSlashMenu, handleSlashKeyDown } =
     useSlashMenu(editorRef.current, editable);
