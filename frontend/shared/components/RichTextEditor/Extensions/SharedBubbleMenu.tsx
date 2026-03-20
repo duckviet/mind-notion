@@ -9,6 +9,7 @@ import {
   getHeaderToolbarConfigs,
 } from "../Toolbar/ToolbarConfig";
 import CommentBubblePopup from "./ExtComment/CommentPopup";
+import { PortalModal } from "../../PortalModal";
 
 interface SharedBubbleMenuProps {
   editor: Editor;

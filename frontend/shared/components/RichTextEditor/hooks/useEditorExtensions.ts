@@ -22,6 +22,7 @@ import {
   ExtComment,
   ExtTaskList,
   ExtDrawing,
+  ExtProposedEdits,
 } from "../Extensions";
 import { useStableRef } from "./useStableRef";
 import { CollaborationConfig } from "../types";
@@ -113,6 +114,7 @@ export function useEditorExtensions({
           onOpenAIRef.current(selection, range);
         },
       }),
+      ExtProposedEdits,
       ...collabExtensions,
     ],
     [

@@ -22,9 +22,11 @@ import {
   Unlink,
   MessageSquareMore,
   PencilRuler,
+  FileEdit,
 } from "lucide-react";
 import TableSizeDropdown from "./TableSizeDropdown";
 import CommentPopover from "./CommentPopover";
+import ProposedEditPopover from "../Extensions/ExtProposedEdits/ProposedEditPopover";
 
 export interface ToolbarItem {
   icon: React.ReactNode;
@@ -261,6 +263,20 @@ export const getBubbleToolbarConfigs = ({
       ],
     },
     {
+      name: "Proposed Edit",
+      items: [
+        {
+          icon: <FileEdit size={14} />,
+          label: "Propose Edit",
+          tooltip: "Propose Edit",
+          isActive: () => editor.isActive("proposedEdits"),
+          isPopover: true,
+          PopoverNode: <ProposedEditPopover editor={editor} />,
+          onClick: () => {},
+        },
+      ],
+    },
+    {
       name: "formatting",
       items: [
         {
@@ -368,6 +384,124 @@ export const getBubbleToolbarConfigs = ({
           tooltip: "Task List",
           isActive: () => editor.isActive("taskList"),
           onClick: () => editor.chain().focus().toggleTaskList().run(),
+        },
+      ],
+    },
+  ];
+};
+
+export const getSplashMenuToolbarConfigs = ({
+  editor,
+  options,
+}: ToolbarConfigProps): ToolbarGroup[] => {
+  const onAddImage = options.onAddImage ?? (() => {});
+  const onAddDrawing =
+    options.onAddDrawing ?? (() => editor.commands.insertDrawing());
+
+  return [
+    {
+      name: "formatting",
+      items: [
+        {
+          icon: <Bold size={16} />,
+          tooltip: "Bold",
+          isActive: () => editor.isActive("bold"),
+          onClick: () => editor.chain().focus().toggleBold().run(),
+        },
+        {
+          icon: <Italic size={16} />,
+          tooltip: "Italic",
+          isActive: () => editor.isActive("italic"),
+          onClick: () => editor.chain().focus().toggleItalic().run(),
+        },
+        {
+          icon: <Strikethrough size={16} />,
+          tooltip: "Strikethrough",
+          isActive: () => editor.isActive("strike"),
+          onClick: () => editor.chain().focus().toggleStrike().run(),
+        },
+        {
+          icon: <Highlighter size={16} />,
+          tooltip: "Highlighter",
+          isActive: () => editor.isActive("highlight"),
+          onClick: () => editor.chain().focus().toggleHighlight().run(),
+        },
+      ],
+    },
+    {
+      name: "insert",
+      items: [
+        {
+          icon: null,
+          tooltip: "Table",
+          isActive: () => editor.isActive("table"),
+          onClick: () => {}, // Handled by component
+          isDropdown: true,
+          DropdownNode: <TableSizeDropdown editor={editor} />,
+        },
+
+        {
+          icon: <Quote size={16} />,
+          tooltip: "Quote",
+          isActive: () => editor.isActive("blockquote"),
+          onClick: () => editor.chain().focus().toggleBlockquote().run(),
+        },
+        {
+          icon: <Code2 size={16} />,
+          tooltip: "Code Block",
+          isActive: () => editor.isActive("codeBlock"),
+          onClick: () => editor.chain().focus().toggleCodeBlock().run(),
+        },
+        {
+          icon: <Link2 size={16} />,
+          tooltip: "Add Link",
+          isActive: () => editor.isActive("link"),
+          onClick: () => {
+            editor
+              .chain()
+              .focus()
+              .extendMarkRange("link")
+              .setLink({ href: "https://" })
+              .run();
+          },
+        },
+        {
+          icon: <ImageIcon size={16} />,
+          tooltip: "Add Image",
+          isActive: () => false,
+          onClick: onAddImage,
+        },
+        {
+          icon: <PencilRuler size={16} />,
+          tooltip: "Add Drawing",
+          isActive: () => false,
+          onClick: onAddDrawing,
+        },
+        {
+          icon: <Columns2 size={16} />,
+          tooltip: "Split View",
+          isActive: () => editor.isActive("splitView"),
+          onClick: () => editor.commands.insertSplitView(),
+          variants: [
+            {
+              icon: <Columns2 size={16} />,
+              label: "Insert Split View",
+              tooltip: "Insert Split View",
+              isActive: () => editor.isActive("splitView"),
+              onClick: () => editor.commands.insertSplitView(),
+            },
+            {
+              icon: <Columns2 className="[stroke-dasharray:2_4]" size={16} />,
+              label: "Toggle Split View Border",
+              tooltip: "Toggle Split View Border",
+              isActive: () => editor.isActive("splitView"),
+              onClick: () => {
+                editor.commands.insertSplitView({
+                  border: false,
+                });
+              },
+            },
+          ],
         },
       ],
     },

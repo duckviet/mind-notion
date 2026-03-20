@@ -1,19 +1,16 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { EditorContent, type Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
 import { useTiptapEditor } from "./useTiptapEditor";
 import type { CollaborationConfig } from "./useTiptapEditor";
 import { SlashCommandMenu } from "./SplashCommand";
-import Portal from "@/shared/components/PortalModal/PortalModal";
-import { TemplatesModal } from "./TemplatesModal";
 import { ManageTemplatesModal } from "../../../features/template-management/ui/ManageTemplatesModal";
 import { TableOfContents } from "./TableOfContents";
 import { useSlashMenu } from "./hooks/useSlashMenu";
 import { useTemplateModals } from "./hooks/useTemplateModals";
 import { useEditorKeyboard } from "./hooks/useEditorKeyboard";
-import { BASE_SLASH_COMMANDS, createTemplateCommand } from "./slashCommands";
 import { Toolbar } from "./Toolbar";
 import { Skeleton } from "../ui/skeleton";
 import { AIMenu } from "./Extensions/ExtAI";
@@ -83,29 +80,13 @@ const Tiptap = ({
     applyTemplate,
   } = useTemplateModals(editorRef.current);
 
-  const slashCommands = useMemo(
-    () => [...BASE_SLASH_COMMANDS, createTemplateCommand(openTemplatesModal)],
-    [openTemplatesModal],
-  );
-
-  const {
-    slashMenu,
-    closeSlashMenu,
-    openSlashMenu,
-    selectCommand,
-    moveSelection,
-  } = useSlashMenu(editorRef.current, slashCommands, editable);
+  const { menuRef, slashMenu, closeSlashMenu, handleSlashKeyDown } =
+    useSlashMenu(editorRef.current, editable);
 
   const { handleKeyDown } = useEditorKeyboard({
     editor: editorRef.current,
     editable,
-    slashMenuOpen: slashMenu.isOpen,
-    selectedIndex: slashMenu.selectedIndex,
-    commands: slashCommands,
-    onSlashTrigger: openSlashMenu,
-    onCloseMenu: closeSlashMenu,
-    onSelectCommand: selectCommand,
-    onMoveSelection: moveSelection,
+    keyboardHandlers: [handleSlashKeyDown],
     onKeyDown,
   });
 
@@ -134,7 +115,9 @@ const Tiptap = ({
 
   // Update AI menu position when it opens
   useEffect(() => {
-    if (aiMenuState.isOpen && editor) {
+    if (!aiMenuState.isOpen || !editor || editor.isDestroyed) return;
+
+    try {
       const { view } = editor;
       const { from } = view.state.selection;
       const coords = view.coordsAtPos(from);
@@ -142,6 +125,9 @@ const Tiptap = ({
         top: coords.top + window.scrollY + 30,
         left: coords.left + window.scrollX,
       });
+    } catch {
+      // TipTap view can be unavailable briefly during mount/unmount cycles.
+      return;
     }
   }, [aiMenuState.isOpen, editor]);
 
@@ -156,13 +142,13 @@ const Tiptap = ({
         customPrompt,
       );
 
-      // Replace selected text with AI result
-      editor
-        .chain()
-        .focus()
-        .deleteRange(aiMenuState.range)
-        .insertContent(result)
-        .run();
+      editor.commands.setProposedEdit({
+        range: aiMenuState.range,
+        originalText: aiMenuState.selection,
+        proposedText: result,
+        action,
+        customPrompt,
+      });
     } catch (error) {
       console.error("AI action failed:", error);
     } finally {
@@ -192,7 +178,7 @@ const Tiptap = ({
 
       {showEditor ? (
         <div ref={contentRef} className="relative flex gap-6 px-6">
-          <div className="flex-1">
+          <div className="flex-1 relative">
             <EditorContent
               ref={ref}
               editor={editor}
@@ -205,21 +191,12 @@ const Tiptap = ({
             />
 
             {slashMenu.isOpen && (
-              <Portal lockScroll={true}>
-                <div
-                  className="fixed inset-0 z-100 bg-black/5"
-                  onMouseDown={(e) => {
-                    e.stopPropagation();
-                    closeSlashMenu();
-                  }}
-                />
-                <SlashCommandMenu
-                  position={slashMenu.position}
-                  commands={slashCommands}
-                  selectedIndex={slashMenu.selectedIndex}
-                  onSelect={selectCommand}
-                />
-              </Portal>
+              <SlashCommandMenu
+                menuRef={menuRef}
+                editor={editor}
+                position={slashMenu.position}
+                selectedIndex={slashMenu.selectedIndex}
+              />
             )}
 
             {aiMenuState.isOpen && (

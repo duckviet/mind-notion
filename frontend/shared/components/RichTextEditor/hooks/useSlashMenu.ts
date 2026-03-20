@@ -1,6 +1,10 @@
-import { useState, useCallback, useEffect } from "react";
+// hooks/useSlashMenu.ts
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { type Editor } from "@tiptap/react";
-import { type SlashCommand } from "../SplashCommand";
+import {
+  getSplashMenuToolbarConfigs,
+  type ToolbarGroup,
+} from "../Toolbar/ToolbarConfig";
 
 interface SlashMenuState {
   isOpen: boolean;
@@ -8,77 +12,143 @@ interface SlashMenuState {
   selectedIndex: number;
 }
 
-export function useSlashMenu(
-  editor: Editor | null,
-  commands: SlashCommand[],
-  editable: boolean
-) {
+export function useSlashMenu(editor: Editor | null, editable: boolean) {
+  const menuRef = useRef<HTMLDivElement>(null);
   const [slashMenu, setSlashMenu] = useState<SlashMenuState>({
     isOpen: false,
     position: { x: 0, y: 0 },
     selectedIndex: 0,
   });
 
+  // Get total item count from config
+  const totalItems = useMemo(() => {
+    if (!editor) return 0;
+    const groups = getSplashMenuToolbarConfigs({
+      editor,
+      options: {},
+    });
+    return groups.reduce((sum, g) => sum + g.items.length, 0);
+  }, [editor]);
+
   const closeSlashMenu = useCallback(() => {
-    setSlashMenu((prev) => ({
-      ...prev,
-      isOpen: false,
-      selectedIndex: 0,
-    }));
+    setSlashMenu((prev) => ({ ...prev, isOpen: false, selectedIndex: 0 }));
   }, []);
 
   const openSlashMenu = useCallback(() => {
-    if (!editor) return;
+    if (!editor || editor.isDestroyed) return;
 
-    const { from } = editor.state.selection;
-    const coords = editor.view.coordsAtPos(from);
-
-    setSlashMenu({
-      isOpen: true,
-      position: { x: coords.left, y: coords.bottom + 8 },
-      selectedIndex: 0,
-    });
+    try {
+      const { from } = editor.state.selection;
+      const coords = editor.view.coordsAtPos(from);
+      setSlashMenu({
+        isOpen: true,
+        position: { x: coords.left, y: coords.top + 8 },
+        selectedIndex: 0,
+      });
+    } catch {
+      // TipTap view can be unavailable briefly during mount/unmount cycles.
+      return;
+    }
   }, [editor]);
-
-  const selectCommand = useCallback(
-    (command: SlashCommand) => {
-      if (!editor) return;
-      command.action(editor);
-      closeSlashMenu();
-    },
-    [editor, closeSlashMenu]
-  );
 
   const moveSelection = useCallback(
     (direction: "up" | "down") => {
       setSlashMenu((prev) => {
-        if (commands.length === 0) return prev;
-
+        if (totalItems === 0) return prev;
         const delta = direction === "down" ? 1 : -1;
-        const newIndex =
-          (prev.selectedIndex + delta + commands.length) % commands.length;
-
+        const newIndex = (prev.selectedIndex + delta + totalItems) % totalItems;
         return { ...prev, selectedIndex: newIndex };
       });
     },
-    [commands.length]
+    [totalItems],
   );
 
-  // Close menu on outside click
+  const selectCurrent = useCallback(() => {
+    if (!editor) return;
+    const groups = getSplashMenuToolbarConfigs({
+      editor,
+      options: {},
+    });
+    const flatItems = groups.flatMap((g) => g.items);
+    const item = flatItems[slashMenu.selectedIndex];
+    if (item) {
+      item.onClick();
+      closeSlashMenu();
+    }
+  }, [editor, slashMenu.selectedIndex, closeSlashMenu]);
+
+  // Keyboard handler
+  const handleSlashKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>): boolean => {
+      if (!editable || !editor) return false;
+
+      if (
+        event.key === "/" &&
+        event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey
+      ) {
+        event.preventDefault();
+        openSlashMenu();
+        return true;
+      }
+
+      if (!slashMenu.isOpen) return false;
+
+      switch (event.key) {
+        case "Escape":
+          event.preventDefault();
+          closeSlashMenu();
+          return true;
+        case "ArrowDown":
+          event.preventDefault();
+          moveSelection("down");
+          return true;
+        case "ArrowUp":
+          event.preventDefault();
+          moveSelection("up");
+          return true;
+        case "Enter":
+          event.preventDefault();
+          selectCurrent();
+          return true;
+        default:
+          if (!["Shift", "Control", "Meta", "Alt"].includes(event.key)) {
+            closeSlashMenu();
+          }
+          return false;
+      }
+    },
+    [
+      editor,
+      editable,
+      slashMenu.isOpen,
+      openSlashMenu,
+      closeSlashMenu,
+      moveSelection,
+      selectCurrent,
+    ],
+  );
+
+  // Close on outside click
   useEffect(() => {
     if (!slashMenu.isOpen) return;
 
-    const handleClick = () => closeSlashMenu();
-    window.addEventListener("mousedown", handleClick);
+    const handleMouseDown = (e: MouseEvent) => {
+      // Don't close if clicking inside the menu
+      if (menuRef.current?.contains(e.target as Node)) return;
+      closeSlashMenu();
+    };
 
-    return () => window.removeEventListener("mousedown", handleClick);
+    window.addEventListener("mousedown", handleMouseDown);
+    return () => window.removeEventListener("mousedown", handleMouseDown);
   }, [slashMenu.isOpen, closeSlashMenu]);
 
   return {
     slashMenu,
+    menuRef, //
     closeSlashMenu,
     openSlashMenu,
-    selectCommand,
-    moveSelection,
+    handleSlashKeyDown,
   };
 }
