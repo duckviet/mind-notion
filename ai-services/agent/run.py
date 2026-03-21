@@ -158,12 +158,14 @@ async def run_agent(
         )
 
     working_history = filter_compatible_messages(conversation_history)
+    precheck_messages: list[dict[str, Any]] = [
+        {"role": "system", "content": system_prompt},
+        *working_history,
+    ]
+    precheck_messages.append({"role": "user", "content": user_message})
+
     precheck_tokens = estimate_messages_tokens(
-        [
-            {"role": "system", "content": system_prompt},
-            *working_history,
-            {"role": "user", "content": user_message},
-        ]
+        precheck_messages
     )
 
     if is_over_threshold(precheck_tokens.total, model_limits.context_window):
@@ -177,8 +179,8 @@ async def run_agent(
     messages: list[dict[str, Any]] = [
         {"role": "system", "content": system_prompt},
         *working_history,
-        {"role": "user", "content": user_message},
     ]
+    messages.append({"role": "user", "content": user_message})
 
     full_response = ""
     _report_token_usage(callbacks, messages, model_limits.context_window)
@@ -235,7 +237,7 @@ async def run_agent(
 
                     if tc_delta.function and tc_delta.function.arguments:
                         tool_calls_by_index[index]["function"]["arguments"] += tc_delta.function.arguments
-
+            # TODO: Đọc lại sao loop nhiều thế
             tool_calls_list = [
                 tool_calls_by_index[idx] for idx in sorted(tool_calls_by_index.keys())
             ]
