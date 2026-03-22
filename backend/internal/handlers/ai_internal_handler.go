@@ -5,17 +5,19 @@ import (
 	"net/http"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
 type AIInternalAPI struct {
-	noteService service.NoteService
-	config      *config.Config
+	noteService   service.NoteService
+	noteChunkRepo repository.NoteChunkRepository
+	config        *config.Config
 }
 
-func NewAIInternalAPI(noteService service.NoteService, cfg *config.Config) *AIInternalAPI {
-	return &AIInternalAPI{noteService: noteService, config: cfg}
+func NewAIInternalAPI(noteService service.NoteService, noteChunkRepo repository.NoteChunkRepository, cfg *config.Config) *AIInternalAPI {
+	return &AIInternalAPI{noteService: noteService, noteChunkRepo: noteChunkRepo, config: cfg}
 }
 
 type aiActor struct {
@@ -78,6 +80,8 @@ func (api *AIInternalAPI) ExecuteTool(c *gin.Context) {
 		api.executeNotesRead(c, req)
 	case "notes.write":
 		api.executeNotesWrite(c, req)
+	case "rag.search":
+		api.executeRAGSearch(c, req)
 	default:
 		c.JSON(http.StatusBadRequest, aiToolResponse{
 			OK:         false,
@@ -89,6 +93,94 @@ func (api *AIInternalAPI) ExecuteTool(c *gin.Context) {
 			},
 		})
 	}
+}
+
+func (api *AIInternalAPI) executeRAGSearch(c *gin.Context, req aiToolExecuteRequest) {
+	if api.noteChunkRepo == nil {
+		c.JSON(http.StatusServiceUnavailable, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "INTERNAL", Message: "chunk repository unavailable", Retryable: true},
+		})
+		return
+	}
+
+	userID := req.Actor.UserID
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "INVALID_INPUT", Message: "actor.user_id is required", Retryable: false},
+		})
+		return
+	}
+
+	rawEmbedding, ok := req.Input["embedding"].([]interface{})
+	if !ok || len(rawEmbedding) == 0 {
+		c.JSON(http.StatusBadRequest, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "INVALID_INPUT", Message: "embedding is required", Retryable: false},
+		})
+		return
+	}
+
+	embedding := make([]float64, 0, len(rawEmbedding))
+	for _, item := range rawEmbedding {
+		value, ok := item.(float64)
+		if !ok {
+			c.JSON(http.StatusBadRequest, aiToolResponse{
+				OK:         false,
+				ToolCallID: req.ToolCallID,
+				Error:      &aiToolError{Code: "INVALID_INPUT", Message: "embedding values must be numeric", Retryable: false},
+			})
+			return
+		}
+		embedding = append(embedding, value)
+	}
+
+	topK := 5
+	if rawTopK, ok := req.Input["top_k"]; ok {
+		if topKFloat, ok := rawTopK.(float64); ok {
+			topK = int(topKFloat)
+		}
+	}
+
+	minScore := 0.2
+	if rawMinScore, ok := req.Input["min_score"]; ok {
+		if minScoreFloat, ok := rawMinScore.(float64); ok {
+			minScore = minScoreFloat
+		}
+	}
+
+	results, err := api.noteChunkRepo.SearchSimilarByUser(c.Request.Context(), userID, embedding, topK, minScore)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "INTERNAL", Message: err.Error(), Retryable: false},
+		})
+		return
+	}
+
+	outputChunks := make([]gin.H, 0, len(results))
+	for _, item := range results {
+		outputChunks = append(outputChunks, gin.H{
+			"note_id":     item.NoteID,
+			"chunk_index": item.ChunkIndex,
+			"text":        item.Text,
+			"score":       item.Score,
+		})
+	}
+
+	c.JSON(http.StatusOK, aiToolResponse{
+		OK:         true,
+		ToolCallID: req.ToolCallID,
+		Output: gin.H{
+			"chunks": outputChunks,
+			"total":  len(outputChunks),
+		},
+	})
 }
 
 func (api *AIInternalAPI) executeNotesRead(c *gin.Context, req aiToolExecuteRequest) {
