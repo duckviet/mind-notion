@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:14-alpine
+    image: pgvector/pgvector:pg14
     environment:
       POSTGRES_DB: collaborative_editor
       POSTGRES_USER: postgres

@@ -19,9 +19,9 @@ import (
 )
 
 type AIRunAPI struct {
-	config      *config.Config
-	noteService service.NoteService
-	httpClient  *http.Client
+	config           *config.Config
+	noteService      service.NoteService
+	httpClient       *http.Client
 	streamHTTPClient *http.Client
 }
 
@@ -68,7 +68,22 @@ func (api *AIRunAPI) CreateRun(c *gin.Context) {
 
 	noteVersion := 0
 	resourceNoteID := ""
-	allowedTools := []map[string]interface{}{}
+	allowedTools := []map[string]interface{}{
+		{
+			"name": "rag.search",
+			"constraints": map[string]interface{}{
+				"workspace_id":         req.WorkspaceID,
+				"require_user_consent": false,
+			},
+		},
+		{
+			"name": "webSearch",
+			"constraints": map[string]interface{}{
+				"workspace_id":         req.WorkspaceID,
+				"require_user_consent": false,
+			},
+		},
+	}
 
 	if trimmedNoteID != "" {
 		note, err := api.noteService.GetNoteByID(c.Request.Context(), trimmedNoteID)
@@ -83,22 +98,22 @@ func (api *AIRunAPI) CreateRun(c *gin.Context) {
 
 		resourceNoteID = trimmedNoteID
 		noteVersion = note.Version
-		allowedTools = []map[string]interface{}{
-			{
+		allowedTools = append(allowedTools,
+			map[string]interface{}{
 				"name": "notes.read",
 				"constraints": map[string]interface{}{
 					"workspace_id":         req.WorkspaceID,
 					"require_user_consent": false,
 				},
 			},
-			{
+			map[string]interface{}{
 				"name": "notes.write",
 				"constraints": map[string]interface{}{
 					"workspace_id":         req.WorkspaceID,
 					"require_user_consent": true,
 				},
 			},
-		}
+		)
 	}
 
 	runID := uuid.NewString()

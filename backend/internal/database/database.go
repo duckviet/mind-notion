@@ -81,6 +81,10 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 		return nil, fmt.Errorf("failed to migrate user schema: %w", err)
 	}
 
+	if err := ensurePgVectorExtension(db); err != nil {
+		return nil, fmt.Errorf("failed to ensure pgvector extension: %w", err)
+	}
+
 	if err := db.AutoMigrate(
 		&models.User{},
 		&models.Account{},
@@ -96,7 +100,30 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 		return nil, fmt.Errorf("failed to auto migrate: %w", err)
 	}
 
+	if err := ensureNoteChunkVectorIndexes(db); err != nil {
+		return nil, fmt.Errorf("failed to ensure note_chunks vector indexes: %w", err)
+	}
+
 	return &DB{db}, nil
+}
+
+func ensurePgVectorExtension(db *gorm.DB) error {
+	return db.Exec(`CREATE EXTENSION IF NOT EXISTS vector`).Error
+}
+
+func ensureNoteChunkVectorIndexes(db *gorm.DB) error {
+	queries := []string{
+		`CREATE INDEX IF NOT EXISTS idx_note_chunks_user_id ON note_chunks (user_id)`,
+		`CREATE INDEX IF NOT EXISTS idx_note_chunks_text_embeddings_hnsw ON note_chunks USING hnsw (text_embeddings vector_cosine_ops)`,
+	}
+
+	for _, query := range queries {
+		if err := db.Exec(query).Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func migrateUserSchema(db *gorm.DB) error {

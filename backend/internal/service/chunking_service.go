@@ -25,19 +25,19 @@ type chunkingService struct {
 	baseURL      string
 	serviceToken string
 	client       *http.Client
-	chunkRepo repository.NoteChunkRepository
+	chunkRepo    repository.NoteChunkRepository
 }
 
 type embedChunk struct {
-	ChunkIndex int       `json:"chunk_index"`
-	Text       string    `json:"text"`
-	Embedding  []float64 `json:"embedding"`
+	ChunkIndex     int       `json:"chunk_index"`
+	Text           string    `json:"text"`
+	TextEmbeddings []float64 `json:"embedding"`
 }
 
 type embedChunksResponse struct {
-	NoteID string        `json:"note_id"`
-	UserID string        `json:"user_id"`
-	Chunks []embedChunk  `json:"chunks"`
+	NoteID string       `json:"note_id"`
+	UserID string       `json:"user_id"`
+	Chunks []embedChunk `json:"chunks"`
 }
 
 func NewChunkingService(cfg config.AIConfig, chunkRepo repository.NoteChunkRepository) ChunkingService {
@@ -134,9 +134,9 @@ func (s *chunkingService) send(payload map[string]any) {
 	// Đưa data từ output python qua input
 	for _, ch := range res.Chunks {
 		inputs = append(inputs, repository.NoteChunkInput{
-			ChunkIndex: ch.ChunkIndex,
-			Text:       ch.Text,
-			Embedding:  ch.Embedding,
+			ChunkIndex:     ch.ChunkIndex,
+			Text:           ch.Text,
+			TextEmbeddings: ch.TextEmbeddings,
 		})
 	}
 
