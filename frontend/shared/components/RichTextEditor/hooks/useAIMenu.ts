@@ -1,25 +1,36 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { AIMenuState } from "../types";
+import { useOpenState } from "./useOpenState";
 
-const INITIAL_STATE: AIMenuState = {
-  isOpen: false,
+type AIMenuData = Omit<AIMenuState, "isOpen">;
+
+const INITIAL_DATA: AIMenuData = {
   selection: "",
   range: null,
 };
 
 export function useAIMenu() {
-  const [aiMenuState, setAIMenuState] = useState<AIMenuState>(INITIAL_STATE);
+  const { state, open, close } = useOpenState<AIMenuData>(INITIAL_DATA);
 
   const openAIMenu = useCallback(
     (selection: string, range: { from: number; to: number }) => {
-      setAIMenuState({ isOpen: true, selection, range });
+      open({ selection, range });
     },
-    [],
+    [open],
   );
 
   const closeAIMenu = useCallback(() => {
-    setAIMenuState(INITIAL_STATE);
-  }, []);
+    close();
+  }, [close]);
+
+  const aiMenuState = useMemo<AIMenuState>(
+    () => ({
+      isOpen: state.isOpen,
+      selection: state.data.selection,
+      range: state.data.range,
+    }),
+    [state],
+  );
 
   return { aiMenuState, openAIMenu, closeAIMenu };
 }

@@ -170,7 +170,7 @@ export const NotePage: React.FC<NotePageProps> = ({
           containerClassName,
         )}
       >
-        <div className="flex flex-col flex-1 p-6 rounded-lg border border-border bg-surface h-full overflow-y-auto w-fit overflow-x-hidden">
+        <div className="flex flex-col flex-1 p-6 rounded-lg border border-border bg-surface h-full overflow-y-auto w-fit overflow-x-hidden shadow-sm">
           {/* Header */}
           <header className="mb-4 px-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -194,7 +194,7 @@ export const NotePage: React.FC<NotePageProps> = ({
             </div>
 
             {/* Metadata */}
-            <div
+            {/* <div
               className={cn(
                 "flex flex-wrap items-center gap-4 text-sm text-muted-foreground pb-4",
                 !isEditable && "border-b border-border pb-6",
@@ -214,7 +214,7 @@ export const NotePage: React.FC<NotePageProps> = ({
                 <User className="w-4 h-4" />
                 <span>{isEditable ? "Editable Link" : "Public View"}</span>
               </div>
-            </div>
+            </div> */}
           </header>
 
           {/* Content Editor */}

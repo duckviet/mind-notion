@@ -109,7 +109,7 @@ const CommentPopover = ({ editor, className }: CommentPopoverProps) => {
         }}
         className={cn(
           "flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors hover:bg-accent-foreground/40 hover:text-primary-foreground",
-          isOpen && "bg-[#a55252] text-primary-foreground",
+          isOpen && "bg-[#a55252] text-white",
         )}
       >
         <MessageSquareMoreIcon size={14} /> Comment

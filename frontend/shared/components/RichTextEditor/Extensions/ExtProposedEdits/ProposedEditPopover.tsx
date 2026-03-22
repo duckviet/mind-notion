@@ -103,7 +103,7 @@ const ProposedEditPopover = ({
         onClick={handleOpen}
         className={cn(
           "flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors hover:bg-accent-foreground/40 hover:text-primary-foreground",
-          isOpen && "bg-[#a55252] text-primary-foreground",
+          isOpen && "bg-[#a55252] text-white",
         )}
       >
         <FileEdit size={14} /> Propose Edit

@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { UseTiptapEditorProps } from "./types";
 import { useStableRef } from "./hooks/useStableRef";
 import { useEditToken } from "./hooks/useEditToken";
-import { useAIMenu } from "./hooks/useAIMenu";
 import { useUploadMediaRef } from "./hooks/useUploadMediaRef";
 import { useEditorExtensions } from "./hooks/useEditorExtensions";
 import { useContentSync } from "./hooks/useContentSync";
@@ -23,6 +22,7 @@ export const useTiptapEditor = ({
   onKeyDown,
   collaboration,
   onActiveCommentChange,
+  onOpenAI,
 }: UseTiptapEditorProps) => {
   // --- Stable refs for callbacks ---
   const onUpdateRef = useStableRef(onUpdate);
@@ -32,14 +32,13 @@ export const useTiptapEditor = ({
   // --- Side-effect hooks ---
   useEditToken();
 
-  const { aiMenuState, openAIMenu, closeAIMenu } = useAIMenu();
   const uploadMediaRef = useUploadMediaRef();
 
   const { extensions, collabEnabled } = useEditorExtensions({
     placeholder,
     collaboration,
     uploadMediaRef,
-    onOpenAI: openAIMenu,
+    onOpenAI: onOpenAI ?? (() => {}),
   });
 
   // --- Create editor ---
@@ -91,5 +90,5 @@ export const useTiptapEditor = ({
     return () => editor?.destroy();
   }, [editor]);
 
-  return { editor, aiMenuState, closeAIMenu };
+  return { editor };
 };

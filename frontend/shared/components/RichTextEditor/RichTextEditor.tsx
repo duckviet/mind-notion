@@ -9,6 +9,7 @@ import { SlashCommandMenu } from "./SplashCommand";
 import { ManageTemplatesModal } from "../../../features/template-management/ui/ManageTemplatesModal";
 import { TableOfContents } from "./TableOfContents";
 import { useSlashMenu } from "./hooks/useSlashMenu";
+import { useAIMenu } from "./hooks/useAIMenu";
 import { useTemplateModals } from "./hooks/useTemplateModals";
 import { useEditorKeyboard } from "./hooks/useEditorKeyboard";
 import { Toolbar } from "./Toolbar";
@@ -69,19 +70,16 @@ const Tiptap = ({
   const [isMounted, setIsMounted] = useState(false);
   const [isAILoading, setIsAILoading] = useState(false);
   const [aiMenuPosition, setAIMenuPosition] = useState({ top: 0, left: 0 });
+  const { aiMenuState, openAIMenu, closeAIMenu } = useAIMenu();
 
-  const {
-    isTemplatesModalOpen,
-    isManageTemplatesOpen,
-    openTemplatesModal,
-    closeTemplatesModal,
-    openManageTemplates,
-    closeManageTemplates,
-    applyTemplate,
-  } = useTemplateModals(editorRef.current);
+  const { isManageTemplatesOpen, closeManageTemplates } = useTemplateModals(
+    editorRef.current,
+  );
 
-  const { menuRef, slashMenu, closeSlashMenu, handleSlashKeyDown } =
-    useSlashMenu(editorRef.current, editable);
+  const { menuRef, slashMenu, handleSlashKeyDown } = useSlashMenu(
+    editorRef.current,
+    editable,
+  );
 
   const { handleKeyDown } = useEditorKeyboard({
     editor: editorRef.current,
@@ -90,7 +88,7 @@ const Tiptap = ({
     onKeyDown,
   });
 
-  const { editor, aiMenuState, closeAIMenu } = useTiptapEditor({
+  const { editor } = useTiptapEditor({
     noteId,
     content,
     placeholder,
@@ -99,7 +97,7 @@ const Tiptap = ({
     onKeyDown: handleKeyDown,
     collaboration,
     onActiveCommentChange,
-    onAIAction,
+    onOpenAI: openAIMenu,
   });
 
   useEffect(() => {

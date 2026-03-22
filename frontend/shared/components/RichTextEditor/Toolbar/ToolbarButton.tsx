@@ -30,11 +30,11 @@ export default function ToolbarButton({
       className={cn(
         "p-1 gap-2 rounded inline-flex items-center space-x-2 transition-colors text-sm",
         className,
-        isActive && !label
-          ? "bg-[#a55252] text-white"
-          : disabled
-            ? "cursor-not-allowed"
-            : "hover:bg-accent-foreground/40 hover:text-primary-foreground",
+        isActive && "bg-[#a55252] text-white",
+        disabled && "cursor-not-allowed",
+        !isActive &&
+          !disabled &&
+          "hover:bg-accent-foreground/40 hover:text-primary-foreground",
       )}
     >
       {icon}

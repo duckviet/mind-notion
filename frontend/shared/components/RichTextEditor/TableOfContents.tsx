@@ -174,7 +174,7 @@ export const TableOfContents = ({
     });
     headingsRef.current = headings;
     return headings;
-  }, [editor?.state, maxHeadingLevel]);
+  }, [editor, maxHeadingLevel]);
 
   const tree = useMemo(() => {
     const result = buildHeadingTree(flatHeadings);

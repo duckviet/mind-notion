@@ -25,9 +25,5 @@ export interface UseTiptapEditorProps {
   onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   collaboration?: CollaborationConfig;
   onActiveCommentChange?: (commentId: string | null) => void;
-  onAIAction?: (
-    action: string,
-    selectedText: string,
-    customPrompt?: string,
-  ) => Promise<string>;
+  onOpenAI?: (selection: string, range: { from: number; to: number }) => void;
 }

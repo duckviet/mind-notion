@@ -8,12 +8,21 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/shared/components/ui/context-menu";
-import { Trash2Icon, Eye, Edit3, Brain, FolderInput } from "lucide-react";
+import {
+  Trash2Icon,
+  Eye,
+  Edit3,
+  Brain,
+  FolderInput,
+  Expand,
+} from "lucide-react";
 
 import NoteDisplay from "./NoteDisplay";
 import FolderTreeSelector from "./FolderTreeSelector";
 import { Card } from "@/shared/components/Card";
 import { ReqUpdateNote, ResDetailNote } from "@/shared/services/generated/api";
+import { Button } from "@/shared/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export interface NoteCardProps extends ResDetailNote {
   score: number;
@@ -34,6 +43,8 @@ export default function NoteCard({
   onPin,
   onFocusEdit,
 }: Props) {
+  const router = useRouter();
+
   const handleDelete = async () => {
     if (onDelete) {
       await onDelete(match.id);
@@ -77,9 +88,19 @@ export default function NoteCard({
         >
           <Card
             // role="article"
-            className="rounded-2xl   w-full p-6 overflow-hidden"
+            className="rounded-2xl w-full p-6 overflow-hidden relative group"
             aria-label={`Note card: ${match.title}`}
           >
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push(`/note/${match.id}/edit`)}
+              aria-label="Expand"
+              className="hover:bg-hover-overlay absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Expand className="w-4 h-4" />
+            </Button>
             <div className="flex justify-between items-center w-full mb-4">
               <h2 className="text-xl font-semibold text-text-primary leading-tight">
                 {match.title}

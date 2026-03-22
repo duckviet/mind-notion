@@ -87,7 +87,7 @@ export function ChatbotComposer({
         </p>
       ) : null}
 
-      <div className="rounded-2xl border border-border bg-background px-3 py-2">
+      <div className="rounded-2xl border border-border px-3 py-2">
         <div className="flex items-center gap-2">
           <input
             value={inputValue}
@@ -99,7 +99,7 @@ export function ChatbotComposer({
               }
             }}
             placeholder="Ask anything"
-            className="flex-1 bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
+            className="flex-1 text-sm text-text-primary placeholder:text-text-muted outline-none"
           />
           <div className="flex items-center gap-1 text-text-muted">
             <button

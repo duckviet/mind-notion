@@ -55,7 +55,7 @@ export default function Chatbot({
       activeClassName="ring-2 ring-yellow-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
     >
       <div className={cn("h-full w-full", className)}>
-        <section className="h-full w-full bg-background overflow-hidden">
+        <section className="h-full w-full   overflow-hidden">
           <div className="h-full flex flex-col">
             <ChatbotPinnedNotes
               pinnedNotes={pinnedNotes}
