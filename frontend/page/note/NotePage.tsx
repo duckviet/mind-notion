@@ -17,11 +17,14 @@ import { CollaborativeSidebar } from "@/shared/components/CollaborativeSidebar";
 import { ShareNoteModal } from "@/features/note-editing/ui/ShareNoteModal";
 import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
 import { ModalProvider } from "@/shared/contexts/ModalContext";
-import { ResCollabTokenNote } from "@/shared/services/generated/api";
+import {
+  ResCollabTokenNote,
+  ResDetailNote,
+} from "@/shared/services/generated/api";
 
 export interface NotePageProps {
   // Note data
-  note?: ResCollabTokenNote;
+  note?: ResCollabTokenNote | ResDetailNote;
 
   // States
   isLoading?: boolean;
