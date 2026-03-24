@@ -8,7 +8,10 @@ const withBundleAnalyzerConfig = withBundleAnalyzer({
 const nextConfig: NextConfig = {
   /* config options here */
   images: {
-    domains: ["pub-1cd4295e87cb40aebfc4ab9bcc97007f.r2.dev"],
+    domains: [
+      "pub-1cd4295e87cb40aebfc4ab9bcc97007f.r2.dev",
+      "media.geeksforgeeks.org",
+    ],
   },
 };
 

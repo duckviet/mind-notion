@@ -1,0 +1,7 @@
+type: object
+properties:
+  tiptap_content:
+    type: string
+    example: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Updated tiptap document"}]}]}'
+required:
+  - tiptap_content

@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { type Editor } from "@tiptap/react";
 import { getSplashMenuToolbarConfigs } from "../Toolbar/ToolbarConfig";
-import { useOpenState } from "./useOpenState";
+import { useOpenState } from "@/shared/hooks/useOpenState";
 
 interface SlashMenuData {
   position: { x: number; y: number };
@@ -18,7 +18,14 @@ const INITIAL_SLASH_MENU_DATA: SlashMenuData = {
   selectedIndex: 0,
 };
 
-export function useSlashMenu(editor: Editor | null, editable: boolean) {
+export function useSlashMenu(editable: boolean) {
+  const editorRef = useRef<Editor | null>(null);
+  const editor = editorRef.current;
+  // Stable setter — gọi mỗi render
+  const setEditor = useCallback((e: Editor | null) => {
+    editorRef.current = e;
+  }, []);
+
   const menuRef = useRef<HTMLDivElement>(null);
   const { state, open, close, setData } = useOpenState<SlashMenuData>(
     INITIAL_SLASH_MENU_DATA,
@@ -157,6 +164,7 @@ export function useSlashMenu(editor: Editor | null, editable: boolean) {
   }, [slashMenu.isOpen, closeSlashMenu]);
 
   return {
+    setEditor,
     slashMenu,
     menuRef,
     closeSlashMenu,

@@ -1,20 +1,26 @@
 import { useCallback, useMemo } from "react";
 import { AIMenuState } from "../types";
-import { useOpenState } from "./useOpenState";
+import { useOpenState } from "../../../hooks/useOpenState";
+import { AISelectionContext } from "../Extensions/ExtAI/types";
 
 type AIMenuData = Omit<AIMenuState, "isOpen">;
 
 const INITIAL_DATA: AIMenuData = {
   selection: "",
   range: null,
+  context: null,
 };
 
 export function useAIMenu() {
   const { state, open, close } = useOpenState<AIMenuData>(INITIAL_DATA);
 
   const openAIMenu = useCallback(
-    (selection: string, range: { from: number; to: number }) => {
-      open({ selection, range });
+    (
+      selection: string,
+      range: { from: number; to: number },
+      context: AISelectionContext,
+    ) => {
+      open({ selection, range, context });
     },
     [open],
   );
@@ -28,6 +34,7 @@ export function useAIMenu() {
       isOpen: state.isOpen,
       selection: state.data.selection,
       range: state.data.range,
+      context: state.data.context,
     }),
     [state],
   );

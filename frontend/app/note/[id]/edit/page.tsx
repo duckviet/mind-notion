@@ -64,6 +64,7 @@ export default function PublicNoteEditPage() {
       error={error}
       isSynced={isSynced}
       isHydrated={isHydrated}
+      collabEnabled={collabEnabled}
       showComments
       mode="edit"
       onContentUpdate={handleContentUpdate}

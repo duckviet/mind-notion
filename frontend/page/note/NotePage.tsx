@@ -17,18 +17,11 @@ import { CollaborativeSidebar } from "@/shared/components/CollaborativeSidebar";
 import { ShareNoteModal } from "@/features/note-editing/ui/ShareNoteModal";
 import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
 import { ModalProvider } from "@/shared/contexts/ModalContext";
+import { ResCollabTokenNote } from "@/shared/services/generated/api";
 
 export interface NotePageProps {
   // Note data
-  note?: {
-    id: string;
-    title: string;
-    content: string;
-    created_at?: string | Date;
-    updated_at?: string | Date;
-    tags?: string[];
-    [key: string]: any;
-  } | null;
+  note?: ResCollabTokenNote;
 
   // States
   isLoading?: boolean;
@@ -45,6 +38,7 @@ export interface NotePageProps {
 
   // Collaboration
   collaboration?: CollaborationConfig;
+  collabEnabled?: boolean;
 
   // Tags management
   newTag?: string;
@@ -71,6 +65,7 @@ export const NotePage: React.FC<NotePageProps> = ({
   onContentUpdate,
   onEditorReady,
   collaboration,
+  collabEnabled = false,
   newTag = "",
   onNewTagChange,
   onTagAdd,
@@ -107,17 +102,8 @@ export const NotePage: React.FC<NotePageProps> = ({
   };
 
   const isEditable = mode === "edit";
-  const showEditor = !collaboration || isHydrated;
-
-  // Format date
-  const formatDate = (date?: string | Date) => {
-    if (!date) return "Unknown date";
-    // Check if using date-fns or dayjs
-    if (typeof date === "string" && date.includes("T")) {
-      return dayjs(date).format("MMM D, YYYY");
-    }
-    return format(new Date(date), "MMM d, yyyy");
-  };
+  const shouldWaitForCollabHydration = isEditable && collabEnabled;
+  const showEditor = !shouldWaitForCollabHydration || isHydrated;
 
   // Loading state
   if (isLoading) {
@@ -192,29 +178,6 @@ export const NotePage: React.FC<NotePageProps> = ({
                 </Button>
               </div>
             </div>
-
-            {/* Metadata */}
-            {/* <div
-              className={cn(
-                "flex flex-wrap items-center gap-4 text-sm text-muted-foreground pb-4",
-                !isEditable && "border-b border-border pb-6",
-              )}
-            >
-              <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
-                <Calendar className="w-4 h-4" />
-                <span>{formatDate(note.created_at)}</span>
-              </div>
-              {note.updated_at && (
-                <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
-                  <Clock className="w-4 h-4" />
-                  <span>Updated {formatDate(note.updated_at)}</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-900 px-3 py-1.5 rounded-lg">
-                <User className="w-4 h-4" />
-                <span>{isEditable ? "Editable Link" : "Public View"}</span>
-              </div>
-            </div> */}
           </header>
 
           {/* Content Editor */}

@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useUploadMedia } from "@/shared/services/generated/api";
-import { useStableRef } from "./useStableRef";
+import { useStableRef } from "@/shared/hooks/useStableRef";
 
 export function useUploadMediaRef() {
   const { mutateAsync: uploadMedia } = useUploadMedia({

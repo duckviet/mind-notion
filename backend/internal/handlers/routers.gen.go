@@ -93,6 +93,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.AIAPI.CreateAiRun,
 		},
 		{
+			"InlineEditAi",
+			http.MethodPost,
+			"/api/v1/ai/inline-edit",
+			handleFunctions.AIAPI.InlineEditAi,
+		},
+		{
 			"ProvideAiRunConsent",
 			http.MethodPatch,
 			"/api/v1/ai/runs/:run_id/consent",
@@ -301,6 +307,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			http.MethodPost,
 			"/api/v1/public/notes/:note_id/snapshot",
 			handleFunctions.NoteAPI.SaveNoteSnapshot,
+		},
+		{
+			"SaveNoteTiptapSnapshot",
+			http.MethodPost,
+			"/api/v1/public/notes/:note_id/snapshot-tiptap",
+			handleFunctions.NoteAPI.SaveNoteTiptapSnapshot,
 		},
 		{
 			"UpdateNote",

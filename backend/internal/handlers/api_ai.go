@@ -34,6 +34,17 @@ func (api *AIAPI) CreateAiRun(c *gin.Context) {
 	api.aiRun.CreateRun(c)
 }
 
+// Post /api/v1/ai/inline-edit
+// Inline edit selected text with AI
+func (api *AIAPI) InlineEditAi(c *gin.Context) {
+	if api.aiRun == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+
+	api.aiRun.InlineEdit(c)
+}
+
 // Patch /api/v1/ai/runs/:run_id/consent
 // Provide consent for pending AI tool call
 func (api *AIAPI) ProvideAiRunConsent(c *gin.Context) {

@@ -1,0 +1,40 @@
+post:
+  summary: Save Tiptap snapshot for a note
+  operationId: saveNoteTiptapSnapshot
+  tags: [Note]
+  security:
+    - BearerAuth: []
+  parameters:
+    - name: note_id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Note ID
+    - name: X-Edit-Token
+      in: header
+      required: false
+      schema:
+        type: string
+      description: Public edit token (optional if Bearer is used)
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: ../../components/schemas/Note/Req_NoteTiptapSnapshot.yaml
+  responses:
+    "200":
+      description: Tiptap snapshot saved
+      content:
+        application/json:
+          schema:
+            $ref: ../../components/schemas/Note/Res_NoteSnapshot.yaml
+    "400":
+      $ref: ../../components/responses/BadRequest.yaml
+    "401":
+      $ref: ../../components/responses/Unauthorized.yaml
+    "404":
+      $ref: ../../components/responses/NotFound.yaml
+    "500":
+      $ref: ../../components/responses/InternalServerError.yaml

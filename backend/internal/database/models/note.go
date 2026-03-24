@@ -3,15 +3,16 @@ package models
 // Note represents a note in the system
 type Note struct {
 	BaseModel
-	Title       string    `gorm:"type:varchar(200);not null" json:"title"`
-	Content     string    `gorm:"type:text" json:"content"`
-	ContentType string    `gorm:"type:varchar(50);default:'text'" json:"content_type"`
-	Status      NoteStatus `gorm:"type:varchar(20);default:'draft'" json:"status"`
-	TopOfMind   *int32    `gorm:"type:integer;index" json:"top_of_mind"`
-	Thumbnail   string    `gorm:"type:text" json:"thumbnail"`
-	IsPublic    bool      `gorm:"default:false" json:"is_public"`
-	PublicEditEnabled bool   `gorm:"default:false" json:"public_edit_enabled"`
-	PublicEditToken   string `gorm:"type:varchar(64)" json:"public_edit_token,omitempty"`
+	Title             string     `gorm:"type:varchar(200);not null" json:"title"`
+	Content           string     `gorm:"type:text" json:"content"`
+	TiptapContent     string     `gorm:"type:text" json:"tiptap_content"`
+	ContentType       string     `gorm:"type:varchar(50);default:'text'" json:"content_type"`
+	Status            NoteStatus `gorm:"type:varchar(20);default:'draft'" json:"status"`
+	TopOfMind         *int32     `gorm:"type:integer;index" json:"top_of_mind"`
+	Thumbnail         string     `gorm:"type:text" json:"thumbnail"`
+	IsPublic          bool       `gorm:"default:false" json:"is_public"`
+	PublicEditEnabled bool       `gorm:"default:false" json:"public_edit_enabled"`
+	PublicEditToken   string     `gorm:"type:varchar(64)" json:"public_edit_token,omitempty"`
 
 	// Foreign Keys
 	UserID   string  `gorm:"type:uuid;not null" json:"user_id"`

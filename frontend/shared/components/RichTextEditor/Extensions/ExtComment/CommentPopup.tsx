@@ -1,68 +1,56 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
 import { Editor } from "@tiptap/react";
-import { getMarkRange } from "@tiptap/core";
-import { BubbleMenu } from "@tiptap/react/menus";
-import { Pencil, Trash2, ExternalLink, Check, X } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
+import { Trash2 } from "lucide-react";
+import { IconButton, PopupContainer } from "@/shared/components/PopupContainer";
+import { useMarkHoverPopup } from "@/shared/hooks/useMarkHoverPopup";
 import { useCommentDetail } from "@/shared/services/generated/api";
 import { formatDate } from "@/shared/utils/date-format";
 
-interface CommentBubblePopupProps {
+interface CommentHoverPopupProps {
   editor: Editor;
-  isActive?: boolean;
 }
 
-const CommentBubblePopup = ({ editor, isActive }: CommentBubblePopupProps) => {
-  const commentId = editor.getAttributes("comment")?.id as string | undefined;
+const CommentHoverPopup = ({ editor }: CommentHoverPopupProps) => {
+  const { popup, handleRemove, containerProps } = useMarkHoverPopup<{
+    id: string;
+  }>(editor, "comment", {
+    selector: "span[data-comment-id]",
+    extract: (el) => {
+      const id = el.getAttribute("data-comment-id");
+      return id ? { id } : null;
+    },
+  });
 
-  const { data: comment } = useCommentDetail(commentId || ""); // Giả sử có hàm lấy comment theo ID
+  const { data: comment } = useCommentDetail(popup?.data.id || "", {
+    query: { enabled: !!popup?.data.id },
+  });
 
-  const handleRemove = useCallback(() => {
-    editor.chain().focus().extendMarkRange("comment").unsetComment().run();
-  }, [editor]);
-
-  // Reset về chế độ xem khi selection thay đổi (người dùng click ra chỗ khác)
-  // shouldShow sẽ lo việc ẩn hiện menu, nhưng ta cần reset state isEditing
-  const shouldShow = useCallback(({ editor }: { editor: Editor }) => {
-    const isActive = editor.isActive("comment");
-
-    return isActive;
-  }, []);
+  if (!popup || !containerProps) return null;
 
   return (
-    <BubbleMenu
-      options={{
-        placement: "bottom",
-      }}
-      className="top-0"
-      editor={editor}
-      pluginKey="commentMenu"
-      shouldShow={shouldShow}
-    >
-      <div className="flex w-54 justify-between items-center gap-1 rounded-lg border border-border bg-surface py-1 px-2 shadow-lg">
+    <PopupContainer {...containerProps} className="min-w-[200px]">
+      <div className="flex flex-1 items-center justify-between gap-4 px-1">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-sm text-text-primary">
-            {comment?.user_name}
+          <span className="text-sm font-medium text-text-primary">
+            {comment?.user_name || "..."}
           </span>
-          <span className="text-xs text-text-muted">
-            {formatDate(comment?.created_at || "")}
-          </span>
+          {comment?.created_at && (
+            <span className="text-xs text-text-muted">
+              {formatDate(comment.created_at)}
+            </span>
+          )}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-2 text-muted-foreground hover:text-red-600"
-          onClick={handleRemove}
+
+        <IconButton
+          icon={Trash2}
           title="Remove Comment"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+          onClick={handleRemove}
+          hoverColor="text-red-600"
+        />
       </div>
-    </BubbleMenu>
+    </PopupContainer>
   );
 };
 
-export default CommentBubblePopup;
+export default CommentHoverPopup;

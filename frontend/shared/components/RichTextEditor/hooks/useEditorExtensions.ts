@@ -24,8 +24,9 @@ import {
   ExtDrawing,
   ExtProposedEdits,
 } from "../Extensions";
-import { useStableRef } from "./useStableRef";
 import { CollaborationConfig } from "../types";
+import { AISelectionContext } from "../Extensions/ExtAI/types";
+import { useStableRef } from "@/shared/hooks/useStableRef";
 
 interface UseEditorExtensionsProps {
   placeholder: string;
@@ -33,7 +34,11 @@ interface UseEditorExtensionsProps {
   uploadMediaRef: React.RefObject<
     (args: { data: { file: File } }) => Promise<{ url: string }>
   >;
-  onOpenAI: (selection: string, range: { from: number; to: number }) => void;
+  onOpenAI: (
+    selection: string,
+    range: { from: number; to: number },
+    context: AISelectionContext,
+  ) => void;
 }
 
 export function useEditorExtensions({
@@ -110,8 +115,12 @@ export function useEditorExtensions({
       ExtSplitView,
       SplitViewColumn,
       ExtAI.configure({
-        onOpenAI: (selection: string, range: { from: number; to: number }) => {
-          onOpenAIRef.current(selection, range);
+        onOpenAI: (
+          selection: string,
+          range: { from: number; to: number },
+          context: AISelectionContext,
+        ) => {
+          onOpenAIRef.current(selection, range, context);
         },
       }),
       ExtProposedEdits,
@@ -120,6 +129,7 @@ export function useEditorExtensions({
     [
       placeholder,
       collabExtensions,
+      // Refs below are stable — listed for exhaustive-deps compliance
       onOpenAIRef,
       setTocRef,
       tocRef,

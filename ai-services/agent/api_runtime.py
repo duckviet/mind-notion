@@ -9,6 +9,8 @@ from fastapi import HTTPException
 from openai import AsyncOpenAI
 
 from .api_contracts import (
+    AgentInlineEditRequest,
+    AgentInlineEditResponse,
     AgentRunRequest,
     AwaitingConsentEvent,
     DeltaEvent,
@@ -19,6 +21,7 @@ from .api_contracts import (
 )
 from .contracts import AgentCallbacks, TokenUsageInfo
 from .run import MODEL_NAME, run_agent
+from .run_inline_edit import run_inline_edit
 from .tools import tools
 
 
@@ -289,6 +292,40 @@ async def run_agent_task(request: AgentRunRequest, state: RunState) -> None:
         )
     finally:
         close_queue(state)
+
+
+async def run_inline_edit_task(
+    request: AgentInlineEditRequest,
+) -> AgentInlineEditResponse:
+    client = AsyncOpenAI()
+    try:
+        text = await run_inline_edit(
+            action=request.action,
+            selected_text=request.selected_text,
+            custom_prompt=request.custom_prompt,
+            context_blocks=request.context_blocks,
+            client=client,
+            model_name=MODEL_NAME,
+            run_id=request.run_id,
+            actor={
+                "user_id": request.actor.user_id,
+                "tenant_id": request.actor.tenant_id,
+                "workspace_id": request.actor.workspace_id,
+            },
+            resource_context={
+                "note_id": request.resource_context.note_id,
+                "note_version": request.resource_context.note_version,
+            },
+            timeout_ms=request.policy.timeout_ms,
+            max_tokens=request.policy.max_tokens,
+        )
+    except TimeoutError as exc:
+        raise HTTPException(
+            status_code=504,
+            detail="inline edit timed out",
+        ) from exc
+
+    return AgentInlineEditResponse(text=text)
 
 
 async def event_generator(registry: RunRegistry, run_id: str, state: RunState) -> Any:

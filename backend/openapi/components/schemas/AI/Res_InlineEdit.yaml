@@ -1,0 +1,6 @@
+type: object
+properties:
+  text:
+    type: string
+    example: "This is a polished sentence."
+required: [text]

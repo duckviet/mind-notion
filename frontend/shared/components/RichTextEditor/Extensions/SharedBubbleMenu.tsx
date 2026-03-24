@@ -1,67 +1,21 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
-import { Editor, useEditorState } from "@tiptap/react";
+import { useCallback } from "react";
+import { Editor } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { Toolbar } from "../Toolbar";
-import {
-  getBubbleToolbarConfigs,
-  getHeaderToolbarConfigs,
-} from "../Toolbar/ToolbarConfig";
-import CommentBubblePopup from "./ExtComment/CommentPopup";
-import { PortalModal } from "../../PortalModal";
+import { getBubbleToolbarConfigs } from "../Toolbar/ToolbarConfig";
 
 interface SharedBubbleMenuProps {
   editor: Editor;
 }
 
 const SharedBubbleMenu = ({ editor }: SharedBubbleMenuProps) => {
-  const { isLinkActive, isCommentActive, hasSelection, commentId } =
-    useEditorState({
-      editor,
-      selector: ({ editor }) => ({
-        isLinkActive: editor.isActive("link"),
-        isCommentActive: editor.isActive("comment"),
-
-        hasSelection: !editor.state.selection.empty,
-        commentId: editor.getAttributes("comment")?.id as string | undefined,
-      }),
-    });
-
   const shouldShow = useCallback(({ editor }: { editor: Editor }) => {
     const hasSelection = !editor.state.selection.empty;
-    const isCommentActive = editor.isActive("comment");
-    const isLinkActive = editor.isActive("link");
 
-    return hasSelection || isCommentActive || isLinkActive;
+    return hasSelection;
   }, []);
-
-  const handleAddComment = useCallback(() => {
-    if (editor.state.selection.empty) return;
-    const id =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `comment-${Date.now()}`;
-    editor.chain().focus().setComment({ id }).run();
-  }, [editor]);
-
-  const handleRemoveComment = useCallback(() => {
-    editor.chain().focus().unsetComment().run();
-  }, [editor]);
-
-  const content = useMemo(() => {
-    if (isLinkActive) {
-      return;
-    }
-
-    if (isCommentActive) {
-      return <CommentBubblePopup editor={editor} isActive={isCommentActive} />;
-    }
-
-    return <Toolbar editor={editor} getConfig={getBubbleToolbarConfigs} />;
-  }, [editor, isCommentActive, isLinkActive]);
-
-  if (!content) return null;
 
   return (
     <BubbleMenu
@@ -70,7 +24,7 @@ const SharedBubbleMenu = ({ editor }: SharedBubbleMenuProps) => {
       shouldShow={shouldShow}
       className="z-9999"
     >
-      {content}
+      <Toolbar editor={editor} getConfig={getBubbleToolbarConfigs} />;
     </BubbleMenu>
   );
 };
