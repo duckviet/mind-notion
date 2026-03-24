@@ -1,24 +1,44 @@
 // hooks/useSlashMenu.ts
-import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { type Editor } from "@tiptap/react";
-import {
-  getSplashMenuToolbarConfigs,
-  type ToolbarGroup,
-} from "../Toolbar/ToolbarConfig";
+import { getSplashMenuToolbarConfigs } from "../Toolbar/ToolbarConfig";
+import { useOpenState } from "@/shared/hooks/useOpenState";
 
-interface SlashMenuState {
-  isOpen: boolean;
+interface SlashMenuData {
   position: { x: number; y: number };
   selectedIndex: number;
 }
 
-export function useSlashMenu(editor: Editor | null, editable: boolean) {
+interface SlashMenuState extends SlashMenuData {
+  isOpen: boolean;
+}
+
+const INITIAL_SLASH_MENU_DATA: SlashMenuData = {
+  position: { x: 0, y: 0 },
+  selectedIndex: 0,
+};
+
+export function useSlashMenu(editable: boolean) {
+  const editorRef = useRef<Editor | null>(null);
+  const editor = editorRef.current;
+  // Stable setter — gọi mỗi render
+  const setEditor = useCallback((e: Editor | null) => {
+    editorRef.current = e;
+  }, []);
+
   const menuRef = useRef<HTMLDivElement>(null);
-  const [slashMenu, setSlashMenu] = useState<SlashMenuState>({
-    isOpen: false,
-    position: { x: 0, y: 0 },
-    selectedIndex: 0,
-  });
+  const { state, open, close, setData } = useOpenState<SlashMenuData>(
+    INITIAL_SLASH_MENU_DATA,
+  );
+
+  const slashMenu = useMemo<SlashMenuState>(
+    () => ({
+      isOpen: state.isOpen,
+      position: state.data.position,
+      selectedIndex: state.data.selectedIndex,
+    }),
+    [state],
+  );
 
   // Get total item count from config
   const totalItems = useMemo(() => {
@@ -31,8 +51,8 @@ export function useSlashMenu(editor: Editor | null, editable: boolean) {
   }, [editor]);
 
   const closeSlashMenu = useCallback(() => {
-    setSlashMenu((prev) => ({ ...prev, isOpen: false, selectedIndex: 0 }));
-  }, []);
+    close();
+  }, [close]);
 
   const openSlashMenu = useCallback(() => {
     if (!editor || editor.isDestroyed) return;
@@ -40,8 +60,7 @@ export function useSlashMenu(editor: Editor | null, editable: boolean) {
     try {
       const { from } = editor.state.selection;
       const coords = editor.view.coordsAtPos(from);
-      setSlashMenu({
-        isOpen: true,
+      open({
         position: { x: coords.left, y: coords.top + 8 },
         selectedIndex: 0,
       });
@@ -49,18 +68,18 @@ export function useSlashMenu(editor: Editor | null, editable: boolean) {
       // TipTap view can be unavailable briefly during mount/unmount cycles.
       return;
     }
-  }, [editor]);
+  }, [editor, open]);
 
   const moveSelection = useCallback(
     (direction: "up" | "down") => {
-      setSlashMenu((prev) => {
+      setData((prev) => {
         if (totalItems === 0) return prev;
         const delta = direction === "down" ? 1 : -1;
         const newIndex = (prev.selectedIndex + delta + totalItems) % totalItems;
         return { ...prev, selectedIndex: newIndex };
       });
     },
-    [totalItems],
+    [setData, totalItems],
   );
 
   const selectCurrent = useCallback(() => {
@@ -145,8 +164,9 @@ export function useSlashMenu(editor: Editor | null, editable: boolean) {
   }, [slashMenu.isOpen, closeSlashMenu]);
 
   return {
+    setEditor,
     slashMenu,
-    menuRef, //
+    menuRef,
     closeSlashMenu,
     openSlashMenu,
     handleSlashKeyDown,

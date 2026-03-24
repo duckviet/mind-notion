@@ -1,18 +1,28 @@
-import { useEffect } from "react";
 import { useEditor } from "@tiptap/react";
+import { migrateMathStrings } from "@tiptap/extension-mathematics";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 
-import { UseTiptapEditorProps } from "./types";
-import { useStableRef } from "./hooks/useStableRef";
+import { useStableRef } from "@/shared/hooks/useStableRef";
+import { useEditorSync } from "@/shared/hooks/useEditorSync";
+import { useActiveMark } from "@/shared/hooks/useActiveMark";
+import { useEditorLifecycle } from "@/shared/hooks/useEditorLifecycle";
 import { useEditToken } from "./hooks/useEditToken";
-import { useAIMenu } from "./hooks/useAIMenu";
 import { useUploadMediaRef } from "./hooks/useUploadMediaRef";
 import { useEditorExtensions } from "./hooks/useEditorExtensions";
-import { useContentSync } from "./hooks/useContentSync";
-import { useEditorUpdates } from "./hooks/useEditorUpdates";
-import { useActiveComment } from "./hooks/useActiveComment";
+import type { UseTiptapEditorProps } from "./types";
 
 export type { CollaborationConfig, UseTiptapEditorProps } from "./types";
+
+const NOOP = () => {};
+
+const EDITOR_CLASS = cn(
+  "tiptap ProseMirror h-full min-h-[150px] pr-4 focus:outline-none",
+);
+const READONLY_CLASS = cn(
+  EDITOR_CLASS,
+  "pointer-events-none select-text cursor-default",
+);
 
 export const useTiptapEditor = ({
   noteId,
@@ -23,39 +33,31 @@ export const useTiptapEditor = ({
   onKeyDown,
   collaboration,
   onActiveCommentChange,
+  onOpenAI,
 }: UseTiptapEditorProps) => {
-  // --- Stable refs for callbacks ---
-  const onUpdateRef = useStableRef(onUpdate);
   const onKeyDownRef = useStableRef(onKeyDown);
-  const onActiveCommentChangeRef = useStableRef(onActiveCommentChange);
 
-  // --- Side-effect hooks ---
   useEditToken();
 
-  const { aiMenuState, openAIMenu, closeAIMenu } = useAIMenu();
   const uploadMediaRef = useUploadMediaRef();
 
   const { extensions, collabEnabled } = useEditorExtensions({
     placeholder,
     collaboration,
     uploadMediaRef,
-    onOpenAI: openAIMenu,
+    onOpenAI: onOpenAI ?? NOOP,
   });
 
-  // --- Create editor ---
   const editor = useEditor(
     {
       extensions,
       content: collabEnabled ? undefined : content,
       immediatelyRender: false,
-      editable,
+      editable: true,
       injectCSS: false,
       editorProps: {
         attributes: {
-          class: cn(
-            "tiptap ProseMirror h-full min-h-[150px] pr-4 focus:outline-none",
-            !editable && "pointer-events-none select-text cursor-default",
-          ),
+          class: EDITOR_CLASS,
           "data-note-id": noteId ?? "",
         },
         handleKeyDown: (_view: unknown, event: KeyboardEvent) => {
@@ -66,30 +68,33 @@ export const useTiptapEditor = ({
         },
       },
     },
-    [editable, extensions],
+    [extensions],
   );
 
-  // --- Content sync (external prop → editor) ---
-  const { isUserEditingRef, lastSentContentRef, useSyncEffect } =
-    useContentSync({ editor, content, collabEnabled });
-  useSyncEffect();
-
-  // --- Editor updates (editor → parent callback) ---
-  useEditorUpdates({
-    editor,
-    collabEnabled,
-    onUpdateRef,
-    isUserEditingRef,
-    lastSentContentRef,
-  });
-
-  // --- Active comment tracking ---
-  useActiveComment(editor, onActiveCommentChangeRef);
-
-  // --- Cleanup ---
+  // Migrate math strings on load
   useEffect(() => {
-    return () => editor?.destroy();
+    if (editor) migrateMathStrings(editor);
   }, [editor]);
 
-  return { editor, aiMenuState, closeAIMenu };
+  // --- Reusable primitives ---
+  useEditorLifecycle(editor, {
+    editable,
+    className: EDITOR_CLASS,
+    readonlyClassName: READONLY_CLASS,
+  });
+
+  useEditorSync(editor, {
+    content,
+    onUpdate,
+    skipInbound: collabEnabled,
+    debounceMs: collabEnabled ? 0 : 300,
+    serialize: (editor) => editor.getHTML(),
+  });
+
+  useActiveMark(editor, {
+    markName: "comment",
+    onChange: onActiveCommentChange,
+  });
+
+  return { editor };
 };

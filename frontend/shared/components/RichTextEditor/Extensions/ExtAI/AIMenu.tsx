@@ -1,21 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Sparkles,
-  MessageSquare,
-  Languages,
-  ListChecks,
-  Wand2,
-  FileText,
-  CheckCircle2,
-  BookOpen,
-  Loader2,
-  CornerDownLeft,
-  Search,
-} from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
+import { Sparkles, Loader2, CornerDownLeft, Search } from "lucide-react";
 import { Input } from "@/shared/components/ui/input";
-import { cn } from "@/lib/utils";
+import { AIAction } from "./types";
+import { AI_ACTIONS } from "./configs";
 
 export interface AIMenuProps {
   isOpen: boolean;
@@ -24,64 +12,8 @@ export interface AIMenuProps {
   selectedText: string;
   onAction: (action: AIAction, customPrompt?: string) => void;
   isLoading?: boolean;
+  streamingPreview?: string;
 }
-
-export type AIAction =
-  | "improve"
-  | "continue"
-  | "fix"
-  | "shorter"
-  | "longer"
-  | "summarize"
-  | "translate"
-  | "explain"
-  | "custom";
-
-interface AIActionItem {
-  id: AIAction;
-  label: string;
-  icon: React.ReactNode;
-  description: string;
-}
-
-const AI_ACTIONS: AIActionItem[] = [
-  {
-    id: "improve",
-    label: "Improve writing",
-    icon: <Wand2 className="w-4 h-4 text-purple-500" />,
-    description: "Enhance clarity and style",
-  },
-  {
-    id: "fix",
-    label: "Fix spelling & grammar",
-    icon: <CheckCircle2 className="w-4 h-4 text-green-500" />,
-    description: "Correct all errors",
-  },
-  {
-    id: "continue",
-    label: "Continue writing",
-    icon: <MessageSquare className="w-4 h-4 text-blue-500" />,
-    description: "Generate next sentences",
-  },
-  {
-    id: "summarize",
-    label: "Summarize",
-    icon: <ListChecks className="w-4 h-4 text-orange-500" />,
-    description: "Key points only",
-  },
-  {
-    id: "shorter",
-    label: "Make shorter",
-    icon: <FileText className="w-4 h-4 text-slate-500" />,
-    description: "Brief and concise",
-  },
-  {
-    id: "explain",
-    label: "Explain this",
-    icon: <BookOpen className="w-4 h-4 text-emerald-500" />,
-    description: "Simplify complex ideas",
-  },
-];
 
 export const AIMenu: React.FC<AIMenuProps> = ({
   isOpen,
@@ -90,6 +22,7 @@ export const AIMenu: React.FC<AIMenuProps> = ({
   selectedText,
   onAction,
   isLoading = false,
+  streamingPreview = "",
 }) => {
   const [customPrompt, setCustomPrompt] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
@@ -129,7 +62,7 @@ export const AIMenu: React.FC<AIMenuProps> = ({
           initial={{ opacity: 0, y: 8, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 8, scale: 0.96 }}
-          className="fixed z-[100] min-w-xl bg-popover dark:border border-border rounded-xl shadow-2xl overflow-hidden ring-1 ring-black/5"
+          className="fixed z-[100] min-w-lg bg-popover dark:border border-border rounded-xl shadow-2xl overflow-hidden ring-1 ring-black/5"
           style={{ top: position.top, left: position.left }}
         >
           {isLoading ? (
@@ -141,6 +74,16 @@ export const AIMenu: React.FC<AIMenuProps> = ({
               <p className="text-sm font-medium animate-pulse">
                 AI is thinking...
               </p>
+              {streamingPreview.trim().length > 0 && (
+                <div className="mt-4 w-full rounded-lg border border-border bg-background/80 p-3 text-left">
+                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Live preview
+                  </p>
+                  <p className="max-h-36 overflow-y-auto whitespace-pre-wrap text-xs leading-relaxed text-foreground/90">
+                    {streamingPreview}
+                  </p>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-col">

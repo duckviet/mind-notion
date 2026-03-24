@@ -70,6 +70,27 @@ class AgentRunRequest(BaseContract):
     quota: Quota = Field(default_factory=Quota)
 
 
+class InlineEditPolicy(BaseContract):
+    timeout_ms: int = Field(default=30_000, ge=1_000, le=60_000)
+    max_tokens: int = Field(default=1_024, ge=128, le=4_096)
+
+
+class AgentInlineEditRequest(BaseContract):
+    run_id: str = Field(default_factory=new_id)
+    trace_id: str = Field(default_factory=new_id)
+    actor: Actor
+    action: str
+    selected_text: str = Field(min_length=1)
+    custom_prompt: str = ""
+    context_blocks: list[dict[str, Any]] = Field(default_factory=list)
+    resource_context: ResourceContext = Field(default_factory=ResourceContext)
+    policy: InlineEditPolicy = Field(default_factory=InlineEditPolicy)
+
+
+class AgentInlineEditResponse(BaseContract):
+    text: str
+
+
 class ConsentDecisionRequest(BaseContract):
     run_id: str
     tool_call_id: str

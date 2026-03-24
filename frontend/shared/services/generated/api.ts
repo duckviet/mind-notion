@@ -183,6 +183,10 @@ export interface ReqNoteSnapshot {
   content: string;
 }
 
+export interface ReqNoteTiptapSnapshot {
+  tiptap_content: string;
+}
+
 export interface ResNoteSnapshot {
   id: string;
   updated_at: string;
@@ -210,6 +214,7 @@ export type ResCollabTokenNote = {
   public_edit_token?: string;
   created_at: string;
   updated_at: string;
+  tiptap_content: string;
 };
 
 export interface ResCollabToken {
@@ -248,6 +253,21 @@ export interface ResProvideAIRunConsent {
   run_id: string;
   tool_call_id: string;
   approved: boolean;
+}
+
+export type ReqInlineEditContextBlocksItem = { [key: string]: unknown };
+
+export interface ReqInlineEdit {
+  workspace_id: string;
+  note_id?: string;
+  action: string;
+  selected_text: string;
+  custom_prompt?: string;
+  context_blocks?: ReqInlineEditContextBlocksItem[];
+}
+
+export interface ResInlineEdit {
+  text: string;
 }
 
 export interface Comment {
@@ -1353,6 +1373,107 @@ export const useProvideAiRunConsent = <
   TContext
 > => {
   const mutationOptions = getProvideAiRunConsentMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Inline edit selected text with AI
+ */
+export const inlineEditAi = (
+  reqInlineEdit: ReqInlineEdit,
+  signal?: AbortSignal,
+) => {
+  return customInstance<ResInlineEdit>({
+    url: `/ai/inline-edit`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: reqInlineEdit,
+    signal,
+  });
+};
+
+export const getInlineEditAiMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof inlineEditAi>>,
+    TError,
+    { data: ReqInlineEdit },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof inlineEditAi>>,
+  TError,
+  { data: ReqInlineEdit },
+  TContext
+> => {
+  const mutationKey = ["inlineEditAi"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof inlineEditAi>>,
+    { data: ReqInlineEdit }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return inlineEditAi(data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type InlineEditAiMutationResult = NonNullable<
+  Awaited<ReturnType<typeof inlineEditAi>>
+>;
+export type InlineEditAiMutationBody = ReqInlineEdit;
+export type InlineEditAiMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | ForbiddenResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Inline edit selected text with AI
+ */
+export const useInlineEditAi = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | ForbiddenResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof inlineEditAi>>,
+      TError,
+      { data: ReqInlineEdit },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof inlineEditAi>>,
+  TError,
+  { data: ReqInlineEdit },
+  TContext
+> => {
+  const mutationOptions = getInlineEditAiMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
@@ -3089,6 +3210,105 @@ export const useSaveNoteSnapshot = <
   TContext
 > => {
   const mutationOptions = getSaveNoteSnapshotMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+
+/**
+ * @summary Save Tiptap snapshot for a note
+ */
+export const saveNoteTiptapSnapshot = (
+  noteId: string,
+  reqNoteTiptapSnapshot: ReqNoteTiptapSnapshot,
+  signal?: AbortSignal,
+) => {
+  return customInstance<ResNoteSnapshot>({
+    url: `/public/notes/${noteId}/snapshot-tiptap`,
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    data: reqNoteTiptapSnapshot,
+    signal,
+  });
+};
+
+export const getSaveNoteTiptapSnapshotMutationOptions = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof saveNoteTiptapSnapshot>>,
+    TError,
+    { noteId: string; data: ReqNoteTiptapSnapshot },
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof saveNoteTiptapSnapshot>>,
+  TError,
+  { noteId: string; data: ReqNoteTiptapSnapshot },
+  TContext
+> => {
+  const mutationKey = ["saveNoteTiptapSnapshot"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof saveNoteTiptapSnapshot>>,
+    { noteId: string; data: ReqNoteTiptapSnapshot }
+  > = (props) => {
+    const { noteId, data } = props ?? {};
+
+    return saveNoteTiptapSnapshot(noteId, data);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SaveNoteTiptapSnapshotMutationResult = NonNullable<
+  Awaited<ReturnType<typeof saveNoteTiptapSnapshot>>
+>;
+export type SaveNoteTiptapSnapshotMutationBody = ReqNoteTiptapSnapshot;
+export type SaveNoteTiptapSnapshotMutationError =
+  | BadRequestResponse
+  | UnauthorizedResponse
+  | NotFoundResponse
+  | InternalServerErrorResponse;
+
+/**
+ * @summary Save Tiptap snapshot for a note
+ */
+export const useSaveNoteTiptapSnapshot = <
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof saveNoteTiptapSnapshot>>,
+      TError,
+      { noteId: string; data: ReqNoteTiptapSnapshot },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof saveNoteTiptapSnapshot>>,
+  TError,
+  { noteId: string; data: ReqNoteTiptapSnapshot },
+  TContext
+> => {
+  const mutationOptions = getSaveNoteTiptapSnapshotMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

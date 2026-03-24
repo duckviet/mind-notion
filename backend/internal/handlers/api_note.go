@@ -10,6 +10,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,467 +24,526 @@ import (
 )
 
 type NoteAPI struct {
-    noteService service.NoteService
-    authService service.AuthService
+	noteService service.NoteService
+	authService service.AuthService
 }
 
 // Post /api/v1/notes
-// Create a new note 
+// Create a new note
 func (api *NoteAPI) CreateNote(c *gin.Context) {
-    // User injected by auth middleware
+	// User injected by auth middleware
 	fmt.Println("CreateNote request:", c.Request.Context())
-    userVal, ok := c.Get("user")
-    if !ok {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-        return
-    }
-    u := userVal.(*dbmodels.User)
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	u := userVal.(*dbmodels.User)
 
-    // Bind body
-    var body struct {
-        Title       string   `json:"title"`
-        Content     string   `json:"content"`
-        ContentType string   `json:"content_type"`
-        Status      string   `json:"status"`
-        Thumbnail   string   `json:"thumbnail"`
-        Tags        []string `json:"tags"`
-        FolderID    *string  `json:"folder_id"`
-        IsPublic    bool     `json:"is_public"`
-    }
-    if err := c.ShouldBindJSON(&body); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
-        return
-    }
+	// Bind body
+	var body struct {
+		Title       string   `json:"title"`
+		Content     string   `json:"content"`
+		ContentType string   `json:"content_type"`
+		Status      string   `json:"status"`
+		Thumbnail   string   `json:"thumbnail"`
+		Tags        []string `json:"tags"`
+		FolderID    *string  `json:"folder_id"`
+		IsPublic    bool     `json:"is_public"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+		return
+	}
 
-    created, err := api.noteService.CreateNote(c.Request.Context(), service.CreateNoteRequest{
-        Title:       body.Title,
-        Content:     body.Content,
-        ContentType: body.ContentType,
-        Status:      body.Status,
-        Thumbnail:   body.Thumbnail,
-        FolderID:    body.FolderID,
-        IsPublic:    body.IsPublic,
-        UserID:      u.ID,
-    })
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	created, err := api.noteService.CreateNote(c.Request.Context(), service.CreateNoteRequest{
+		Title:       body.Title,
+		Content:     body.Content,
+		ContentType: body.ContentType,
+		Status:      body.Status,
+		Thumbnail:   body.Thumbnail,
+		FolderID:    body.FolderID,
+		IsPublic:    body.IsPublic,
+		UserID:      u.ID,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.JSON(http.StatusCreated, created)
+	c.JSON(http.StatusCreated, created)
 }
 
 // Delete /api/v1/notes/:id/delete
-// Delete note by ID 
+// Delete note by ID
 func (api *NoteAPI) DeleteNote(c *gin.Context) {
-    idStr := c.Param("note_id")
- 
+	idStr := c.Param("note_id")
 
-    if err := api.noteService.DeleteNote(c.Request.Context(), idStr); err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-        return
-    }
-    c.Status(http.StatusNoContent)
+	if err := api.noteService.DeleteNote(c.Request.Context(), idStr); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 // Get /api/v1/notes/:id
-// Get note by ID 
+// Get note by ID
 func (api *NoteAPI) GetNote(c *gin.Context) {
-    idStr := c.Param("note_id")
- 
-    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-        return
-    }
-    // ownership check
-    userVal, _ := c.Get("user")
-    u := userVal.(*dbmodels.User)
-    if note.UserID != u.ID {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
-    c.JSON(http.StatusOK, note)
+	idStr := c.Param("note_id")
+
+	note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	// ownership check
+	userVal, _ := c.Get("user")
+	u := userVal.(*dbmodels.User)
+	if note.UserID != u.ID {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
+	c.JSON(http.StatusOK, note)
 }
 
 // Get /api/v1/notes/list
-// List user's notes 
+// List user's notes
 func (api *NoteAPI) ListNotes(c *gin.Context) {
-    // Optional filters
-    limitStr := c.Query("limit")
-    offsetStr := c.Query("offset")
-    query := c.Query("query")
-    folderID := c.Query("folder_id")
+	// Optional filters
+	limitStr := c.Query("limit")
+	offsetStr := c.Query("offset")
+	query := c.Query("query")
+	folderID := c.Query("folder_id")
 
-    limit := 20
-    if limitStr != "" {
-        if v, err := strconv.Atoi(limitStr); err == nil && v > 0 {
-            limit = v
-        }
-    }
-    offset := 0
-    if offsetStr != "" {
-        if v, err := strconv.Atoi(offsetStr); err == nil && v >= 0 {
-            offset = v
-        }
-    }
-    
-    page := 1
-    if limit > 0 {
-        page = (offset / limit) + 1
-    }
+	limit := 20
+	if limitStr != "" {
+		if v, err := strconv.Atoi(limitStr); err == nil && v > 0 {
+			limit = v
+		}
+	}
+	offset := 0
+	if offsetStr != "" {
+		if v, err := strconv.Atoi(offsetStr); err == nil && v >= 0 {
+			offset = v
+		}
+	}
 
-    // list only current user's notes
-    userVal, _ := c.Get("user")
-    u := userVal.(*dbmodels.User)
-    params := repository.NoteListParams{Page: page, Limit: limit, Query: &query}
-    if folderID != "" {
-        params.FolderID = &folderID
-    }
-    notes, total, err := api.noteService.GetNotesByUserID(c.Request.Context(), u.ID, params)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-    c.JSON(http.StatusOK, gin.H{"notes": notes, "total": total, "limit": limit, "offset": offset, "query": query})
+	page := 1
+	if limit > 0 {
+		page = (offset / limit) + 1
+	}
+
+	// list only current user's notes
+	userVal, _ := c.Get("user")
+	u := userVal.(*dbmodels.User)
+	params := repository.NoteListParams{Page: page, Limit: limit, Query: &query}
+	if folderID != "" {
+		params.FolderID = &folderID
+	}
+	notes, total, err := api.noteService.GetNotesByUserID(c.Request.Context(), u.ID, params)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"notes": notes, "total": total, "limit": limit, "offset": offset, "query": query})
 }
 
 // Put /api/v1/notes/:id/update
-// Update note by ID 
+// Update note by ID
 func (api *NoteAPI) UpdateNote(c *gin.Context) {
-    idStr := c.Param("note_id")
+	idStr := c.Param("note_id")
 
-    // Parse as map to detect which fields are present
-    var rawBody map[string]interface{}
-    if err := c.ShouldBindJSON(&rawBody); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
-        return
-    }
+	// Parse as map to detect which fields are present
+	var rawBody map[string]interface{}
+	if err := c.ShouldBindJSON(&rawBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+		return
+	}
 
-    // Extract fields with proper type handling
-    var body struct {
-        Title       string
-        Content     string
-        ContentType string
-        Status      string
-        Thumbnail   string
-        Tags        []string
-        FolderID    *string
-        IsPublic    *bool
-    }
-    
-    if val, ok := rawBody["title"].(string); ok {
-        body.Title = val
-    }
-    if val, ok := rawBody["content"].(string); ok {
-        body.Content = val
-    }
-    if val, ok := rawBody["content_type"].(string); ok {
-        body.ContentType = val
-    }
-    if val, ok := rawBody["status"].(string); ok {
-        body.Status = val
-    }
-    if val, ok := rawBody["thumbnail"].(string); ok {
-        body.Thumbnail = val
-    }
-    
-    hasFolderID := false
-    if val, exists := rawBody["folder_id"]; exists {
-        hasFolderID = true
-        if val == nil {
-            body.FolderID = nil
-        } else if strVal, ok := val.(string); ok {
-            body.FolderID = &strVal
-        }
-    }
-    
-    if val, exists := rawBody["is_public"]; exists {
-        if boolVal, ok := val.(bool); ok {
-            body.IsPublic = &boolVal
-        }
-    }
+	// Extract fields with proper type handling
+	var body struct {
+		Title       string
+		Content     string
+		ContentType string
+		Status      string
+		Thumbnail   string
+		Tags        []string
+		FolderID    *string
+		IsPublic    *bool
+	}
 
-    if hasFolderID {
-        if body.FolderID != nil {
-            log.Printf("DEBUG UpdateNote - NoteID: %s, FolderID value: %s", idStr, *body.FolderID)
-        } else {
-            log.Printf("DEBUG UpdateNote - NoteID: %s, FolderID is nil (move to root)", idStr)
-        }
-    } else {
-        log.Printf("DEBUG UpdateNote - NoteID: %s, no folder_id field", idStr)
-    }
+	if val, ok := rawBody["title"].(string); ok {
+		body.Title = val
+	}
+	if val, ok := rawBody["content"].(string); ok {
+		body.Content = val
+	}
+	if val, ok := rawBody["content_type"].(string); ok {
+		body.ContentType = val
+	}
+	if val, ok := rawBody["status"].(string); ok {
+		body.Status = val
+	}
+	if val, ok := rawBody["thumbnail"].(string); ok {
+		body.Thumbnail = val
+	}
 
-    // Ensure ownership before update
-    existing, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-        return
-    }
-    userVal, _ := c.Get("user")
-    u := userVal.(*dbmodels.User)
-    if existing.UserID != u.ID {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
+	hasFolderID := false
+	if val, exists := rawBody["folder_id"]; exists {
+		hasFolderID = true
+		if val == nil {
+			body.FolderID = nil
+		} else if strVal, ok := val.(string); ok {
+			body.FolderID = &strVal
+		}
+	}
 
-    updated, err := api.noteService.UpdateNote(c.Request.Context(), idStr, service.UpdateNoteRequest{
-        Title:          body.Title,
-        Content:        body.Content,
-        ContentType:    body.ContentType,
-        Status:         body.Status,
-        Thumbnail:      body.Thumbnail,
-        FolderID:       body.FolderID,
-        UpdateFolderID: hasFolderID,
-        TagIDs:         []uint{}, // TODO: Convert string tags to tag IDs
-        IsPublic:       body.IsPublic,
-    })
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-    c.JSON(http.StatusOK, updated)
+	if val, exists := rawBody["is_public"]; exists {
+		if boolVal, ok := val.(bool); ok {
+			body.IsPublic = &boolVal
+		}
+	}
+
+	if hasFolderID {
+		if body.FolderID != nil {
+			log.Printf("DEBUG UpdateNote - NoteID: %s, FolderID value: %s", idStr, *body.FolderID)
+		} else {
+			log.Printf("DEBUG UpdateNote - NoteID: %s, FolderID is nil (move to root)", idStr)
+		}
+	} else {
+		log.Printf("DEBUG UpdateNote - NoteID: %s, no folder_id field", idStr)
+	}
+
+	// Ensure ownership before update
+	existing, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	userVal, _ := c.Get("user")
+	u := userVal.(*dbmodels.User)
+	if existing.UserID != u.ID {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
+
+	updated, err := api.noteService.UpdateNote(c.Request.Context(), idStr, service.UpdateNoteRequest{
+		Title:          body.Title,
+		Content:        body.Content,
+		ContentType:    body.ContentType,
+		Status:         body.Status,
+		Thumbnail:      body.Thumbnail,
+		FolderID:       body.FolderID,
+		UpdateFolderID: hasFolderID,
+		TagIDs:         []uint{}, // TODO: Convert string tags to tag IDs
+		IsPublic:       body.IsPublic,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, updated)
 }
 
 // Put /api/v1/notes/:id?tom={tom}
 // Update note top of mind by ID
 func (api *NoteAPI) UpdateNoteTOM(c *gin.Context) {
-    idStr := c.Param("note_id")
-    tomStr, tomProvided := c.GetQuery("tom")
+	idStr := c.Param("note_id")
+	tomStr, tomProvided := c.GetQuery("tom")
 
-    var tom *int32
-    if tomProvided {
-        normalized := strings.TrimSpace(tomStr)
-        if normalized != "" && !strings.EqualFold(normalized, "null") {
-            parsed, err := strconv.Atoi(normalized)
-            if err != nil || parsed <= 0 {
-                c.JSON(http.StatusBadRequest, gin.H{"error": "tom must be a positive integer or null"})
-                return
-            }
+	var tom *int32
+	if tomProvided {
+		normalized := strings.TrimSpace(tomStr)
+		if normalized != "" && !strings.EqualFold(normalized, "null") {
+			parsed, err := strconv.Atoi(normalized)
+			if err != nil || parsed <= 0 {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "tom must be a positive integer or null"})
+				return
+			}
 
-            tomVal := int32(parsed)
-            tom = &tomVal
-        }
-    }
+			tomVal := int32(parsed)
+			tom = &tomVal
+		}
+	}
 
-    fmt.Println("UpdateNoteTOM request:", tomStr, tom)
-    updated, err := api.noteService.UpdateNoteTOM(c.Request.Context(), idStr, tom)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-    c.JSON(http.StatusOK, updated)
+	fmt.Println("UpdateNoteTOM request:", tomStr, tom)
+	updated, err := api.noteService.UpdateNoteTOM(c.Request.Context(), idStr, tom)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, updated)
 }
 
 // Get /api/v1/notes/list-tom
 // List user's top of mind notes
 func (api *NoteAPI) ListNotesTOM(c *gin.Context) {
-    // Get authenticated user
-    userVal, exists := c.Get("user")
-    if !exists {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-        return
-    }
-    u := userVal.(*dbmodels.User)
+	// Get authenticated user
+	userVal, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	u := userVal.(*dbmodels.User)
 
-    notes, err := api.noteService.ListNotesTOM(c.Request.Context(), u.ID)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
-    c.JSON(http.StatusOK, notes)
+	notes, err := api.noteService.ListNotesTOM(c.Request.Context(), u.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, notes)
 }
 
 // Get /api/v1/public/notes/:note_id
 // Get public note by ID (no auth required)
 func (api *NoteAPI) GetPublicNote(c *gin.Context) {
-    idStr := c.Param("note_id")
+	idStr := c.Param("note_id")
 
-    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
+	note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
 
-    // Only return if note is public
-    if !note.IsPublic {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
+	// Only return if note is public
+	if !note.IsPublic {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
 
 	// Hide edit token in public response
 	note.PublicEditToken = ""
 	note.PublicEditEnabled = false
 
-    c.JSON(http.StatusOK, note)
+	c.JSON(http.StatusOK, note)
 }
 
 // Get /api/v1/notes/:id/public-edit
 // Get public edit settings (owner only)
 func (api *NoteAPI) GetPublicEditSettings(c *gin.Context) {
-    idStr := c.Param("note_id")
+	idStr := c.Param("note_id")
 
-    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
+	note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
 
-    userVal, _ := c.Get("user")
-    u := userVal.(*dbmodels.User)
-    if note.UserID != u.ID {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
+	userVal, _ := c.Get("user")
+	u := userVal.(*dbmodels.User)
+	if note.UserID != u.ID {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
 
-    // Ensure token exists for owner view
-    if note.PublicEditToken == "" {
-        note, err = api.noteService.RotatePublicEditToken(c.Request.Context(), idStr)
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-            return
-        }
-    }
+	// Ensure token exists for owner view
+	if note.PublicEditToken == "" {
+		note, err = api.noteService.RotatePublicEditToken(c.Request.Context(), idStr)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
 
-    c.JSON(http.StatusOK, gin.H{
-        "enabled": note.PublicEditEnabled,
-        "token":   note.PublicEditToken,
-    })
+	c.JSON(http.StatusOK, gin.H{
+		"enabled": note.PublicEditEnabled,
+		"token":   note.PublicEditToken,
+	})
 }
 
 // Post /api/v1/notes/:id/public-edit
 // Update public edit enabled flag (owner only)
 func (api *NoteAPI) UpdatePublicEditSettings(c *gin.Context) {
-    idStr := c.Param("note_id")
+	idStr := c.Param("note_id")
 
-    var body struct {
-        Enabled bool `json:"enabled"`
-    }
-    if err := c.ShouldBindJSON(&body); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
-        return
-    }
+	var body struct {
+		Enabled bool `json:"enabled"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+		return
+	}
 
-    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
+	note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
 
-    userVal, _ := c.Get("user")
-    u := userVal.(*dbmodels.User)
-    if note.UserID != u.ID {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
+	userVal, _ := c.Get("user")
+	u := userVal.(*dbmodels.User)
+	if note.UserID != u.ID {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
 
-    updated, err := api.noteService.UpdatePublicEditSettings(c.Request.Context(), idStr, body.Enabled)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	updated, err := api.noteService.UpdatePublicEditSettings(c.Request.Context(), idStr, body.Enabled)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{
-        "enabled": updated.PublicEditEnabled,
-        "token":   updated.PublicEditToken,
-    })
+	c.JSON(http.StatusOK, gin.H{
+		"enabled": updated.PublicEditEnabled,
+		"token":   updated.PublicEditToken,
+	})
 }
 
 // Post /api/v1/notes/:id/public-edit/rotate
 // Rotate public edit token (owner only)
 func (api *NoteAPI) RotatePublicEditToken(c *gin.Context) {
-    idStr := c.Param("note_id")
+	idStr := c.Param("note_id")
 
-    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
+	note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
 
-    userVal, _ := c.Get("user")
-    u := userVal.(*dbmodels.User)
-    if note.UserID != u.ID {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
+	userVal, _ := c.Get("user")
+	u := userVal.(*dbmodels.User)
+	if note.UserID != u.ID {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
 
-    updated, err := api.noteService.RotatePublicEditToken(c.Request.Context(), idStr)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	updated, err := api.noteService.RotatePublicEditToken(c.Request.Context(), idStr)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{
-        "enabled": updated.PublicEditEnabled,
-        "token":   updated.PublicEditToken,
-    })
+	c.JSON(http.StatusOK, gin.H{
+		"enabled": updated.PublicEditEnabled,
+		"token":   updated.PublicEditToken,
+	})
 }
 
 // Post /api/v1/public/notes/:id/snapshot
 // Save HTML snapshot (owner or public-edit token)
 func (api *NoteAPI) SaveNoteSnapshot(c *gin.Context) {
-    idStr := c.Param("note_id")
+	idStr := c.Param("note_id")
 
-    var body struct {
-        Content string `json:"content"`
-    }
-    if err := c.ShouldBindJSON(&body); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
-        return
-    }
+	var body struct {
+		Content string `json:"content"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+		return
+	}
 
-    note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
-        return
-    }
+	note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
 
-    if !api.canEditNote(c, note) {
-        fmt.Print("[SaveSnapshot] - Can not edit note!")
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
-        return
-    }
+	if !api.canEditNote(c, note) {
+		fmt.Print("[SaveSnapshot] - Can not edit note!")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
 
-    updated, err := api.noteService.SaveNoteSnapshot(c.Request.Context(), idStr, body.Content)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	updated, err := api.noteService.SaveNoteSnapshot(c.Request.Context(), idStr, body.Content)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-    c.JSON(http.StatusOK, gin.H{
-        "id":         updated.ID,
-        "updated_at": updated.UpdatedAt,
-    })
+	c.JSON(http.StatusOK, gin.H{
+		"id":         updated.ID,
+		"updated_at": updated.UpdatedAt,
+	})
+}
+
+// Post /api/v1/public/notes/:id/snapshot-tiptap
+// Save Tiptap snapshot (owner or public-edit token)
+func (api *NoteAPI) SaveNoteTiptapSnapshot(c *gin.Context) {
+	idStr := c.Param("note_id")
+
+	var body struct {
+		TiptapContent json.RawMessage `json:"tiptap_content"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+		return
+	}
+
+	raw := strings.TrimSpace(string(body.TiptapContent))
+	if raw == "" || strings.EqualFold(raw, "null") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, tiptap_content is required"})
+		return
+	}
+
+	// Accept both legacy string payloads and structured JSON payloads.
+	storedTiptapContent := raw
+	if strings.HasPrefix(raw, "\"") {
+		var decoded string
+		if err := json.Unmarshal(body.TiptapContent, &decoded); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, tiptap_content must be a valid JSON string or object"})
+			return
+		}
+
+		decoded = strings.TrimSpace(decoded)
+		if decoded == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, tiptap_content is required"})
+			return
+		}
+		storedTiptapContent = decoded
+	}
+
+	note, err := api.noteService.GetNoteByID(c.Request.Context(), idStr)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+		return
+	}
+
+	if !api.canEditNote(c, note) {
+		fmt.Print("[SaveTiptapSnapshot] - Can not edit note!")
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	updated, err := api.noteService.SaveNoteTiptapSnapshot(c.Request.Context(), idStr, storedTiptapContent)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":         updated.ID,
+		"updated_at": updated.UpdatedAt,
+	})
 }
 
 func (api *NoteAPI) canEditNote(c *gin.Context, note *dbmodels.Note) bool {
-    // Owner via middleware
-    if userVal, ok := c.Get("user"); ok {
-        u := userVal.(*dbmodels.User)
-        return note.UserID == u.ID
-    }
+	// Owner via middleware
+	if userVal, ok := c.Get("user"); ok {
+		u := userVal.(*dbmodels.User)
+		return note.UserID == u.ID
+	}
 
-    // Owner via bearer token (public route)
-    token := extractTokenFromRequest(c)
-    if token != "" {
-        user, err := api.authService.ValidateToken(c.Request.Context(), token)
-        if err == nil && note.UserID == user.ID {
-            return true
-        }
-    }
+	// Owner via bearer token (public route)
+	token := extractTokenFromRequest(c)
+	if token != "" {
+		user, err := api.authService.ValidateToken(c.Request.Context(), token)
+		if err == nil && note.UserID == user.ID {
+			return true
+		}
+	}
 
-    // Public edit token
-    editToken := getEditToken(c)
-    if editToken != "" && note.PublicEditEnabled && note.PublicEditToken == editToken {
-        return true
-    }
+	// Public edit token
+	editToken := getEditToken(c)
+	if editToken != "" && note.PublicEditEnabled && note.PublicEditToken == editToken {
+		return true
+	}
 
-    return false
+	return false
 }
 
 func getEditToken(c *gin.Context) string {
-    if token := c.GetHeader("X-Edit-Token"); token != "" {
-        return token
-    }
-    return c.Query("token")
+	if token := c.GetHeader("X-Edit-Token"); token != "" {
+		return token
+	}
+	return c.Query("token")
 }

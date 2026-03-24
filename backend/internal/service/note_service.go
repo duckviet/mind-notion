@@ -31,6 +31,7 @@ type NoteService interface {
 	UpdatePublicEditSettings(ctx context.Context, id string, enabled bool) (*models.Note, error)
 	RotatePublicEditToken(ctx context.Context, id string) (*models.Note, error)
 	SaveNoteSnapshot(ctx context.Context, id string, content string) (*models.Note, error)
+	SaveNoteTiptapSnapshot(ctx context.Context, id string, tiptapContent string) (*models.Note, error)
 }
 
 // noteService implements NoteService
@@ -406,6 +407,28 @@ func (s *noteService) SaveNoteSnapshot(ctx context.Context, id string, content s
 
 	if s.chunkingService != nil {
 		s.chunkingService.DispatchNoteSaved(ctx, note, "note.snapshot")
+	}
+
+	return note, nil
+}
+
+// SaveNoteTiptapSnapshot updates the persisted Tiptap JSON content for a note.
+func (s *noteService) SaveNoteTiptapSnapshot(ctx context.Context, id string, tiptapContent string) (*models.Note, error) {
+	note, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNoteNotFound
+		}
+		return nil, ErrInternalServerError
+	}
+
+	note.TiptapContent = tiptapContent
+	if err := s.repo.Update(ctx, note); err != nil {
+		return nil, ErrInternalServerError
+	}
+
+	if s.chunkingService != nil {
+		s.chunkingService.DispatchNoteSaved(ctx, note, "note.snapshot.tiptap")
 	}
 
 	return note, nil

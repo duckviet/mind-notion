@@ -46,7 +46,7 @@ export function useAutoSave(
         is_public: note.is_public ?? false,
       };
     }
-  }, [noteId]);
+  }, [note]);
 
   const updateNoteMutation = useUpdateNote(
     {
@@ -144,7 +144,7 @@ export function useAutoSave(
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [form, noteId, isSaving, syncContent]);
+  }, [form, noteId, isSaving, syncContent, updateNoteMutation]);
 
   return { updateNoteMutation, lastSavedRef };
 }

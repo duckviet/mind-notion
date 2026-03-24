@@ -1,5 +1,6 @@
 import type { WebsocketProvider } from "y-websocket";
 import type * as Y from "yjs";
+import { AISelectionContext } from "./Extensions/ExtAI/types";
 
 export type CollaborationConfig = {
   document: Y.Doc;
@@ -14,6 +15,7 @@ export type AIMenuState = {
   isOpen: boolean;
   selection: string;
   range: { from: number; to: number } | null;
+  context: AISelectionContext | null;
 };
 
 export interface UseTiptapEditorProps {
@@ -25,9 +27,9 @@ export interface UseTiptapEditorProps {
   onKeyDown?: (e: React.KeyboardEvent<HTMLDivElement>) => void;
   collaboration?: CollaborationConfig;
   onActiveCommentChange?: (commentId: string | null) => void;
-  onAIAction?: (
-    action: string,
-    selectedText: string,
-    customPrompt?: string,
-  ) => Promise<string>;
+  onOpenAI?: (
+    selection: string,
+    range: { from: number; to: number },
+    context: AISelectionContext,
+  ) => void;
 }

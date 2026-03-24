@@ -174,6 +174,37 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /ai/inline-edit:
+    post:
+      summary: Inline edit selected text with AI
+      operationId: inlineEditAi
+      tags:
+        - AI
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Req_InlineEdit'
+      responses:
+        '200':
+          description: Inline edit generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Res_InlineEdit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /user/me:
     get:
       summary: Get current user information
@@ -630,6 +661,48 @@ paths:
       responses:
         '200':
           description: Snapshot saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Res_NoteSnapshot'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/public/notes/{note_id}/snapshot-tiptap':
+    post:
+      summary: Save Tiptap snapshot for a note
+      operationId: saveNoteTiptapSnapshot
+      tags:
+        - Note
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: note_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Note ID
+        - name: X-Edit-Token
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Public edit token (optional if Bearer is used)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Req_NoteTiptapSnapshot'
+      responses:
+        '200':
+          description: Tiptap snapshot saved
           content:
             application/json:
               schema:
@@ -1926,6 +1999,14 @@ components:
           example: <p>Updated note content</p>
       required:
         - content
+    Req_NoteTiptapSnapshot:
+      type: object
+      properties:
+        tiptap_content:
+          type: string
+          example: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Updated tiptap document"}]}]}'
+      required:
+        - tiptap_content
     Res_NoteSnapshot:
       type: object
       properties:
@@ -2013,6 +2094,9 @@ components:
               type: string
               format: date-time
               example: '2021-01-01T00:00:00Z'
+            tiptap_content:
+              type: string
+              example: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}]}'
           required:
             - id
             - title
@@ -2025,6 +2109,7 @@ components:
             - content_type
             - status
             - top_of_mind
+            - tiptap_content
       required:
         - token
         - role
@@ -2091,6 +2176,41 @@ components:
         - run_id
         - tool_call_id
         - approved
+    Req_InlineEdit:
+      type: object
+      properties:
+        workspace_id:
+          type: string
+          example: workspace-123
+        note_id:
+          type: string
+          example: note-123
+        action:
+          type: string
+          example: improve
+        selected_text:
+          type: string
+          example: this is a draft sentence
+        custom_prompt:
+          type: string
+          example: make this more concise
+        context_blocks:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+      required:
+        - workspace_id
+        - action
+        - selected_text
+    Res_InlineEdit:
+      type: object
+      properties:
+        text:
+          type: string
+          example: This is a polished sentence.
+      required:
+        - text
     Comment:
       type: object
       properties:

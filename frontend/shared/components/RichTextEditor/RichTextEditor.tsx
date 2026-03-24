@@ -11,13 +11,16 @@ import { TableOfContents } from "./TableOfContents";
 import { useSlashMenu } from "./hooks/useSlashMenu";
 import { useTemplateModals } from "./hooks/useTemplateModals";
 import { useEditorKeyboard } from "./hooks/useEditorKeyboard";
+import { useEditorReady } from "./hooks/useEditorReady";
+import { useAIActions } from "./hooks/useAIActions";
 import { Toolbar } from "./Toolbar";
 import { Skeleton } from "../ui/skeleton";
 import { AIMenu } from "./Extensions/ExtAI";
-import type { AIAction } from "./Extensions/ExtAI";
 import SharedBubbleMenu from "./Extensions/SharedBubbleMenu";
 import { getHeaderToolbarConfigs } from "./Toolbar/ToolbarConfig";
 import LinkHoverPopup from "./Extensions/ExtLink/LinkHoverPopup";
+import type { AISelectionContext } from "./Extensions/ExtAI/types";
+import CommentHoverPopup from "./Extensions/ExtComment/CommentPopup";
 
 interface TiptapProps {
   noteId?: string;
@@ -34,7 +37,6 @@ interface TiptapProps {
   onFocus?: () => void;
   onBlur?: () => void;
   collaboration?: CollaborationConfig;
-  // Thêm editorKey để force remount khi cần
   editorKey?: string;
   contentRef?: React.RefObject<HTMLDivElement | null>;
   onActiveCommentChange?: (commentId: string | null) => void;
@@ -42,6 +44,7 @@ interface TiptapProps {
     action: string,
     selectedText: string,
     customPrompt?: string,
+    context?: AISelectionContext,
   ) => Promise<string>;
 }
 
@@ -65,98 +68,46 @@ const Tiptap = ({
   onActiveCommentChange,
   onAIAction,
 }: TiptapProps) => {
-  const editorRef = useRef<Editor | null>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [isAILoading, setIsAILoading] = useState(false);
-  const [aiMenuPosition, setAIMenuPosition] = useState({ top: 0, left: 0 });
 
-  const {
-    isTemplatesModalOpen,
-    isManageTemplatesOpen,
-    openTemplatesModal,
-    closeTemplatesModal,
-    openManageTemplates,
-    closeManageTemplates,
-    applyTemplate,
-  } = useTemplateModals(editorRef.current);
+  // --- AI ---
+  const ai = useAIActions({ noteId, onAIAction });
 
-  const { menuRef, slashMenu, closeSlashMenu, handleSlashKeyDown } =
-    useSlashMenu(editorRef.current, editable);
+  // --- Menus ---
+  const { menuRef, slashMenu, handleSlashKeyDown, setEditor } =
+    useSlashMenu(editable);
 
   const { handleKeyDown } = useEditorKeyboard({
-    editor: editorRef.current,
     editable,
     keyboardHandlers: [handleSlashKeyDown],
     onKeyDown,
   });
-
-  const { editor, aiMenuState, closeAIMenu } = useTiptapEditor({
+  // --- Editor ---
+  const { editor } = useTiptapEditor({
     noteId,
     content,
     placeholder,
     onUpdate,
     editable,
-    onKeyDown: handleKeyDown,
     collaboration,
     onActiveCommentChange,
-    onAIAction,
+    onOpenAI: ai.openAIMenu,
+    onKeyDown: handleKeyDown, // set below after keyboard hook
   });
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  ai.setEditor(editor); // sync ref mỗi render
+  setEditor(editor); // Update slash menu's editor reference
+  // Update AI hook's editor reference
 
-  useEffect(() => {
-    editorRef.current = editor;
-    if (editor && onEditorReady) {
-      onEditorReady(editor);
-    }
-  }, [editor, onEditorReady]);
+  // --- Modals ---
+  const { isManageTemplatesOpen, closeManageTemplates } =
+    useTemplateModals(editor);
 
-  // Update AI menu position when it opens
-  useEffect(() => {
-    if (!aiMenuState.isOpen || !editor || editor.isDestroyed) return;
+  // --- Lifecycle ---
+  useEffect(() => setIsMounted(true), []);
+  useEditorReady(editor, onEditorReady);
 
-    try {
-      const { view } = editor;
-      const { from } = view.state.selection;
-      const coords = view.coordsAtPos(from);
-      setAIMenuPosition({
-        top: coords.top + window.scrollY + 30,
-        left: coords.left + window.scrollX,
-      });
-    } catch {
-      // TipTap view can be unavailable briefly during mount/unmount cycles.
-      return;
-    }
-  }, [aiMenuState.isOpen, editor]);
-
-  const handleAIAction = async (action: AIAction, customPrompt?: string) => {
-    if (!onAIAction || !editor || !aiMenuState.range) return;
-
-    setIsAILoading(true);
-    try {
-      const result = await onAIAction(
-        action,
-        aiMenuState.selection,
-        customPrompt,
-      );
-
-      editor.commands.setProposedEdit({
-        range: aiMenuState.range,
-        originalText: aiMenuState.selection,
-        proposedText: result,
-        action,
-        customPrompt,
-      });
-    } catch (error) {
-      console.error("AI action failed:", error);
-    } finally {
-      setIsAILoading(false);
-      closeAIMenu();
-    }
-  };
-
+  // --- Loading state ---
   if (!editor || !isMounted) {
     return (
       <div
@@ -177,64 +128,22 @@ const Tiptap = ({
       )}
 
       {showEditor ? (
-        <div ref={contentRef} className="relative flex gap-6 px-6">
-          <div className="flex-1 relative">
-            <EditorContent
-              ref={ref}
-              editor={editor}
-              className={cn(
-                "w-full min-h-[300px] focus:outline-none ring-0 ring-offset-0 resize-none overflow-hidden",
-                className,
-              )}
-              onFocus={onFocus}
-              onBlur={onBlur}
-            />
-
-            {slashMenu.isOpen && (
-              <SlashCommandMenu
-                menuRef={menuRef}
-                editor={editor}
-                position={slashMenu.position}
-                selectedIndex={slashMenu.selectedIndex}
-              />
-            )}
-
-            {aiMenuState.isOpen && (
-              <AIMenu
-                isOpen={aiMenuState.isOpen}
-                onClose={closeAIMenu}
-                position={aiMenuPosition}
-                selectedText={aiMenuState.selection}
-                onAction={handleAIAction}
-                isLoading={isAILoading}
-              />
-            )}
-
-            <SharedBubbleMenu editor={editor} />
-
-            <LinkHoverPopup
-              editor={editor}
-              onEdit={(href, text, from, to) => {
-                // Optional: focus vào link để trigger BubbleMenu edit mode
-                editor.chain().focus().setTextSelection({ from, to }).run();
-              }}
-            />
-          </div>
-
-          <TableOfContents editor={editor} />
-        </div>
+        <EditorArea
+          ref={ref}
+          contentRef={contentRef}
+          editor={editor}
+          className={className}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          slashMenu={slashMenu}
+          menuRef={menuRef}
+          ai={ai}
+        />
       ) : (
         <div className="px-6 pb-6">
           <Skeleton className="h-[300px] w-full" />
         </div>
       )}
-
-      {/* <TemplatesModal
-        isOpen={isTemplatesModalOpen}
-        onClose={closeTemplatesModal}
-        onSelectTemplate={applyTemplate}
-        onManageTemplates={openManageTemplates}
-      /> */}
 
       <ManageTemplatesModal
         isOpen={isManageTemplatesOpen}
@@ -245,3 +154,78 @@ const Tiptap = ({
 };
 
 export default Tiptap;
+
+// ─── Sub-components ──────────────────────────────────────
+
+interface EditorAreaProps {
+  ref?: React.RefObject<HTMLDivElement>;
+  contentRef?: React.RefObject<HTMLDivElement | null>;
+  editor: Editor;
+  className?: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  slashMenu: {
+    isOpen: boolean;
+    position: { x: number; y: number };
+    selectedIndex: number;
+  };
+  menuRef: React.RefObject<HTMLDivElement | null>;
+  ai: ReturnType<typeof useAIActions>;
+}
+
+function EditorArea({
+  ref,
+  contentRef,
+  editor,
+  className,
+  onFocus,
+  onBlur,
+  slashMenu,
+  menuRef,
+  ai,
+}: EditorAreaProps) {
+  return (
+    <div ref={contentRef} className="relative flex gap-6 px-6">
+      <div className="flex-1 relative">
+        <EditorContent
+          ref={ref}
+          editor={editor}
+          className={cn(
+            "w-full min-h-[300px] focus:outline-none",
+            "ring-0 ring-offset-0 resize-none overflow-hidden",
+            className,
+          )}
+          onFocus={onFocus}
+          onBlur={onBlur}
+        />
+
+        {slashMenu.isOpen && (
+          <SlashCommandMenu
+            menuRef={menuRef}
+            editor={editor}
+            position={slashMenu.position}
+            selectedIndex={slashMenu.selectedIndex}
+          />
+        )}
+
+        {ai.aiMenuState.isOpen && (
+          <AIMenu
+            isOpen
+            onClose={ai.closeAIMenu}
+            position={ai.aiMenuPosition}
+            selectedText={ai.aiMenuState.selection}
+            onAction={ai.handleAIAction}
+            isLoading={ai.isAILoading}
+            streamingPreview={ai.aiStreamingPreview}
+          />
+        )}
+
+        <SharedBubbleMenu editor={editor} />
+        <LinkHoverPopup editor={editor} />
+        <CommentHoverPopup editor={editor} />
+      </div>
+
+      <TableOfContents editor={editor} />
+    </div>
+  );
+}

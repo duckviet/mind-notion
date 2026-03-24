@@ -1,9 +1,7 @@
 // useEditorKeyboard.ts - Chỉ compose keyboard handlers
 import { useCallback } from "react";
-import { type Editor } from "@tiptap/react";
 
 interface UseEditorKeyboardProps {
-  editor: Editor | null;
   editable: boolean;
   /** Mỗi handler return true nếu đã xử lý event */
   keyboardHandlers: Array<
@@ -13,7 +11,6 @@ interface UseEditorKeyboardProps {
 }
 
 export function useEditorKeyboard({
-  editor,
   editable,
   keyboardHandlers,
   onKeyDown,
@@ -21,13 +18,13 @@ export function useEditorKeyboard({
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       onKeyDown?.(event);
-      if (event.defaultPrevented || !editor || !editable) return;
+      if (event.defaultPrevented || !editable) return;
 
       for (const handler of keyboardHandlers) {
         if (handler(event)) return;
       }
     },
-    [onKeyDown, editor, editable, keyboardHandlers],
+    [onKeyDown, editable, keyboardHandlers],
   );
 
   return { handleKeyDown };

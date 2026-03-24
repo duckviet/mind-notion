@@ -7,6 +7,8 @@ from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import StreamingResponse
 
 from .api_contracts import (
+    AgentInlineEditRequest,
+    AgentInlineEditResponse,
     AgentRunRequest,
     ConsentDecisionRequest,
     RunStartedEvent,
@@ -17,6 +19,7 @@ from .api_runtime import (
     event_generator,
     queue_event,
     run_agent_task,
+    run_inline_edit_task,
     stream_headers,
 )
 
@@ -47,6 +50,15 @@ async def create_run(
         media_type="text/event-stream",
         headers=stream_headers(),
     )
+
+
+@app.post("/internal/v1/agent/inline-edit")
+async def create_inline_edit(
+    request: AgentInlineEditRequest,
+    authorization: str | None = Header(default=None),
+) -> AgentInlineEditResponse:
+    auth_or_raise(authorization)
+    return await run_inline_edit_task(request)
 
 
 @app.patch("/internal/v1/agent/runs/{run_id}/consent")
