@@ -23,6 +23,9 @@ import {
   ExtTaskList,
   ExtDrawing,
   ExtProposedEdits,
+  ExtAlign,
+  ExtNoteLayout,
+  type NoteLayout,
 } from "../Extensions";
 import { CollaborationConfig } from "../types";
 import { AISelectionContext } from "../Extensions/ExtAI/types";
@@ -30,6 +33,7 @@ import { useStableRef } from "@/shared/hooks/useStableRef";
 import { ExtAutoResize } from "../Extensions/ExtAutoResize";
 
 interface UseEditorExtensionsProps {
+  noteId?: string;
   placeholder: string;
   collaboration?: CollaborationConfig;
   uploadMediaRef: React.RefObject<
@@ -43,6 +47,7 @@ interface UseEditorExtensionsProps {
 }
 
 export function useEditorExtensions({
+  noteId,
   placeholder,
   collaboration,
   uploadMediaRef,
@@ -125,6 +130,13 @@ export function useEditorExtensions({
         },
       }),
       ExtProposedEdits,
+      ExtAlign,
+      ExtNoteLayout.configure({
+        initialLayout:
+          ((noteId &&
+            localStorage.getItem(`mn_layout_${noteId}`)) as NoteLayout) ??
+          "default",
+      }),
       // ExtAutoResize.configure({
       //   font: "16px Inter",
       //   lineHeight: 24,

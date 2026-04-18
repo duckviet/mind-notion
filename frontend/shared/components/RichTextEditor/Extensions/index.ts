@@ -15,3 +15,10 @@ export { default as ExtHighLight } from "./ExtHighLight";
 export { default as ExtAI } from "./ExtAI";
 export { default as ExtDrawing } from "./ExtDrawing";
 export { default as ExtProposedEdits } from "./ExtProposedEdits";
+export { default as ExtAlign } from "./ExtAlign/ExtAlign";
+export {
+  ExtNoteLayout,
+  NoteLayoutPicker,
+  useNoteLayout,
+  type NoteLayout,
+} from "./ExtNoteLayout";

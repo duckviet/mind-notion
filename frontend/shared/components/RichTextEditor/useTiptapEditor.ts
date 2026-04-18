@@ -11,6 +11,7 @@ import { useEditToken } from "./hooks/useEditToken";
 import { useUploadMediaRef } from "./hooks/useUploadMediaRef";
 import { useEditorExtensions } from "./hooks/useEditorExtensions";
 import type { UseTiptapEditorProps } from "./types";
+import "./Extensions/ExtNoteLayout/layouts.css";
 
 export type { CollaborationConfig, UseTiptapEditorProps } from "./types";
 
@@ -42,6 +43,7 @@ export const useTiptapEditor = ({
   const uploadMediaRef = useUploadMediaRef();
 
   const { extensions, collabEnabled } = useEditorExtensions({
+    noteId,
     placeholder,
     collaboration,
     uploadMediaRef,

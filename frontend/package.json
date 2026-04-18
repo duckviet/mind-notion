@@ -42,6 +42,7 @@
     "@tiptap/extension-mathematics": "^3.7.2",
     "@tiptap/extension-placeholder": "^3.7.0",
     "@tiptap/extension-table": "^3.7.2",
+    "@tiptap/extension-text-align": "^3.22.3",
     "@tiptap/html": "^3.17.1",
     "@tiptap/pm": "^3.7.0",
     "@tiptap/react": "^3.20.4",

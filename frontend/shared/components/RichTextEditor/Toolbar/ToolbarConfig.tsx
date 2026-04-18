@@ -23,10 +23,15 @@ import {
   MessageSquareMore,
   PencilRuler,
   FileEdit,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
 } from "lucide-react";
 import TableSizeDropdown from "./TableSizeDropdown";
 import CommentPopover from "./CommentPopover";
 import ProposedEditPopover from "../Extensions/ExtProposedEdits/ProposedEditPopover";
+import NoteLayoutDropdown from "./NoteLayoutDropdown";
 
 export interface ToolbarItem {
   icon: React.ReactNode;
@@ -50,7 +55,11 @@ export interface ToolbarGroup {
 
 export interface ToolbarConfigProps {
   editor: Editor;
-  options: { onAddImage?: () => void; onAddDrawing?: () => void };
+  options: {
+    onAddImage?: () => void;
+    onAddDrawing?: () => void;
+    noteId?: string;
+  };
 }
 
 export const getHeaderToolbarConfigs = ({
@@ -88,6 +97,35 @@ export const getHeaderToolbarConfigs = ({
           tooltip: "Highlighter",
           isActive: () => editor.isActive("highlight"),
           onClick: () => editor.chain().focus().toggleHighlight().run(),
+        },
+      ],
+    },
+    {
+      name: "alignment",
+      items: [
+        {
+          icon: <AlignLeft size={16} />,
+          tooltip: "Align Left",
+          isActive: () => editor.isActive({ textAlign: "left" }),
+          onClick: () => editor.chain().focus().setTextAlign("left").run(),
+        },
+        {
+          icon: <AlignCenter size={16} />,
+          tooltip: "Align Center",
+          isActive: () => editor.isActive({ textAlign: "center" }),
+          onClick: () => editor.chain().focus().setTextAlign("center").run(),
+        },
+        {
+          icon: <AlignRight size={16} />,
+          tooltip: "Align Right",
+          isActive: () => editor.isActive({ textAlign: "right" }),
+          onClick: () => editor.chain().focus().setTextAlign("right").run(),
+        },
+        {
+          icon: <AlignJustify size={16} />,
+          tooltip: "Justify",
+          isActive: () => editor.isActive({ textAlign: "justify" }),
+          onClick: () => editor.chain().focus().setTextAlign("justify").run(),
         },
       ],
     },
@@ -237,6 +275,28 @@ export const getHeaderToolbarConfigs = ({
         },
       ],
     },
+    ...(options.noteId
+      ? [
+          {
+            name: "layout",
+            items: [
+              {
+                icon: null,
+                tooltip: "Page Layout",
+                isActive: () => false,
+                onClick: () => {},
+                isDropdown: true,
+                DropdownNode: (
+                  <NoteLayoutDropdown
+                    editor={editor}
+                    noteId={options.noteId!}
+                  />
+                ),
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 };
 

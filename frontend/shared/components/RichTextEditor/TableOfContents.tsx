@@ -295,12 +295,7 @@ export const TableOfContents = ({
     (heading: Heading) => {
       if (!editor) return;
 
-      editor
-        .chain()
-        .focus()
-        .setTextSelection(heading.pos)
-        .scrollIntoView()
-        .run();
+      editor.chain().focus().setTextSelection(heading.pos).run();
 
       setOpenItems((prev) => new Set(prev).add(heading.id));
     },

@@ -21,6 +21,8 @@ interface ToolbarProps {
   selectedIndex?: number;
   /** Layout direction */
   direction?: "horizontal" | "vertical";
+  /** Note ID forwarded to layout-aware toolbar items */
+  noteId?: string;
 }
 
 const Toolbar = ({
@@ -29,6 +31,7 @@ const Toolbar = ({
   getConfig,
   selectedIndex,
   direction = "horizontal",
+  noteId,
 }: ToolbarProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { mutateAsync: uploadMedia, isPending: isUploading } = useUploadMedia({
@@ -64,10 +67,11 @@ const Toolbar = ({
             options: {
               onAddImage: () => fileInputRef.current?.click(),
               onAddDrawing: () => editor.commands.insertDrawing(),
+              noteId,
             },
           })
         : [],
-    [editor, getConfig],
+    [editor, getConfig, noteId],
   );
 
   // Flatten items to map selectedIndex → specific item

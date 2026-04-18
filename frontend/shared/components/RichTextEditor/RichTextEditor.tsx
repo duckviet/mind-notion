@@ -123,7 +123,11 @@ const Tiptap = ({
     <div className="flex flex-col gap-2" key={editorKey}>
       {toolbar && (
         <div className="sticky top-2 z-15 px-6">
-          <Toolbar editor={editor} getConfig={getHeaderToolbarConfigs} />
+          <Toolbar
+            editor={editor}
+            getConfig={getHeaderToolbarConfigs}
+            noteId={noteId}
+          />
         </div>
       )}
 

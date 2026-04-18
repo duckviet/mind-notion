@@ -1,0 +1,75 @@
+/* ── A4 ── */
+.mn-layout-a4 {
+  max-width: 794px !important; /* 210mm @ 96dpi */
+  min-height: 1123px !important; /* 297mm @ 96dpi */
+  margin: 24px auto !important;
+  padding: 96px 90px !important; /* ~25mm */
+  background: white !important;
+  font-family: "Times New Roman", Times, serif !important;
+  font-size: 13pt !important;
+  line-height: 1.5 !important;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 0 !important;
+}
+
+/* ── A5 ── */
+.mn-layout-a5 {
+  max-width: 559px !important; /* 148mm @ 96dpi */
+  min-height: 794px !important; /* 210mm @ 96dpi */
+  margin: 24px auto !important;
+  padding: 72px 64px !important;
+  background: white !important;
+  font-family: "Times New Roman", Times, serif !important;
+  font-size: 11pt !important;
+  line-height: 1.5 !important;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 0 !important;
+}
+
+/* ── Letter ── */
+.mn-layout-letter {
+  max-width: 816px !important; /* 215.9mm @ 96dpi */
+  min-height: 1056px !important; /* 279.4mm @ 96dpi */
+  margin: 24px auto !important;
+  padding: 96px 96px !important; /* 1 inch */
+  background: white !important;
+  font-family: Calibri, "Segoe UI", sans-serif !important;
+  font-size: 12pt !important;
+  line-height: 1.15 !important;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1) !important;
+  border-radius: 0 !important;
+}
+
+/* ── Presentation 16:9 ── */
+.mn-layout-presentation {
+  max-width: 960px !important;
+  min-height: 540px !important; /* 16:9 */
+  margin: 24px auto !important;
+  padding: 64px 80px !important;
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 24pt !important;
+  line-height: 1.4 !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 8px !important;
+  text-align: center !important;
+}
+
+/* ── Print ── */
+@media print {
+  .mn-layout-a4 {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+
+  .mn-layout-a5 {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+
+  .mn-layout-letter {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+}
