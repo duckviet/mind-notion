@@ -8,6 +8,7 @@ import (
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/domain"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gorilla/websocket"
 )
@@ -17,6 +18,8 @@ type WebSocketHandler struct {
 	collaborationService *service.CollaborationServiceImpl
 	upgrader             websocket.Upgrader
 }
+
+var _ interfaces.WebSocketHandler = (*WebSocketHandler)(nil)
 
 // NewWebSocketHandler creates a new WebSocket handler
 func NewWebSocketHandler(collaborationService *service.CollaborationServiceImpl) *WebSocketHandler {

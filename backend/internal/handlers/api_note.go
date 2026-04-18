@@ -18,6 +18,7 @@ import (
 	"strings"
 
 	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
@@ -27,6 +28,8 @@ type NoteAPI struct {
 	noteService service.NoteService
 	authService service.AuthService
 }
+
+var _ interfaces.NoteAPIHandler = (*NoteAPI)(nil)
 
 // Post /api/v1/notes
 // Create a new note

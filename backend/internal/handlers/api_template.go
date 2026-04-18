@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -22,6 +23,9 @@ type TemplateAPI struct {
 	templateService service.TemplateService
 	authService     service.AuthService
 }
+
+
+var _ interfaces.TemplateAPIHandler = (*TemplateAPI)(nil)
 
 // POST /api/v1/templates
 // Create a new template

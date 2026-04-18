@@ -14,6 +14,7 @@ import (
 
 	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/dto"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +22,8 @@ import (
 type CommentAPI struct {
 	commentService service.CommentService
 }
+
+var _ interfaces.CommentAPIHandler = (*CommentAPI)(nil)
 
 // NewCommentAPI creates a new comment API handler
 func NewCommentAPI(commentService service.CommentService) *CommentAPI {

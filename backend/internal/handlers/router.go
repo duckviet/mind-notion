@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -45,12 +46,12 @@ func SetupRouter(
 	eventService service.EventService,
 	mediaService service.MediaService,
 	commentService service.CommentService,
-	aiRunAPI *AIRunAPI,
-	aiInternalAPI *AIInternalAPI,
-	wsHandler *WebSocketHandler,
-	searchHandler *SearchHandler,
-	googleCalendarAPI *GoogleCalendarAPI,
-	googleLoginAPI *GoogleLoginAPI,
+	aiRunAPI interfaces.AIRunAPIHandler,
+	aiInternalAPI interfaces.AIInternalAPIHandler,
+	wsHandler interfaces.WebSocketHandler,
+	searchHandler interfaces.SearchHandler,
+	googleCalendarAPI interfaces.GoogleCalendarAPIHandler,
+	googleLoginAPI interfaces.GoogleLoginAPIHandler,
 ) *gin.Engine {
 	gin.SetMode(cfg.Server.Mode)
 	router := gin.Default()

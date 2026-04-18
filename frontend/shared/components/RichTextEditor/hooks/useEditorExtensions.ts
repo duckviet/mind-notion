@@ -27,6 +27,7 @@ import {
 import { CollaborationConfig } from "../types";
 import { AISelectionContext } from "../Extensions/ExtAI/types";
 import { useStableRef } from "@/shared/hooks/useStableRef";
+import { ExtAutoResize } from "../Extensions/ExtAutoResize";
 
 interface UseEditorExtensionsProps {
   placeholder: string;
@@ -124,6 +125,14 @@ export function useEditorExtensions({
         },
       }),
       ExtProposedEdits,
+      // ExtAutoResize.configure({
+      //   font: "16px Inter",
+      //   lineHeight: 24,
+      //   paddingY: 32,
+      //   minLines: 3,
+      //   maxLines: 40,
+      // }),
+
       ...collabExtensions,
     ],
     [

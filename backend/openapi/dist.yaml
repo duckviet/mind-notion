@@ -2094,9 +2094,6 @@ components:
               type: string
               format: date-time
               example: '2021-01-01T00:00:00Z'
-            tiptap_content:
-              type: string
-              example: '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Hello, world!"}]}]}'
           required:
             - id
             - title
@@ -2109,7 +2106,6 @@ components:
             - content_type
             - status
             - top_of_mind
-            - tiptap_content
       required:
         - token
         - role

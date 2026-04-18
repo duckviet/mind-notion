@@ -12,14 +12,17 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/gin-gonic/gin"
 )
 
 type AIAPI struct {
-	aiRun *AIRunAPI
+	aiRun interfaces.AIRunAPIHandler
 }
 
-func NewAIAPI(aiRun *AIRunAPI) *AIAPI {
+var _ interfaces.AIAPIHandler = (*AIAPI)(nil)
+
+func NewAIAPI(aiRun interfaces.AIRunAPIHandler) *AIAPI {
 	return &AIAPI{aiRun: aiRun}
 }
 

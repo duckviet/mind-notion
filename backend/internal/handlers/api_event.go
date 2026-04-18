@@ -16,6 +16,7 @@ import (
 
 	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/dto"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,8 @@ type EventAPI struct {
 	eventService *service.EventService
 	authService  service.AuthService
 }
+
+var _ interfaces.EventAPIHandler = (*EventAPI)(nil)
 
 // NewEventAPI creates a new event API handler
 func NewEventAPI(eventService *service.EventService, authService service.AuthService) *EventAPI {

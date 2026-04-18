@@ -123,7 +123,13 @@ async def _notes_write(args: dict[str, Any]) -> str:
 
 notes_read = ToolSpec(
     name="notes.read",
-    description="Read note content and metadata by note_id through backend policy checks. Uses active runtime note_id when omitted.",
+    description=(
+        "Read full content and metadata of ONE specific note by its note_id. "
+        "Use when the note_id is already known (from rag.search results, "
+        "user-provided link, or active runtime context). "
+        "For discovery/search across notes, use `rag.search` instead. "
+        "Returns: {note_id, version, content, metadata}."
+    ),
     input_schema={
         "type": "object",
         "properties": {

@@ -177,15 +177,18 @@ async def _rag_search(args: dict[str, Any]) -> str:
 rag_search = ToolSpec(
 	name="rag.search",
 	description=(
-	'''
-    Bạn là AI Assistant của ứng dụng ghi chú. Nguyên tắc cốt lõi: Bạn bị 'mất trí nhớ' hoàn toàn về dữ liệu cá nhân, lịch trình, dự án, code, hay bất kỳ ghi chú nào của người dùng. 
-    BẤT CỨ KHI NÀO người dùng đưa ra yêu cầu thuộc 4 nhóm sau, bạn BẮT BUỘC phải dùng tool `rag.search` trước khi trả lời:
-    1. Truy vấn thông tin cá nhân/sở hữu (Ví dụ: 'tài liệu của tôi', 'dự án A', 'hàm Python hôm qua').
-    2. Truy vấn theo thời gian (Ví dụ: 'tuần trước', 'kế hoạch ngày mai', 'những gì đã xảy ra').
-    3. Yêu cầu tóm tắt hoặc trích xuất từ dữ liệu người dùng (Ví dụ: 'tóm tắt meeting', 'tìm các ý tưởng').
-    4. Những câu hỏi có đại từ chỉ định mập mờ mà bạn không có context (Ví dụ: 'nó', 'việc đó', 'người kia').
-    Tuyệt đối không tự suy diễn hoặc bịa ra thông tin nếu chưa tra cứu.
-	'''
+		"Semantic search over the user's personal notes/knowledge base "
+		"using vector embeddings. Returns top-k relevant chunks with scores.\n\n"
+		"USE WHEN:\n"
+		"- User references their own data ('my notes', 'the project I wrote')\n"
+		"- Time-based queries ('last week', 'yesterday's meeting')\n"
+		"- Summarization/extraction from user content\n"
+		"- Ambiguous references ('it', 'that thing') without clear context\n\n"
+		"DO NOT USE WHEN:\n"
+		"- User provides a specific note_id → use `notes.read` instead\n"
+		"- Question is about general/public knowledge → use `web.search`\n"
+		"- Pure chit-chat or meta questions about the assistant itself\n\n"
+		"Returns: {query, total, chunks: [{note_id, text, score, ...}]}"
 	),
 	input_schema={
 		"type": "object",

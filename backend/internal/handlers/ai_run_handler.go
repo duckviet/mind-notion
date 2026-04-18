@@ -13,6 +13,7 @@ import (
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
 	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -24,6 +25,8 @@ type AIRunAPI struct {
 	httpClient       *http.Client
 	streamHTTPClient *http.Client
 }
+
+var _ interfaces.AIRunAPIHandler = (*AIRunAPI)(nil)
 
 func NewAIRunAPI(cfg *config.Config, noteService service.NoteService) *AIRunAPI {
 	timeout := time.Duration(cfg.AI.RequestTimeoutMs) * time.Millisecond
@@ -86,7 +89,7 @@ func (api *AIRunAPI) CreateRun(c *gin.Context) {
 			},
 		},
 		{
-			"name": "webSearch",
+			"name": "web.search",
 			"constraints": map[string]interface{}{
 				"workspace_id":         req.WorkspaceID,
 				"require_user_consent": false,
