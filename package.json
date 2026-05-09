@@ -1,0 +1,18 @@
+{
+  "name": "mind-notion",
+  "private": true,
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "dev:ext": "pnpm --filter extension dev",
+    "build": "pnpm --filter web build",
+    "build:ext": "pnpm --filter extension build",
+    "lint": "pnpm -r --if-present lint",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "clean": "pnpm -r exec rm -rf node_modules .next dist .turbo"
+  },
+  "packageManager": "pnpm@9.0.0"
+}
