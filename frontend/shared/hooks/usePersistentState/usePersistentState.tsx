@@ -7,14 +7,23 @@ export default function usePersistentState<T>(
   const initialValueRef = useRef(initialValue);
   const isFirst = useRef(true);
   const [value, setValue] = useState<T | null>(() => {
-    if (typeof window === "undefined") return initialValueRef.current as T;
+    const getInitialValue = () => {
+      return typeof initialValueRef.current === "function"
+        ? (initialValueRef.current as any)()
+        : (initialValueRef.current as T);
+    };
+
+    if (typeof window === "undefined") return getInitialValue();
 
     try {
       const stored = window.localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : (initialValueRef.current as T);
+      if (stored === null || stored === "undefined") {
+        return getInitialValue();
+      }
+      return JSON.parse(stored);
     } catch (error) {
       console.error(`Error parsing localStorage for key ${key}:`, error);
-      return initialValueRef.current as T;
+      return getInitialValue();
     }
   });
 
@@ -27,7 +36,12 @@ export default function usePersistentState<T>(
         if (val == null) {
           window.localStorage.removeItem(key);
         } else {
-          window.localStorage.setItem(key, JSON.stringify(val));
+          const serialized = JSON.stringify(val);
+          if (typeof serialized === "undefined") {
+            window.localStorage.removeItem(key);
+          } else {
+            window.localStorage.setItem(key, serialized);
+          }
         }
       } catch (error) {
         if (

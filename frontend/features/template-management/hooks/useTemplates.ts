@@ -4,14 +4,13 @@ import {
   createTemplate as apiCreateTemplate,
   updateTemplate as apiUpdateTemplate,
   deleteTemplate as apiDeleteTemplate,
-  getListTemplatesQueryKey,
   CreateTemplateMutationBody,
   UpdateTemplateMutationBody,
 } from "@/shared/services/generated/api";
+import { invalidateTemplateLists } from "@/shared/hooks/query-invalidations";
 
 export function useTemplates() {
   const queryClient = useQueryClient();
-  const queryKey = getListTemplatesQueryKey();
 
   // Fetch user templates
   const templatesQuery = useGeneratedListTemplates({
@@ -23,10 +22,8 @@ export function useTemplates() {
   // Create template mutation
   const createMutation = useMutation({
     mutationFn: (data: CreateTemplateMutationBody) => apiCreateTemplate(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKey,
-      });
+    onSuccess: async () => {
+      await invalidateTemplateLists(queryClient);
     },
   });
 
@@ -39,20 +36,16 @@ export function useTemplates() {
       id: string;
       data: UpdateTemplateMutationBody;
     }) => await apiUpdateTemplate(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKey,
-      });
+    onSuccess: async () => {
+      await invalidateTemplateLists(queryClient);
     },
   });
 
   // Delete template mutation
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiDeleteTemplate(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKey,
-      });
+    onSuccess: async () => {
+      await invalidateTemplateLists(queryClient);
     },
   });
 

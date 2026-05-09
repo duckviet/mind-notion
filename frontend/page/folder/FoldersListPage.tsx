@@ -18,6 +18,7 @@ import { updateFolder } from "@/shared/services/generated/api";
 import { toast } from "sonner";
 import { Input } from "@/shared/components/ui/input";
 import { useQueryClient } from "@tanstack/react-query";
+import { invalidateFoldersAfterUpdate } from "@/shared/hooks/query-invalidations";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
@@ -92,7 +93,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
         await updateFolder(id, {
           parent_id: folderId || "",
         });
-        queryClient.invalidateQueries({ queryKey: ["folders", "notes/list"] });
+        await invalidateFoldersAfterUpdate(queryClient, id);
         toast.success("Folder moved successfully");
         refetch();
       } catch (error) {
@@ -104,7 +105,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+      <div className="flex flex-col items-center justify-center min-h-100 text-center">
         <h2 className="text-xl font-semibold text-text-primary mb-2">
           Failed to load folders
         </h2>
@@ -178,7 +179,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
 
         {/* Create Folder Dialog */}
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="sm:max-w-[400px]  bg-accent border border-border">
+          <DialogContent className="sm:max-w-100 bg-accent border border-border">
             <DialogHeader>
               <DialogTitle>Create New Folder</DialogTitle>
             </DialogHeader>

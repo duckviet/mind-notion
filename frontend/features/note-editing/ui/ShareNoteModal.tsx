@@ -18,11 +18,11 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import {
   useUpdateNote,
-  getGetNoteQueryKey,
   getPublicEditSettings,
   updatePublicEditSettings,
   rotatePublicEditToken,
 } from "@/shared/services/generated/api";
+import { invalidateNotesAfterUpdate } from "@/shared/hooks/query-invalidations";
 
 interface ShareNoteModalProps {
   isOpen: boolean;
@@ -48,11 +48,11 @@ export function ShareNoteModal({
 
   const { mutate: updateNote, isPending: isUpdating } = useUpdateNote({
     mutation: {
-      onSuccess: () => {
+      onSuccess: async () => {
         queryClient.invalidateQueries({
           queryKey: ["collab-session", noteId],
         });
-        queryClient.invalidateQueries({ queryKey: ["notes"] });
+        await invalidateNotesAfterUpdate(queryClient, noteId);
         toast.success("Share settings updated");
       },
       onError: (error) => {

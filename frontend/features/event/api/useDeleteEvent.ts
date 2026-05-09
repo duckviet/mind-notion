@@ -1,6 +1,7 @@
 import { deleteEvent } from "@/shared/services/generated/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { invalidateEventCollections } from "@/shared/hooks/query-invalidations";
 
 type DeleteVars = { id: string };
 
@@ -9,11 +10,9 @@ export const useDeleteEvent = () => {
 
   const mutation = useMutation({
     mutationFn: async ({ id }: DeleteVars) => deleteEvent(id as any),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Event deleted");
-      queryClient.invalidateQueries({ queryKey: ["/events"] });
-      queryClient.invalidateQueries({ queryKey: ["/events/list"] });
-      queryClient.invalidateQueries({ queryKey: ["/events/range"] });
+      await invalidateEventCollections(queryClient);
     },
     onError: (error: { message?: string }) => {
       toast.error(error?.message || "Failed to delete event");

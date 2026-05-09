@@ -24,7 +24,7 @@ const SharedBubbleMenu = ({ editor }: SharedBubbleMenuProps) => {
       shouldShow={shouldShow}
       className="z-9999"
     >
-      <Toolbar editor={editor} getConfig={getBubbleToolbarConfigs} />;
+      <Toolbar editor={editor} getConfig={getBubbleToolbarConfigs} />
     </BubbleMenu>
   );
 };

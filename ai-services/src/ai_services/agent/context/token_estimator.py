@@ -17,7 +17,7 @@ TOKEN_PER_MESSAGE_BASE = 4
 TOKEN_PER_MESSAGE_PER_ROLE = 2
 
 
-def estimate_messages_tokens(messages: list[dict[str, Any]]) -> TokenCount:
+def estimate_messages_tokens(messages: list[Any]) -> TokenCount:
     input_tokens = 0
     output_tokens = 0
 

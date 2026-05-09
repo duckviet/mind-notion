@@ -31,6 +31,7 @@ import { CollaborationConfig } from "../types";
 import { AISelectionContext } from "../Extensions/ExtAI/types";
 import { useStableRef } from "@/shared/hooks/useStableRef";
 import { ExtAutoResize } from "../Extensions/ExtAutoResize";
+import { readStoredNoteLayout } from "../Extensions/ExtNoteLayout/layouts";
 
 interface UseEditorExtensionsProps {
   noteId?: string;
@@ -132,10 +133,7 @@ export function useEditorExtensions({
       ExtProposedEdits,
       ExtAlign,
       ExtNoteLayout.configure({
-        initialLayout:
-          ((noteId &&
-            localStorage.getItem(`mn_layout_${noteId}`)) as NoteLayout) ??
-          "default",
+        initialLayout: readStoredNoteLayout(noteId),
       }),
       // ExtAutoResize.configure({
       //   font: "16px Inter",

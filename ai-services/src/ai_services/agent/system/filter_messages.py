@@ -1,10 +1,10 @@
-from __future__ import annotations
-
 from typing import Any
 
+from openai.types.chat import ChatCompletionMessageParam
 
-def filter_compatible_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    filtered: list[dict[str, Any]] = []
+
+def filter_compatible_messages(messages: list[Any]) -> list[ChatCompletionMessageParam]:
+    filtered: list[ChatCompletionMessageParam] = []
     for message in messages:
         role = message.get("role")
 

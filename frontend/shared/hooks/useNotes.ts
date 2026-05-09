@@ -1,16 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  useListNotes as useGeneratedListNotes,
+  useListNotes,
   createNote as apiCreateNote,
   updateNote as apiUpdateNote,
   deleteNote as apiDeleteNote,
   ReqCreateNote,
   ReqUpdateNote,
-  getListNotesQueryKey,
-  ListNotes200,
-  ResDetailNote,
 } from "@/shared/services/generated/api";
-import { useMemo } from "react";
+import {
+  invalidateNotesAfterCreate,
+  invalidateNotesAfterDelete,
+  invalidateNotesAfterUpdate,
+  invalidateNotesAndFoldersAfterMove,
+} from "./query-invalidations";
 
 export type ListParams = {
   limit?: number;
@@ -22,11 +24,9 @@ export type ListParams = {
 export function useNotes(
   params: ListParams = { limit: 50, offset: 0, query: "", folder_id: "" },
 ) {
-  const stableParams = useMemo(() => params, [params]);
   const queryClient = useQueryClient();
-  const queryKey = getListNotesQueryKey(stableParams);
   // Chỉ wrap generated hook - đơn giản và mạnh mẽ
-  const notesQuery = useGeneratedListNotes(stableParams, {
+  const notesQuery = useListNotes(params, {
     query: {
       retry: false,
     },
@@ -36,22 +36,32 @@ export function useNotes(
   const createMutation = useMutation({
     mutationFn: (data: ReqCreateNote) => apiCreateNote(data),
     // Automatic invalidation - không cần manual queryKey
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKey, // Chỉ cần predicate broad
-      });
+    onSuccess: async () => {
+      await invalidateNotesAfterCreate(queryClient);
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: ReqUpdateNote }) =>
-      await apiUpdateNote(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKey }),
+    mutationFn: ({ id, data }: { id: string; data: ReqUpdateNote }) =>
+      apiUpdateNote(id, data),
+    onSuccess: async (_data, variables) => {
+      await invalidateNotesAfterUpdate(queryClient, variables.id);
+    },
+  });
+
+  const moveToFolderMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: ReqUpdateNote }) =>
+      apiUpdateNote(id, data),
+    onSuccess: async (_data, variables) => {
+      await invalidateNotesAndFoldersAfterMove(queryClient, variables.id);
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: apiDeleteNote,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKey }),
+    onSuccess: async () => {
+      await invalidateNotesAfterDelete(queryClient);
+    },
   });
 
   // Thêm refetch
@@ -72,6 +82,9 @@ export function useNotes(
 
     updateNote: updateMutation.mutateAsync,
     isUpdating: updateMutation.isPending,
+
+    moveNoteToFolder: moveToFolderMutation.mutateAsync,
+    isMovingNoteToFolder: moveToFolderMutation.isPending,
 
     deleteNote: deleteMutation.mutateAsync,
     isDeleting: deleteMutation.isPending,

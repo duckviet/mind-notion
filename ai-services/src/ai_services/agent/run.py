@@ -11,10 +11,12 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from openai import AsyncOpenAI
-
-if __package__ in (None, ""):  # pragma: no cover
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
+from openai.types.chat import (
+    ChatCompletionAssistantMessageParam,
+    ChatCompletionMessageParam,
+    ChatCompletionToolParam,
+)
+ 
 try:
     from .context import (
         DEFAULT_THRESHOLD,
@@ -36,7 +38,7 @@ try:
     from .tools.types import ToolSpec
     from .contracts import AgentCallbacks, TokenUsageInfo
 except ImportError:  # pragma: no cover
-    from agent.context import (
+    from ai_services.agent.context import (
         DEFAULT_THRESHOLD,
         calculate_usage_percentage,
         compact_conversation,
@@ -44,17 +46,17 @@ except ImportError:  # pragma: no cover
         get_model_limits,
         is_over_threshold,
     )
-    from agent.execute_tool import execute_tool
-    from agent.runtime_context import (
+    from ai_services.agent.execute_tool import execute_tool
+    from ai_services.agent.runtime_context import (
         reset_run_context,
         reset_tool_call_context,
         set_run_context,
         set_tool_call_context,
     )
-    from agent.system import build_system_prompt, filter_compatible_messages
-    from agent.tools import tools
-    from agent.tools.types import ToolSpec
-    from agent.contracts import AgentCallbacks, TokenUsageInfo
+    from ai_services.agent.system import build_system_prompt, filter_compatible_messages
+    from ai_services.agent.tools import tools
+    from ai_services.agent.tools.types import ToolSpec
+    from ai_services.agent.contracts import AgentCallbacks, TokenUsageInfo
 
 logger = logging.getLogger(__name__)
 
@@ -73,9 +75,9 @@ def _safe_run_identifier(run_id: str | None) -> str:
 
 
 def _estimate_usage_snapshot(
-    messages: list[dict[str, Any]], context_window: int
+    messages: list[ChatCompletionMessageParam], context_window: int
 ) -> dict[str, Any]:
-    usage = estimate_messages_tokens(messages)
+    usage = estimate_messages_tokens(messages)  # type: ignore
     percentage = calculate_usage_percentage(usage.total, context_window)
     return {
         "input_tokens": usage.input,
@@ -113,14 +115,14 @@ def _build_tool_name_maps(
 def _tool_definitions(
     tool_registry: Mapping[str, ToolSpec],
     internal_to_provider: Mapping[str, str],
-) -> list[dict[str, Any]]:
-    definitions: list[dict[str, Any]] = []
+) -> list[ChatCompletionToolParam]:
+    definitions: list[ChatCompletionToolParam] = []
     for internal_name, tool in tool_registry.items():
         tool_def = tool.to_openai_tool()
         tool_def["function"]["name"] = internal_to_provider.get(
             internal_name, internal_name
         )
-        definitions.append(tool_def)
+        definitions.append(tool_def)  # type: ignore
     return definitions
 
 
@@ -132,13 +134,13 @@ def _supports_token_usage(callbacks: AgentCallbacks) -> bool:
 
 def _report_token_usage(
     callbacks: AgentCallbacks,
-    messages: list[dict[str, Any]],
+    messages: list[ChatCompletionMessageParam],
     context_window: int,
 ) -> None:
     if not _supports_token_usage(callbacks):
         return
 
-    usage = estimate_messages_tokens(messages)
+    usage = estimate_messages_tokens(messages)  # type: ignore
     logger.debug(
         "Token usage — input: %d, output: %d, total: %d / %d (%.1f%%)",
         usage.input,
@@ -169,7 +171,7 @@ async def run_agent(
     actor: dict[str, str] | None = None,
     resource_context: dict[str, Any] | None = None,
     tool_registry: Mapping[str, ToolSpec] | None = None,
-) -> list[dict[str, Any]]:
+) -> list[ChatCompletionMessageParam]:
     effective_run_id = _safe_run_identifier(run_id)
     log_file = LOG_DIR / f"run_log_{effective_run_id}.txt"
     run_started_at = datetime.now(timezone.utc)
@@ -202,8 +204,10 @@ async def run_agent(
             run_id, actor_context, resource_context_data
         )
 
-    working_history = filter_compatible_messages(conversation_history)
-    precheck_messages: list[dict[str, Any]] = [
+    working_history: list[ChatCompletionMessageParam] = filter_compatible_messages(
+        conversation_history
+    )
+    precheck_messages: list[ChatCompletionMessageParam] = [
         {"role": "system", "content": system_prompt},
         *working_history,
     ]
@@ -213,16 +217,18 @@ async def run_agent(
         precheck_messages
     )
 
-    if is_over_threshold(precheck_tokens.total, model_limits.context_window):
+    if is_over_threshold(precheck_tokens.total, model_limits.context_window, DEFAULT_THRESHOLD):
         logger.warning(
             "Context over threshold (%d / %d tokens), compacting conversation…",
             precheck_tokens.total,
             model_limits.context_window,
         )
-        working_history = await compact_conversation(working_history, client, model_name)
+        working_history = await compact_conversation(
+            working_history, client, model_name
+        )
         compacted = True
 
-    messages: list[dict[str, Any]] = [
+    messages: list[ChatCompletionMessageParam] = [
         {"role": "system", "content": system_prompt},
         *working_history,
     ]
@@ -299,12 +305,12 @@ async def run_agent(
                 if not tool_call["id"]:
                     tool_call["id"] = f"tool_call_{iteration}_{idx}"
 
-            assistant_message: dict[str, Any] = {
+            assistant_message: ChatCompletionAssistantMessageParam = {
                 "role": "assistant",
                 "content": current_text,
             }
             if tool_calls_list:
-                assistant_message["tool_calls"] = tool_calls_list
+                assistant_message["tool_calls"] = tool_calls_list  # type: ignore
 
             messages.append(assistant_message)
             _report_token_usage(callbacks, messages, model_limits.context_window)
@@ -414,8 +420,8 @@ async def run_agent(
                     {
                         "role": "tool",
                         "tool_call_id": tc["id"],
-                        "content": result,
-                    }
+                        "content": json.dumps(result, ensure_ascii=False),
+                    }  # type: ignore
                 )
                 _report_token_usage(callbacks, messages, model_limits.context_window)
                 token_timeline.append(

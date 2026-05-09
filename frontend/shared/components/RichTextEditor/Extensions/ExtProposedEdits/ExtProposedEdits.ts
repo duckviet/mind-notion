@@ -20,6 +20,7 @@ export type ProposedEdit = {
   action?: string;
   customPrompt?: string;
   createdAt: number;
+  createdBy?: string;
 };
 
 export type SetProposedEditInput = {
@@ -30,6 +31,7 @@ export type SetProposedEditInput = {
   action?: string;
   customPrompt?: string;
   createdAt?: number;
+  createdBy?: string;
 };
 
 const normalizeRange = (
@@ -122,6 +124,11 @@ const ExtProposedEdits = Node.create<Record<string, never>>({
           return value ? Number(value) : null;
         },
       },
+      createdBy: {
+        default: null,
+        parseHTML: (element: HTMLElement) =>
+          element.getAttribute("data-created-by"),
+      },
     };
   },
 
@@ -143,6 +150,7 @@ const ExtProposedEdits = Node.create<Record<string, never>>({
         "data-action": node.attrs.action,
         "data-custom-prompt": node.attrs.customPrompt,
         "data-created-at": node.attrs.createdAt,
+        "data-created-by": node.attrs.createdBy,
         class: "proposed-edit-block",
       }),
       ["p", { "data-original": "true" }, originalText],
@@ -198,6 +206,7 @@ const ExtProposedEdits = Node.create<Record<string, never>>({
           const proposedEditNode = nodeType.create({
             id: payload.id ?? `proposed-edit-${Date.now()}`,
             createdAt: payload.createdAt ?? Date.now(),
+            createdBy: payload?.createdBy || "",
             originalText: payload.originalText,
             proposedText: payload.proposedText,
             action: payload.action,

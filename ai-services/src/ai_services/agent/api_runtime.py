@@ -151,13 +151,15 @@ class RunRegistry:
 
 
 class StreamCallbacks(AgentCallbacks):
-    def __init__(self, request: AgentRunRequest, state: RunState):
+    def __init__(self, request: AgentRunRequest | AgentInlineEditRequest, state: RunState):
         self.request = request
         self.state = state
         self._tool_call_by_name: dict[str, str] = {}
+        
+        allowed_tools = getattr(request, "allowed_tools", [])
         self._consent_by_tool: dict[str, bool] = {
             tool.name: bool(tool.constraints.require_user_consent)
-            for tool in request.allowed_tools
+            for tool in allowed_tools
         }
 
     def _emit(self, event: Any) -> None:
@@ -281,7 +283,12 @@ async def run_agent_task(request: AgentRunRequest, state: RunState) -> None:
         )
 
         payload = usage_payload(callbacks.state.last_usage)
-        queue_event(state, RunCompletedEvent(run_id=request.run_id, usage=payload))
+        queue_event(
+            state,
+            RunCompletedEvent(
+                run_id=request.run_id, usage=payload, model_name=MODEL_NAME
+            ),
+        )
     except Exception as exc:  # noqa: BLE001
         queue_failed_event(
             state,
@@ -326,6 +333,53 @@ async def run_inline_edit_task(
         ) from exc
 
     return AgentInlineEditResponse(text=text)
+
+
+async def run_inline_edit_streaming_task(
+    request: AgentInlineEditRequest,
+    state: RunState,
+) -> None:
+    callbacks = StreamCallbacks(request=request, state=state)
+    client = AsyncOpenAI()
+    try:
+        await run_inline_edit(
+            action=request.action,
+            selected_text=request.selected_text,
+            custom_prompt=request.custom_prompt,
+            context_blocks=request.context_blocks,
+            client=client,
+            model_name=MODEL_NAME,
+            run_id=request.run_id,
+            actor={
+                "user_id": request.actor.user_id,
+                "tenant_id": request.actor.tenant_id,
+                "workspace_id": request.actor.workspace_id,
+            },
+            resource_context={
+                "note_id": request.resource_context.note_id,
+                "note_version": request.resource_context.note_version,
+            },
+            timeout_ms=request.policy.timeout_ms,
+            max_tokens=request.policy.max_tokens,
+            callbacks=callbacks,
+        )
+        payload = usage_payload(callbacks.state.last_usage)
+        queue_event(
+            state,
+            RunCompletedEvent(
+                run_id=request.run_id, usage=payload, model_name=MODEL_NAME
+            ),
+        )
+    except Exception as exc:  # noqa: BLE001
+        queue_failed_event(
+            state,
+            request.run_id,
+            code="INTERNAL",
+            message=str(exc),
+            retryable=False,
+        )
+    finally:
+        close_queue(state)
 
 
 async def event_generator(registry: RunRegistry, run_id: str, state: RunState) -> Any:

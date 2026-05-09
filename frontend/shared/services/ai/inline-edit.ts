@@ -5,7 +5,6 @@ import type {
 import { streamAiRun } from "@/shared/services/ai/stream-ai-run";
 import {
   inlineEditAi,
-  type ReqCreateAIRun,
   type ReqInlineEdit,
 } from "@/shared/services/generated/api";
 
@@ -29,36 +28,10 @@ type InlineEditResponse = {
   text: string;
 };
 
-type InlineEditTransportPayload = {
-  streamBody: ReqCreateAIRun;
-  inlineEditBody: ReqInlineEdit;
-};
-
-const buildInlineEditPrompt = (payload: ReqInlineEdit): string => {
-  const contextBlocks = payload.context_blocks ?? [];
-
-  return [
-    "You are an inline editor for a rich-text document.",
-    "Return only the edited text. Do not include markdown fences, labels, or explanations.",
-    "Do not call tools.",
-    "",
-    `Action: ${payload.action}`,
-    payload.custom_prompt?.trim()
-      ? `Custom instruction: ${payload.custom_prompt.trim()}`
-      : "Custom instruction: (none)",
-    "",
-    "Selected text:",
-    payload.selected_text,
-    "",
-    "Context blocks (JSON):",
-    JSON.stringify(contextBlocks),
-  ].join("\n");
-};
-
 const buildInlineEditPayload = (
   payload: InlineEditRequest,
-): InlineEditTransportPayload => {
-  const inlineEditBody: ReqInlineEdit = {
+): ReqInlineEdit => {
+  return {
     workspace_id: payload.workspaceId,
     note_id: payload.noteId ?? "",
     action: payload.action,
@@ -66,44 +39,42 @@ const buildInlineEditPayload = (
     custom_prompt: payload.customPrompt ?? "",
     context_blocks: payload.context?.contextBlocks ?? [],
   };
-
-  const streamBody: ReqCreateAIRun = {
-    workspace_id: inlineEditBody.workspace_id,
-    session_id:
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `inline-${Date.now()}`,
-    note_id: inlineEditBody.note_id ?? "",
-    message: {
-      role: "user",
-      content: buildInlineEditPrompt(inlineEditBody),
-    },
-  };
-
-  return {
-    streamBody,
-    inlineEditBody,
-  };
 };
 
 const requestInlineEditFallback = async (
   payload: ReqInlineEdit,
 ): Promise<string> => {
   const data = (await inlineEditAi(payload)) as InlineEditResponse;
-
   return (data.text || "").trim();
 };
 
+/**
+ * Request an inline edit from the AI service.
+ * Supports streaming if onDelta callback is provided.
+ * Prompt building logic now lives entirely on the backend for consistency.
+ */
 export async function requestInlineEdit(
   payload: InlineEditRequest,
   options?: RequestInlineEditOptions,
-): Promise<string> {
-  const transportPayload = buildInlineEditPayload(payload);
+): Promise<{
+  text: string;
+  model?: string;
+  usage?: {
+    total_tokens?: number;
+    prompt_tokens?: number;
+    completion_tokens?: number;
+  };
+}> {
+  const inlineEditBody = buildInlineEditPayload(payload);
   let streamedText = "";
   let failedMessage = "";
+  let modelName = "";
+  let usage: any = undefined;
 
   try {
-    await streamAiRun(transportPayload.streamBody, {
+    // We use the specialized streaming endpoint for inline edits
+    await streamAiRun(inlineEditBody, {
+      url: "/ai/inline-edit/runs",
       signal: options?.signal,
       onEvent: ({ event, payload: eventPayload }) => {
         const payloadObj =
@@ -120,6 +91,17 @@ export async function requestInlineEdit(
           return;
         }
 
+        if (event === "run.completed") {
+          const model = payloadObj.model_name || payloadObj.model;
+          if (typeof model === "string") {
+            modelName = model;
+          }
+          if (payloadObj.usage) {
+            usage = payloadObj.usage;
+          }
+          return;
+        }
+
         if (event === "run.failed") {
           const message = payloadObj.message;
           if (typeof message === "string" && message.trim().length > 0) {
@@ -131,7 +113,7 @@ export async function requestInlineEdit(
 
     const normalized = streamedText.trim();
     if (normalized.length > 0) {
-      return normalized;
+      return { text: normalized, model: modelName, usage };
     }
 
     if (failedMessage) {
@@ -143,7 +125,13 @@ export async function requestInlineEdit(
     if (aborted) {
       throw error;
     }
+    console.error(
+      "Streaming inline edit failed, falling back to non-streamed:",
+      error,
+    );
   }
 
-  return requestInlineEditFallback(transportPayload.inlineEditBody);
+  // Fallback to non-streaming endpoint
+  const text = await requestInlineEditFallback(inlineEditBody);
+  return { text };
 }

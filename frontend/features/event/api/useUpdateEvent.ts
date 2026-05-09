@@ -4,6 +4,7 @@ import {
   type ReqUpdateEvent,
 } from "@/shared/services/generated/api";
 import { toast } from "sonner";
+import { invalidateEventCollections } from "@/shared/hooks/query-invalidations";
 
 type UpdateVars = { id: string; data: ReqUpdateEvent };
 
@@ -13,11 +14,9 @@ export const useUpdateEvent = () => {
   const mutation = useMutation({
     // backend uses string UUID; generated path expects number, cast to any to satisfy client typing
     mutationFn: ({ id, data }: UpdateVars) => updateEvent(id, data),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Event updated");
-      queryClient.invalidateQueries({ queryKey: ["/events"] });
-      queryClient.invalidateQueries({ queryKey: ["/events/list"] });
-      queryClient.invalidateQueries({ queryKey: ["/events/range"] });
+      await invalidateEventCollections(queryClient);
     },
     onError: (error: any) => {
       toast.error(error?.message || "Failed to update event");

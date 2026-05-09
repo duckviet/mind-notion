@@ -25,6 +25,7 @@ import {
   GoogleCalendarToolbar,
   useGoogleCalendarPush,
 } from "@/features/google-calendar";
+import { eventsKeys } from "@/shared/hooks/query-keys";
 
 type DayName = (typeof DAYS)[number];
 type WeekRange = {
@@ -172,7 +173,7 @@ const DayMode = ({ weekRange: externalWeekRange }: DayModeProps) => {
     if (queryKey) {
       await queryClient.invalidateQueries({ queryKey });
     } else {
-      await queryClient.invalidateQueries({ queryKey: ["/events/range"] });
+      await queryClient.invalidateQueries({ queryKey: eventsKeys.ranges() });
     }
     setDialogOpen(false);
   };

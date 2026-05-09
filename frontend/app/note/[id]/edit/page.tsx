@@ -1,14 +1,18 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCollabSession } from "@/features/note-editing/hooks/useCollabSession";
 import { useCollabProvider } from "@/features/note-editing/hooks/useCollabProvider";
 import { useNoteSnapshot } from "@/features/note-editing/hooks/useNoteSnapshot";
 import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { useUpdateNote } from "@/shared/services/generated/api";
+import { invalidateNotesAfterUpdate } from "@/shared/hooks/query-invalidations";
 import { NotePage } from "@/page/note/NotePage";
 
 export default function PublicNoteEditPage() {
+  const queryClient = useQueryClient();
   const params = useParams();
   const searchParams = useSearchParams();
   const noteId = params?.id as string;
@@ -23,6 +27,40 @@ export default function PublicNoteEditPage() {
   const note = data?.note;
   const collabToken = data?.token ?? "";
   const collabEnabled = Boolean(collabToken);
+
+  const [title, setTitle] = useState("");
+
+  // Sync title from server note
+  useEffect(() => {
+    if (note?.title && !title) {
+      setTitle(note.title);
+    }
+  }, [note?.title, title]);
+
+  const { mutate: updateNote } = useUpdateNote({
+    mutation: {
+      onSuccess: async () => {
+        await invalidateNotesAfterUpdate(queryClient, noteId);
+      },
+    },
+  });
+
+  // Debounce title update
+  useEffect(() => {
+    if (!noteId || !title.trim() || title === note?.title) return;
+
+    const timer = setTimeout(() => {
+      updateNote({
+        noteId,
+        data: {
+          id: noteId,
+          title,
+        },
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [title, noteId, note?.title, updateNote]);
 
   const editorRef = useRef<import("@tiptap/react").Editor | null>(null);
 
@@ -57,9 +95,13 @@ export default function PublicNoteEditPage() {
     [collabEnabled, markUserEdited, scheduleSnapshot],
   );
 
+  const handleTitleChange = useCallback((newTitle: string) => {
+    setTitle(newTitle);
+  }, []);
+
   return (
     <NotePage
-      note={note}
+      note={note ? { ...note, title } : note}
       isLoading={isLoading}
       error={error}
       isSynced={isSynced}
@@ -67,6 +109,7 @@ export default function PublicNoteEditPage() {
       collabEnabled={collabEnabled}
       showComments
       mode="edit"
+      onTitleChange={handleTitleChange}
       onContentUpdate={handleContentUpdate}
       onEditorReady={handleEditorReady}
       collaboration={

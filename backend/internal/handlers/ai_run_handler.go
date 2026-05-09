@@ -275,6 +275,89 @@ func (api *AIRunAPI) InlineEdit(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", raw)
 }
 
+func (api *AIRunAPI) InlineEditRun(c *gin.Context) {
+	var req inlineEditRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+		return
+	}
+
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	user := userVal.(*dbmodels.User)
+
+	trimmedNoteID := strings.TrimSpace(req.NoteID)
+	noteVersion := 0
+	if trimmedNoteID != "" {
+		note, err := api.noteService.GetNoteByID(c.Request.Context(), trimmedNoteID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "note not found"})
+			return
+		}
+		if note.UserID != user.ID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
+		noteVersion = note.Version
+	}
+
+	payload := map[string]interface{}{
+		"run_id":   uuid.NewString(),
+		"trace_id": c.GetString("trace_id"),
+		"actor": map[string]string{
+			"user_id":      user.ID,
+			"tenant_id":    "",
+			"workspace_id": req.WorkspaceID,
+		},
+		"action":         req.Action,
+		"selected_text":  req.SelectedText,
+		"custom_prompt":  req.CustomPrompt,
+		"context_blocks": req.ContextBlocks,
+		"resource_context": map[string]interface{}{
+			"note_id":      trimmedNoteID,
+			"note_version": noteVersion,
+		},
+		"policy": map[string]interface{}{
+			"timeout_ms": api.config.AI.RequestTimeoutMs,
+			"max_tokens": 20_000,
+		},
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to prepare request"})
+		return
+	}
+
+	aiURL := strings.TrimRight(api.config.AI.ServiceURL, "/") + "/internal/v1/agent/inline-edit/runs"
+	httpReq, err := http.NewRequestWithContext(c.Request.Context(), http.MethodPost, aiURL, bytes.NewReader(body))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create ai request"})
+		return
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Accept", "text/event-stream")
+	httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", api.config.AI.ServiceToken))
+
+	resp, err := api.streamHTTPClient.Do(httpReq)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"error": "failed to reach ai service"})
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		raw, _ := io.ReadAll(resp.Body)
+		c.JSON(http.StatusBadGateway, gin.H{"error": string(raw)})
+		return
+	}
+
+	api.proxySSE(c, resp.Body)
+}
+
 func (api *AIRunAPI) ProvideConsent(c *gin.Context) {
 	runID := c.Param("run_id")
 	if runID == "" {

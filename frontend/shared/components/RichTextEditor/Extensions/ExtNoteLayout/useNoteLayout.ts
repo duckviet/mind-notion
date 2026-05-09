@@ -1,26 +1,47 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Editor } from "@tiptap/core";
-import type { NoteLayout } from "./layouts";
-
-const STORAGE_KEY = (noteId: string) => `mn_layout_${noteId}`;
+import {
+  readStoredNoteLayout,
+  type NoteLayout,
+  writeStoredNoteLayout,
+} from "./layouts";
+import { NoteLayoutPluginKey } from "./NoteLayoutPlugin";
 
 export function useNoteLayout(editor: Editor | null, noteId: string) {
-  const [layout, setLayout] = useState<NoteLayout>(() => {
-    return (
-      (localStorage.getItem(STORAGE_KEY(noteId)) as NoteLayout) ?? "default"
-    );
-  });
+  const [layout, setLayout] = useState<NoteLayout>(() =>
+    readStoredNoteLayout(noteId),
+  );
+
+  useEffect(() => {
+    setLayout(readStoredNoteLayout(noteId));
+  }, [noteId]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const syncLayoutFromEditor = () => {
+      const currentLayout = NoteLayoutPluginKey.getState(editor.state);
+      if (currentLayout) {
+        setLayout(currentLayout);
+      }
+    };
+
+    syncLayoutFromEditor();
+    editor.on("transaction", syncLayoutFromEditor);
+
+    return () => {
+      editor.off("transaction", syncLayoutFromEditor);
+    };
+  }, [editor]);
 
   const changeLayout = useCallback(
     (next: NoteLayout) => {
       if (!editor) return;
       editor.commands.setLayout(next);
-      // The transaction above will fire the handler which calls setLayout.
-      // We only need to persist here — no direct setLayout to avoid double setState.
-      localStorage.setItem(STORAGE_KEY(noteId), next);
+      writeStoredNoteLayout(noteId, next);
     },
     [editor, noteId],
   );
 
-  return { layout, changeLayout };
+  return useMemo(() => ({ layout, changeLayout }), [layout, changeLayout]);
 }

@@ -67,9 +67,9 @@ const FolderCard = ({
                 {/* Main folder content - Thêm shadow để tách biệt với nền */}
                 <div className="bg-card border border-border border-solid rounded-2xl w-full h-full relative p-6 flex flex-col justify-between shadow-sm">
                   {/* Folder title */}
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-start gap-2 mb-2">
                     <FolderOpen className="w-5 h-5 text-text-primary" />
-                    <span className=" font-semibold text-text-primary">
+                    <span className="font-medium text-text-primary">
                       {name}
                     </span>
                   </div>

@@ -21,6 +21,7 @@ from ai_services.agent.api_runtime import (
     queue_event,
     run_agent_task,
     run_inline_edit_task,
+    run_inline_edit_streaming_task,
     stream_headers,
 )
 from ai_services.core.config import settings
@@ -73,6 +74,27 @@ async def create_inline_edit(
     if expected and authorization != expected:
         raise HTTPException(status_code=401, detail="invalid token")
     return await run_inline_edit_task(request)
+
+
+@router.post("/inline-edit/runs")
+async def create_inline_edit_run(
+    request: AgentInlineEditRequest,
+    authorization: str | None = Header(None),
+) -> StreamingResponse:
+    """Create a new streaming inline edit run."""
+    expected = settings.ai_internal_token
+    if expected and authorization != expected:
+        raise HTTPException(status_code=401, detail="invalid token")
+
+    state = await registry.create(request.run_id)
+    queue_event(state, RunStartedEvent(run_id=request.run_id))
+    asyncio.create_task(run_inline_edit_streaming_task(request, state))
+
+    return StreamingResponse(
+        event_generator(registry, request.run_id, state),
+        media_type="text/event-stream",
+        headers=stream_headers(),
+    )
 
 
 @router.patch("/runs/{run_id}/consent")

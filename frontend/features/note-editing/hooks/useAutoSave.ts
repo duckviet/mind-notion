@@ -2,11 +2,11 @@ import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
-  getGetNoteQueryKey,
   ReqUpdateNote,
   ResDetailNote,
   useUpdateNote,
 } from "@/shared/services/generated/api";
+import { invalidateNotesAfterUpdate } from "@/shared/hooks/query-invalidations";
 import { isEqual } from "lodash";
 
 type FormState = {
@@ -34,7 +34,6 @@ export function useAutoSave(
       }
     | undefined
   >(undefined);
-  const queryKey = getGetNoteQueryKey(noteId);
 
   // Initialize metadata once when component mounts or noteId changes
   useEffect(() => {
@@ -53,17 +52,19 @@ export function useAutoSave(
       mutation: {
         onMutate: async () => {
           setIsSaving(true);
+          const queryKey = ["/notes", noteId] as const;
           await queryClient.cancelQueries({ queryKey });
           const previous = queryClient.getQueryData<ResDetailNote>(queryKey);
           return { previous };
         },
         onError: (_err, _vars, context) => {
           if (context?.previous) {
-            queryClient.setQueryData(queryKey, context.previous);
+            queryClient.setQueryData(["/notes", noteId], context.previous);
           }
           toast.error("Failed to auto-save note");
         },
-        onSuccess: (serverNote, { data }) => {
+        onSuccess: async (serverNote, { data }) => {
+          const queryKey = ["/notes", noteId] as const;
           queryClient.setQueryData<ResDetailNote>(queryKey, (old) =>
             old
               ? {
@@ -81,6 +82,8 @@ export function useAutoSave(
             content: data.content ?? "",
             tags: data.tags ?? [],
           };
+
+          await invalidateNotesAfterUpdate(queryClient, noteId);
         },
         onSettled: () => {
           setIsSaving(false);
@@ -144,7 +147,7 @@ export function useAutoSave(
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [form, noteId, isSaving, syncContent, updateNoteMutation]);
+  }, [form, noteId, isSaving, syncContent, updateNoteMutation, queryClient]);
 
   return { updateNoteMutation, lastSavedRef };
 }

@@ -7,18 +7,19 @@ import {
 export type AiRunStreamEvent = StreamEvent;
 
 type StreamAiRunOptions = {
+  url?: string;
   signal?: AbortSignal;
   onEvent?: (event: AiRunStreamEvent) => void | Promise<void>;
 };
 
 export async function streamAiRun(
-  body: ReqCreateAIRun,
+  body: any,
   options?: StreamAiRunOptions,
 ): Promise<void> {
   let eventCount = 0;
 
   await streamInstance({
-    url: "/ai/runs",
+    url: options?.url ?? "/ai/runs",
     method: "POST",
     data: body,
     signal: options?.signal,

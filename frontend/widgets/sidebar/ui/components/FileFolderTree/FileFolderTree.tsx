@@ -41,11 +41,9 @@ function FileFolderTree({ pathname }: FileFolderTreeProps) {
     limit: 200,
     offset: 0,
   });
-
   const { notes, isLoading: isLoadingNotes } = useNotes({
     limit: 200,
     offset: 0,
-    query: "",
     folder_id: "",
   });
 

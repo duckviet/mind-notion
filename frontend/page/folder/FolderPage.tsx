@@ -25,7 +25,6 @@ import { useRouter } from "next/navigation";
 import { useDebounce } from "use-debounce";
 import {
   ReqUpdateNote,
-  updateFolder,
   updateNoteTOM,
   useListNotesTOM,
 } from "@/shared/services/generated/api";
@@ -110,7 +109,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     deleteFolder,
   } = useFolder(folderId);
 
-  const { folders, refetch } = useFolders({
+  const { folders, updateFolder } = useFolders({
     limit: 50,
     offset: 0,
     parent_id: folderId,
@@ -124,6 +123,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
     createNote,
     deleteNote,
     updateNote,
+    moveNoteToFolder,
     refetch: refetchNotes,
   } = useNotes({
     limit: 50,
@@ -225,15 +225,17 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
   const handleMoveToFolder = useCallback(
     async (id: string, folderId: string | null) => {
       try {
-        await updateFolder(id, {
-          parent_id: folderId || "",
+        await updateFolder({
+          id,
+          data: {
+            parent_id: folderId || "",
+          },
         });
-        refetch();
       } catch (error) {
         console.error("Failed to move folder:", error);
       }
     },
-    [refetch],
+    [updateFolder],
   );
 
   const isLoading = isFolderLoading || isNotesLoading;
@@ -274,7 +276,10 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
       // Remove from top of mind if it was there
       const activeNote = notes.filter((n) => n.id === activeId)[0];
       if (activeNote) {
-        handleUpdate(activeId, { ...activeNote, folder_id: targetFolderId });
+        void moveNoteToFolder({
+          id: activeId,
+          data: { ...activeNote, folder_id: targetFolderId },
+        });
       }
     }
   };
@@ -290,7 +295,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
 
       return (
         <div
-          className="opacity-80 w-full min-w-[300px]"
+          className="opacity-80 w-full min-w-75"
           style={{ rotate: "5deg" }}
         >
           <NoteCard match={{ ...note, score: 1.0 }} onUpdateNote={() => {}} />
@@ -308,12 +313,12 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
 
   if (folderError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+      <div className="flex flex-col items-center justify-center min-h-100 text-center">
         <h2 className="text-xl font-semibold text-text-primary mb-2">
           Folder not found
         </h2>
         <p className="text-text-secondary mb-4">
-          The folder you're looking for doesn't exist or has been deleted.
+          The folder you&apos;re looking for doesn&apos;t exist or has been deleted.
         </p>
         {/* <Link
           href="/"

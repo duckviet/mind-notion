@@ -1,22 +1,8 @@
-import {
-  FileText,
-  File,
-  BookOpen,
-  LayoutDashboard,
-  Presentation,
-} from "lucide-react";
 import { LAYOUTS, type NoteLayout } from "./layouts";
 import type { Editor } from "@tiptap/core";
 import { useNoteLayout } from "./useNoteLayout";
 import { cn } from "@/lib/utils";
-
-const ICONS: Record<NoteLayout, React.ReactNode> = {
-  default: <LayoutDashboard size={14} />,
-  a4: <FileText size={14} />,
-  a5: <BookOpen size={14} />,
-  letter: <File size={14} />,
-  presentation: <Presentation size={14} />,
-};
+import { NOTE_LAYOUT_ICONS } from "./layoutIcons";
 
 interface Props {
   editor: Editor;
@@ -41,7 +27,7 @@ export function NoteLayoutPicker({ editor, noteId }: Props) {
               : "bg-transparent border-transparent text-muted-foreground hover:bg-accent hover:text-accent-foreground",
           )}
         >
-          {ICONS[l.key]}
+          {NOTE_LAYOUT_ICONS[l.key]}
           <span>{l.label}</span>
         </button>
       ))}

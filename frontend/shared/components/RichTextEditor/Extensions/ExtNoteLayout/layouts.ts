@@ -5,6 +5,14 @@ export type NoteLayout =
   | "letter"
   | "presentation";
 
+export const NOTE_LAYOUT_VALUES: readonly NoteLayout[] = [
+  "default",
+  "a4",
+  "a5",
+  "letter",
+  "presentation",
+];
+
 export interface LayoutConfig {
   key: NoteLayout;
   label: string;
@@ -44,3 +52,34 @@ export const LAYOUTS: LayoutConfig[] = [
     description: "16:9 widescreen",
   },
 ];
+
+export function isNoteLayout(value: unknown): value is NoteLayout {
+  return (
+    typeof value === "string" &&
+    NOTE_LAYOUT_VALUES.includes(value as NoteLayout)
+  );
+}
+
+export function getNoteLayoutStorageKey(noteId: string): string {
+  return `mn_layout_${noteId}`;
+}
+
+export function readStoredNoteLayout(noteId?: string): NoteLayout {
+  if (!noteId || typeof window === "undefined") {
+    return "default";
+  }
+
+  const value = window.localStorage.getItem(getNoteLayoutStorageKey(noteId));
+  return isNoteLayout(value) ? value : "default";
+}
+
+export function writeStoredNoteLayout(
+  noteId: string,
+  layout: NoteLayout,
+): void {
+  if (!noteId || typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(getNoteLayoutStorageKey(noteId), layout);
+}

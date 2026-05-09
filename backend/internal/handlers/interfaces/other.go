@@ -9,6 +9,7 @@ import (
 type AIRunAPIHandler interface {
 	CreateRun(c *gin.Context)
 	InlineEdit(c *gin.Context)
+	InlineEditRun(c *gin.Context)
 	ProvideConsent(c *gin.Context)
 }
 

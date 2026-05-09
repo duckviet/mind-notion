@@ -72,7 +72,7 @@ class AgentRunRequest(BaseContract):
 
 class InlineEditPolicy(BaseContract):
     timeout_ms: int = Field(default=30_000, ge=1_000, le=60_000)
-    max_tokens: int = Field(default=1_024, ge=128, le=4_096)
+    max_tokens: int = Field(default=1_024, ge=128, le=32_768)
 
 
 class AgentInlineEditRequest(BaseContract):
@@ -134,6 +134,7 @@ class AwaitingConsentEvent(StreamEventBase):
 class RunCompletedEvent(StreamEventBase):
     type: Literal["run.completed"] = "run.completed"
     usage: dict[str, Any]
+    model_name: str | None = None
 
 
 class RunFailedEvent(StreamEventBase):

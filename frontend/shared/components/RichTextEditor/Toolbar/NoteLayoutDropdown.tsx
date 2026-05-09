@@ -5,22 +5,7 @@ import { Editor } from "@tiptap/react";
 import { cn } from "@/lib/utils";
 import { LAYOUTS } from "../Extensions/ExtNoteLayout/layouts";
 import { useNoteLayout } from "../Extensions/ExtNoteLayout/useNoteLayout";
-import {
-  FileText,
-  File,
-  BookOpen,
-  LayoutDashboard,
-  Presentation,
-} from "lucide-react";
-import type { NoteLayout } from "../Extensions/ExtNoteLayout/layouts";
-
-const ICONS: Record<NoteLayout, React.ReactNode> = {
-  default: <LayoutDashboard size={14} />,
-  a4: <FileText size={14} />,
-  a5: <BookOpen size={14} />,
-  letter: <File size={14} />,
-  presentation: <Presentation size={14} />,
-};
+import { NOTE_LAYOUT_ICONS } from "../Extensions/ExtNoteLayout/layoutIcons";
 
 interface NoteLayoutDropdownProps {
   editor: Editor;
@@ -91,7 +76,7 @@ export default function NoteLayoutDropdown({
                     )}
                   >
                     <span className="text-muted-foreground">
-                      {ICONS[l.key]}
+                      {NOTE_LAYOUT_ICONS[l.key]}
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-[13px] leading-tight">

@@ -35,6 +35,9 @@ export interface NotePageProps {
   // Mode: "view" (read-only) or "edit" (editable)
   mode?: "view" | "edit";
 
+  // Title management
+  onTitleChange?: (value: string) => void;
+
   // Editor callbacks
   onContentUpdate?: (content: string) => void;
   onEditorReady?: (editor: import("@tiptap/react").Editor) => void;
@@ -65,6 +68,7 @@ export const NotePage: React.FC<NotePageProps> = ({
   isSynced = true,
   isHydrated = true,
   mode = "view",
+  onTitleChange,
   onContentUpdate,
   onEditorReady,
   collaboration,
@@ -163,9 +167,19 @@ export const NotePage: React.FC<NotePageProps> = ({
           {/* Header */}
           <header className="mb-4 px-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-              <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 leading-tight">
-                {note.title}
-              </h1>
+              {isEditable ? (
+                <input
+                  value={note.title}
+                  onChange={(e) => onTitleChange?.(e.target.value)}
+                  placeholder="Your note title..."
+                  className="w-full text-3xl md:text-5xl font-bold bg-transparent outline-none text-text-primary leading-tight"
+                  maxLength={200}
+                />
+              ) : (
+                <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 leading-tight">
+                  {note.title}
+                </h1>
+              )}
               <div className="flex gap-2">
                 <Button
                   size="sm"

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpIcon, FileEdit } from "lucide-react";
 import { Textarea } from "../../../ui/textarea";
+import { useAuthStore } from "@/features/auth";
 
 type ProposedEditPopoverProps = {
   editor: Editor;
@@ -74,6 +75,7 @@ const ProposedEditPopover = ({
 
     const { from, to } = savedSelectionRef.current;
     const originalText = editor.state.doc.textBetween(from, to, "\n");
+    const user = useAuthStore.getState().user;
 
     editor.chain().focus().setTextSelection({ from, to }).run();
 
@@ -81,6 +83,7 @@ const ProposedEditPopover = ({
       range: { from, to },
       originalText,
       proposedText: proposedText.trim(),
+      createdBy: user?.username || "",
     });
 
     setProposedText("");

@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 from openai import AsyncOpenAI
+from openai.types.chat import ChatCompletionMessageParam
 
 from .run import MODEL_NAME
 from .runtime_context import reset_run_context, set_run_context
@@ -33,7 +34,7 @@ def _build_inline_messages(
     custom_prompt: str,
     context_blocks: list[dict[str, Any]],
     resource_context: dict[str, Any],
-) -> list[dict[str, str]]:
+) -> list[ChatCompletionMessageParam]:
     system_prompt = build_system_prompt(resource_context)
     action_hint = _ACTION_HINTS.get(action, "Rewrite the selected text helpfully.")
 
@@ -71,7 +72,8 @@ async def run_inline_edit(
     actor: dict[str, str] | None = None,
     resource_context: dict[str, Any] | None = None,
     timeout_ms: int = 10_000,
-    max_tokens: int = 1_024,
+    max_tokens: int = 20_000,
+    callbacks: Any | None = None,
 ) -> str:
     actor_context = actor or {}
     resource_context_data = resource_context or {}
@@ -93,6 +95,47 @@ async def run_inline_edit(
     )
 
     try:
+        if callbacks:
+            response_stream = await asyncio.wait_for(
+                client.chat.completions.create(
+                    model=model_name,
+                    messages=messages,
+                    max_completion_tokens=max_tokens,
+                    stream=True,
+                    stream_options={"include_usage": True},
+                ),
+                timeout=timeout_ms / 1000,
+            )
+
+            full_content = []
+            async for chunk in response_stream:
+                if not chunk.choices:
+                    if hasattr(chunk, "usage") and chunk.usage:
+                        from .contracts import TokenUsageInfo
+
+                        # We don't have context_window and other info here easily,
+                        # but we can report what we have.
+                        # Note: TokenUsageInfo expects more fields.
+                        # Let's see if we can adapt or if we should just pass raw.
+                        usage = chunk.usage
+                        callbacks.on_token_usage(
+                            TokenUsageInfo(
+                                input_tokens=usage.prompt_tokens,
+                                output_tokens=usage.completion_tokens,
+                                total_tokens=usage.total_tokens,
+                                context_window=0,  # Unknown here
+                                threshold=0,
+                                percentage=0,
+                            )
+                        )
+                    continue
+                delta = chunk.choices[0].delta.content
+                if delta:
+                    full_content.append(delta)
+                    callbacks.on_token(delta)
+
+            return "".join(full_content).strip()
+
         response = await asyncio.wait_for(
             client.chat.completions.create(
                 model=model_name,

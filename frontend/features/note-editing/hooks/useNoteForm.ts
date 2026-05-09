@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ResDetailNote } from "@/shared/services/generated/api";
+import { ResDetailNote, useUpdateNote } from "@/shared/services/generated/api";
+import { invalidateNotesAfterUpdate } from "@/shared/hooks/query-invalidations";
 
 type FormState = {
   title: string;
@@ -53,6 +55,38 @@ export function useNoteForm(isOpen: boolean, note: ResDetailNote | undefined) {
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
+
+  const queryClient = useQueryClient();
+  const { mutate: updateNote } = useUpdateNote({
+    mutation: {
+      onSuccess: async () => {
+        if (note?.id) {
+          await invalidateNotesAfterUpdate(queryClient, note.id);
+        }
+      },
+    },
+  });
+
+  // Debounce title update
+  useEffect(() => {
+    if (!note?.id || !title.trim() || title === note.title) return;
+
+    const timer = setTimeout(() => {
+      const errorMsg = validateTitle(title);
+      if (errorMsg) return;
+
+      updateNote({
+        noteId: note.id,
+        data: {
+          ...note,
+          title: title,
+          content: undefined, // Không update content ở đây để tránh race condition với collab/snapshot
+        },
+      });
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [title, note, updateNote]);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

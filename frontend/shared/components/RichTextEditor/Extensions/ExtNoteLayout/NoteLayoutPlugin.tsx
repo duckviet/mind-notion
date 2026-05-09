@@ -1,9 +1,18 @@
 import { Plugin, PluginKey } from "@tiptap/pm/state";
-import type { NoteLayout } from "./layouts";
+import { NOTE_LAYOUT_VALUES, type NoteLayout } from "./layouts";
 
 export const NoteLayoutPluginKey = new PluginKey<NoteLayout>("noteLayout");
 
 const LAYOUT_CLASS_PREFIX = "mn-layout-";
+const NOTE_LAYOUT_CLASSES = NOTE_LAYOUT_VALUES.filter(
+  (layout) => layout !== "default",
+).map((layout) => `${LAYOUT_CLASS_PREFIX}${layout}`);
+
+function clearLayoutClasses(element: HTMLElement): void {
+  for (const className of NOTE_LAYOUT_CLASSES) {
+    element.classList.remove(className);
+  }
+}
 
 export function createNoteLayoutPlugin(initialLayout: NoteLayout): Plugin {
   return new Plugin({
@@ -26,11 +35,7 @@ export function createNoteLayoutPlugin(initialLayout: NoteLayout): Plugin {
         lastAppliedLayout = layout;
 
         const el = editorView.dom as HTMLElement;
-        el.classList.forEach((cls) => {
-          if (cls.startsWith(LAYOUT_CLASS_PREFIX)) {
-            el.classList.remove(cls);
-          }
-        });
+        clearLayoutClasses(el);
         if (layout !== "default") {
           el.classList.add(`${LAYOUT_CLASS_PREFIX}${layout}`);
         }
@@ -46,11 +51,7 @@ export function createNoteLayoutPlugin(initialLayout: NoteLayout): Plugin {
         },
         destroy() {
           const el = editorView.dom as HTMLElement;
-          el.classList.forEach((cls) => {
-            if (cls.startsWith(LAYOUT_CLASS_PREFIX)) {
-              el.classList.remove(cls);
-            }
-          });
+          clearLayoutClasses(el);
         },
       };
     },

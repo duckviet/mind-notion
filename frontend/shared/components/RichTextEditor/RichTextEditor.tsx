@@ -45,7 +45,18 @@ interface TiptapProps {
     selectedText: string,
     customPrompt?: string,
     context?: AISelectionContext,
-  ) => Promise<string>;
+  ) => Promise<
+    | string
+    | {
+        text: string;
+        model?: string;
+        usage?: {
+          total_tokens?: number;
+          prompt_tokens?: number;
+          completion_tokens?: number;
+        };
+      }
+  >;
 }
 
 const Tiptap = ({

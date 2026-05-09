@@ -4,6 +4,7 @@ import React from "react";
 import { NodeViewProps, NodeViewWrapper } from "@tiptap/react";
 import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import dayjs from "dayjs";
 
 const ProposedEditNodeView: React.FC<NodeViewProps> = ({
   node,
@@ -13,6 +14,10 @@ const ProposedEditNodeView: React.FC<NodeViewProps> = ({
 }) => {
   const originalText = (node.attrs.originalText as string) || "";
   const proposedText = (node.attrs.proposedText as string) || "";
+  const createdAt = (node.attrs.createdAt as number) || 0;
+  const createdBy = (node.attrs.createdBy as string) || "";
+
+  const date = dayjs(createdAt).format("YYYY-MM-DD HH:mm");
 
   const resolvePos = () => {
     const position = typeof getPos === "function" ? getPos() : null;
@@ -43,6 +48,10 @@ const ProposedEditNodeView: React.FC<NodeViewProps> = ({
       )}
     >
       <div className="absolute right-2 -top-2 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-accent px-2 py-1 text-xs">
+          <span className="font-semibold">{createdBy}</span>
+          <span className="text-[10px] text-muted-foreground">{date}</span>
+        </div>
         <button
           type="button"
           onClick={handleReject}
@@ -63,14 +72,14 @@ const ProposedEditNodeView: React.FC<NodeViewProps> = ({
 
       <p
         data-original="true"
-        className="whitespace-pre-wrap break-words px-1  bg-rose-100/80   text-rose-900 dark:bg-rose-500/20 dark:text-rose-200"
+        className="whitespace-pre-wrap wrap-break-word px-1  bg-rose-100/80   text-rose-900 dark:bg-rose-500/20 dark:text-rose-200"
       >
         {originalText}
       </p>
 
       <p
         data-proposed="true"
-        className="mt-2 whitespace-pre-wrap break-words px-1  bg-emerald-100/80   text-emerald-900 dark:bg-emerald-500/20 dark:text-emerald-200"
+        className="mt-2 whitespace-pre-wrap wrap-break-word px-1  bg-emerald-100/80   text-emerald-900 dark:bg-emerald-500/20 dark:text-emerald-200"
       >
         {proposedText}
       </p>

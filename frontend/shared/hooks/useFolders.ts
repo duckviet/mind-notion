@@ -9,11 +9,14 @@ import {
   ReqCreateFolder,
   ReqUpdateFolder,
   ReqAddNote,
-  getListFoldersQueryKey,
-  getGetFolderQueryKey,
   ListFoldersParams,
 } from "@/shared/services/generated/api";
-import { useMemo } from "react";
+import {
+  invalidateFoldersAfterAddNote,
+  invalidateFoldersAfterCreate,
+  invalidateFoldersAfterDelete,
+  invalidateFoldersAfterUpdate,
+} from "./query-invalidations";
 
 export type ListFoldersParamsInput = {
   limit?: number;
@@ -24,12 +27,8 @@ export type ListFoldersParamsInput = {
 export function useFolders(
   params: ListFoldersParamsInput = { limit: 50, offset: 0 }
 ) {
-  const stableParams: ListFoldersParams = useMemo(
-    () => params,
-    [params.limit, params.offset, params.parent_id]
-  );
+  const stableParams: ListFoldersParams = params;
   const queryClient = useQueryClient();
-  const queryKey = getListFoldersQueryKey(stableParams);
   const foldersQuery = useGeneratedListFolders(stableParams, {
     query: {
       retry: false,
@@ -38,25 +37,24 @@ export function useFolders(
 
   const createMutation = useMutation({
     mutationFn: (data: ReqCreateFolder) => apiCreateFolder(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKey,
-      });
+    onSuccess: async () => {
+      await invalidateFoldersAfterCreate(queryClient);
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: ReqUpdateFolder }) =>
       await apiUpdateFolder(id, data),
-    onSuccess: () => {
-      // Invalidate all folder queries since parent change affects multiple lists
-      queryClient.invalidateQueries({ queryKey: ["listFolders"] });
+    onSuccess: async (_data, variables) => {
+      await invalidateFoldersAfterUpdate(queryClient, variables.id);
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiDeleteFolder(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKey }),
+    onSuccess: async (_data, variables) => {
+      await invalidateFoldersAfterDelete(queryClient, variables);
+    },
   });
 
   const addNoteMutation = useMutation({
@@ -67,7 +65,13 @@ export function useFolders(
       folderId: string;
       data: ReqAddNote;
     }) => await apiAddNoteToFolder(folderId, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKey }),
+    onSuccess: async (_data, variables) => {
+      await invalidateFoldersAfterAddNote(
+        queryClient,
+        variables.folderId  ,
+        variables.data.note_id,
+      );
+    },
   });
 
   const refetch = foldersQuery.refetch;
@@ -98,7 +102,6 @@ export function useFolders(
 
 export function useFolder(folderId: string) {
   const queryClient = useQueryClient();
-  const queryKey = getGetFolderQueryKey(folderId);
 
   const folderQuery = useGeneratedGetFolder(folderId, {
     query: {
@@ -110,18 +113,28 @@ export function useFolder(folderId: string) {
   const updateMutation = useMutation({
     mutationFn: async (data: ReqUpdateFolder) =>
       await apiUpdateFolder(folderId, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKey }),
+    onSuccess: async () => {
+      await invalidateFoldersAfterUpdate(queryClient, folderId);
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: () => apiDeleteFolder(folderId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKey }),
+    onSuccess: async () => {
+      await invalidateFoldersAfterDelete(queryClient, folderId);
+    },
   });
 
   const addNoteMutation = useMutation({
     mutationFn: async (data: ReqAddNote) =>
       await apiAddNoteToFolder(folderId, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKey }),
+    onSuccess: async (_data, variables) => {
+      await invalidateFoldersAfterAddNote(
+        queryClient,
+        folderId,
+        variables.note_id,
+      );
+    },
   });
 
   const refetch = folderQuery.refetch;

@@ -5,6 +5,7 @@ import type { AISelectionContext } from "../Extensions/ExtAI/types";
 import type { AIMenuState } from "../types";
 import { useAIMenu } from "./useAIMenu";
 import { requestInlineEdit } from "@/shared/services/ai/inline-edit";
+import { useAuthStore } from "@/features/auth";
 
 interface UseAIActionsProps {
   noteId?: string;
@@ -13,7 +14,18 @@ interface UseAIActionsProps {
     selectedText: string,
     customPrompt?: string,
     context?: AISelectionContext,
-  ) => Promise<string>;
+  ) => Promise<
+    | string
+    | {
+        text: string;
+        model?: string;
+        usage?: {
+          total_tokens?: number;
+          prompt_tokens?: number;
+          completion_tokens?: number;
+        };
+      }
+  >;
 }
 
 interface AIActionsReturn {
@@ -35,6 +47,7 @@ export function useAIActions({
   noteId,
   onAIAction,
 }: UseAIActionsProps): AIActionsReturn {
+  const user = useAuthStore.getState().user;
   const editorRef = useRef<Editor | null>(null);
   const editor = editorRef.current;
   // Stable setter — gọi mỗi render
@@ -95,7 +108,7 @@ export function useAIActions({
       setAIStreamingPreview("");
 
       try {
-        const result = onAIAction
+        const response = onAIAction
           ? await onAIAction(
               action,
               aiMenuState.selection,
@@ -118,12 +131,21 @@ export function useAIActions({
               },
             );
 
+        const proposedText =
+          typeof response === "string" ? response : response.text;
+        const modelName =
+          typeof response === "object" ? response.model : undefined;
+
+        const creator = user?.username || "You";
+        const modelInfo = modelName ? ` - ${modelName}` : " - using AI";
+
         editor.commands.setProposedEdit({
           range: aiMenuState.range,
           originalText: aiMenuState.selection,
-          proposedText: result,
+          proposedText,
           action,
           customPrompt,
+          createdBy: `${creator}${modelInfo}`,
         });
       } catch (error) {
         console.error("AI action failed:", error);

@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  getGetNoteQueryKey,
-  getListNotesQueryKey,
-  getListNotesTOMQueryKey,
   provideAiRunConsent,
   type ReqCreateAIRun,
 } from "@/shared/services/generated/api";
 import { streamAiRun } from "@/shared/services/ai/stream-ai-run";
+import {
+  invalidateNoteDetail,
+  invalidateNoteLists,
+  invalidateTopOfMindNotes,
+} from "@/shared/hooks/query-invalidations";
 
 export type ChatbotDroppedNote = {
   id: string;
@@ -208,8 +210,8 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
 
     const refreshNotesData = async () => {
       const invalidations: Promise<void>[] = [
-        queryClient.invalidateQueries({ queryKey: getListNotesQueryKey() }),
-        queryClient.invalidateQueries({ queryKey: getListNotesTOMQueryKey() }),
+        invalidateNoteLists(queryClient),
+        invalidateTopOfMindNotes(queryClient),
         queryClient.invalidateQueries({
           queryKey: selectedNoteId
             ? ["collab-session", selectedNoteId]
@@ -218,11 +220,7 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
       ];
 
       if (selectedNoteId) {
-        invalidations.push(
-          queryClient.invalidateQueries({
-            queryKey: getGetNoteQueryKey(selectedNoteId),
-          }),
-        );
+        invalidations.push(invalidateNoteDetail(queryClient, selectedNoteId));
       }
 
       await Promise.all(invalidations);

@@ -4,15 +4,17 @@ from __future__ import annotations
 
 from typing import Any
 
+from openai.types.chat import ChatCompletionMessageParam
+
 from .model_limits import DEFAULT_THRESHOLD, get_model_limits
 from .token_estimator import estimate_messages_tokens
 
 
 async def compact_conversation(
-    messages: list[dict[str, Any]],
+    messages: list[ChatCompletionMessageParam],
     client: Any,
     model: str,
-) -> list[dict[str, Any]]:
+) -> list[ChatCompletionMessageParam]:
     """Compact conversation history when over threshold."""
     model_limits = get_model_limits(model)
 
