@@ -1,5 +1,4 @@
-// Extension Configuration
-const CONFIG = {
+export const CONFIG = {
   // API Settings
   API_BASE_URL: "http://localhost:8080",
   API_ENDPOINTS: {
@@ -32,9 +31,4 @@ const CONFIG = {
   // Extension Info
   NAME: "Mind Notion",
   VERSION: "2.1",
-};
-
-// Freeze config to prevent modifications
-Object.freeze(CONFIG);
-Object.freeze(CONFIG.API_ENDPOINTS);
-Object.freeze(CONFIG.STORAGE_KEYS);
+} as const;

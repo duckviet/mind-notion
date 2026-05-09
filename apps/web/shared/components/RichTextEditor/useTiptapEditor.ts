@@ -18,7 +18,7 @@ export type { CollaborationConfig, UseTiptapEditorProps } from "./types";
 const NOOP = () => {};
 
 const EDITOR_CLASS = cn(
-  "tiptap ProseMirror h-full min-h-[150px] pr-4 focus:outline-none",
+  "tiptap ProseMirror h-full min-h-[150px] pr-4 focus:outline-none focus:ring-none",
 );
 const READONLY_CLASS = cn(
   EDITOR_CLASS,

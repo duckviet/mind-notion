@@ -35,7 +35,7 @@ const buildInlineEditPayload = (
     workspace_id: payload.workspaceId,
     note_id: payload.noteId ?? "",
     action: payload.action,
-    selected_text: payload.selectedText,
+    selected_text: payload.selectedText || " ",
     custom_prompt: payload.customPrompt ?? "",
     context_blocks: payload.context?.contextBlocks ?? [],
   };

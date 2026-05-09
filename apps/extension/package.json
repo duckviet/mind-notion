@@ -1,0 +1,31 @@
+{
+  "name": "extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mind-notion/editor": "workspace:*",
+    "@tiptap/core": "^3",
+    "@tiptap/react": "^3",
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta",
+    "@mind-notion/tsconfig": "workspace:*",
+    "@types/chrome": "^0.1.42",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.14",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vite": "^5"
+  }
+}

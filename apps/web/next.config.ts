@@ -8,6 +8,7 @@ const withBundleAnalyzerConfig = withBundleAnalyzer({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  transpilePackages: ["@mind-notion/editor", "@tiptap/core", "@tiptap/react", "@tiptap/pm"],
   turbopack: {
     root: path.join(process.cwd(), "../.."),
   },

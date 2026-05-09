@@ -4,7 +4,10 @@
     "baseUrl": ".",
     "preserveSymlinks": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@tiptap/*": ["./node_modules/@tiptap/*"],
+      "@chenglou/pretext": ["./node_modules/@chenglou/pretext"],
+      "katex": ["./node_modules/katex"]
     }
   },
   "include": [

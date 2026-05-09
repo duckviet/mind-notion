@@ -1,5 +1,3 @@
-import "katex/dist/katex.min.css";
-
 import Math, { migrateMathStrings } from "@tiptap/extension-mathematics";
 
 const ExtMathematics = Math.extend({

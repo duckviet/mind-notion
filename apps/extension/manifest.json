@@ -11,17 +11,18 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "css": ["content.css"],
+      "js": ["src/content/index.ts"],
+      "css": ["src/content/style.css"],
       "run_at": "document_end"
     }
   ],
   "action": {
-    "default_popup": "index.html",
+    "default_popup": "src/popup/index.html",
     "default_title": "Mind Notion - Save Selection"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/background/index.ts",
+    "type": "module"
   },
   "commands": {
     "_execute_action": {

@@ -3,7 +3,19 @@ export { useBubbleMenuVisibility } from "./hooks/useBubbleMenuVisibility";
 export { useEditorLifecycle } from "./hooks/useEditorLifecycle";
 export { useEditorMarkRange } from "./hooks/useEditorMarkRange";
 export { useEditorSync } from "./hooks/useEditorSync";
+export { useFloatingElement } from "./hooks/useFloatingElement";
+export { useIsMobile } from "./hooks/useMobile";
+export { useStableRef } from "./hooks/useStableRef";
+export { useTiptapEditor } from "./hooks/useTiptapEditor";
+export type { FloatingElementReturn } from "./hooks/useFloatingElement";
 export type { EditorSyncOptions } from "./hooks/useEditorSync";
+export { cn } from "./utils/cn";
+export { sanitizeHtml } from "./utils/sanitizeHtml";
+export {
+	isYDocEmpty,
+	isEditorContentEmpty,
+	hydrateYDocFromHtml,
+} from "./utils/collab-hydration";
 
 export { default as ExtHeading } from "./extensions/ExtHeading";
 export { default as ExtHighLight } from "./extensions/ExtHighLight";
@@ -13,6 +25,9 @@ export { default as ExtMathematics } from "./extensions/ExtMathematics";
 export { default as ExtTaskListKit } from "./extensions/ExtTaskList";
 export { default as ExtTableKit } from "./extensions/ExtTable";
 export { default as ExtAutoResize } from "./extensions/ExtAutoResize/ExtAutoResize";
+export { default as ExtLink } from "./extensions/ExtLink";
+export { default as ExtTableOfContents } from "./extensions/ExtTableOfContents";
+export { default as createCollaborationExtensions } from "./extensions/ExtCollaboration";
 export { migrateMathStrings } from "./extensions/ExtMathematics";
 
 export {

@@ -48,10 +48,8 @@ const ExtTableOfContents = Extension.create<
           const newValue = !this.storage.toc;
           this.storage.toc = newValue;
 
-          // Trigger re-render cho Tiptap
           editor.view.dispatch(editor.state.tr);
 
-          // Gọi callback để sync với React State/LocalStorage
           if (this.options.onToggle) {
             this.options.onToggle(newValue);
           }
