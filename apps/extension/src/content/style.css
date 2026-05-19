@@ -1,494 +1,147 @@
-/* Mind Notion Floating Popup Styles */
+@import "../core/style/base.css";
 
+/* ─────────────────────────────────────────────
+   FLOATING POPUP (content script specific)
+───────────────────────────────────────────── */
 #mind-notion-popup {
   all: initial;
-  * {
-    all: unset;
-  }
 }
 
-.mind-notion-floating {
+.mn-floating {
   position: fixed !important;
-  width: 380px !important;
-  cursor: grabbing !important;
-  background: rgb(255, 255, 255) !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 12px !important;
-  padding: 20px !important;
-  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  width: 360px !important;
+  background: var(--mn-bg) !important;
+  border: 1px solid var(--mn-border) !important;
+  border-radius: var(--mn-radius-lg) !important;
+  box-shadow: var(--mn-shadow-lg) !important;
   z-index: 2147483647 !important;
-  font-family: "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, sans-serif !important;
+  font-family: var(--mn-font) !important;
+  overflow: hidden !important;
+  user-select: none;
 }
 
-.mn-close-btn {
+/* Floating header */
+.mn-floating-header {
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  width: 32px !important;
-  height: 32px !important;
-  padding: 0 !important;
-  border: none !important;
-  border-radius: 6px !important;
-  cursor: pointer !important;
+  justify-content: space-between !important;
+  padding: 12px 14px !important;
+  border-bottom: 1px solid var(--mn-border) !important;
+  cursor: grab !important;
+  background: var(--mn-surface) !important;
 }
 
-.mn-close-btn svg {
-  width: 18px !important;
-  height: 18px !important;
-  stroke: white !important;
-  fill: none !important;
+.mn-floating-header:active {
+  cursor: grabbing !important;
 }
 
-.mn-popup-body {
+.mn-floating-title {
   display: flex !important;
-  flex-direction: column !important;
-}
-
-.mn-popup-body::-webkit-scrollbar {
-  width: 6px !important;
-}
-
-.mn-popup-body::-webkit-scrollbar-thumb {
-  border-radius: 3px !important;
-}
-
-/* Auth View */
-.mn-auth-view {
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.mn-auth-header {
-  text-align: center !important;
-}
-
-.mn-auth-header h2 {
-  font-size: 20px !important;
+  align-items: center !important;
+  gap: 7px !important;
+  font-size: 13px !important;
   font-weight: 600 !important;
-  color: #0f172a !important;
-  margin-bottom: 4px !important;
-  display: block !important;
+  color: var(--mn-text-primary) !important;
   letter-spacing: -0.02em !important;
 }
 
-.mn-auth-header p {
-  font-size: 14px !important;
-  color: #475569 !important;
-  display: block !important;
+.mn-floating-title svg {
+  color: var(--mn-blue) !important;
 }
 
-/* Form */
-.mn-auth-form {
-  position: relative;
+.mn-floating-actions {
   display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-  background-color: transparent !important;
+  align-items: center !important;
+  gap: 4px !important;
 }
 
-.mn-form-group {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 6px !important;
-}
-
-.mn-form-group label {
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  color: #475569 !important;
-  display: block !important;
-}
-
-.mn-form-group input,
-.mn-form-group textarea {
-  width: 100% !important;
-  padding: 10px 12px !important;
-  font-size: 14px !important;
-  font-family: inherit !important;
-  color: #1e293b !important;
-  background: white !important;
-  border: 1px solid #cbd5e1 !important;
-  border-radius: 8px !important;
-  outline: none !important;
-  transition: all 0.2s !important;
-  box-sizing: border-box !important;
-  display: block !important;
-}
-
-.mn-form-group input:hover,
-.mn-form-group textarea:hover {
-  border-color: #93c5fd !important;
-}
-
-.mn-form-group input:focus,
-.mn-form-group textarea:focus {
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
-}
-
-.mn-form-group textarea {
-  resize: vertical !important;
-  min-height: 120px !important;
-  line-height: 1.6 !important;
-}
-
-/* Character Count */
-.mn-char-count {
-  text-align: right !important;
-  font-size: 12px !important;
-  color: #94a3b8 !important;
-}
-
-/* Buttons */
-.mn-btn {
+/* Icon buttons in header */
+.mn-icon-btn {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 8px !important;
-  width: 100% !important;
-  padding: 12px !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  font-family: inherit !important;
-  border: none !important;
-  border-radius: 8px !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
-  box-sizing: border-box !important;
-}
-
-.mn-btn-primary {
-  color: white !important;
-  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25) !important;
-}
-
-.mn-btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px) scale(1.01) !important;
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35) !important;
-}
-
-.mn-btn-primary:disabled {
-  opacity: 0.6 !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-}
-
-.mn-btn svg {
-  width: 18px !important;
-  height: 18px !important;
-  stroke: currentColor !important;
-  fill: none !important;
-}
-
-/* Auth Footer */
-.mn-auth-footer {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-  padding-top: 14px !important;
-  border-top: 1px solid rgba(148, 163, 184, 0.2) !important;
-  font-size: 13px !important;
-  color: #475569 !important;
-}
-
-.mn-link-btn {
-  padding: 0 !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  font-family: inherit !important;
-  color: #2563eb !important;
-  background: none !important;
-  border: none !important;
-  cursor: pointer !important;
-  transition: color 0.2s !important;
-  text-decoration: underline !important;
-}
-
-.mn-link-btn:hover {
-  color: #1d4ed8 !important;
-}
-
-/* User Info */
-.mn-user-info {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  padding: 14px !important;
-  background: white !important;
-  border: 1px solid rgba(148, 163, 184, 0.2) !important;
-  border-radius: 12px !important;
-  margin-bottom: 12px !important;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.06),
-    0 0 0 1px rgba(148, 163, 184, 0.1) !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.mn-user-info:hover {
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1) !important;
-}
-
-.mn-user-avatar {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 42px !important;
-  height: 42px !important;
-  background: linear-gradient(135deg, #dbeafe, #93c5fd) !important;
-  border-radius: 50% !important;
-  flex-shrink: 0 !important;
-}
-
-.mn-user-avatar svg {
-  width: 20px !important;
-  height: 20px !important;
-  stroke: #2563eb !important;
-  fill: none !important;
-}
-
-.mn-user-details {
-  display: flex !important;
-  flex-direction: column !important;
-  min-width: 0 !important;
-  flex: 1 !important;
-}
-
-.mn-user-name {
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  color: #0f172a !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  display: block !important;
-  letter-spacing: -0.01em !important;
-}
-
-.mn-user-email {
-  font-size: 12px !important;
-  color: #94a3b8 !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  display: block !important;
-}
-
-.mn-logout-btn {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 32px !important;
-  height: 32px !important;
+  width: 28px !important;
+  height: 28px !important;
   padding: 0 !important;
   background: transparent !important;
-  border: none !important;
-  border-radius: 6px !important;
-  color: #64748b !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--mn-radius-sm) !important;
   cursor: pointer !important;
-  transition: all 0.2s !important;
-  flex-shrink: 0 !important;
+  color: var(--mn-text-secondary) !important;
+  transition: all var(--mn-transition) !important;
 }
 
-.mn-logout-btn:hover {
-  background: #fee2e2 !important;
-  color: #ef4444 !important;
+.mn-icon-btn:hover {
+  background: var(--mn-border) !important;
+  color: var(--mn-text-primary) !important;
 }
 
-.mn-logout-btn svg {
-  width: 18px !important;
-  height: 18px !important;
-  stroke: currentColor !important;
-  fill: none !important;
+.mn-icon-btn--close:hover {
+  background: var(--mn-red-bg) !important;
+  color: var(--mn-red) !important;
 }
-/* Close Button (Absolute) */
-.mn-app-close-btn {
-  position: absolute !important;
-  top: 0 !important;
-  right: 0 !important;
+
+/* User strip in floating */
+.mn-floating-user {
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  width: 32px !important;
-  height: 32px !important;
-  padding: 0 !important;
-  cursor: pointer !important;
-  transition: all 0.2s !important;
-  font-family: inherit !important;
-  z-index: 10 !important;
+  gap: 10px !important;
+  padding: 10px 14px !important;
+  border-bottom: 1px solid var(--mn-border) !important;
+  user-select: none;
+  cursor: default !important;
 }
 
-.mn-app-close-btn:hover {
-  transform: scale(1.05) !important;
+/* Floating editor body */
+.mn-floating-body {
+  user-select: text !important;
+  cursor: auto !important;
 }
 
-.mn-app-close-btn svg {
-  width: 18px !important;
-  height: 18px !important;
-  stroke: #475569 !important;
-  fill: none !important;
+/* ─────────────────────────────────────────────
+   PiP WINDOW SHELL
+   These classes render inside the PiP window.
+──────────────────────────────────────────────── */
+.mn-pip-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: var(--mn-font);
+  background: var(--mn-bg);
+  color: var(--mn-text-primary);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* App View - Note Form Container */
-.mn-note-form-container {
-  position: relative !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-  overflow: hidden !important;
-  margin-bottom: 12px !important;
-  min-height: 200px !important;
+.mn-pip-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--mn-border);
+  background: var(--mn-surface);
+  flex-shrink: 0;
 }
 
-/* Note Title Input */
-.mn-note-title {
-  all: unset !important;
-  display: block !important;
-  width: 100% !important;
-  font-size: 18px !important;
-  font-weight: 500 !important;
-  line-height: 1.4 !important;
-  color: #0f172a !important;
-  background: white !important;
-  box-sizing: border-box !important;
-  font-family: inherit !important;
-  transition: border-color 0.2s !important;
+.mn-pip-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mn-text-primary);
+  letter-spacing: -0.02em;
 }
 
-.mn-note-title:focus {
-  outline: none !important;
+/* Editor fills remaining height */
+.mn-pip-shell .mn-core {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.mn-note-title::placeholder {
-  color: #cbd5e1 !important;
+.mn-pip-shell .mn-editor-wrap {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
-/* Note Content Textarea */
-.mn-note-content {
-  all: unset !important;
-  display: block !important;
-
-  /* 1. Quan trọng nhất: Phải có width 100% để xác định biên giới giới hạn */
-  width: 100% !important;
-
-  /* 2. Đảm bảo xử lý khoảng trắng và xuống dòng đúng cách */
-  white-space: pre-wrap !important;
-
-  /* 3. Ép xuống dòng ngay cả khi gặp từ quá dài (như link URL) */
-  overflow-wrap: break-word !important;
-  word-break: break-word !important;
-
-  /* Giữ lại các style cũ của bạn */
-  font-size: 14px !important;
-  line-height: 1.6 !important;
-  color: #1e293b !important;
-  background: white !important;
-  box-sizing: border-box !important;
-  font-family: "SF Pro Display", "Inter", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, sans-serif !important;
-  resize: none !important;
-  flex: 1 !important;
-  min-height: 120px !important;
-  max-height: 800px !important;
-  overflow-y: auto !important;
-  transition: background 0.2s !important;
-}
-.mn-note-content:focus {
-  outline: none !important;
-}
-
-.mn-note-content::placeholder {
-  color: #a0aec0 !important;
-}
-
-.mn-note-content::-webkit-scrollbar {
-  width: 6px !important;
-}
-
-.mn-note-content::-webkit-scrollbar-track {
-  background: transparent !important;
-}
-
-.mn-note-content::-webkit-scrollbar-thumb {
-  background: #cbd5e1 !important;
-  border-radius: 3px !important;
-}
-
-/* Character Count */
-.mn-char-count {
-  position: absolute;
-  bottom: 5px !important;
-  right: 10px !important;
-  font-size: 12px !important;
-  box-sizing: border-box !important;
-}
-
-/* Save Hint */
-.mn-save-hint {
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  background: #ef4444 !important;
-  color: white !important;
-  padding: 8px 16px !important;
-  border-bottom-right-radius: 12px !important;
-  border-bottom-left-radius: 12px !important;
-
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  text-align: center !important;
-  box-sizing: border-box !important;
-  animation: slideUp 0.2s ease-out !important;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0 !important;
-    transform: translateY(4px) !important;
-  }
-  to {
-    opacity: 1 !important;
-    transform: translateY(0) !important;
-  }
-}
-
-.mn-message-show {
-  opacity: 1 !important;
-  transform: translateY(0) !important;
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  padding: 8px 16px !important;
-  border-bottom-right-radius: 12px !important;
-  border-bottom-left-radius: 12px !important;
-
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  text-align: center !important;
-  box-sizing: border-box !important;
-  animation: slideUp 0.2s ease-out !important;
-}
-
-.mn-message-success {
-  background: #d1fae5 !important;
-  color: #10b981 !important;
-}
-
-.mn-message-warning {
-  background: #fef3c7 !important;
-  color: #f59e0b !important;
-}
-
-.mn-message-error {
-  background: #fee2e2 !important;
-  color: #ef4444 !important;
-}
-
-/* Loading State */
-.mn-btn-loading {
-  pointer-events: none !important;
-  opacity: 0.7 !important;
+.mn-pip-shell .mn-btn-save {
+  flex-shrink: 0;
 }

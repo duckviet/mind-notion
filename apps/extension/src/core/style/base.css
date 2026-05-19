@@ -1,0 +1,298 @@
+/* ─────────────────────────────────────────────
+   Mind Notion — Design System (Base)
+   Font: DM Sans (headings) + DM Mono (counts)
+   Theme: Clean white, slate accents, blue primary
+───────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+/* ── Variables ── */
+:root {
+  --mn-font: 'DM Sans', -apple-system, sans-serif;
+  --mn-font-mono: 'DM Mono', monospace;
+
+  --mn-bg: #ffffff;
+  --mn-surface: #f8fafc;
+  --mn-border: #e2e8f0;
+  --mn-border-focus: #3b82f6;
+
+  --mn-text-primary: #0f172a;
+  --mn-text-secondary: #64748b;
+  --mn-text-muted: #94a3b8;
+  --mn-text-placeholder: #c8d4e0;
+
+  --mn-blue: #2563eb;
+  --mn-blue-hover: #1d4ed8;
+  --mn-blue-light: #eff6ff;
+  --mn-blue-ring: rgba(37, 99, 235, 0.15);
+
+  --mn-green: #10b981;
+  --mn-green-bg: #ecfdf5;
+  --mn-amber: #f59e0b;
+  --mn-amber-bg: #fffbeb;
+  --mn-red: #ef4444;
+  --mn-red-bg: #fef2f2;
+
+  --mn-radius: 10px;
+  --mn-radius-sm: 6px;
+  --mn-radius-lg: 14px;
+  --mn-shadow: 0 4px 24px rgba(15, 23, 42, 0.08), 0 1px 4px rgba(15, 23, 42, 0.04);
+  --mn-shadow-lg: 0 8px 40px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
+
+  --mn-transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─────────────────────────────────────────────
+   SHARED CLASSES
+───────────────────────────────────────────── */
+
+/* Avatar */
+.mn-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: var(--mn-blue);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: -0.01em;
+}
+
+/* User Meta */
+.mn-user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mn-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mn-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.mn-user-email {
+  font-size: 11px;
+  color: var(--mn-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--mn-font-mono);
+}
+
+/* Editor Core */
+.mn-core {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mn-core-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--mn-border);
+}
+
+.mn-char-count {
+  font-size: 11px;
+  font-family: var(--mn-font-mono);
+  color: var(--mn-text-muted);
+  letter-spacing: -0.01em;
+}
+
+.mn-pip-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--mn-font);
+  color: var(--mn-text-secondary);
+  background: transparent;
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-sm);
+  cursor: pointer;
+  transition: all var(--mn-transition);
+}
+
+.mn-pip-btn:hover {
+  color: var(--mn-blue);
+  border-color: var(--mn-blue);
+  background: var(--mn-blue-light);
+}
+
+.mn-editor-wrap {
+  padding: 12px 16px;
+  min-height: 140px;
+}
+
+.mn-editor {
+  font-family: var(--mn-font);
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--mn-text-primary);
+  outline: none;
+  min-height: 120px;
+}
+
+.mn-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: var(--mn-text-placeholder);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* Status Bar */
+.mn-status {
+  margin: 0 16px 12px;
+  padding: 8px 12px;
+  border-radius: var(--mn-radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.mn-status-success { background: var(--mn-green-bg); color: var(--mn-green); }
+.mn-status-warning { background: var(--mn-amber-bg); color: var(--mn-amber); }
+.mn-status-error   { background: var(--mn-red-bg);   color: var(--mn-red);   }
+
+/* Buttons */
+.mn-btn-save {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 16px 16px;
+  padding: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--mn-font);
+  color: #fff;
+  background: var(--mn-blue);
+  border: none;
+  border-radius: var(--mn-radius);
+  cursor: pointer;
+  transition: all var(--mn-transition);
+  letter-spacing: -0.01em;
+}
+
+.mn-btn-save:hover:not(:disabled) {
+  background: var(--mn-blue-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--mn-blue-ring);
+}
+
+.mn-btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Auth View */
+.mn-auth-view {
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mn-auth-header {
+  text-align: center;
+}
+
+.mn-auth-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--mn-text-primary);
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.mn-auth-header p {
+  font-size: 13px;
+  color: var(--mn-text-secondary);
+  margin: 0;
+}
+
+.mn-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mn-form-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mn-text-secondary);
+}
+
+.mn-form-group input {
+  padding: 9px 12px;
+  font-size: 14px;
+  font-family: var(--mn-font);
+  color: var(--mn-text-primary);
+  background: var(--mn-bg);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-sm);
+  outline: none;
+  transition: all var(--mn-transition);
+  box-sizing: border-box;
+}
+
+.mn-form-group input:focus {
+  border-color: var(--mn-blue);
+  box-shadow: 0 0 0 3px var(--mn-blue-ring);
+}
+
+.mn-auth-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--mn-border);
+  font-size: 12px;
+  color: var(--mn-text-secondary);
+}
+
+.mn-link-btn {
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--mn-font);
+  color: var(--mn-blue);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Animations */
+@keyframes mn-spin {
+  to { transform: rotate(360deg); }
+}
+.mn-spin {
+  animation: mn-spin 0.7s linear infinite;
+}
+
+@keyframes mn-slide-up {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.mn-animate-slide-up {
+  animation: mn-slide-up 0.18s ease-out;
+}

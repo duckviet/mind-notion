@@ -1,6 +1,7 @@
-import { NodeSelection, type Selection } from "@tiptap/pm/state"
 import type { JSONContent, Editor } from "@tiptap/react"
 import { isTextSelection, isNodeSelection, posToDOMRect } from "@tiptap/react"
+
+type EditorSelection = Editor["state"]["selection"]
 
 // TipTap Collaboration
 export const TIPTAP_COLLAB_DOC_PREFIX =
@@ -42,7 +43,7 @@ export const getNodeDisplayName = (editor: Editor | null): string => {
 
   const { selection } = editor.state
 
-  if (selection instanceof NodeSelection) {
+  if (isNodeSelection(selection)) {
     const nodeType = selection.node.type.name
     return NODE_TYPE_LABELS[nodeType] || nodeType.toLowerCase()
   }
@@ -88,7 +89,7 @@ export function getElementOverflowPosition(
  */
 export const isSelectionValid = (
   editor: Editor | null,
-  selection?: Selection,
+  selection?: EditorSelection,
   excludedNodeTypes: string[] = ["imageUpload", "horizontalRule"]
 ): boolean => {
   if (!editor) return false

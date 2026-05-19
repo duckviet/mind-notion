@@ -29,15 +29,26 @@ export default function FocusEditModal({
 }: FocusEditModalProps) {
   const { user } = useAuthStore();
 
-  const { data: collabSession, isLoading: collabLoading } = useCollabSession(
+  const { data: collabSession, isLoading: collabLoading } =
+    useCollabSession(noteId, undefined, isOpen && !!noteId);
+  const shouldLoadNoteFallback =
+    isOpen && !!noteId && !collabLoading && !collabSession?.note;
+  const { data: fallbackNote, isLoading: fallbackNoteLoading } = useGetNote(
     noteId,
-    undefined,
-    isOpen && !!noteId,
+    {
+      query: {
+        enabled: shouldLoadNoteFallback,
+        retry: false,
+        refetchOnWindowFocus: false,
+      },
+    },
   );
-  const note = collabSession?.note;
+  const note = collabSession?.note ?? fallbackNote;
   const collabToken = collabSession?.token ?? "";
   const collabEnabled = Boolean(collabToken);
-  const collabPending = isOpen && collabLoading;
+  const collabPending =
+    isOpen &&
+    (collabLoading || (shouldLoadNoteFallback && fallbackNoteLoading));
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = usePersistentState(
     LocalStorageKeys.FOCUS_EDIT_SIDEBAR_COLLAPSED,
@@ -111,6 +122,8 @@ export default function FocusEditModal({
   const showEditor = !collabPending && (!collabEnabled || isHydrated);
 
   const handleSave = () => {
+    if (!note) return;
+
     const errorMsg = validateTitle();
     if (errorMsg) {
       titleRef.current?.focus();
@@ -118,7 +131,7 @@ export default function FocusEditModal({
     }
 
     const payload: ReqUpdateNote = {
-      ...note!,
+      ...note,
       title: form.title,
       content: collabEnabled ? undefined : form.content,
       tags: form.tags,

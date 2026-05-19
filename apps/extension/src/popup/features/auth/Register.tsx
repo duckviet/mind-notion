@@ -38,62 +38,62 @@ export function Register({ onRegister, onSwitch }: RegisterProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold">Create Account</h2>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium">Full Name</label>
+    <div className="mn-flex-col mn-gap-4">
+      <h2 className="mn-title">Create Account</h2>
+      <form onSubmit={handleSubmit} className="mn-flex-col mn-gap-3">
+        <div className="mn-flex-col mn-gap-1">
+          <label className="mn-label">Full Name</label>
           <input
             type="text"
-            className="border p-2 rounded"
+            className="mn-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium">Username</label>
+        <div className="mn-flex-col mn-gap-1">
+          <label className="mn-label">Username</label>
           <input
             type="text"
-            className="border p-2 rounded"
+            className="mn-input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium">Email</label>
+        <div className="mn-flex-col mn-gap-1">
+          <label className="mn-label">Email</label>
           <input
             type="email"
-            className="border p-2 rounded"
+            className="mn-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium">Password</label>
+        <div className="mn-flex-col mn-gap-1">
+          <label className="mn-label">Password</label>
           <input
             type="password"
-            className="border p-2 rounded"
+            className="mn-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
           />
         </div>
-        {error && <div className="text-red-500 text-sm">{error}</div>}
+        {error && <div className="mn-text-red mn-text-sm">{error}</div>}
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          className="mn-btn-primary"
         >
           {loading ? "Creating..." : "Create Account"}
         </button>
       </form>
-      <div className="text-sm text-center">
+      <div className="mn-text-sm mn-text-center">
         Already have an account?{" "}
-        <button onClick={onSwitch} className="text-blue-600 hover:underline">
+        <button onClick={onSwitch} className="mn-link">
           Sign In
         </button>
       </div>

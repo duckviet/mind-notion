@@ -1,7 +1,7 @@
 import type {
   AIAction,
   AISelectionContext,
-} from "@/shared/components/RichTextEditor/Extensions/ExtAI/types";
+} from "@mind-notion/editor";
 import { streamAiRun } from "@/shared/services/ai/stream-ai-run";
 import {
   inlineEditAi,

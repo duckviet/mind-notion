@@ -1,1 +1,1 @@
-export { useTiptapEditor } from "@mind-notion/editor";
+export { useCurrentTiptapEditor as useTiptapEditor } from "@mind-notion/editor";

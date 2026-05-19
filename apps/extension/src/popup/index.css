@@ -1,8 +1,105 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "../core/style/base.css";
 
+/* ─────────────────────────────────────────────
+   POPUP EXTENSION (chrome popup specific)
+───────────────────────────────────────────── */
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  padding: 0;
+  overflow: hidden;
+}
+
+.mn-container {
+  width: 360px;
+  min-height: 100px;
+  background: var(--mn-bg);
+  font-family: var(--mn-font);
+  color: var(--mn-text-primary);
+}
+
+.mn-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--mn-border);
+}
+
+.mn-logo {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--mn-text-primary);
+}
+
+/* ─────────────────────────────────────────────
+   NOTE EDITOR (popup view)
+───────────────────────────────────────────── */
+.mn-note-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* User card */
+.mn-user-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--mn-border);
+}
+
+/* PiP trigger (in user card) */
+.mn-pip-trigger {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: var(--mn-font);
+  color: var(--mn-text-secondary);
+  background: var(--mn-surface);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-sm);
+  cursor: pointer;
+  transition: all var(--mn-transition);
+  flex-shrink: 0;
+}
+
+.mn-pip-trigger:hover:not(:disabled) {
+  color: var(--mn-blue);
+  border-color: var(--mn-blue);
+  background: var(--mn-blue-light);
+}
+
+.mn-pip-trigger:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ─────────────────────────────────────────────
+   LOGOUT BUTTON
+───────────────────────────────────────────── */
+.mn-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--mn-font);
+  color: var(--mn-text-secondary);
+  background: transparent;
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-sm);
+  cursor: pointer;
+  transition: all var(--mn-transition);
+}
+
+.mn-logout-btn:hover {
+  background: var(--mn-red-bg);
+  color: var(--mn-red);
+  border-color: var(--mn-red);
 }

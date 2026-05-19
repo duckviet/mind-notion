@@ -6,7 +6,9 @@ export { useEditorSync } from "./hooks/useEditorSync";
 export { useFloatingElement } from "./hooks/useFloatingElement";
 export { useIsMobile } from "./hooks/useMobile";
 export { useStableRef } from "./hooks/useStableRef";
-export { useTiptapEditor } from "./hooks/useTiptapEditor";
+export { useCurrentTiptapEditor } from "./hooks/useTiptapEditor";
+export { useTiptapEditor } from "./hooks/useRichTextEditor";
+export type { CollaborationConfig, UseTiptapEditorProps } from "./types";
 export type { FloatingElementReturn } from "./hooks/useFloatingElement";
 export type { EditorSyncOptions } from "./hooks/useEditorSync";
 export { cn } from "./utils/cn";
@@ -29,6 +31,38 @@ export { default as ExtLink } from "./extensions/ExtLink";
 export { default as ExtTableOfContents } from "./extensions/ExtTableOfContents";
 export { default as createCollaborationExtensions } from "./extensions/ExtCollaboration";
 export { migrateMathStrings } from "./extensions/ExtMathematics";
+
+// New Exports
+export { default as ExtAlign } from "./extensions/ExtAlign";
+export { default as ExtImage } from "./extensions/ExtImage/ExtImage";
+export { default as ExtSplitView, SplitViewColumn } from "./extensions/ExtSplitView/ExtSplitView";
+export { default as ExtImageUpload } from "./extensions/ExtImageUpload";
+export { default as RichTextEditor } from "./components/RichTextEditor/RichTextEditor";
+export type { RichTextEditorProps } from "./components/RichTextEditor/RichTextEditor";
+export { TableOfContents } from "./components/TableOfContents/TableOfContents";
+export { default as ExtCustomCodeBlock } from "./extensions/ExtCodeBlock";
+export { default as ExtComment } from "./extensions/ExtComment/ExtComment";
+export { default as CommentHoverPopup } from "./extensions/ExtComment/CommentPopup";
+export { default as ExtAI } from "./extensions/ExtAI";
+export { AIMenu } from "./extensions/ExtAI";
+export type { AIAction, AISelectionContext } from "./extensions/ExtAI/types";
+export { default as ExtDrawing } from "./extensions/ExtDrawing";
+export { default as ExtProposedEdits } from "./extensions/ExtProposedEdits";
+export { ExtNoteLayout, NoteLayoutPicker, useNoteLayout } from "./extensions/ExtNoteLayout";
+export type { NoteLayout } from "./extensions/ExtNoteLayout";
+export { getHeaderToolbarConfigs, getBubbleToolbarConfigs, getSplashMenuToolbarConfigs } from "./components/Toolbar/ToolbarConfig";
+export { Toolbar } from "./components/Toolbar/Toolbar";
+export { default as ToolbarButton } from "./components/Toolbar/ToolbarButton";
+export * from "./components/Toolbar/types";
+export { default as ResizableMediaContainer } from "./extensions/ExtImage/ResizableMediaContainer";
+export type { ResizeDimensions, ResizeResult } from "./extensions/ExtImage/ResizableMediaContainer";
+
+// New Exports Phase 2
+export { PopupContainer, IconButton, Divider } from "./components/PopupContainer";
+export { default as SharedBubbleMenu } from "./components/BubbleMenu/SharedBubbleMenu";
+export { default as LinkHoverPopup } from "./components/BubbleMenu/LinkHoverPopup";
+export { useHoverPopup } from "./hooks/useHoverPopup";
+export { useMarkHoverPopup } from "./hooks/useMarkHoverPopup";
 
 export {
 	TIPTAP_COLLAB_DOC_PREFIX,

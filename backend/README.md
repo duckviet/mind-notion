@@ -1,4 +1,4 @@
-# Collaborative Editor Backend
+# Mind Notion Backend
 
 A modern Go backend application for collaborative editing with real-time features, built using Gin, GORM, and PostgreSQL.
 
@@ -68,7 +68,7 @@ go mod tidy
 make db-up
 
 # Or manually:
-docker-compose up -d postgres redis
+docker compose up -d postgres redis adminer
 ```
 
 #### Option B: Local PostgreSQL
@@ -93,40 +93,45 @@ Edit `configs/config.yaml` with your database credentials.
 ### 4. Run the Application
 
 ```bash
-# Development mode
-make run
+# Start PostgreSQL, Redis, and Adminer
+make db-up
 
-# Or directly:
-go run ./cmd/server
+# Run the Go API locally
+cp configs/config.local.yaml configs/config.yaml
+go run ./cmd/app
 
-# With hot reload (if using air):
-make dev
+# Or run the Docker development stack
+make dev-up
 ```
 
 The server will start on `http://localhost:8080`
 
+Local service ports:
+
+- API: `http://localhost:8080/api/v1`
+- PostgreSQL: `localhost:5433`
+- Redis: `localhost:6380`
+- Adminer: `http://localhost:8081`
+- AI service expected by local config: `http://localhost:8090`
+- Collab token secret in local config: `dev-collab-token-secret`
+
 ## 📋 Available Commands
 
 ```bash
-# Build and run
-make build          # Build the application
-make run            # Run the application
-make dev            # Run with hot reload
+# Run API locally
+go run ./cmd/app
 
 # Database
 make db-up          # Start database services
 make db-down        # Stop database services
-make migrate-up     # Run migrations (if using migrate tool)
-make migrate-down   # Rollback migrations
 
 # Development
-make test           # Run tests
-make fmt            # Format code
-make lint           # Lint code
-make clean          # Clean build artifacts
+make dev-up         # Start Docker dev stack: API, DB, Redis, Adminer, AI
+make dev-down       # Stop Docker dev stack
+make clean          # Remove Docker volumes and prune
 
-# Dependencies
-make deps           # Install dependencies
+# OpenAPI generation
+make openapi-generator-cli
 ```
 
 ## 🔧 Configuration
@@ -147,7 +152,7 @@ SERVER_MODE=debug
 
 # Database
 DATABASE_HOST=localhost
-DATABASE_PORT=5432
+DATABASE_PORT=5433
 DATABASE_USER=postgres
 DATABASE_PASSWORD=password
 DATABASE_NAME=collaborative_editor
@@ -159,9 +164,17 @@ JWT_EXPIRES_IN=3600
 
 # Redis
 REDIS_HOST=localhost
-REDIS_PORT=6379
+REDIS_PORT=6380
 REDIS_PASSWORD=
 REDIS_DB=0
+
+# AI service
+AI_SERVICE_URL=http://localhost:8090
+AI_SERVICE_TOKEN=dev-ai-service-token
+AI_REQUEST_TIMEOUT_MS=30000
+
+# Collab token generation
+COLLAB_TOKEN_SECRET=dev-collab-token-secret
 ```
 
 ## 🗄️ Database Schema
@@ -229,7 +242,7 @@ REDIS_DB=0
 
 ```bash
 # Run all tests
-make test
+go test ./...
 
 # Run tests with coverage
 go test -v -cover ./...
@@ -244,26 +257,20 @@ go test -v ./internal/repository/...
 
 ```bash
 # Start all services
-docker-compose up -d
+make dev-up
 
 # View logs
-make logs
+docker compose -f docker-compose.dev.yml logs -f
 
 # Stop services
-make db-down
+make dev-down
 ```
 
 ### Production
 
 ```bash
-# Build production image
-make build-prod
-
-# Run with Docker
-docker run -p 8080:8080 \
-  -e DATABASE_HOST=your-db-host \
-  -e DATABASE_PASSWORD=your-password \
-  collaborative-editor
+# Build/run production images according to your deployment target.
+# The checked-in Docker compose files are optimized for local development.
 ```
 
 ## 🔒 Security
@@ -287,7 +294,7 @@ docker run -p 8080:8080 \
 2. Create a feature branch
 3. Make your changes
 4. Add tests
-5. Run `make test` and `make lint`
+5. Run `go test ./...`
 6. Submit a pull request
 
 ## 📝 License
@@ -315,6 +322,6 @@ This project is licensed under the MIT License.
 
 ### Getting Help
 
-- Check the logs: `make logs`
-- Run with debug mode: `SERVER_MODE=debug make run`
+- Check Docker logs: `docker compose -f docker-compose.dev.yml logs -f`
+- Run with debug mode: `SERVER_MODE=debug go run ./cmd/app`
 - Open an issue on GitHub

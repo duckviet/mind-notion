@@ -5,19 +5,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --watch",
-    "build": "vite build",
+    "build": "vite build && cp -r dist /mnt/c/Users/HP/projects/mind-notion-ext/",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@chenglou/pretext": "^0.0.5",
     "@mind-notion/editor": "workspace:*",
     "@tiptap/core": "^3",
+    "@tiptap/extension-placeholder": "^3",
+    "@tiptap/pm": "^3",
     "@tiptap/react": "^3",
+    "@tiptap/starter-kit": "^3",
     "react": "^19",
     "react-dom": "^19"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0-beta",
     "@mind-notion/tsconfig": "workspace:*",
+    "@tailwindcss/vite": "^4.3.0",
     "@types/chrome": "^0.1.42",
     "@types/react": "^19",
     "@types/react-dom": "^19",

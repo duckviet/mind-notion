@@ -1,118 +1,140 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { createRoot, Root } from "react-dom/client";
 import { User } from "../../../core/types";
+import { NoteEditorCore } from "./NoteEditorCore";
+import {
+  preparePiPDocument,
+  PIP_WINDOW_WIDTH,
+  PIP_WINDOW_HEIGHT,
+} from "../../../core/utils/pipWindow";
+
+// Vite ?inline → returns CSS file as a plain string (no DOM injection).
+// We pass it manually to preparePiPDocument so the PiP window gets the
+// exact same styles without relying on document.styleSheets (which fails
+// in extension contexts due to CORS / bundler opacity).
+import pipStyles from "../../index.css?inline";
 
 interface NoteEditorProps {
   user: User;
 }
 
 export function NoteEditor({ user }: NoteEditorProps) {
-  const [selectedText, setSelectedText] = useState("");
   const [sourceUrl, setSourceUrl] = useState("");
   const [sourceTitle, setSourceTitle] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [initialContent, setInitialContent] = useState("");
+  const [isPiPOpen, setIsPiPOpen] = useState(false);
+  const pipRootRef = useRef<Root | null>(null);
+  const pipWindowRef = useRef<Window | null>(null);
 
   useEffect(() => {
-    loadSelectedText();
+    loadContext();
   }, []);
 
-  const loadSelectedText = async () => {
+  const loadContext = async () => {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       if (tab) {
-        setSourceUrl(tab.url || "");
-        setSourceTitle(tab.title || "");
+        setSourceUrl(tab.url ?? "");
+        setSourceTitle(tab.title ?? "");
       }
-
-      const response = await chrome.runtime.sendMessage({ action: "getSelectedText" });
-      if (response.success && response.text) {
-        setSelectedText(response.text.trim());
+      const res = await chrome.runtime.sendMessage({ action: "getSelectedText" });
+      if (res.success && res.text) {
+        setInitialContent(res.text.trim());
       }
-    } catch (error) {
-      console.error("Failed to load text:", error);
+    } catch (e) {
+      console.error("[Mind Notion] Failed to load context:", e);
     }
   };
 
-  const handleSave = async () => {
-    if (!selectedText) {
-      setMessage({ type: "warning", text: "No text selected to save" });
+  const handleOpenPiP = async () => {
+    if (!("documentPictureInPicture" in window)) {
+      alert("Your browser doesn't support Document Picture-in-Picture.");
       return;
     }
-
-    setLoading(true);
-    setMessage({ type: "", text: "" });
-
+    if (pipWindowRef.current && !pipWindowRef.current.closed) {
+      pipWindowRef.current.focus();
+      return;
+    }
     try {
-      const response = await chrome.runtime.sendMessage({
-        action: "saveSelection",
-        data: {
-          content: selectedText,
-          source_url: sourceUrl,
-          source_title: sourceTitle,
-        },
+      const pipWindow = await (window as any).documentPictureInPicture.requestWindow({
+        width: PIP_WINDOW_WIDTH,
+        height: PIP_WINDOW_HEIGHT,
       });
+      pipWindowRef.current = pipWindow;
 
-      if (response.success) {
-        setMessage({ type: "success", text: "Saved successfully! ✓" });
-      } else {
-        setMessage({ type: "error", text: response.error || "Save failed" });
-      }
-    } catch (error: any) {
-      setMessage({ type: "error", text: error.message || "Failed to save" });
-    } finally {
-      setLoading(false);
-      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+      // Pass the bundled CSS string — no copying from document.styleSheets
+      const mountEl = preparePiPDocument(pipWindow, pipStyles);
+
+      pipRootRef.current = createRoot(mountEl);
+      pipRootRef.current.render(
+        <div className="mn-pip-shell">
+          <div className="mn-pip-header">
+            <div className="mn-pip-logo">
+               Mind Notion
+            </div>
+          </div>
+          <NoteEditorCore
+            initialContent={initialContent}
+            sourceUrl={sourceUrl}
+            sourceTitle={sourceTitle}
+          />
+        </div>
+      );
+
+      setIsPiPOpen(true);
+      pipWindow.addEventListener(
+        "pagehide",
+        () => {
+          pipRootRef.current?.unmount();
+          pipRootRef.current = null;
+          pipWindowRef.current = null;
+          setIsPiPOpen(false);
+        },
+        { once: true }
+      );
+    } catch (err) {
+      console.error("[Mind Notion] PiP failed:", err);
     }
   };
 
+  const initials =
+    (user.name ?? user.username).charAt(0).toUpperCase();
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-          {user.name?.charAt(0) || user.username.charAt(0)}
+    <div className="mn-note-editor">
+      {/* User card */}
+      <div className="mn-user-card">
+        <div className="mn-avatar">{initials}</div>
+        <div className="mn-user-meta">
+          <span className="mn-user-name">{user.name ?? user.username}</span>
+          <span className="mn-user-email">{user.email}</span>
         </div>
-        <div>
-          <div className="font-semibold text-sm">{user.name || user.username}</div>
-          <div className="text-xs text-gray-500">{user.email}</div>
-        </div>
+        <button
+          className="mn-pip-trigger"
+          onClick={handleOpenPiP}
+          title={isPiPOpen ? "PiP is open" : "Open in Picture-in-Picture"}
+          disabled={isPiPOpen}
+        >
+          <PiPIcon />
+          {isPiPOpen ? "PiP active" : "PiP"}
+        </button>
       </div>
 
-      {!selectedText ? (
-        <div className="text-center p-6 border rounded border-dashed text-gray-500">
-          <p>Select text on any webpage to save</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <span className="font-medium text-sm">Selected Text</span>
-            <span className="text-xs text-gray-500">{selectedText.length} chars</span>
-          </div>
-          <div className="p-3 bg-gray-50 border rounded text-sm max-h-40 overflow-y-auto whitespace-pre-wrap">
-            {selectedText.length > 300 ? selectedText.substring(0, 300) + "..." : selectedText}
-          </div>
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="mt-2 bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:opacity-50 flex justify-center items-center gap-2"
-          >
-            {loading ? "Saving..." : "Save to Mind Notion"}
-          </button>
-        </div>
-      )}
-
-      {message.text && (
-        <div
-          className={`p-2 text-sm text-center rounded ${
-            message.type === "success"
-              ? "bg-green-100 text-green-700"
-              : message.type === "error"
-              ? "bg-red-100 text-red-700"
-              : "bg-yellow-100 text-yellow-700"
-          }`}
-        >
-          {message.text}
-        </div>
-      )}
+      {/* Editor */}
+      <NoteEditorCore
+        initialContent={initialContent}
+        sourceUrl={sourceUrl}
+        sourceTitle={sourceTitle}
+      />
     </div>
+  );
+}
+
+function PiPIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2" />
+      <rect x="13" y="9" width="7" height="5" rx="1" />
+    </svg>
   );
 }

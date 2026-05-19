@@ -1,6 +1,6 @@
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Placeholder } from "@tiptap/extensions/placeholder";
+import { Placeholder } from "@tiptap/extension-placeholder";
 import { useEditorSync } from "@/shared/hooks/useEditorSync";
 import { useEditorLifecycle } from "@/shared/hooks/useEditorLifecycle";
 

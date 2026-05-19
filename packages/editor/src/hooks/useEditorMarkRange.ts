@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import type { Editor } from "@tiptap/react";
+import type { Mark } from "@tiptap/pm/model";
 
 interface MarkRange {
   from: number;
@@ -24,7 +25,7 @@ export function useEditorMarkRange(editor: Editor, markName: string) {
           doc
             .resolve(from - 1)
             .marks()
-            .some((m) => m.type.name === markName)
+            .some((m: Mark) => m.type.name === markName)
         ) {
           from--;
         }
@@ -34,7 +35,7 @@ export function useEditorMarkRange(editor: Editor, markName: string) {
           doc
             .resolve(to)
             .marks()
-            .some((m) => m.type.name === markName)
+            .some((m: Mark) => m.type.name === markName)
         ) {
           to++;
         }

@@ -4,7 +4,7 @@ import * as React from "react"
 import type { Editor } from "@tiptap/react"
 import { useCurrentEditor, useEditorState } from "@tiptap/react"
 
-export function useTiptapEditor(providedEditor?: Editor | null): {
+export function useCurrentTiptapEditor(providedEditor?: Editor | null): {
   editor: Editor | null
   editorState?: Editor["state"]
   canCommand?: Editor["can"]

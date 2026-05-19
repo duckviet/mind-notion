@@ -36,15 +36,15 @@ import { NoteEditor } from "./features/note/NoteEditor";
   };
 
   if (isLoading) {
-    return <div className="p-4 text-center">Loading...</div>;
+    return <div className="mn-text-center" style={{ padding: "16px" }}>Loading...</div>;
   }
 
   return (
-    <div className="container min-w-[320px] p-4 flex flex-col gap-4">
-      <header className="header flex justify-between items-center pb-2 border-b">
-        <div className="logo font-bold">Mind Notion</div>
+    <div className="mn-container">
+      <header className="mn-header">
+        <div className="mn-logo">Mind Notion</div>
         {user && (
-          <button onClick={handleLogout} className="text-sm text-red-500 hover:text-red-700">
+          <button onClick={handleLogout} className="mn-logout-btn">
             Logout
           </button>
         )}

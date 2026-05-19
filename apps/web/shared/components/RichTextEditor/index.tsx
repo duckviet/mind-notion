@@ -1,2 +1,2 @@
 export { default as RichTextEditor } from "./RichTextEditor";
-export { TableOfContents } from "./TableOfContents";
+export { TableOfContents } from "@mind-notion/editor";

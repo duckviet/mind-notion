@@ -7,11 +7,13 @@ import Portal from "@/shared/components/PortalModal/PortalModal";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { cn } from "@/lib/utils";
-import ExtTableKit from "../../../shared/components/RichTextEditor/Extensions/ExtTable";
-import ExtMathematics from "../../../shared/components/RichTextEditor/Extensions/ExtMathematics";
-import ExtHeading from "../../../shared/components/RichTextEditor/Extensions/ExtHeading";
-import ExtCodeBlock from "../../../shared/components/RichTextEditor/Extensions/ExtCodeBlock";
-import ExtListKit from "../../../shared/components/RichTextEditor/Extensions/ExtListKit";
+import {
+  ExtTableKit,
+  ExtMathematics,
+  ExtHeading,
+  ExtCustomCodeBlock,
+  ExtListKit,
+} from "@mind-notion/editor";
 import { TemplateForm } from "./TemplateForm";
 import { TemplateList } from "./TemplateList";
 import { useTemplates } from "../hooks/useTemplates";
@@ -65,7 +67,7 @@ export function ManageTemplatesModal({
         heading: false,
       }),
       ...ExtListKit,
-      ExtCodeBlock,
+      ExtCustomCodeBlock,
       ExtHeading,
       ExtMathematics,
       ...ExtTableKit,
