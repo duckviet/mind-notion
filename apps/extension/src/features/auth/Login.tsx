@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User } from "../../../core/types";
+import { User } from "../../core/types";
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -28,49 +28,53 @@ export function Login({ onLogin, onSwitch }: LoginProps) {
       } else {
         setError(response.error || "Login failed");
       }
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Login failed";
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="mn-flex-col mn-gap-4">
-      <h2 className="mn-title">Welcome Back</h2>
-      <form onSubmit={handleSubmit} className="mn-flex-col mn-gap-3">
-        <div className="mn-flex-col mn-gap-1">
-          <label className="mn-label">Username</label>
+    <div className="mn-auth-view">
+      <div className="mn-auth-header">
+        <h2>Welcome Back</h2>
+        <p>Sign in to save notes to Mind Notion</p>
+      </div>
+      <form onSubmit={handleSubmit}>
+        <div className="mn-form-group">
+          <label htmlFor="mn-login-username">Username</label>
           <input
+            id="mn-login-username"
             type="text"
-            className="mn-input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>
-        <div className="mn-flex-col mn-gap-1">
-          <label className="mn-label">Password</label>
+        <div className="mn-form-group">
+          <label htmlFor="mn-login-password">Password</label>
           <input
+            id="mn-login-password"
             type="password"
-            className="mn-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
-        {error && <div className="mn-text-red mn-text-sm">{error}</div>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="mn-btn-primary"
-        >
-          {loading ? "Signing in..." : "Sign In"}
+        {error && (
+          <div className="mn-status mn-status-error" style={{ marginBottom: 12 }}>
+            {error}
+          </div>
+        )}
+        <button type="submit" className="mn-btn-save" disabled={loading} style={{ margin: 0 }}>
+          {loading ? "Signing in…" : "Sign In"}
         </button>
       </form>
-      <div className="mn-text-sm mn-text-center">
-        Don't have an account?{" "}
-        <button onClick={onSwitch} className="mn-link">
+      <div className="mn-auth-footer">
+        Don&apos;t have an account?{" "}
+        <button type="button" onClick={onSwitch} className="mn-link-btn">
           Sign Up
         </button>
       </div>

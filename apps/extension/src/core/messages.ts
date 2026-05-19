@@ -8,7 +8,6 @@ export type MessageAction =
   | "getUser"
   | "saveSelection"
   | "getSelectedText"
-  | "openPopup"
   | "togglePopup"
   | "closePopup";
 

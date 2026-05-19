@@ -33,9 +33,8 @@ export class DragHelper {
   }
 
   private dragStart(e: MouseEvent) {
-    // Only drag if clicking the main container or padding, not inputs
     const target = e.target as HTMLElement;
-    if (target.tagName.toLowerCase() === "input" || target.tagName.toLowerCase() === "textarea" || target.tagName.toLowerCase() === "button") {
+    if (!target.closest("[data-mn-drag-handle]")) {
       return;
     }
 

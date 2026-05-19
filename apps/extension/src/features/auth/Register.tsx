@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { User } from "../../../core/types";
+import { User } from "../../core/types";
 
 interface RegisterProps {
   onRegister: (user: User) => void;
@@ -30,70 +30,74 @@ export function Register({ onRegister, onSwitch }: RegisterProps) {
       } else {
         setError(response.error || "Registration failed");
       }
-    } catch (err: any) {
-      setError(err.message || "Registration failed");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Registration failed";
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="mn-flex-col mn-gap-4">
-      <h2 className="mn-title">Create Account</h2>
-      <form onSubmit={handleSubmit} className="mn-flex-col mn-gap-3">
-        <div className="mn-flex-col mn-gap-1">
-          <label className="mn-label">Full Name</label>
+    <div className="mn-auth-view">
+      <div className="mn-auth-header">
+        <h2>Create Account</h2>
+        <p>Join Mind Notion to save your notes</p>
+      </div>
+      <form onSubmit={handleSubmit}>
+        <div className="mn-form-group">
+          <label htmlFor="mn-reg-name">Full Name</label>
           <input
+            id="mn-reg-name"
             type="text"
-            className="mn-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
         </div>
-        <div className="mn-flex-col mn-gap-1">
-          <label className="mn-label">Username</label>
+        <div className="mn-form-group">
+          <label htmlFor="mn-reg-username">Username</label>
           <input
+            id="mn-reg-username"
             type="text"
-            className="mn-input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>
-        <div className="mn-flex-col mn-gap-1">
-          <label className="mn-label">Email</label>
+        <div className="mn-form-group">
+          <label htmlFor="mn-reg-email">Email</label>
           <input
+            id="mn-reg-email"
             type="email"
-            className="mn-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
-        <div className="mn-flex-col mn-gap-1">
-          <label className="mn-label">Password</label>
+        <div className="mn-form-group">
+          <label htmlFor="mn-reg-password">Password</label>
           <input
+            id="mn-reg-password"
             type="password"
-            className="mn-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
           />
         </div>
-        {error && <div className="mn-text-red mn-text-sm">{error}</div>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="mn-btn-primary"
-        >
-          {loading ? "Creating..." : "Create Account"}
+        {error && (
+          <div className="mn-status mn-status-error" style={{ marginBottom: 12 }}>
+            {error}
+          </div>
+        )}
+        <button type="submit" className="mn-btn-save" disabled={loading} style={{ margin: 0 }}>
+          {loading ? "Creating…" : "Create Account"}
         </button>
       </form>
-      <div className="mn-text-sm mn-text-center">
+      <div className="mn-auth-footer">
         Already have an account?{" "}
-        <button onClick={onSwitch} className="mn-link">
+        <button type="button" onClick={onSwitch} className="mn-link-btn">
           Sign In
         </button>
       </div>

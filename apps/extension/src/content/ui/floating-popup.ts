@@ -2,12 +2,9 @@ import { User } from "../../core/types";
 import { DragHelper } from "./drag-helper";
 import React from "react";
 import { createRoot, Root } from "react-dom/client";
-import { NoteEditorCore } from "../../popup/features/note/NoteEditorCore";
+import { FloatingApp } from "../../ui/FloatingApp";
+import { PiPNoteCard } from "../../ui/PiPNoteCard";
 import { preparePiPDocument, PIP_WINDOW_WIDTH, PIP_WINDOW_HEIGHT } from "../../core/utils/pipWindow";
-
-// Same ?inline trick — content script CSS injected via manifest can't be
-// read from document.styleSheets either (it's a separate stylesheet context).
-import pipStyles from "../style.css?inline";
 
 export class FloatingPopup {
   private element: HTMLElement | null = null;
@@ -15,19 +12,21 @@ export class FloatingPopup {
   private reactRoot: Root | null = null;
   private pipWindow: Window | null = null;
   private pipReactRoot: Root | null = null;
+  private selectedText = "";
 
   public isOpen(): boolean {
     return this.element !== null && document.body.contains(this.element);
   }
 
-  public open(user: User, selectedText: string) {
+  public open(selectedText: string = "") {
     if (this.isOpen()) return;
 
+    this.selectedText = selectedText;
     this.element = this.createElement();
     document.body.appendChild(this.element);
 
     const { left, top } = this.positionPopup();
-    this.renderContent(user, selectedText);
+    this.renderContent();
     this.dragHelper = new DragHelper(this.element, left, top);
   }
 
@@ -60,65 +59,15 @@ export class FloatingPopup {
     return { left, top };
   }
 
-  private renderContent(user: User, selectedText: string) {
+  private renderContent() {
     if (!this.element) return;
 
-    // Header
-    const header = document.createElement("div");
-    header.className = "mn-floating-header";
-    header.innerHTML = `
-      <div class="mn-floating-title">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-        <span>Mind Notion</span>
-      </div>
-      <div class="mn-floating-actions">
-        <button id="mn-pip-btn" class="mn-icon-btn" title="Open in Picture-in-Picture">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2"/>
-            <rect x="13" y="9" width="7" height="5" rx="1"/>
-          </svg>
-        </button>
-        <button id="mn-close-btn" class="mn-icon-btn mn-icon-btn--close" title="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-    `;
-
-    // User strip
-    const userStrip = document.createElement("div");
-    userStrip.className = "mn-floating-user";
-    const initials = (user.name ?? user.username).charAt(0).toUpperCase();
-    userStrip.innerHTML = `
-      <div class="mn-avatar">${initials}</div>
-      <div class="mn-user-meta">
-        <span class="mn-user-name">${user.name ?? user.username}</span>
-        <span class="mn-user-email">${user.email}</span>
-      </div>
-    `;
-
-    // React mount point
-    const editorMount = document.createElement("div");
-    editorMount.className = "mn-floating-body";
-
-    this.element.appendChild(header);
-    this.element.appendChild(userStrip);
-    this.element.appendChild(editorMount);
-
-    // Wire up buttons
-    header.querySelector("#mn-close-btn")!.addEventListener("click", () => this.close());
-    header.querySelector("#mn-pip-btn")!.addEventListener("click", () => this.openPiP(user, selectedText));
-
-    // Render React editor core
-    this.reactRoot = createRoot(editorMount);
+    this.reactRoot = createRoot(this.element);
     this.reactRoot.render(
-      React.createElement(NoteEditorCore, {
-        initialContent: selectedText,
-        sourceUrl: window.location.href,
-        sourceTitle: document.title,
+      React.createElement(FloatingApp, {
+        selectedText: this.selectedText,
+        onClose: () => this.close(),
+        onOpenPiP: (user, text) => void this.openPiP(user, text),
       })
     );
   }
@@ -134,30 +83,21 @@ export class FloatingPopup {
     }
 
     try {
-      const pipWindow = await (window as any).documentPictureInPicture.requestWindow({
+      const pipWindow = await (window as Window & { documentPictureInPicture: { requestWindow: (opts: { width: number; height: number }) => Promise<Window> } }).documentPictureInPicture.requestWindow({
         width: PIP_WINDOW_WIDTH,
         height: PIP_WINDOW_HEIGHT,
       });
       this.pipWindow = pipWindow;
 
-      const mountEl = preparePiPDocument(pipWindow, pipStyles);
+      const mountEl = await preparePiPDocument(pipWindow);
 
       this.pipReactRoot = createRoot(mountEl);
       this.pipReactRoot.render(
-        React.createElement(
-          "div",
-          { className: "mn-pip-shell" },
-          React.createElement(
-            "div",
-            { className: "mn-pip-header" },
-            React.createElement("span", { className: "mn-pip-title" }, "Mind Notion")
-          ),
-          React.createElement(NoteEditorCore, {
-            initialContent: selectedText,
-            sourceUrl: window.location.href,
-            sourceTitle: document.title,
-          })
-        )
+        React.createElement(PiPNoteCard, {
+          initialContent: selectedText,
+          sourceUrl: window.location.href,
+          sourceTitle: document.title,
+        })
       );
 
       pipWindow.addEventListener(
@@ -170,7 +110,6 @@ export class FloatingPopup {
         { once: true }
       );
 
-      // Close floating popup since PiP takes over
       this.close();
     } catch (err) {
       console.error("[Mind Notion] PiP failed:", err);

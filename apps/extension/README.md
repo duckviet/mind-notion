@@ -7,7 +7,7 @@ Phiên bản này đã được refactor toàn bộ sang **TypeScript**, giao di
 
 - ✅ **Authentication**: Đăng nhập/đăng ký để lưu notes
 - ✅ Token tự động refresh khi hết hạn
-- ✅ Popup nổi (Floating Popup) ngay trên trang web để lưu chú thích nhanh
+- ✅ Floating overlay trên trang web (auth + editor + PiP) — không dùng Chrome popup
 - ✅ Lưu text đã chọn từ bất kỳ trang web nào
 - ✅ Context menu (chuột phải) để lưu nhanh
 - ✅ Keyboard shortcuts (`Alt+Shift+M` / `Alt+M`)
@@ -22,8 +22,9 @@ apps/extension/
 │   ├── core/               # Cấu hình API, định nghĩa TypeScript interfaces & messages
 │   ├── services/           # HTTP Fetch logic, xử lý logic Auth & Notes, Storage
 │   ├── background/         # Service worker (Router messages, Context menu)
-│   ├── content/            # Floating Popup & Drag Helper (chạy trên các website)
-│   └── popup/              # Giao diện Extension Popup (React, Tailwind, Feature-sliced)
+│   ├── content/            # Content script: floating overlay entry
+│   ├── features/           # Auth (Login/Register) + NoteEditorCore
+│   └── ui/                 # FloatingApp shell component
 ├── dist/                   # Build output (sau khi chạy pnpm build)
 ├── manifest.json           # Chrome extension manifest v3
 ├── package.json            # Dependencies
@@ -77,15 +78,15 @@ Extension giờ đây sử dụng Vite để build.
 ## Sử dụng
 
 ### Đăng nhập
-1. Click icon extension trên thanh công cụ.
-2. Nhập email/username và password trong màn hình React.
-3. Click "Sign In".
+1. Click icon extension (hoặc `Alt+Shift+M` / `Alt+M`) trên bất kỳ trang web.
+2. Floating overlay hiện form Login/Register.
+3. Sau khi đăng nhập, cùng overlay chuyển sang editor.
 
-### Lưu text nhanh (Floating Popup)
-1. Chọn đoạn text trên trang web.
-2. Bấm phím tắt `Alt+Shift+M` (hoặc `Alt+M`) **HOẶC** chuột phải chọn "Save to Mind Notion".
-3. Một cửa sổ nhỏ (Floating Popup) sẽ hiện ra ở góc trang.
-4. Chỉnh sửa nội dung và bấm `Ctrl + Enter` (hoặc `Cmd + Enter` trên Mac) để lưu.
+### Lưu text nhanh
+1. Chọn đoạn text trên trang web (tuỳ chọn).
+2. Click icon extension, `Alt+Shift+M`, `Alt+M`, hoặc chuột phải → "Save to Mind Notion".
+3. Chỉnh sửa trong floating overlay và bấm **Save to Mind Notion**.
+4. Có thể mở **PiP** từ nút PiP trên header khi đã đăng nhập.
 
 ## Changelog
 

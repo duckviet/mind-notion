@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../../packages/editor/src";
 @import "tw-animate-css";
 @import "tldraw/tldraw.css";
 @import "@mind-notion/editor/editor.css";
@@ -11,7 +12,8 @@
    ============================================ */
 :root {
   /* Typography */
-  --app-font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+  --app-font-family:
+    "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Shadcn Core Tokens (Light Mode) */
   --background: oklch(93.422% 0.00847 271.33);
@@ -61,7 +63,7 @@
   --surface-hover: oklch(0.95 0 0);
   --surface-elevated: oklch(1 0 0);
   --surface-lowered: oklch(0.98 0 0);
-  
+
   --muted-hover: oklch(0.95 0 0);
 
   /* App Borders */
@@ -82,7 +84,7 @@
   --brand-700: oklch(0.4 0.2 250);
   --accent-blue: var(--brand-600);
   --accent-purple: oklch(0.55 0.22 300);
-  
+
   /* Focus Ring */
   --ring-offset: oklch(1 0 0);
   --focus-ring: 0 0 0 3px oklch(0.6 0.18 250 / 0.35);
@@ -91,8 +93,10 @@
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-md:
+    0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
   color-scheme: light;
 }
@@ -136,7 +140,7 @@ html.dark {
   --surface-hover: oklch(0.22 0 0);
   --surface-elevated: oklch(0.22 0 0);
   --surface-lowered: oklch(0.12 0 0);
-  
+
   --muted-hover: oklch(0.28 0 0);
   --hover-overlay: rgba(255, 255, 255, 0.06);
   --active-overlay: rgba(255, 255, 255, 0.1);
@@ -306,7 +310,6 @@ html.black[data-accent="green"] {
   --brand-700: oklch(0.9 0.08 150);
 }
 
-
 /* ============================================
    TAILWIND THEME INTEGRATION
    ============================================ */
@@ -385,7 +388,9 @@ html.black[data-accent="green"] {
 
   /* Typography */
   --font-sans: var(--app-font-family);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 
   /* Radius */
   --radius-sm: calc(var(--radius) - 4px);
@@ -400,9 +405,9 @@ html.black[data-accent="green"] {
   /* Shadows */
   --shadow-glass-md: var(--shadow-md);
   --shadow-glass-lg: var(--shadow-lg);
-  --shadow-glass-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glass-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
-
 
 /* ============================================
    BASE STYLES

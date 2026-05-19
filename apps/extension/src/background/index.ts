@@ -11,7 +11,6 @@ import {
   handleGetSelectedText,
 } from "./handlers/note.handler";
 import {
-  handleOpenPopup,
   setupContextMenu,
   handleContextMenuClick,
   handleToggleFloatingPopup,
@@ -26,29 +25,31 @@ chrome.runtime.onInstalled.addListener(() => {
 // 2. Context Menu Click
 chrome.contextMenus.onClicked.addListener(handleContextMenuClick);
 
-// 3. Command Shortcut (Alt+Shift+M or Alt+M)
+// 3. Extension icon click (no default_popup)
+chrome.action.onClicked.addListener(() => {
+  void handleToggleFloatingPopup();
+});
+
+// 4. Command shortcuts (Alt+M / Alt+Shift+M)
 chrome.commands.onCommand.addListener(async (command) => {
   if (command === "toggle-floating-popup" || command === "_execute_action") {
-    // Actually _execute_action handles default popup natively, but if user customizes it:
-    if (command === "toggle-floating-popup") {
-      await handleToggleFloatingPopup();
-    }
+    await handleToggleFloatingPopup();
   }
 });
 
-// 4. Message Router
+// 5. Message Router
 chrome.runtime.onMessage.addListener(
   (
     request: MessageRequest,
     sender: chrome.runtime.MessageSender,
-    sendResponse: (response: MessageResponse) => void
+    sendResponse: (response: MessageResponse) => void,
   ) => {
     routeMessage(request)
       .then((result) => sendResponse(result))
       .catch((error) => sendResponse({ success: false, error: error.message }));
-    
+
     return true; // Keep message channel open for async response
-  }
+  },
 );
 
 async function routeMessage(request: MessageRequest): Promise<MessageResponse> {
@@ -67,8 +68,6 @@ async function routeMessage(request: MessageRequest): Promise<MessageResponse> {
       return handleSaveSelection(request.data);
     case "getSelectedText":
       return handleGetSelectedText();
-    case "openPopup":
-      return handleOpenPopup();
     default:
       throw new Error(`Unknown action: ${request.action}`);
   }

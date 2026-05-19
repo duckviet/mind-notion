@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -18,7 +18,6 @@ interface NoteEditorCoreProps {
   sourceUrl?: string;
   sourceTitle?: string;
   onSaved?: () => void;
-  /** If true, shows the PiP trigger button */
   showPiPButton?: boolean;
   onOpenPiP?: () => void;
 }
@@ -84,8 +83,9 @@ export function NoteEditorCore({
       } else {
         flash("error", response.error || "Save failed");
       }
-    } catch (err: any) {
-      flash("error", err.message || "Failed to save");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to save";
+      flash("error", message);
     } finally {
       setLoading(false);
     }
@@ -98,7 +98,6 @@ export function NoteEditorCore({
 
   return (
     <div className="mn-core">
-      {/* Toolbar row */}
       <div className="mn-core-toolbar">
         <span className="mn-char-count">{charCount} chars</span>
         {showPiPButton && onOpenPiP && (
@@ -109,22 +108,15 @@ export function NoteEditorCore({
         )}
       </div>
 
-      {/* Editor area */}
       <div className="mn-editor-wrap">
         <EditorContent editor={editor} />
       </div>
 
-      {/* Status */}
       {status.text && (
         <div className={`mn-status mn-status-${status.type}`}>{status.text}</div>
       )}
 
-      {/* Save */}
-      <button
-        className="mn-btn-save"
-        onClick={handleSave}
-        disabled={loading}
-      >
+      <button className="mn-btn-save" onClick={handleSave} disabled={loading}>
         {loading ? (
           <>
             <SpinnerIcon /> Saving…
@@ -139,7 +131,6 @@ export function NoteEditorCore({
   );
 }
 
-/* ── Icons ── */
 function PiPIcon() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

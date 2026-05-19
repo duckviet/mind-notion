@@ -1,16 +1,9 @@
 import { MessageResponse } from "../../core/messages";
 
-export async function handleOpenPopup(): Promise<MessageResponse> {
-  try {
-    await chrome.action.openPopup();
-    return { success: true };
-  } catch (error: any) {
-    showNotification("warning", "Please login via extension icon");
-    return { success: false, error: "Could not open popup" };
-  }
-}
-
-export function showNotification(type: "success" | "error" | "warning", message: string) {
+export function showNotification(
+  type: "success" | "error" | "warning",
+  message: string,
+) {
   const colors = {
     success: "#10b981",
     error: "#ef4444",
@@ -41,7 +34,10 @@ export async function setupContextMenu() {
   });
 }
 
-export async function handleContextMenuClick(info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) {
+export async function handleContextMenuClick(
+  info: chrome.contextMenus.OnClickData,
+  tab?: chrome.tabs.Tab,
+) {
   if (info.menuItemId !== "saveSelectedText" || !tab?.id) return;
 
   const selectedText = info.selectionText?.trim() || "";
@@ -78,12 +74,7 @@ export async function handleToggleFloatingPopup() {
 
         await chrome.scripting.executeScript({
           target: { tabId: activeTab.id },
-          files: ["src/content/index.ts"], // Handled by Vite/CRX as compiled JS at runtime
-        });
-
-        await chrome.scripting.insertCSS({
-          target: { tabId: activeTab.id },
-          files: ["src/content/style.css"],
+          files: ["src/content/index.ts"],
         });
 
         await new Promise((resolve) => setTimeout(resolve, 300));

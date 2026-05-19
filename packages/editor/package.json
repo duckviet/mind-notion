@@ -6,8 +6,10 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./editor.css": "./src/editor.css"
+    "./editor.css": "./src/editor.css",
+    "./editor-theme.css": "./src/editor-theme.css"
   },
+  "scripts": {},
   "dependencies": {
     "@chenglou/pretext": "^0.0.5",
     "@radix-ui/react-select": "^2.2.6",
