@@ -1,65 +1,75 @@
 # generate-oapi-codegen:
 # 	swagger-cli bundle openapi/openapi.yaml -o openapi/dist.yaml --type yaml
 # 	oapi-codegen -generate types,server,spec -package api -o internal/api.gen.go openapi/dist.yaml
-
+# Variables
 OAPI_SPEC_SRC := openapi/openapi.yaml
 OAPI_SPEC_DST := openapi/dist.yaml
 GENERATED_SRC_DIR := internal/generated-gin-server
 HANDLERS_DST_DIR := internal/handlers
+HANDLERS_INTERFACE_DST_DIR := internal/handlers/interfaces
+SERVICE_INTERFACE_DST_DIR := internal/service/interfaces
 DTO_DST_DIR := internal/dto
 
-MODEL_DST_DIR := internal/model
-API_DST_DIR := internal/api
+# Thay thế bằng tên module thực tế trong go.mod của bạn
+MODULE_NAME := github.com/duckviet/gin-collaborative-editor
 
-.PHONY: openapi-generator-cli oapi-codegen
-# Target để tạo một dự án Gin mới
+.PHONY: openapi-generator-cli
+
 openapi-generator-cli:
-	@echo "0. --- Generating bunble file to dist ---"
+	@echo "0. --- Generating bundle file to dist ---"
 	swagger-cli bundle ${OAPI_SPEC_SRC} -o ${OAPI_SPEC_DST} --type yaml
-	@echo "1.--- Generating a new Gin server project ---"
+
+	@echo "1. --- Generating a new Gin server project ---"
 	npx @openapitools/openapi-generator-cli generate \
 		-i $(OAPI_SPEC_DST) \
 		-g go-gin-server \
 		-o $(GENERATED_SRC_DIR) \
 		--additional-properties=packageName=oapi,gitUserId=duckviet,gitRepoId=gin-collaborative-editor,generateMain=false,generateDockerfile=false,generateGoMod=false
-	
-	@echo "2. --- Preparing destination directories: $(HANDLERS_DST_DIR) and $(DTO_DST_DIR) ---"
-	mkdir -p $(HANDLERS_DST_DIR)
+
+	@echo "2. --- Preparing destination directories ---"
+	mkdir -p $(HANDLERS_INTERFACE_DST_DIR)
+	mkdir -p $(SERVICE_INTERFACE_DST_DIR)
 	mkdir -p $(DTO_DST_DIR)
 
-	@echo "3. --- Moving generated files to their final destinations ---"
-	mv -f $(GENERATED_SRC_DIR)/go/routers.go $(HANDLERS_DST_DIR)/routers.gen.go
-	mv -f $(GENERATED_SRC_DIR)/go/model_*.go $(DTO_DST_DIR)/
-	
+	@echo "3. --- Extracting Interfaces ---"
 	@for f in $(GENERATED_SRC_DIR)/go/api_*.go; do \
-		dest="$(HANDLERS_DST_DIR)/$$(basename "$$f")"; \
-		if [ ! -f "$$dest" ]; then \
-			mv -f "$$f" "$$dest"; \
-		else \
-			echo "Skip $$dest (already exists)"; \
-		fi \
+		api_name=$$(grep "type .* struct" $$f | awk '{print $$2}'); \
+		if [ -z "$$api_name" ]; then continue; fi; \
+		base_name=$$(basename "$$f" .go); \
+		base_name=$${base_name#api_}; \
+		\
+		# --- TẠO HANDLER INTERFACE (Cho tầng Giao diện/API) --- \
+		h_dest="$(HANDLERS_INTERFACE_DST_DIR)/api_$${base_name}.gen.go"; \
+		echo "package interfaces\n\nimport \"github.com/gin-gonic/gin\"\n\ntype $${api_name}Handler interface {" > $$h_dest; \
+		grep "func (api \*$$api_name)" $$f | sed 's/func (api \*'$$api_name') \(.*\) {/\t\1/' >> $$h_dest; \
+		echo "}" >> $$h_dest; \
+		\
+		# --- TẠO SERVICE INTERFACE (Cho tầng Logic nghiệp vụ - Clean) --- \
+		s_dest="$(SERVICE_INTERFACE_DST_DIR)/service_$${base_name}.gen.go"; \
+		echo "package interfaces\n\nimport \"context\"\n\ntype $${api_name}Service interface {" > $$s_dest; \
+		grep "func (api \*$$api_name)" $$f | \
+			sed 's/func (api \*'$$api_name') //' | \
+			sed 's/(c \*gin.Context)/ (ctx context.Context, req interface{}) (interface{}, error)/' | \
+			sed 's/ {//' | sed 's/^/\t/' >> $$s_dest; \
+		echo "}" >> $$s_dest; \
+		echo "Generated: Handler & Service for $$api_name"; \
 	done
 
-	@echo "4. --- Fixing package declarations in moved files ---"
-	# Sửa package trong file router thành 'package handlers'
+	@echo "4. --- Moving Models and Routers ---"
+	mv -f $(GENERATED_SRC_DIR)/go/model_*.go $(DTO_DST_DIR)/ || true
+	mv -f $(GENERATED_SRC_DIR)/go/routers.go $(HANDLERS_DST_DIR)/routers.gen.go
+
+	@echo "5. --- Fixing Package Declarations & Imports ---"
+	# Sửa package cho DTO và Router
+	sed -i 's/package oapi/package dto/g' $(DTO_DST_DIR)/*.go 2>/dev/null || true
 	sed -i 's/package oapi/package handlers/g' $(HANDLERS_DST_DIR)/routers.gen.go
+	
+	# Sửa import trong routers.gen.go để trỏ đúng vào package dto mới
+	sed -i 's|"$(MODULE_NAME)/go"|"$(MODULE_NAME)/internal/dto"|g' $(HANDLERS_DST_DIR)/routers.gen.go
 
-    # Sửa package trong file api_*.go thành 'package handlers'
-	@for f in $(HANDLERS_DST_DIR)/api_*.go; do \
-		sed -i 's/package oapi/package handlers/g' "$$f"; \
-	done
-
-	# Sửa package trong tất cả file model thành 'package dto'
-	@for f in $(DTO_DST_DIR)/model_*.go; do \
-		sed -i 's/package oapi/package dto/g' "$$f"; \
-	done
-
-	@echo "5. --- Cleaning up temporary generation directory ---"
+	@echo "6. --- Cleaning up ---"
 	rm -rf $(GENERATED_SRC_DIR)
-
 	@echo "--- Code generation and integration complete! ---"
-
-
 
 oapi-codegen:
 

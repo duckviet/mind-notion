@@ -1,0 +1,98 @@
+import Math, { migrateMathStrings } from "@tiptap/extension-mathematics";
+
+const ExtMathematics = Math.extend({
+  addOptions() {
+    return {
+      katexOptions: {
+        throwOnError: false,
+        errorColor: "var(--destructive)",
+        strict: false,
+        trust: false,
+        macros: {
+          "\\RR": "\\mathbb{R}",
+          "\\NN": "\\mathbb{N}",
+          "\\ZZ": "\\mathbb{Z}",
+          "\\QQ": "\\mathbb{Q}",
+          "\\CC": "\\mathbb{C}",
+        },
+      },
+    };
+  },
+
+  addAttributes() {
+    return {
+      class: {
+        default: "math-inline",
+        parseHTML: (element: HTMLElement) => element.getAttribute("class"),
+        renderHTML: (attributes: any) => {
+          if (!attributes.class) {
+            return {};
+          }
+          return {
+            class: attributes.class,
+          };
+        },
+      },
+    };
+  },
+
+  renderHTML({ HTMLAttributes, node }: any) {
+    const isBlock = node.attrs.kind === "block";
+    const tag = isBlock ? "div" : "span";
+    const className = isBlock
+      ? "math-block my-4 overflow-x-auto rounded-lg border border-border bg-surface-50 p-4 text-center"
+      : "math-inline mx-1 rounded border border-brand-100 bg-brand-50 px-2 py-1";
+
+    return [
+      tag,
+      {
+        ...HTMLAttributes,
+        class: className,
+        "data-math": node.attrs.tex,
+        "data-katex": "true",
+      },
+      0,
+    ];
+  },
+
+  addCommands() {
+    return {
+      setMath:
+        (tex: string) =>
+        ({ commands }: any) => {
+          return commands.insertContent({
+            type: this.name,
+            attrs: { tex },
+          });
+        },
+      setMathBlock:
+        (tex: string) =>
+        ({ commands }: any) => {
+          return commands.insertContent({
+            type: this.name,
+            attrs: { tex, kind: "block" },
+          });
+        },
+      toggleMath:
+        () =>
+        ({ commands }: any) => {
+          return commands.toggleMark(this.name);
+        },
+    };
+  },
+
+  addKeyboardShortcuts() {
+    return {
+      "Mod-m": () => this.editor.commands.toggleMark(this.name),
+      "Mod-Shift-m": () =>
+        this.editor.commands.insertContent({
+          type: this.name,
+          attrs: { tex: "", kind: "block" },
+        }),
+    };
+  },
+});
+
+// Optional: you could export migrateMathStrings as well if you want to use it in your setup
+export { migrateMathStrings };
+export default ExtMathematics;

@@ -16,6 +16,7 @@ import (
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
 	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/dto"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -28,6 +29,8 @@ type CollabAPI struct {
 	authService service.AuthService
 	config      *config.Config
 }
+
+var _ interfaces.CollabAPIHandler = (*CollabAPI)(nil)
 
 type collabClaims struct {
 	NoteID string `json:"note_id"`

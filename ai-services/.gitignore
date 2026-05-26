@@ -31,3 +31,6 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+
+# Log directory
+log/

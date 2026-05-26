@@ -1,0 +1,227 @@
+@import "tailwindcss";
+@source "../../../../packages/editor/src";
+@import "tw-animate-css";
+@import "@mind-notion/editor/editor-theme.css";
+@import "@mind-notion/editor/editor.css";
+@import "../core/style/base.css";
+
+/* Bridge mn design tokens → editor / shadcn semantic variables */
+:root {
+  --background: var(--mn-bg);
+  --foreground: var(--mn-text-primary);
+  --card: var(--mn-bg);
+  --card-foreground: var(--mn-text-primary);
+  --popover: var(--mn-bg);
+  --popover-foreground: var(--mn-text-primary);
+  --primary: var(--mn-blue);
+  --primary-foreground: #ffffff;
+  --secondary: var(--mn-surface);
+  --secondary-foreground: var(--mn-text-primary);
+  --muted: var(--mn-surface);
+  --muted-foreground: var(--mn-text-muted);
+  --accent: var(--mn-surface);
+  --accent-foreground: var(--mn-text-primary);
+  --destructive: var(--mn-red);
+  --destructive-foreground: #ffffff;
+  --border: var(--mn-border);
+  --input: var(--mn-border);
+  --ring: var(--mn-border-focus);
+  --radius: 0.625rem;
+
+  --surface: var(--mn-surface);
+  --surface-5: var(--mn-surface);
+  --surface-50: var(--mn-surface);
+  --surface-100: var(--mn-blue-light);
+  --surface-200: var(--mn-border);
+  --surface-hover: var(--mn-blue-light);
+  --surface-elevated: var(--mn-bg);
+  --surface-lowered: var(--mn-surface);
+  --muted-hover: var(--mn-blue-light);
+
+  --border-subtle: var(--mn-border);
+  --border-strong: var(--mn-text-secondary);
+
+  --text-primary: var(--mn-text-primary);
+  --text-secondary: var(--mn-text-secondary);
+  --text-muted: var(--mn-text-muted);
+  --text-inverse: #ffffff;
+
+  --brand-50: var(--mn-blue-light);
+  --brand-100: var(--mn-blue-light);
+  --brand-500: var(--mn-blue);
+  --brand-600: var(--mn-blue);
+  --brand-700: var(--mn-blue-hover);
+}
+
+/* ─────────────────────────────────────────────
+   FLOATING POPUP (content script)
+───────────────────────────────────────────── */
+#mind-notion-popup {
+  all: initial;
+}
+
+.mn-floating {
+  position: fixed !important;
+  width: 360px !important;
+  background: var(--mn-bg) !important;
+  border: 1px solid var(--mn-border) !important;
+  border-radius: var(--mn-radius-lg) !important;
+  box-shadow: var(--mn-shadow-lg) !important;
+  z-index: 2147483647 !important;
+  font-family: var(--mn-font) !important;
+  overflow: hidden !important;
+  user-select: none;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.mn-floating-loading {
+  font-family: var(--mn-font) !important;
+  color: var(--mn-text-muted) !important;
+}
+
+/* Floating header */
+.mn-floating-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 12px 14px !important;
+  border-bottom: 1px solid var(--mn-border) !important;
+  cursor: grab !important;
+  background: var(--mn-surface) !important;
+  flex-shrink: 0 !important;
+}
+
+.mn-floating-header:active {
+  cursor: grabbing !important;
+}
+
+.mn-floating-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--mn-text-primary) !important;
+  letter-spacing: -0.02em !important;
+}
+
+.mn-floating-title svg {
+  color: var(--mn-blue) !important;
+}
+
+.mn-floating-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+.mn-icon-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--mn-radius-sm) !important;
+  cursor: pointer !important;
+  color: var(--mn-text-secondary) !important;
+  transition: all var(--mn-transition) !important;
+}
+
+.mn-icon-btn:hover {
+  background: var(--mn-border) !important;
+  color: var(--mn-text-primary) !important;
+}
+
+.mn-icon-btn--close:hover {
+  background: var(--mn-red-bg) !important;
+  color: var(--mn-red) !important;
+}
+
+.mn-floating-user {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 14px !important;
+  border-bottom: 1px solid var(--mn-border) !important;
+  user-select: none;
+  cursor: default !important;
+  flex-shrink: 0 !important;
+}
+
+.mn-floating-body {
+  user-select: text !important;
+  cursor: auto !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.mn-logout-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  font-family: var(--mn-font) !important;
+  color: var(--mn-text-secondary) !important;
+  background: transparent !important;
+  border: 1px solid var(--mn-border) !important;
+  border-radius: var(--mn-radius-sm) !important;
+  cursor: pointer !important;
+  transition: all var(--mn-transition) !important;
+}
+
+.mn-logout-btn:hover {
+  background: var(--mn-red-bg) !important;
+  color: var(--mn-red) !important;
+  border-color: var(--mn-red) !important;
+}
+
+/* PiP window shell */
+.mn-pip-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-family: var(--mn-font);
+  background: var(--mn-bg);
+  color: var(--mn-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+.mn-pip-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--mn-border);
+  background: var(--mn-surface);
+  flex-shrink: 0;
+}
+
+.mn-pip-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mn-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.mn-pip-shell .mn-core {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mn-pip-shell .mn-editor-wrap {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.mn-pip-shell .mn-btn-save {
+  flex-shrink: 0;
+}

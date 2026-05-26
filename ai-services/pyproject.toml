@@ -1,0 +1,51 @@
+[project]
+name = "ai-services"
+version = "0.1.0"
+description = "mind-notion AI services"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "openai>=1.63.0",
+    "fastapi==0.115.8",
+    "uvicorn==0.34.0",
+    "httpx==0.28.1",
+    "python-dotenv==1.0.1",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "ddgs>=9.14.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "pytest-mock>=3.14",
+    "ruff>=0.4",
+    "mypy>=1.8",
+    "pyright>=1.1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+ 
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["ai_services"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

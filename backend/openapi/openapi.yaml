@@ -31,6 +31,8 @@ paths:
     $ref: "./paths/ai/consent.yaml"
   /ai/inline-edit:
     $ref: "./paths/ai/inline-edit.yaml"
+  /ai/inline-edit/runs:
+    $ref: "./paths/ai/create-inline-edit-run.yaml"
 
   # User Management
   /user/me:

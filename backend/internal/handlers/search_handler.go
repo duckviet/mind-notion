@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -13,6 +14,8 @@ import (
 type SearchHandler struct {
 	searchService service.SearchService
 }
+
+var _ interfaces.SearchHandler = (*SearchHandler)(nil)
 
 // NewSearchHandler creates a new search handler
 func NewSearchHandler(searchService service.SearchService) *SearchHandler {

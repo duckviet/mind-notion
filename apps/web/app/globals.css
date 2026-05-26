@@ -1,0 +1,775 @@
+@import "tailwindcss";
+@source "../../../packages/editor/src";
+@import "tw-animate-css";
+@import "tldraw/tldraw.css";
+@import "@mind-notion/editor/editor.css";
+
+@custom-variant dark (&:where(.dark, .dark *, .black, .black *));
+@plugin "@tailwindcss/typography";
+
+/* ============================================
+   THEME SYSTEM - Academic Journal on Vellum
+   ============================================ */
+:root {
+  /* Claude/Vellum named tokens */
+  --color-vellum-white: #f5f5f0;
+  --color-ink-black: #141413;
+  --color-onyx: #1f1e1d;
+  --color-graphite: #3d3d3a;
+  --color-dusty-gray: #73726c;
+  --color-stone: #9c9a92;
+  --color-parchment: #dedcd1;
+  --color-snow-white: #ffffff;
+  --color-pale-azure: #ccdbe8;
+  --color-terra-cotta: #d97757;
+  --color-background: #e3e0d8;
+  /* Typography */
+  --font-anthropic-serif: var(--font-lora), Lora, ui-serif, Georgia, Cambria, "Times New Roman",
+    Times, serif;
+  --font-anthropic-sans:
+    var(--font-inter), Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --app-font-family: var(--font-anthropic-sans);
+  --heading-font-family: var(--font-anthropic-serif);
+
+  --text-caption: 11px;
+  --leading-caption: 1.33;
+  --text-heading: 18px;
+  --leading-heading: 1.33;
+  --text-heading-lg: 24px;
+  --leading-heading-lg: 1.33;
+  --text-display: 56px;
+  --leading-display: 1.2;
+  --font-weight-w330: 330;
+  --font-weight-regular: 400;
+  --font-weight-w430: 430;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Spacing */
+  --spacing-unit: 8px;
+  --spacing-8: 8px;
+  --spacing-16: 16px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-64: 64px;
+  --spacing-80: 80px;
+  --spacing-96: 96px;
+
+  /* Shadcn Core Tokens (Light Mode) */
+  --background: var(--color-background);
+  --foreground: var(--color-ink-black);
+  --card: var(--color-vellum-white);
+  --card-foreground: var(--color-ink-black);
+  --popover: var(--color-snow-white);
+  --popover-foreground: var(--color-ink-black);
+  --primary: var(--color-ink-black);
+  --primary-foreground: var(--color-snow-white);
+  --secondary: var(--color-snow-white);
+  --secondary-foreground: var(--color-ink-black);
+  --muted: #f3f1ea;
+  --muted-foreground: var(--color-dusty-gray);
+  --accent: #f1eee6;
+  --accent-foreground: var(--color-ink-black);
+  --destructive: #b84d35;
+  --destructive-foreground: var(--color-snow-white);
+  --border: var(--color-parchment);
+  --input: rgba(31, 30, 29, 0.15);
+  --ring: transparent;
+  --radius: 12px;
+
+  /* Charts */
+  --chart-1: var(--color-terra-cotta);
+  --chart-2: var(--color-pale-azure);
+  --chart-3: var(--color-graphite);
+  --chart-4: #c7b48a;
+  --chart-5: #8c8b84;
+
+  /* Sidebar Tokens */
+  --sidebar: var(--color-vellum-white);
+  --sidebar-foreground: var(--color-graphite);
+  --sidebar-primary: var(--color-ink-black);
+  --sidebar-primary-foreground: var(--color-snow-white);
+  --sidebar-accent: #f1eee6;
+  --sidebar-accent-foreground: var(--color-ink-black);
+  --sidebar-border: var(--color-parchment);
+  --sidebar-ring: rgba(31, 30, 29, 0.24);
+
+  /* App Surface System (Monotonic) */
+  --surface: var(--color-vellum-white);
+  --surface-5: #fbfaf7;
+  --surface-50: #f6f4ee;
+  --surface-100: #efede4;
+  --surface-200: #e7e4d9;
+  --surface-hover: #f1eee6;
+  --surface-elevated: var(--color-snow-white);
+  --surface-lowered: #f0eee7;
+
+  --muted-hover: #ebe8de;
+
+  /* App Borders */
+  --border-subtle: rgba(31, 30, 29, 0.15);
+  --border-strong: rgba(31, 30, 29, 0.3);
+
+  /* Text Colors */
+  --text-primary: var(--color-ink-black);
+  --text-secondary: var(--color-graphite);
+  --text-muted: var(--color-dusty-gray);
+  --text-inverse: var(--color-snow-white);
+
+  /* Brand Colors (Renamed from accent to avoid shadcn conflict) */
+  --brand-50: #f7ebe5;
+  --brand-100: #efd5c9;
+  --brand-500: #d97757;
+  --brand-600: var(--color-terra-cotta);
+  --brand-700: #b95d42;
+  --accent-blue: var(--color-pale-azure);
+  --accent-purple: var(--color-terra-cotta);
+  --accent-50: var(--brand-50);
+  --accent-100: var(--brand-100);
+  --accent-500: var(--brand-500);
+  --accent-600: var(--brand-600);
+  --accent-700: var(--brand-700);
+  --accent-light: color-mix(in oklch, var(--brand-600) 18%, transparent);
+  --accent-lighter: color-mix(in oklch, var(--brand-600) 10%, transparent);
+  --accent-hover: var(--brand-700);
+
+  /* Focus Ring */
+  --focus-ring: none;
+  --hover-overlay: rgba(0, 0, 0, 0.04);
+  --active-overlay: rgba(31, 30, 29, 0.08);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 1px rgba(31, 30, 29, 0.04);
+  --shadow-md: 0 4px 12px rgba(31, 30, 29, 0.06);
+  --shadow-lg: 0 12px 28px rgba(31, 30, 29, 0.08);
+
+  color-scheme: light;
+}
+
+/* ===== DARK MODE ===== */
+html.dark {
+  /* Background tối nhất - tạo "khung" cho app */
+  --background: #0f0e0d;
+  --foreground: #f5f1e8;
+
+  /* Card/Editor - sáng hơn background để nổi bật */
+  --card: #1f1d1a;
+  --card-foreground: #f5f1e8;
+
+  /* Popover - sáng nhất, nổi trên cùng */
+  --popover: #2a2724;
+  --popover-foreground: #f5f1e8;
+
+  --primary: #f5f1e8;
+  --primary-foreground: #0f0e0d;
+  --secondary: #25231f;
+  --secondary-foreground: #f5f1e8;
+
+  --muted: #1a1816;
+  --muted-foreground: #a8a39a;
+
+  --accent: #322e29;
+  --accent-foreground: #f5f1e8;
+  --destructive: #d97757;
+  --destructive-foreground: #0f0e0d;
+
+  /* Border rõ hơn để phân tách panels */
+  --border: #3a3631;
+  --input: #3a3631;
+  --ring: transparent;
+
+  /* Sidebar - màu trung gian, hơi tối hơn card */
+  --sidebar: #161513;
+  --sidebar-foreground: #d7d1c4;
+  --sidebar-primary: #f5f1e8;
+  --sidebar-primary-foreground: #0f0e0d;
+  --sidebar-accent: #2a2724;
+  --sidebar-accent-foreground: #f5f1e8;
+  --sidebar-border: #2e2b26;
+  --sidebar-ring: #6e665b;
+
+  /* Surface elevation: từ thấp → cao = từ tối → sáng */
+  --surface: #1f1d1a;
+  --surface-5: #1a1816;
+  --surface-50: #232120;
+  --surface-100: #2a2724;
+  --surface-200: #332f2a;
+  --surface-hover: #2d2a26;
+  --surface-elevated: #26231f;
+  --surface-lowered: #0a0908;
+
+  --muted-hover: #2e2b26;
+  --hover-overlay: rgba(255, 255, 255, 0.06);
+  --active-overlay: rgba(255, 255, 255, 0.1);
+
+  /* Borders rõ ràng hơn */
+  --border-subtle: rgba(250, 249, 245, 0.1);
+  --border-strong: rgba(250, 249, 245, 0.22);
+
+  --text-primary: #f5f1e8;
+  --text-secondary: #d7d1c4;
+  --text-muted: #a8a39a;
+  --text-inverse: #0f0e0d;
+
+  --brand-50: #33251f;
+  --brand-100: #4a3026;
+  --brand-500: #d97757;
+  --brand-600: #d97757;
+  --brand-700: #eda184;
+  --accent-blue: #52616c;
+  --accent-purple: #d97757;
+  --accent-50: var(--brand-50);
+  --accent-100: var(--brand-100);
+  --accent-500: var(--brand-500);
+  --accent-600: var(--brand-600);
+  --accent-700: var(--brand-700);
+  --accent-light: color-mix(in oklch, var(--brand-600) 18%, transparent);
+  --accent-lighter: color-mix(in oklch, var(--brand-600) 10%, transparent);
+  --accent-hover: var(--brand-500);
+
+  --focus-ring: none;
+
+  /* Shadow đậm hơn cho dark mode */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
+
+/* ===== BLACK MODE (OLED) ===== */
+html.black {
+  /* Pure black background */
+  --background: #000000;
+  --foreground: #f6f2ea;
+
+  --card: #131210;
+  --card-foreground: #f6f2ea;
+  --popover: #1c1a17;
+  --popover-foreground: #f6f2ea;
+
+  --primary: #f6f2ea;
+  --primary-foreground: #000000;
+  --secondary: #181613;
+  --secondary-foreground: #f6f2ea;
+
+  --muted: #0e0d0c;
+  --muted-foreground: #a39e94;
+
+  --accent: #211e1a;
+  --accent-foreground: #f6f2ea;
+  --destructive: #d97757;
+  --destructive-foreground: #000000;
+
+  --border: #2e2a24;
+  --input: #2e2a24;
+  --ring: transparent;
+
+  --sidebar: #0a0908;
+  --sidebar-foreground: #d4cec0;
+  --sidebar-primary: #f6f2ea;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #211e1a;
+  --sidebar-accent-foreground: #f6f2ea;
+  --sidebar-border: #25221d;
+  --sidebar-ring: #5f584d;
+
+  --surface: #131210;
+  --surface-5: #0e0d0c;
+  --surface-50: #181613;
+  --surface-100: #211e1a;
+  --surface-200: #2e2a24;
+  --surface-hover: #25221d;
+  --surface-elevated: #1a1815;
+  --surface-lowered: #000000;
+  --muted-hover: #25221d;
+
+  --border-subtle: rgba(250, 249, 245, 0.1);
+  --border-strong: rgba(250, 249, 245, 0.22);
+
+  --text-primary: #f6f2ea;
+  --text-secondary: #d4cec0;
+  --text-muted: #a39e94;
+  --text-inverse: #000000;
+
+  --brand-50: #2d201a;
+  --brand-100: #412a21;
+  --brand-500: #d97757;
+  --brand-600: #d97757;
+  --brand-700: #eea68b;
+  --accent-blue: #46545e;
+  --accent-purple: #d97757;
+  --accent-50: var(--brand-50);
+  --accent-100: var(--brand-100);
+  --accent-500: var(--brand-500);
+  --accent-600: var(--brand-600);
+  --accent-700: var(--brand-700);
+  --accent-light: color-mix(in oklch, var(--brand-600) 18%, transparent);
+  --accent-lighter: color-mix(in oklch, var(--brand-600) 10%, transparent);
+  --accent-hover: var(--brand-500);
+
+  --hover-overlay: rgba(255, 255, 255, 0.05);
+  --active-overlay: rgba(255, 255, 255, 0.1);
+  --focus-ring: none;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.7);
+
+  color-scheme: dark;
+}
+
+/* ============================================
+   BRAND ACCENT COLOR VARIANTS
+   ============================================ */
+
+/* Neutral/Gray Accent */
+[data-accent="neutral"] {
+  --brand-50: #f1eee6;
+  --brand-100: #e9e5da;
+  --brand-500: var(--color-graphite);
+  --brand-600: var(--color-onyx);
+  --brand-700: var(--color-ink-black);
+  --accent-blue: var(--color-pale-azure);
+  --accent-purple: var(--color-graphite);
+}
+
+html.dark[data-accent="neutral"],
+html.black[data-accent="neutral"] {
+  --brand-50: #25231f;
+  --brand-100: #343129;
+  --brand-500: #bdb7aa;
+  --brand-600: #d4cec0;
+  --brand-700: #f6f2ea;
+  --accent-blue: #52616c;
+  --accent-purple: #d4cec0;
+}
+
+/* Terra Cotta Accent (Default) */
+[data-accent="terra"] {
+  --brand-50: #f7ebe5;
+  --brand-100: #efd5c9;
+  --brand-500: #d97757;
+  --brand-600: var(--color-terra-cotta);
+  --brand-700: #b95d42;
+  --accent-blue: var(--color-pale-azure);
+  --accent-purple: var(--color-terra-cotta);
+}
+
+html.dark[data-accent="terra"],
+html.black[data-accent="terra"] {
+  --brand-50: #33251f;
+  --brand-100: #4a3026;
+  --brand-500: #d97757;
+  --brand-600: #d97757;
+  --brand-700: #eda184;
+  --accent-blue: #52616c;
+  --accent-purple: #d97757;
+}
+
+/* Pale Azure Accent */
+[data-accent="azure"] {
+  --brand-50: #eef4f8;
+  --brand-100: var(--color-pale-azure);
+  --brand-500: #7891a6;
+  --brand-600: #596f82;
+  --brand-700: #3f5363;
+  --accent-blue: var(--color-pale-azure);
+  --accent-purple: var(--color-terra-cotta);
+}
+
+html.dark[data-accent="azure"],
+html.black[data-accent="azure"] {
+  --brand-50: #1c252b;
+  --brand-100: #24323a;
+  --brand-500: #91a8bb;
+  --brand-600: #a9bccd;
+  --brand-700: #ccdbe8;
+  --accent-blue: #a9bccd;
+  --accent-purple: #d97757;
+}
+
+/* ============================================
+   TAILWIND THEME INTEGRATION
+   ============================================ */
+
+@theme inline {
+  /* Claude/Vellum named colors */
+  --color-vellum-white: var(--color-vellum-white);
+  --color-ink-black: var(--color-ink-black);
+  --color-onyx: var(--color-onyx);
+  --color-graphite: var(--color-graphite);
+  --color-dusty-gray: var(--color-dusty-gray);
+  --color-stone: var(--color-stone);
+  --color-parchment: var(--color-parchment);
+  --color-snow-white: var(--color-snow-white);
+  --color-pale-azure: var(--color-pale-azure);
+  --color-terra-cotta: var(--color-terra-cotta);
+
+  /* Core Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Brand Colors */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-purple: var(--accent-purple);
+  --color-accent-50: var(--accent-50);
+  --color-accent-100: var(--accent-100);
+  --color-accent-500: var(--accent-500);
+  --color-accent-600: var(--accent-600);
+  --color-accent-700: var(--accent-700);
+  --color-accent-light: var(--accent-light);
+  --color-accent-lighter: var(--accent-lighter);
+  --color-accent-hover: var(--accent-hover);
+
+  /* Surface System */
+  --color-surface: var(--surface);
+  --color-surface-5: var(--surface-5);
+  --color-surface-50: var(--surface-50);
+  --color-surface-100: var(--surface-100);
+  --color-surface-200: var(--surface-200);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-lowered: var(--surface-lowered);
+  --color-muted-hover: var(--muted-hover);
+  --color-hover: var(--surface-hover);
+  --color-hover-overlay: var(--hover-overlay);
+  --color-active-overlay: var(--active-overlay);
+  --color-glass-hover: var(--hover-overlay);
+
+  /* Text & Borders */
+  --color-border-subtle: var(--border-subtle);
+  --color-glass-border: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-inverse: var(--text-inverse);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Charts */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Typography */
+  --font-sans: var(--app-font-family);
+  --font-anthropic-sans: var(--font-anthropic-sans);
+  --font-anthropic-serif: var(--font-anthropic-serif);
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+
+  --text-caption: var(--text-caption);
+  --leading-caption: var(--leading-caption);
+  --text-heading: var(--text-heading);
+  --leading-heading: var(--leading-heading);
+  --text-heading-lg: var(--text-heading-lg);
+  --leading-heading-lg: var(--leading-heading-lg);
+  --text-display: var(--text-display);
+  --leading-display: var(--leading-display);
+
+
+
+  /* Radius scale based on the master --radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --radius-glass: var(--radius);
+
+  /* Shadows */
+  --shadow-glass-md: var(--shadow-md);
+  --shadow-glass-lg: var(--shadow-lg);
+  --shadow-glass-xl:
+    0 20px 25px -5px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+body {
+  background: var(--background);
+  background-attachment: fixed;
+  color: var(--foreground);
+  font-family: var(--app-font-family);
+  min-height: 100vh;
+  line-height: 1.43;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle gradient for light mode only */
+/* html:not(.dark):not(.black) body {
+  background: linear-gradient(to bottom, #f8f9fb 0%, #ffffff 100%);
+} */
+
+/* Density variations */
+[data-density="compact"] body {
+  font-size: 0.925rem;
+  letter-spacing: 0;
+  line-height: 1.5;
+}
+
+[data-density="comfortable"] body {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* ============================================
+   TYPOGRAPHY
+   ============================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+  line-height: 1.33;
+  letter-spacing: 0;
+  color: var(--text-primary);
+  font-family: var(--heading-font-family);
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--text-display);
+  font-weight: var(--font-weight-w330);
+  line-height: var(--leading-display);
+}
+
+h2 {
+  font-size: 1.875rem;
+  font-weight: var(--font-weight-regular);
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: var(--font-weight-regular);
+}
+
+h4 {
+  font-size: 1.25rem;
+}
+
+h5 {
+  font-size: 1.125rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+/* ============================================
+   INTERACTIVE ELEMENTS
+   ============================================ */
+
+button,
+input,
+textarea,
+select {
+  accent-color: var(--brand-600);
+}
+
+button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.focus-ring {
+  box-shadow: var(--focus-ring);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Modern card styles */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-elevated {
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-md);
+}
+
+/* Legacy classes removed: all usages successfully refactored to Tailwind utility classes. */
+
+/* Glassmorphism effects (subtle) */
+.glass-bg {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+}
+
+html.dark .glass-bg {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ============================================
+   DARK MODE COMPONENT ENHANCEMENTS
+   ============================================ */
+
+/* Cards: brighter relative to background in dark mode */
+html.dark .bg-card,
+html.black .bg-card {
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.04) inset;
+}
+
+/* Subtle inset highlight on top edge for elevated surfaces in dark mode */
+html.dark .dark\:bg-surface-100,
+html.dark .dark\:bg-surface-200 {
+  box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.05) inset;
+}
+
+html.black .glass-bg {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+}
+
+/* Hover states */
+.hover-lift {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-bg:hover {
+  background: var(--hover-overlay);
+}
+
+.active-bg:active {
+  background: var(--active-overlay);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .motion-reduce {
+    transform: none !important;
+  }
+}
+
+/* Skip to content link */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--brand-600);
+  color: var(--text-inverse);
+  padding: 8px 16px;
+  z-index: 100;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* ============================================
+   CUSTOM SCROLLBAR - Modern & Minimal
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+  border: 2px solid var(--background);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+
+html.dark ::-webkit-scrollbar-thumb,
+html.black ::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border: 2px solid var(--background);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}

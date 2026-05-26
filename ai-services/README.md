@@ -10,13 +10,26 @@ Unified Python AI services for Mind Notion.
 
 ## Run locally
 
+Preferred with `uv`:
+
+```bash
+cd ai-services
+cp .env.example .env
+make install
+make dev
+```
+
+Fallback with Python virtualenv:
+
 ```bash
 cd ai-services
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-python main.py
+pip install -e .
+AI_SERVICE_RELOAD=true python -m ai_services.main
 ```
+
+The service starts on `http://localhost:8090` by default.
 
 ## Docker
 

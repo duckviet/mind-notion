@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -23,6 +24,8 @@ type GoogleLoginAPI struct {
 	config      *config.Config
 	oauthConfig *oauth2.Config
 }
+
+var _ interfaces.GoogleLoginAPIHandler = (*GoogleLoginAPI)(nil)
 
 // NewGoogleLoginAPI creates a new GoogleLoginAPI instance
 func NewGoogleLoginAPI(authService service.AuthService, cfg *config.Config) *GoogleLoginAPI {

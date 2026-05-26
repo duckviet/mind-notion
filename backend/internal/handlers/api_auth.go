@@ -16,6 +16,7 @@ import (
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/dto"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -24,6 +25,8 @@ type AuthAPI struct {
 	authService service.AuthService
 	config      *config.Config
 }
+
+var _ interfaces.AuthAPIHandler = (*AuthAPI)(nil)
 
 // NewAuthAPI creates a new AuthAPI instance
 func NewAuthAPI(authService service.AuthService, cfg *config.Config) *AuthAPI {

@@ -1,0 +1,458 @@
+import { Editor } from "@tiptap/react";
+import {
+  Bold,
+  Italic,
+  Strikethrough,
+  Code,
+  Highlighter,
+  Heading1,
+  Heading2,
+  Heading3,
+  List,
+  ListOrdered,
+  CheckSquare,
+  Quote,
+  Code2,
+  Link2,
+  ImageIcon,
+  Undo,
+  Redo,
+  ListCollapseIcon,
+  Columns2,
+  Unlink,
+  MessageSquareMore,
+  PencilRuler,
+  FileEdit,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  Minus,
+} from "lucide-react";
+import TableSizeDropdown from "./TableSizeDropdown";
+import CommentPopover from "./CommentPopover";
+import ProposedEditPopover from "../../extensions/ExtProposedEdits/ProposedEditPopover";
+import NoteLayoutDropdown from "./NoteLayoutDropdown";
+
+export interface ToolbarItem {
+  icon: React.ReactNode;
+  label?: string;
+  tooltip: string;
+  isActive: () => boolean;
+  disabled?: () => boolean;
+  onClick: () => void;
+  isDropdown?: boolean;
+  DropdownNode?: React.ReactNode;
+  isPopover?: boolean;
+  PopoverNode?: React.ReactNode;
+  variants?: ToolbarItem[];
+  className?: string;
+}
+
+export interface ToolbarGroup {
+  name: string;
+  items: ToolbarItem[];
+}
+
+export interface ToolbarConfigProps {
+  editor: Editor;
+  options: {
+    onAddImage?: () => void;
+    onAddDrawing?: () => void;
+    noteId?: string;
+    createComment?: (input: {
+      noteId: string;
+      content: string;
+    }) => Promise<string | { id?: string } | null | undefined>;
+  };
+}
+
+export const getHeaderToolbarConfigs = ({
+  editor,
+  options,
+}: ToolbarConfigProps): ToolbarGroup[] => {
+  const onAddImage = options.onAddImage ?? (() => { });
+  const onAddDrawing =
+    options.onAddDrawing ?? (() => editor.commands.insertDrawing());
+
+  return [
+    {
+      name: "headings",
+      items: [1, 2, 3].map((level) => ({
+        icon:
+          level === 1 ? (
+            <Heading1 size={16} />
+          ) : level === 2 ? (
+            <Heading2 size={16} />
+          ) : (
+            <Heading3 size={16} />
+          ),
+        tooltip: `Heading ${level}`,
+        isActive: () => editor.isActive("heading", { level }),
+        onClick: () =>
+          editor
+            .chain()
+            .focus()
+            .toggleHeading({ level: level as any })
+            .run(),
+      })),
+    },
+    {
+      name: "lists",
+      items: [
+        {
+          icon: <List size={16} />,
+          tooltip: "Bullet List",
+          isActive: () => editor.isActive("bulletList"),
+          onClick: () => editor.chain().focus().toggleBulletList().run(),
+        },
+        {
+          icon: <ListOrdered size={16} />,
+          tooltip: "Numbered List",
+          isActive: () => editor.isActive("orderedList"),
+          onClick: () => editor.chain().focus().toggleOrderedList().run(),
+        },
+        {
+          icon: <CheckSquare size={16} />,
+          tooltip: "Task List",
+          isActive: () => editor.isActive("taskList"),
+          onClick: () => editor.chain().focus().toggleTaskList().run(),
+        },
+      ],
+    },
+    {
+      name: "alignment",
+      items: [
+        {
+          icon: <AlignLeft size={16} />,
+          tooltip: "Align Left",
+          isActive: () => editor.isActive({ textAlign: "left" }),
+          onClick: () => editor.chain().focus().setTextAlign("left").run(),
+        },
+        {
+          icon: <AlignCenter size={16} />,
+          tooltip: "Align Center",
+          isActive: () => editor.isActive({ textAlign: "center" }),
+          onClick: () => editor.chain().focus().setTextAlign("center").run(),
+        },
+        {
+          icon: <AlignRight size={16} />,
+          tooltip: "Align Right",
+          isActive: () => editor.isActive({ textAlign: "right" }),
+          onClick: () => editor.chain().focus().setTextAlign("right").run(),
+        },
+        {
+          icon: <AlignJustify size={16} />,
+          tooltip: "Justify",
+          isActive: () => editor.isActive({ textAlign: "justify" }),
+          onClick: () => editor.chain().focus().setTextAlign("justify").run(),
+        },
+      ],
+    },
+    {
+      name: "insert",
+      items: [
+        {
+          icon: null,
+          tooltip: "Table",
+          isActive: () => editor.isActive("table"),
+          onClick: () => { }, // Handled by component
+          isDropdown: true,
+          DropdownNode: <TableSizeDropdown editor={editor} />,
+        },
+
+        {
+          icon: <Quote size={16} />,
+          tooltip: "Quote",
+          isActive: () => editor.isActive("blockquote"),
+          onClick: () => editor.chain().focus().toggleBlockquote().run(),
+        },
+        {
+          icon: <Code2 size={16} />,
+          tooltip: "Code Block",
+          isActive: () => editor.isActive("codeBlock"),
+          onClick: () => editor.chain().focus().toggleCodeBlock().run(),
+        },
+        {
+          icon: <Link2 size={16} />,
+          tooltip: "Add Link",
+          isActive: () => editor.isActive("link"),
+          onClick: () => {
+            editor
+              .chain()
+              .focus()
+              .extendMarkRange("link")
+              .setLink({ href: "https://" })
+              .run();
+          },
+        },
+        {
+          icon: <ImageIcon size={16} />,
+          tooltip: "Add Image",
+          isActive: () => false,
+          onClick: onAddImage,
+        },
+        {
+          icon: <PencilRuler size={16} />,
+          tooltip: "Add Drawing",
+          isActive: () => false,
+          onClick: onAddDrawing,
+        },
+        {
+          icon: <Columns2 size={16} />,
+          tooltip: "Split View",
+          isActive: () => editor.isActive("splitView"),
+          onClick: () => editor.commands.insertSplitView(),
+          variants: [
+            {
+              icon: <Columns2 size={16} />,
+              label: "Insert Split View",
+              tooltip: "Insert Split View",
+              isActive: () => editor.isActive("splitView"),
+              onClick: () => editor.commands.insertSplitView(),
+            },
+            {
+              icon: <Columns2 className="[stroke-dasharray:2_4]" size={16} />,
+              label: "Toggle Split View Border",
+              tooltip: "Toggle Split View Border",
+              isActive: () => editor.isActive("splitView"),
+              onClick: () => {
+                editor.commands.insertSplitView({
+                  border: false,
+                });
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: "history",
+      items: [
+        {
+          icon: <Undo size={16} />,
+          tooltip: "Undo",
+          isActive: () => false,
+          // disabled: () => !editor.can().undo(),
+          onClick: () => editor.chain().focus().undo().run(),
+        },
+        {
+          icon: <Redo size={16} />,
+          tooltip: "Redo",
+          isActive: () => false,
+          // disabled: () => !editor.can().redo(),
+          onClick: () => editor.chain().focus().redo().run(),
+        },
+        {
+          icon: <ListCollapseIcon size={16} />,
+          tooltip: "Table of Contents",
+          isActive: () => !!editor.storage.extTableOfContents?.toc,
+          onClick: () => editor.commands.toggleTableOfContents(),
+        },
+      ],
+    },
+    ...(options.noteId
+      ? [
+        {
+          name: "layout",
+          items: [
+            {
+              icon: null,
+              tooltip: "Page Layout",
+              isActive: () => false,
+              onClick: () => { },
+              isDropdown: true,
+              DropdownNode: (
+                <NoteLayoutDropdown
+                  editor={editor}
+                  noteId={options.noteId!}
+                />
+              ),
+            },
+          ],
+        },
+      ]
+      : []),
+  ];
+};
+
+export const getBubbleToolbarConfigs = ({
+  editor,
+  options,
+}: ToolbarConfigProps): ToolbarGroup[] => {
+  // Logic kiểm tra xem có đang chọn link không để đổi icon
+  const isLinkActive = editor.isActive("link");
+
+  return [
+    {
+      name: "comment",
+      items: [
+        {
+          icon: <MessageSquareMore size={14} />,
+          label: "Comment",
+          tooltip: "Comment",
+          isActive: () => false,
+          isPopover: true,
+          PopoverNode: (
+            <CommentPopover
+              editor={editor}
+              createComment={options.createComment}
+            />
+          ),
+          onClick: () => { },
+          // editor.chain().focus().setComment({ id: "" }).run(),
+        },
+      ],
+    },
+    {
+      name: "Proposed Edit",
+      items: [
+        {
+          icon: <FileEdit size={14} />,
+          label: "Propose Edit",
+          tooltip: "Propose Edit",
+          isActive: () => editor.isActive("proposedEdits"),
+          isPopover: true,
+          PopoverNode: <ProposedEditPopover editor={editor} />,
+          onClick: () => { },
+        },
+      ],
+    },
+    {
+      name: "formatting",
+      items: [
+        {
+          icon: <Bold size={14} />,
+          tooltip: "Bold",
+          isActive: () => editor.isActive("bold"),
+          onClick: () => editor.chain().focus().toggleBold().run(),
+        },
+        {
+          icon: <Italic size={14} />,
+          tooltip: "Italic",
+          isActive: () => editor.isActive("italic"),
+          onClick: () => editor.chain().focus().toggleItalic().run(),
+        },
+        {
+          icon: <Strikethrough size={14} />,
+          tooltip: "Strikethrough",
+          isActive: () => editor.isActive("strike"),
+          onClick: () => editor.chain().focus().toggleStrike().run(),
+        },
+        {
+          icon: <Code size={14} />,
+          tooltip: "Inline Code",
+          isActive: () => editor.isActive("code"),
+          onClick: () => editor.chain().focus().toggleCode().run(),
+        },
+        {
+          icon: <Highlighter size={14} />,
+          tooltip: "Highlight",
+          isActive: () => editor.isActive("highlight"),
+          onClick: () => editor.chain().focus().toggleHighlight().run(),
+        },
+      ],
+    },
+    {
+      name: "link",
+      items: [
+        {
+          // Nếu đang là link thì hiện icon Unlink, ngược lại Link
+          icon: isLinkActive ? <Unlink size={14} /> : <Link2 size={14} />,
+          tooltip: isLinkActive ? "Remove Link" : "Add Link",
+          isActive: () => isLinkActive,
+          onClick: () => {
+            if (isLinkActive) {
+              editor.chain().focus().unsetLink().run();
+            } else {
+              // Mở popup set link (logic này thường được xử lý bởi Extension Link
+              // hoặc set tạm link trống để extension hiển thị input)
+              editor.chain().focus().setLink({ href: "" }).run();
+            }
+          },
+        },
+      ],
+    },
+  ];
+};
+
+export const getSplashMenuToolbarConfigs = ({
+  editor,
+  options,
+}: ToolbarConfigProps): ToolbarGroup[] => {
+  const onAddImage = options.onAddImage ?? (() => { });
+  const onAddDrawing =
+    options.onAddDrawing ?? (() => editor.commands.insertDrawing());
+
+  return [
+    {
+      name: "insert",
+      items: [
+        {
+          icon: null,
+          tooltip: "Table",
+          isActive: () => editor.isActive("table"),
+          onClick: () => { }, // Handled by component
+          isDropdown: true,
+          DropdownNode: <TableSizeDropdown editor={editor} />,
+        },
+        {
+          icon: <ImageIcon size={16} />,
+          tooltip: "Add Image",
+          isActive: () => false,
+          onClick: onAddImage,
+        },
+        {
+          icon: <PencilRuler size={16} />,
+          tooltip: "Add Drawing",
+          isActive: () => false,
+          onClick: onAddDrawing,
+        },
+        {
+          icon: <Minus size={16} />,
+          tooltip: "Divider",
+          isActive: () => editor.isActive("horizontalRule"),
+          onClick: () => editor.chain().focus().setHorizontalRule().run(),
+        },
+        {
+          icon: <Code2 size={16} />,
+          tooltip: "Code Block",
+          isActive: () => editor.isActive("codeBlock"),
+          onClick: () => editor.chain().focus().toggleCodeBlock().run(),
+        },
+        {
+          icon: <Quote size={16} />,
+          tooltip: "Quote",
+          isActive: () => editor.isActive("blockquote"),
+          onClick: () => editor.chain().focus().toggleBlockquote().run(),
+        },
+        {
+          icon: <Columns2 size={16} />,
+          tooltip: "Split View",
+          isActive: () => editor.isActive("splitView"),
+          onClick: () => editor.commands.insertSplitView(),
+          variants: [
+            {
+              icon: <Columns2 size={16} />,
+              label: "Insert Split View",
+              tooltip: "Insert Split View",
+              isActive: () => editor.isActive("splitView"),
+              onClick: () => editor.commands.insertSplitView(),
+            },
+            {
+              icon: <Columns2 className="[stroke-dasharray:2_4]" size={16} />,
+              label: "Toggle Split View Border",
+              tooltip: "Toggle Split View Border",
+              isActive: () => editor.isActive("splitView"),
+              onClick: () => {
+                editor.commands.insertSplitView({
+                  border: false,
+                });
+              },
+            },
+          ],
+        },
+      ],
+    },
+  ];
+};

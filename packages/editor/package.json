@@ -1,0 +1,148 @@
+{
+  "name": "@mind-notion/editor",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./editor.css": "./src/editor.css",
+    "./editor-theme.css": "./src/editor-theme.css"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@chenglou/pretext": "^0.0.5",
+    "@radix-ui/react-select": "^2.2.6",
+    "@shikijs/langs": "^3.13.0",
+    "@shikijs/themes": "^3.13.0",
+    "@tiptap/core": "^3.20.4",
+    "@tiptap/extension-blockquote": "^3.20.4",
+    "@tiptap/extension-code-block": "^3.20.4",
+    "@tiptap/extension-collaboration": "^3.17.1",
+    "@tiptap/extension-collaboration-caret": "^3.17.1",
+    "@tiptap/extension-heading": "^3.20.4",
+    "@tiptap/extension-highlight": "^3.15.3",
+    "@tiptap/extension-image": "^3.20.4",
+    "@tiptap/extension-link": "^3.20.4",
+    "@tiptap/extension-list": "^3.20.4",
+    "@tiptap/extension-mathematics": "^3.20.4",
+    "@tiptap/extension-placeholder": "^3.20.4",
+    "@tiptap/extension-table": "^3.20.4",
+    "@tiptap/extension-text-align": "^3.20.4",
+    "@tiptap/html": "^3.20.4",
+    "@tiptap/pm": "^3.20.4",
+    "@tiptap/react": "^3.20.4",
+    "@tiptap/starter-kit": "^3.20.4",
+    "@tiptap/y-tiptap": "^3.0.0-beta.3",
+    "@tldraw/sync": "^4.4.1",
+    "clsx": "^2.1.1",
+    "dompurify": "^3.2.7",
+    "framer-motion": "^12.23.24",
+    "katex": "^0.16.25",
+    "lucide-react": "^0.544.0",
+    "shiki": "^3.13.0",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.3.1",
+    "tldraw": "^4.4.1",
+    "y-prosemirror": "^1.3.7",
+    "y-websocket": "^1.5.4",
+    "yjs": "^13.6.27"
+  },
+  "devDependencies": {
+    "@mind-notion/tsconfig": "workspace:*",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/node": "^20",
+    "@tiptap/core": "^3",
+    "@tiptap/extension-blockquote": "^3",
+    "@tiptap/extension-collaboration": "^3",
+    "@tiptap/extension-collaboration-caret": "^3",
+    "@tiptap/extension-heading": "^3",
+    "@tiptap/extension-highlight": "^3",
+    "@tiptap/extension-image": "^3",
+    "@tiptap/extension-link": "^3",
+    "@tiptap/extension-list": "^3",
+    "@tiptap/extension-mathematics": "^3",
+    "@tiptap/extension-table": "^3",
+    "@tiptap/extension-text-align": "^3",
+    "@tiptap/html": "^3",
+    "@tiptap/pm": "^3",
+    "@tiptap/react": "^3",
+    "framer-motion": "^11",
+    "lucide-react": "^0.473",
+    "typescript": "^5"
+  },
+  "peerDependencies": {
+    "@floating-ui/react": "^0.27",
+    "@tiptap/core": "^3",
+    "@tiptap/extension-blockquote": "^3",
+    "@tiptap/extension-collaboration": "^3",
+    "@tiptap/extension-collaboration-caret": "^3",
+    "@tiptap/extension-heading": "^3",
+    "@tiptap/extension-highlight": "^3",
+    "@tiptap/extension-image": "^3",
+    "@tiptap/extension-link": "^3",
+    "@tiptap/extension-list": "^3",
+    "@tiptap/extension-mathematics": "^3",
+    "@tiptap/extension-table": "^3",
+    "@tiptap/extension-text-align": "^3",
+    "@tiptap/html": "^3",
+    "@tiptap/pm": "^3",
+    "@tiptap/react": "^3",
+    "framer-motion": "^11",
+    "katex": "^0.16",
+    "lucide-react": "^0.473",
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "peerDependenciesMeta": {
+    "@floating-ui/react": {
+      "optional": true
+    },
+    "@tiptap/extension-collaboration": {
+      "optional": true
+    },
+    "@tiptap/extension-collaboration-caret": {
+      "optional": true
+    },
+    "@tiptap/extension-heading": {
+      "optional": true
+    },
+    "@tiptap/extension-highlight": {
+      "optional": true
+    },
+    "@tiptap/extension-link": {
+      "optional": true
+    },
+    "@tiptap/extension-list": {
+      "optional": true
+    },
+    "@tiptap/extension-mathematics": {
+      "optional": true
+    },
+    "@tiptap/extension-table": {
+      "optional": true
+    },
+    "@tiptap/extension-text-align": {
+      "optional": true
+    },
+    "@tiptap/extension-image": {
+      "optional": true
+    },
+    "@tiptap/html": {
+      "optional": true
+    },
+    "@tiptap/pm": {
+      "optional": true
+    },
+    "katex": {
+      "optional": true
+    },
+    "framer-motion": {
+      "optional": true
+    },
+    "lucide-react": {
+      "optional": true
+    }
+  }
+}

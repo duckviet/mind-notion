@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/config"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,8 @@ type AIInternalAPI struct {
 	noteChunkRepo repository.NoteChunkRepository
 	config        *config.Config
 }
+
+var _ interfaces.AIInternalAPIHandler = (*AIInternalAPI)(nil)
 
 func NewAIInternalAPI(noteService service.NoteService, noteChunkRepo repository.NoteChunkRepository, cfg *config.Config) *AIInternalAPI {
 	return &AIInternalAPI{noteService: noteService, noteChunkRepo: noteChunkRepo, config: cfg}

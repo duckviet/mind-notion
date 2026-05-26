@@ -15,6 +15,7 @@ import (
 	"strconv"
 
 	dbmodels "github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/repository"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
@@ -23,6 +24,8 @@ import (
 type FolderAPI struct {
 	folderService service.FolderService
 }
+
+var _ interfaces.FolderAPIHandler = (*FolderAPI)(nil)
 
 // Post /api/v1/folders/reorder
 // Reorder folders by parent in a single request

@@ -12,6 +12,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +20,8 @@ import (
 type MediaAPI struct {
 	mediaService service.MediaService
 }
+
+var _ interfaces.MediaAPIHandler = (*MediaAPI)(nil)
 
 func NewMediaAPI(mediaService service.MediaService) *MediaAPI {
 	return &MediaAPI{mediaService: mediaService}

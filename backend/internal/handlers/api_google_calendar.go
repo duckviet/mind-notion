@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/database/models"
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/duckviet/gin-collaborative-editor/backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -16,6 +17,8 @@ type GoogleCalendarAPI struct {
 	gcalService *service.GoogleCalendarService
 	authService service.AuthService
 }
+
+var _ interfaces.GoogleCalendarAPIHandler = (*GoogleCalendarAPI)(nil)
 
 // NewGoogleCalendarAPI creates a new GoogleCalendarAPI handler
 func NewGoogleCalendarAPI(gcalService *service.GoogleCalendarService, authService service.AuthService) *GoogleCalendarAPI {

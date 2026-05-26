@@ -12,14 +12,17 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/duckviet/gin-collaborative-editor/backend/internal/handlers/interfaces"
 	"github.com/gin-gonic/gin"
 )
 
 type AIAPI struct {
-	aiRun *AIRunAPI
+	aiRun interfaces.AIRunAPIHandler
 }
 
-func NewAIAPI(aiRun *AIRunAPI) *AIAPI {
+var _ interfaces.AIAPIHandler = (*AIAPI)(nil)
+
+func NewAIAPI(aiRun interfaces.AIRunAPIHandler) *AIAPI {
 	return &AIAPI{aiRun: aiRun}
 }
 
@@ -43,6 +46,17 @@ func (api *AIAPI) InlineEditAi(c *gin.Context) {
 	}
 
 	api.aiRun.InlineEdit(c)
+}
+
+// Post /api/v1/ai/inline-edit/runs
+// Create streaming AI inline edit run
+func (api *AIAPI) InlineEditAiRun(c *gin.Context) {
+	if api.aiRun == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+
+	api.aiRun.InlineEditRun(c)
 }
 
 // Patch /api/v1/ai/runs/:run_id/consent

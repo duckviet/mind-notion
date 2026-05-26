@@ -99,6 +99,12 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.AIAPI.InlineEditAi,
 		},
 		{
+			"InlineEditAiRun",
+			http.MethodPost,
+			"/api/v1/ai/inline-edit/runs",
+			handleFunctions.AIAPI.InlineEditAiRun,
+		},
+		{
 			"ProvideAiRunConsent",
 			http.MethodPatch,
 			"/api/v1/ai/runs/:run_id/consent",

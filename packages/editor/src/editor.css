@@ -1,0 +1,263 @@
+/* ============================================
+   TIPTAP EDITOR STYLES
+   ============================================ */
+
+@import "./extensions/ExtNoteLayout/layouts.css";
+
+.ProseMirror {
+  white-space: pre-wrap;
+}
+
+/* Code blocks */
+.ProseMirror .react-renderer.node-codeBlock {
+  border-radius: 8px;
+  background-color: var(--surface-lowered, #1e1e2e);
+  overflow: hidden;
+}
+
+html.dark .ProseMirror .react-renderer.node-codeBlock,
+html.black .ProseMirror .react-renderer.node-codeBlock {
+  background-color: var(--surface-lowered, #0d1117);
+}
+
+/* Table wrapper */
+.table-wrapper {
+  overflow: visible;
+  margin: 1.5rem 0;
+}
+
+.table-wrapper table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Tables */
+.tiptap.ProseMirror table {
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.tiptap.ProseMirror td,
+.tiptap.ProseMirror th {
+  min-width: 1em;
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.tiptap.ProseMirror th {
+  font-weight: 600;
+  text-align: left;
+  background-color: var(--brand-50);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--brand-100);
+}
+
+html.dark .tiptap.ProseMirror th,
+html.black .tiptap.ProseMirror th {
+  background-color: var(--surface);
+  border-bottom-color: var(--border);
+}
+
+/* Placeholder */
+.tiptap p.is-editor-empty:first-child::before {
+  color: var(--text-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  font-style: italic;
+}
+
+/* Column resize handle */
+.tiptap.ProseMirror .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: var(--brand-600);
+  pointer-events: none;
+}
+
+/* Selected cell */
+.tiptap.ProseMirror .selectedCell:after {
+  z-index: 2;
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--surface-100);
+  opacity: 0.2;
+  pointer-events: none;
+}
+.tiptap .collaboration-carets__caret {
+  border-left: 1px solid var(--brand-600);
+  border-right: 1px solid var(--brand-600);
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
+}
+
+/* Render the username above the caret */
+.tiptap .collaboration-carets__label {
+  border-radius: 3px 3px 3px 0;
+  color: var(--primary-foreground);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  left: -1px;
+  line-height: normal;
+  padding: 0.1rem 0.3rem;
+  position: absolute;
+  top: -1.4em;
+  user-select: none;
+  white-space: nowrap;
+  background: var(--brand-600);
+}
+
+/* ============================================
+   SPLIT VIEW EXTENSION
+   ============================================ */
+
+.split-view-wrapper {
+  position: relative;
+  border-radius: 8px;
+  overflow: visible;
+}
+
+.split-view-container {
+  position: relative;
+}
+
+.split-view-columns {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.split-view-columns > [data-node-view-content-react] {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: stretch;
+  gap: 1px;
+}
+
+.split-view-column {
+  min-height: 120px;
+  height: 100%;
+  padding-left: 8px;
+  padding-right: 8px;
+  overflow: visible;
+  width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.split-view-column:first-child {
+  width: var(--split-left-width, 50%);
+}
+
+.split-view-column:last-child {
+  width: var(--split-right-width, 50%);
+}
+
+/* Column content */
+.split-view-column p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.split-view-column p:not(:last-child) {
+  margin-bottom: 0.75rem;
+}
+
+.split-view-column img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+/* Placeholder */
+.split-view-column > p.is-empty:first-child::before {
+  content: "Type here...";
+  color: var(--text-muted);
+  font-style: italic;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* Resizer hover effect */
+.split-view-resizer {
+  transition: all 0.2s ease;
+}
+
+.split-view-resizer:hover {
+  background: var(--brand-100);
+}
+
+.split-view-resizer:hover .h-12 {
+  transform: scaleY(1.2);
+}
+
+.is-active-comment {
+  text-decoration: underline;
+  text-underline-offset: 1px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--brand-600);
+  transition: all 0.2s ease;
+}
+
+.ai-selection-range {
+  border-radius: 4px;
+}
+
+.ai-selection-range--processing {
+  background-color: color-mix(in oklch, var(--brand-600) 20%, transparent);
+  box-shadow: inset 0 -1px 0
+    color-mix(in oklch, var(--brand-600) 55%, transparent);
+}
+
+.ai-selection-range--menu {
+  background-color: color-mix(in oklch, var(--brand-500) 38%, transparent);
+}
+
+.proposed-edit-original {
+  background-color: color-mix(in oklch, var(--destructive) 16%, transparent);
+  color: var(--foreground);
+}
+
+.proposed-edit-proposed {
+  background-color: color-mix(in oklch, var(--brand-600) 16%, transparent);
+  color: var(--foreground);
+}
+
+/* Prevent blue selection highlight overlay on custom node views (e.g. images, drawings) */
+.ProseMirror .react-renderer {
+  user-select: none;
+}
+.ProseMirror .react-renderer input {
+  user-select: text;
+}
+.ProseMirror .react-renderer::selection,
+.ProseMirror .react-renderer *::selection {
+  background: transparent !important;
+}
+.ProseMirror .react-renderer input::selection {
+  background: var(--brand-100, #efd5c9) !important;
+}
