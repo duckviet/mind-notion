@@ -159,11 +159,11 @@ export const NotePage: React.FC<NotePageProps> = ({
     <ModalProvider>
       <div
         className={cn(
-          "h-screen flex w-full gap-4 px-4 py-6 mx-auto",
+          "h-screen flex w-full gap-4 px-4 py-6 mx-auto bg-background",
           containerClassName,
         )}
       >
-        <div className="flex flex-col flex-1 p-6 rounded-lg border border-border bg-surface h-full overflow-y-auto w-fit overflow-x-hidden shadow-sm">
+        <div className="flex h-full w-fit flex-1 flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-card p-6 shadow-none dark:border dark:border-border">
           {/* Header */}
           <header className="mb-4 px-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -172,11 +172,11 @@ export const NotePage: React.FC<NotePageProps> = ({
                   value={note.title}
                   onChange={(e) => onTitleChange?.(e.target.value)}
                   placeholder="Your note title..."
-                  className="w-full text-3xl md:text-5xl font-bold bg-transparent outline-none text-text-primary leading-tight"
+                  className="w-full bg-transparent font-serif text-3xl font-normal leading-tight text-text-primary outline-none placeholder:text-stone md:text-5xl"
                   maxLength={200}
                 />
               ) : (
-                <h1 className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 leading-tight">
+                <h1 className="font-serif text-3xl font-normal leading-tight text-text-primary md:text-5xl">
                   {note.title}
                 </h1>
               )}
@@ -237,6 +237,7 @@ export const NotePage: React.FC<NotePageProps> = ({
           showPrintAction
           onPrintClick={handlePrint}
           contentLength={note.content?.length || 0}
+          className="border border-border bg-card"
         />
 
         {note.id && showShareActions && isEditable && (

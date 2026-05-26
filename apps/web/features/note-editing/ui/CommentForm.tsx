@@ -33,7 +33,7 @@ const CommentForm = ({
   const content = (
     <div
       className={cn(
-        "p-4 bg-accent/80 rounded-lg border border-border",
+        "rounded-lg border border-border bg-card p-4",
         className,
       )}
     >
@@ -47,14 +47,14 @@ const CommentForm = ({
           style={{
             scrollbarGutter: "stable",
           }}
-          className="w-full max-h-[300px] overflow-y-auto  focus:ring-none focus:border-none px-3 py-2 bg-accent-50  border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none text-sm border-none"
+          className="max-h-[300px] w-full resize-none overflow-y-auto rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 dark:bg-surface"
           autoFocus
         />
         <div className="flex items-end justify-between">
           <span className="text-xs text-text-muted">{value.length}/1000</span>
           <div className="flex gap-2">
             <button
-              className="rounded-full bg-accent-50 hover:bg-accent-100 m-0 p-2"
+              className="m-0 rounded-full bg-accent p-2 hover:bg-muted-hover"
               onClick={onCancel}
             >
               <XIcon width={14} height={14} />
@@ -62,7 +62,7 @@ const CommentForm = ({
             <button
               onClick={onSubmit}
               disabled={isLoading || !value.trim()}
-              className="rounded-full bg-accent-50 hover:bg-accent-100 m-0 p-2"
+              className="m-0 rounded-full bg-primary p-2 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               <ArrowUpIcon width={14} height={14} />
             </button>

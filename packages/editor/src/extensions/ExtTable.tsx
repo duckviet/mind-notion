@@ -13,7 +13,7 @@ export const ExtTableCell = TableCell.extend({
       {
         ...HTMLAttributes,
         class:
-          "border border-gray-300 p-2 min-w-[100px] relative group vertical-align-top",
+          "relative min-w-[100px] border border-border p-2 align-top",
       },
       0,
     ];
@@ -57,7 +57,7 @@ export const ExtTable = Table.configure({
 
 export const ExtTableRow = TableRow.extend({
   renderHTML({ HTMLAttributes }) {
-    return ["tr", { ...HTMLAttributes, class: "border-b border-gray-300" }, 0];
+    return ["tr", { ...HTMLAttributes, class: "border-b border-border" }, 0];
   },
 });
 

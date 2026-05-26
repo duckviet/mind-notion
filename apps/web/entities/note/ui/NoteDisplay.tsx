@@ -34,7 +34,7 @@ export default function NoteDisplay({
     <div
       ref={ref}
       className={cn(
-        "text-gray-700 leading-relaxed mb-3 line-clamp-6 w-full",
+        "text-text-secondary leading-relaxed mb-3 line-clamp-6 w-full",
         className,
       )}
       style={{

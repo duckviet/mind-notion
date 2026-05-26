@@ -62,7 +62,7 @@ export function TemplatesModal({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              className="fixed inset-0 z-40 bg-foreground/60 backdrop-blur-sm"
               onClick={onClose}
             />
             {/* Modal Content */}
@@ -71,7 +71,7 @@ export function TemplatesModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="fixed left-1/2 top-1/2 z-50 w-[900px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[1.5rem] border border-border bg-card   shadow-2xl"
+              className="fixed left-1/2 top-1/2 z-50 w-[min(900px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-border bg-card shadow-2xl"
             >
               {/* Minimal Header */}
               <div className="flex items-center justify-between px-8 py-6 ">
@@ -91,7 +91,7 @@ export function TemplatesModal({
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={onManageTemplates}
-                      className="flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-accent-50"
+                      className="flex items-center gap-2 rounded-full bg-surface-50 px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-surface-hover"
                     >
                       <Plus size={16} />
                       Create Template
@@ -101,7 +101,7 @@ export function TemplatesModal({
                     whileHover={{ rotate: 90, scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    className="flex h-10 w-10 items-center justify-center rounded-full  -elevated text-text-primary transition-colors hover:bg-destructive hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-elevated text-text-primary transition-colors hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <X size={20} />
                   </motion.button>
@@ -125,10 +125,10 @@ export function TemplatesModal({
                         onSelectTemplate(template);
                         onClose();
                       }}
-                      className="group flex flex-col items-start justify-between gap-4 rounded-[1rem] border border-border  -elevated/30 p-4 text-left transition-all hover:border-accent/50 hover:shadow-lg hover: -elevated/50"
+                      className="group flex flex-col items-start justify-between gap-4 rounded-lg border border-border bg-surface-elevated/30 p-4 text-left transition-all hover:border-brand-500/50 hover:bg-surface-elevated/50 hover:shadow-lg"
                     >
                       <div className="flex items-center gap-2">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg   text-accent shadow-sm transition-colors group-hover:bg-accent group-hover:text-white">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-lg text-brand-600 shadow-sm transition-colors group-hover:bg-brand-600 group-hover:text-primary-foreground">
                           <Icon />
                         </div>
                         <h3 className="text-lg font-semibold text-text-primary transition-colors">
@@ -142,7 +142,7 @@ export function TemplatesModal({
                             {template.tags.slice(0, 3).map((tag) => (
                               <span
                                 key={tag}
-                                className="rounded-xl border border-border   px-2.5 py-1 text-[11px] font-medium text-text-secondary transition-colors group-hover:border-accent/20"
+                                className="rounded-xl border border-border px-2.5 py-1 text-[11px] font-medium text-text-secondary transition-colors group-hover:border-brand-500/20"
                               >
                                 {tag}
                               </span>

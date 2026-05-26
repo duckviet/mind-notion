@@ -29,9 +29,9 @@ const TopOfMindCard: React.FC<TopOfMindCardProps> = ({
           className="cursor-pointer"
           style={{ userSelect: "none", msUserSelect: "none" }}
         >
-          <Card className="w-42 h-32 overflow-hidden rounded-xl  border border-border   py-2 px-4 shadow-sm hover:shadow-md transition-shadow">
+          <Card className="h-32 w-42 overflow-hidden rounded-xl bg-card px-4 py-2  dark:border-border dark:bg-surface-100 dark:shadow-md transition-all hover:border-border-strong dark:hover:border-border-strong dark:hover:bg-surface-200">
             <div className="w-full">
-              <CardTitle className="line-clamp-2 mb-1 text-text-primary">
+              <CardTitle className="mb-1 line-clamp-2 font-serif text-sm font-normal text-text-primary">
                 {note.title}
               </CardTitle>
             </div>

@@ -9,14 +9,13 @@ import { useActiveMark } from "./useActiveMark";
 import { useEditorLifecycle } from "./useEditorLifecycle";
 import { useEditorExtensions } from "./useEditorExtensions";
 import type { UseTiptapEditorProps } from "../types";
-import "../extensions/ExtNoteLayout/layouts.css";
 
 export type { CollaborationConfig, UseTiptapEditorProps } from "../types";
 
 const NOOP = () => {};
 
 const EDITOR_CLASS = cn(
-  "tiptap ProseMirror h-full min-h-[150px] pr-4 focus:outline-none focus:ring-none",
+  "tiptap ProseMirror h-full min-h-[150px] pr-4 focus:outline-none focus:ring-0",
 );
 const READONLY_CLASS = cn(
   EDITOR_CLASS,
@@ -34,6 +33,7 @@ export const useTiptapEditor = ({
   onActiveCommentChange,
   onOpenAI,
   uploadMedia,
+  drawingSyncUri,
 }: UseTiptapEditorProps) => {
   const onKeyDownRef = useStableRef(onKeyDown);
   const uploadMediaRef = useStableRef(
@@ -48,6 +48,7 @@ export const useTiptapEditor = ({
     placeholder,
     collaboration,
     uploadMediaRef,
+    drawingSyncUri,
     onOpenAI: onOpenAI ?? NOOP,
   });
 

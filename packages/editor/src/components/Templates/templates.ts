@@ -49,7 +49,6 @@ export const defaultTemplates: Template[] = [
   <li data-type="taskItem" data-checked="false"></li>
 </ul>`,
     tags: ["Meeting"],
-    color: "#5a8a7d",
   },
   {
     id: "todo",
@@ -62,7 +61,6 @@ export const defaultTemplates: Template[] = [
   <li data-type="taskItem" data-checked="false">Task 3</li>
 </ul>`,
     tags: ["Tasks"],
-    color: "#a55252",
   },
   {
     id: "brainstorm",
@@ -82,7 +80,6 @@ export const defaultTemplates: Template[] = [
   <li></li>
 </ul>`,
     tags: ["Ideas"],
-    color: "#8a7d5a",
   },
   {
     id: "project",
@@ -108,7 +105,6 @@ export const defaultTemplates: Template[] = [
   <li></li>
 </ul>`,
     tags: ["Project", "Planning"],
-    color: "#7d5a8a",
   },
   {
     id: "code",
@@ -124,7 +120,6 @@ export const defaultTemplates: Template[] = [
 <p><strong>Notes:</strong></p>
 <p></p>`,
     tags: ["Code"],
-    color: "#5a7d8a",
   },
   {
     id: "daily",
@@ -147,6 +142,5 @@ export const defaultTemplates: Template[] = [
 <p><strong>Gratitude:</strong></p>
 <p></p>`,
     tags: ["Daily"],
-    color: "#8a5a7d",
   },
 ];

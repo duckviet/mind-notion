@@ -84,9 +84,9 @@ export const RegisterForm = ({
     "pl-10 pr-10 h-11 focus:border-primary/40  shadow-none transition-all";
 
   return (
-    <Card className="w-full backdrop-blur-sm  /80 border-0 shadow-xl shadow-shadow-lg">
+    <Card className="w-full border border-border bg-card shadow-none">
       <CardHeader className="space-y-1 pb-6">
-        <CardTitle className="text-2xl font-bold text-center text-text-primary">
+        <CardTitle className="text-center font-serif text-heading-lg font-normal text-text-primary">
           Create Account
         </CardTitle>
         <CardDescription className="text-center text-text-secondary">
@@ -225,7 +225,7 @@ export const RegisterForm = ({
 
           <Button
             type="submit"
-            className="w-full h-11 bg-primary text-white border-transparent   hover:bg-primary/80 cursor-pointer transition-all"
+            className="h-11 w-full cursor-pointer border-transparent bg-primary text-primary-foreground transition-all hover:bg-primary/90"
             disabled={registerMutation.isPending}
           >
             {registerMutation.isPending ? (
@@ -241,7 +241,7 @@ export const RegisterForm = ({
           <Button
             type="button"
             variant="outline"
-            className="w-full h-11 border-border hover:bg-accent/50 text-text-primary transition-all flex items-center justify-center gap-2"
+            className="flex h-11 w-full items-center justify-center gap-2 border-border text-text-primary transition-all hover:bg-accent"
             onClick={() => {
               window.location.href = googleLoginUrl;
             }}
@@ -255,7 +255,7 @@ export const RegisterForm = ({
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className=" bg-accent px-2 text-text-muted">
+              <span className="bg-card px-2 text-text-muted">
                 Already have an account?
               </span>
             </div>
@@ -265,7 +265,7 @@ export const RegisterForm = ({
             type="button"
             variant="outline"
             onClick={onSwitchToLogin}
-            className="w-full h-11 border-border hover: -elevated hover:border-border text-text-primary transition-all"
+            className="h-11 w-full border-border text-text-primary transition-all hover:bg-accent"
           >
             Sign in instead
           </Button>

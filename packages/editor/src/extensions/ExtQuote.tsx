@@ -4,7 +4,7 @@ const ExtBlockQuote = BlockQuote.extend({
   renderHTML() {
     return [
       "blockquote",
-      { class: "border-l-4 border-gray-300 pl-4 italic my-4" },
+      { class: "my-4 border-l-4 border-border pl-4 italic text-text-secondary" },
       0,
     ];
   },

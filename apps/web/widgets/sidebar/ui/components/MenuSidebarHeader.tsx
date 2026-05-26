@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SidebarHeader } from "@/shared/components/ui/sidebar";
 import { DroppableZone } from "@/shared/components/dnd";
+import { MindNotionAi, MindNotionLogo } from "@/public";
 
 interface MenuSidebarHeaderProps {
   onOpenChatbot: () => void;
@@ -13,20 +14,14 @@ export function MenuSidebarHeader({ onOpenChatbot }: MenuSidebarHeaderProps) {
   return (
     <SidebarHeader className="flex gap-2">
       <Link href="/" className="flex items-center gap-3 min-w-0 flex-1">
-        <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
-          <Image
-            src="/mind-notion-logo.svg"
-            alt="Logo"
-            width={28}
-            height={28}
-            className="rounded-lg"
-          />
+        <div className="flex aspect-square size-8 items-center justify-center rounded-md shadow-sm">
+          <MindNotionLogo className="rounded-lg dark:text-white" />
         </div>
         <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">
-          <span className="font-bold text-lg tracking-tight leading-none truncate">
+          <span className="truncate font-serif text-lg font-normal leading-none">
             Mind Notion
           </span>
-          <span className="text-[10px] font-medium uppercase tracking-wider mt-0.5">
+          <span className="mt-0.5 text-[10px] font-medium uppercase text-text-secondary">
             Workspace
           </span>
         </div>
@@ -39,18 +34,12 @@ export function MenuSidebarHeader({ onOpenChatbot }: MenuSidebarHeaderProps) {
         <button
           type="button"
           onClick={onOpenChatbot}
-          className="size-8 rounded-lg border border-sidebar-border/60 bg-muted/40 hover:bg-muted/70 transition-colors flex items-center justify-center"
+          className="flex size-8 items-center justify-center transition-colors"
           aria-label="Open chatbot"
           title="Mở chatbot hoặc kéo note vào đây"
         >
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-white shadow-sm ring-1 ring-black/5">
-            <Image
-              src="/mind-notion-ai.svg"
-              alt="AI"
-              width={28}
-              height={28}
-              className="rounded"
-            />
+          <div className="flex aspect-square size-8 items-center justify-center rounded-md shadow-sm">
+            <MindNotionAi className="rounded-lg dark:text-white" />
           </div>
         </button>
       </DroppableZone>

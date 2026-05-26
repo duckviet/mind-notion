@@ -34,7 +34,7 @@ const MasonryGrid = dynamic(
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
-    className={`animate-pulse rounded-md  -elevated/50 ${className ?? ""}`}
+    className={`animate-pulse rounded-lg bg-surface-100 ${className ?? ""}`}
   />
 );
 
@@ -110,13 +110,13 @@ export function HomePageContent() {
   ]);
 
   return (
-    <div className="min-h-screen overflow-hidden">
+    <div className="min-h-screen overflow-hidden bg-background">
       <div className="p-6 space-y-6">
         <SearchField
           className="rounded-md"
           query={state.query}
           setQuery={state.setQuery}
-          onEnter={() => {}}
+          onEnter={() => { }}
         />
 
         <SortableContext
@@ -150,7 +150,7 @@ export function HomePageContent() {
 
         <DroppableZone
           id="grid-zone"
-          activeClassName="ring-2 ring-green-300/20 ring-offset-1 ring-offset-green-300/20 rounded-md"
+          activeClassName="ring-2 ring-brand-600/20 ring-offset-1 ring-offset-background rounded-lg"
         >
           <MasonryGrid data={notes} isLoading={isLoading}>
             {isLoading && notes.length === 0 ? (

@@ -50,11 +50,11 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
   return (
     <NodeViewWrapper
       className={cn(
-        "split-view-wrapper relative w-full rounded-lg transition-all duration-200 overflow-visible",
+        "split-view-wrapper relative w-full overflow-visible rounded-lg transition-all duration-200",
         border ? "border" : "border-none",
         padding ? "p-5" : "p-0",
         selected
-          ? "border-accent ring-2 ring-accent/20 shadow-lg"
+          ? "border-brand-600 shadow-lg ring-2 ring-brand-600/20"
           : "border-border",
         isDragging && "select-none",
         isHovered && !selected && "border-border-subtle",
@@ -65,21 +65,21 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
       {/* Floating Toolbar - Higher z-index and better visibility */}
       <div
         className={cn(
-          "absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-md px-2 py-1 shadow-2xl border border-border transition-all duration-300 z-100  whitespace-nowrap",
+          "absolute -top-9 left-1/2 z-[100] flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-md border border-border bg-surface px-2 py-1 shadow-2xl transition-all duration-300",
           isHovered || selected
             ? "opacity-100 translate-y-0 visible  "
             : "opacity-0 translate-y-2 invisible pointer-events-none",
         )}
       >
-        <div className="flex items-center gap-2 text-xs font-medium text-text-primary mr-2">
-          <div className="p-1 rounded bg-background text-accent">
+        <div className="mr-2 flex items-center gap-2 text-xs font-medium text-text-primary">
+          <div className="rounded bg-background p-1 text-brand-600">
             <Columns2 className="h-3.5 w-3.5" />
           </div>
           <span className="opacity-70 text-[10px] uppercase tracking-wider font-bold">
             Split {leftWidth}:{100 - leftWidth}
           </span>
         </div>
-        <div className="h-4 w-px bg-border mx-1" />
+        <div className="mx-1 h-4 w-px bg-border" />
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -88,14 +88,14 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
           className={cn(
             "p-1.5 rounded-full transition-all duration-200",
             border
-              ? "bg-accent/10 text-text-primary hover:bg-accent/20"
-              : "bg-accent/10   hover:text-text-primary",
+              ? "bg-brand-100 text-text-primary hover:bg-brand-100/80"
+              : "bg-surface-hover hover:text-text-primary",
           )}
           title="Toggle split view border"
         >
           <Columns2
             className={cn(
-              "h-4 w-4 bg-accent",
+              "h-4 w-4 text-brand-600",
               border && "[stroke-dasharray:2_4] stroke-primary",
             )}
           />
@@ -108,15 +108,15 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
           className={cn(
             "p-1.5 rounded-full transition-all duration-200",
             padding
-              ? "bg-accent/10 text-text-primary hover:bg-accent/20"
-              : "bg-accent/10   hover:text-text-primary",
+              ? "bg-brand-100 text-text-primary hover:bg-brand-100/80"
+              : "bg-surface-hover hover:text-text-primary",
           )}
           title="Padding toggle"
         >
           {padding ? (
-            <PanelTop className={cn("h-4 w-4 bg-accent")} />
+            <PanelTop className="h-4 w-4 text-brand-600" />
           ) : (
-            <PanelTopDashed className={cn("h-4 w-4 bg-accent")} />
+            <PanelTopDashed className="h-4 w-4 text-brand-600" />
           )}
         </button>
         <button
@@ -134,7 +134,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
       {/* Main container */}
       <div
         ref={containerRef}
-        className="split-view-container w-full relative h-full group wrap-break-word"
+        className="split-view-container group relative h-full w-full wrap-break-word"
         style={
           {
             "--split-left-width": `${leftWidth}%`,
@@ -148,8 +148,8 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
         {/* Resizer handle */}
         <div
           className={cn(
-            "split-view-resizer absolute top-0 bottom-0 w-4 -ml-2 cursor-col-resize  flex items-center justify-center group",
-            isDragging && "bg-accent/10",
+            "split-view-resizer group absolute bottom-0 top-0 -ml-2 flex w-4 cursor-col-resize items-center justify-center",
+            isDragging && "bg-brand-100/50",
           )}
           style={{ left: `${leftWidth}%` }}
           onMouseDown={handleMouseDown}
@@ -158,7 +158,7 @@ const SplitViewComponent: React.FC<NodeViewProps> = ({
             className={cn(
               "h-12 w-1.5 rounded-full transition-all duration-200 shadow-sm opacity-0 group-hover:opacity-100",
               isDragging
-                ? "bg-accent scale-y-125"
+                ? "scale-y-125 bg-brand-600"
                 : "bg-border group-hover:scale-y-110",
             )}
           />

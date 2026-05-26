@@ -13,37 +13,37 @@ export const AI_ACTIONS: AIActionItem[] = [
   {
     id: "improve",
     label: "Improve writing",
-    icon: <Wand2 className="w-4 h-4 text-purple-500" />,
+    icon: <Wand2 className="h-4 w-4 text-brand-600" />,
     description: "Enhance clarity and style",
   },
   {
     id: "fix",
     label: "Fix spelling & grammar",
-    icon: <CheckCircle2 className="w-4 h-4 text-green-500" />,
+    icon: <CheckCircle2 className="h-4 w-4 text-brand-600" />,
     description: "Correct all errors",
   },
   {
     id: "continue",
     label: "Continue writing",
-    icon: <MessageSquare className="w-4 h-4 text-blue-500" />,
+    icon: <MessageSquare className="h-4 w-4 text-brand-600" />,
     description: "Generate next sentences",
   },
   {
     id: "summarize",
     label: "Summarize",
-    icon: <ListChecks className="w-4 h-4 text-orange-500" />,
+    icon: <ListChecks className="h-4 w-4 text-brand-600" />,
     description: "Key points only",
   },
   {
     id: "shorter",
     label: "Make shorter",
-    icon: <FileText className="w-4 h-4 text-slate-500" />,
+    icon: <FileText className="h-4 w-4 text-brand-600" />,
     description: "Brief and concise",
   },
   {
     id: "explain",
     label: "Explain this",
-    icon: <BookOpen className="w-4 h-4 text-emerald-500" />,
+    icon: <BookOpen className="h-4 w-4 text-brand-600" />,
     description: "Simplify complex ideas",
   },
 ];

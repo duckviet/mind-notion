@@ -119,8 +119,9 @@ const DrawingNodeView: React.FC<NodeViewProps> = ({
   return (
     <>
       <NodeViewWrapper
+        contentEditable={false}
         className={cn(
-          "my-3 overflow-hidden relative group",
+          "my-3 overflow-hidden relative group select-none",
           selected && "ring-2 ring-accent/30",
         )}
       >

@@ -59,9 +59,9 @@ export const LoginForm = ({
   };
 
   return (
-    <Card className="w-full backdrop-blur-sm  /80 border-0 shadow-xl shadow-shadow-lg">
+    <Card className="w-full border border-border bg-card shadow-none">
       <CardHeader className="space-y-1 pb-6">
-        <CardTitle className="text-2xl font-bold text-center text-text-primary">
+        <CardTitle className="text-center font-serif text-heading-lg font-normal text-text-primary">
           Welcome Back
         </CardTitle>
         <CardDescription className="text-center text-text-secondary">
@@ -73,7 +73,7 @@ export const LoginForm = ({
           {loginMutation.error && (
             <Alert
               variant="destructive"
-              className="bg-red-50 border-red-200 text-red-700"
+              className="border-destructive/30 bg-destructive/10 text-destructive"
             >
               <AlertDescription>
                 {loginMutation.error.message ||
@@ -104,8 +104,8 @@ export const LoginForm = ({
               />
             </div>
             {errors.username && (
-              <p className="text-sm text-red-500 flex items-center gap-1">
-                <span className="inline-block w-1 h-1 bg-red-500 rounded-full" />
+              <p className="flex items-center gap-1 text-sm text-destructive">
+                <span className="inline-block h-1 w-1 rounded-full bg-destructive" />
                 {errors.username.message}
               </p>
             )}
@@ -154,7 +154,7 @@ export const LoginForm = ({
           <Button
             type="submit"
             variant="default"
-            className="w-full h-11 bg-primary text-white border-transparent   hover:bg-primary/80 cursor-pointer transition-all"
+            className="h-11 w-full cursor-pointer border-transparent bg-primary text-primary-foreground transition-all hover:bg-primary/90"
             disabled={loginMutation.isPending}
           >
             {loginMutation.isPending ? (
@@ -170,7 +170,7 @@ export const LoginForm = ({
           <Button
             type="button"
             variant="outline"
-            className="w-full h-11 border-border hover:bg-accent/50 text-text-primary transition-all flex items-center justify-center gap-2"
+            className="flex h-11 w-full items-center justify-center gap-2 border-border text-text-primary transition-all hover:bg-accent"
             onClick={() => {
               window.location.href = googleLoginUrl;
             }}
@@ -184,7 +184,7 @@ export const LoginForm = ({
               <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-accent  px-2 text-text-muted">
+              <span className="bg-card px-2 text-text-muted">
                 New to our platform?
               </span>
             </div>
@@ -194,7 +194,7 @@ export const LoginForm = ({
             type="button"
             variant="outline"
             onClick={onSwitchToRegister}
-            className="w-full h-11 border-border hover: -elevated hover:border-border text-text-primary transition-all"
+            className="h-11 w-full border-border text-text-primary transition-all hover:bg-accent"
           >
             Create an account
           </Button>

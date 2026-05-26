@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { NodeViewWrapper, NodeViewProps } from "@tiptap/react";
+import { cn } from "../../utils/cn";
 import ResizableMediaContainer, {
   type ResizeDimensions,
   type ResizeResult,
@@ -53,7 +54,7 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
   };
 
   return (
-    <NodeViewWrapper className="relative inline-block my-2 group">
+    <NodeViewWrapper contentEditable={false} className="group relative my-2 inline-block select-none">
       <figure className="inline-flex flex-col items-center">
         <ResizableMediaContainer
           width={dimensions.width}
@@ -67,13 +68,7 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
             src={node.attrs.src}
             alt={node.attrs.alt || ""}
             title={node.attrs.title || ""}
-            style={{
-              borderRadius: "8px",
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              display: "block",
-            }}
+            className="block h-full w-full rounded-lg object-contain"
           />
         </ResizableMediaContainer>
 
@@ -86,14 +81,12 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
             onFocus={() => setIsCaptionFocused(true)}
             onBlur={() => setIsCaptionFocused(false)}
             placeholder="Add a caption..."
-            className={`
-              mt-1 w-full text-center text-xs text-muted-foreground
-              bg-transparent border-none outline-none
-              placeholder:text-muted-foreground/50
-              focus:placeholder:text-muted-foreground/30
-              ${!caption && !isCaptionFocused && !selected ? "opacity-0 group-hover:opacity-100" : "opacity-100"}
-              transition-opacity duration-200
-            `}
+            className={cn(
+              "mt-1 w-full border-none bg-transparent text-center text-xs text-muted-foreground outline-none transition-opacity duration-200 placeholder:text-muted-foreground/50 focus:placeholder:text-muted-foreground/30",
+              !caption && !isCaptionFocused && !selected
+                ? "opacity-0 group-hover:opacity-100"
+                : "opacity-100",
+            )}
             style={{
               maxWidth: dimensions.width !== "auto" ? dimensions.width : "100%",
             }}
@@ -101,7 +94,7 @@ const ResizableImageComponent: React.FC<NodeViewProps> = ({
         ) : (
           caption && (
             <figcaption
-              className="mt-2 text-center text-sm text-muted-foreground italic"
+              className="mt-2 text-center text-sm italic text-muted-foreground"
               style={{
                 maxWidth:
                   dimensions.width !== "auto" ? dimensions.width : "100%",

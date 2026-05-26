@@ -33,4 +33,5 @@ export interface UseTiptapEditorProps {
     context: AISelectionContext,
   ) => void;
   uploadMedia?: (file: File) => Promise<string>;
+  drawingSyncUri?: string;
 }

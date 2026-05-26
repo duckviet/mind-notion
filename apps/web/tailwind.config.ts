@@ -15,14 +15,33 @@ const config: Config = {
         sans: [
           "var(--app-font-family)",
           "Inter",
-          "SF Pro Display",
           "-apple-system",
           "BlinkMacSystemFont",
           "sans-serif",
         ],
+        serif: [
+          "var(--font-anthropic-serif)",
+          "Lora",
+          "Georgia",
+          "serif",
+        ],
         mono: ["SF Mono", "Monaco", "Inconsolata", "Roboto Mono", "monospace"],
       },
       colors: {
+        vellum: {
+          white: "var(--color-vellum-white)",
+        },
+        ink: {
+          black: "var(--color-ink-black)",
+        },
+        onyx: "var(--color-onyx)",
+        graphite: "var(--color-graphite)",
+        stone: "var(--color-stone)",
+        parchment: "var(--color-parchment)",
+        "dusty-gray": "var(--color-dusty-gray)",
+        "snow-white": "var(--color-snow-white)",
+        "pale-azure": "var(--color-pale-azure)",
+        "terra-cotta": "var(--color-terra-cotta)",
         /* Modern & Minimal Theme Colors */
         background: "var(--background)",
         surface: {
@@ -86,9 +105,9 @@ const config: Config = {
 
         /* Legacy colors for compatibility */
         glass: {
-          bg: "rgba(255, 255, 255, 0.85)",
-          border: "rgba(148, 163, 184, 0.2)",
-          hover: "rgba(255, 255, 255, 0.95)",
+          bg: "var(--surface-elevated)",
+          border: "var(--border-subtle)",
+          hover: "var(--surface-hover)",
         },
       },
       boxShadow: {
@@ -105,7 +124,7 @@ const config: Config = {
           "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
         "glass-xl":
           "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-        "glass-hover": "0 8px 32px rgba(102, 126, 234, 0.15)",
+        "glass-hover": "var(--shadow-md)",
 
         /* Focus ring */
         focus: "var(--focus-ring)",
@@ -115,9 +134,9 @@ const config: Config = {
         search: "10px",
       },
       borderRadius: {
-        glass: "12px",
+        glass: "9.6px",
         search: "24px",
-        lg: "12px",
+        lg: "9.6px",
         md: "8px",
         sm: "6px",
       },
@@ -165,7 +184,7 @@ const config: Config = {
           css: {
             "--tw-prose-headings": "var(--text-primary)",
             "--tw-prose-body": "var(--text-secondary)",
-            "--tw-prose-links": "var(--accent-600)",
+            "--tw-prose-links": "var(--brand-600)",
           },
         },
       },

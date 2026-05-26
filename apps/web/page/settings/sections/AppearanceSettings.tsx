@@ -53,16 +53,15 @@ const AppearanceSettings = () => {
   ];
 
   const fonts: { value: FontFamily; label: string; preview: string }[] = [
+    { value: "academic", label: "Academic", preview: "Aa" },
     { value: "inter", label: "Inter", preview: "Aa" },
-    { value: "geist", label: "Geist", preview: "Aa" },
     { value: "system", label: "System", preview: "Aa" },
   ];
 
   const colors: { value: PrimaryColor; label: string; color: string }[] = [
-    { value: "neutral", label: "Neutral", color: "bg-neutral-500" },
-    { value: "blue", label: "Blue", color: "bg-blue-500" },
-    { value: "purple", label: "Purple", color: "bg-purple-500" },
-    { value: "green", label: "Green", color: "bg-green-500" },
+    { value: "neutral", label: "Neutral", color: "bg-graphite" },
+    { value: "terra", label: "Terra Cotta", color: "bg-terra-cotta" },
+    { value: "azure", label: "Pale Azure", color: "bg-pale-azure" },
   ];
 
   const handleThemeChange = (theme: Theme) => {
@@ -78,7 +77,7 @@ const AppearanceSettings = () => {
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div className="space-y-1">
-        <h2 className="text-2xl font-bold tracking-tight text-text-primary">
+        <h2 className="font-serif text-heading-lg font-normal text-text-primary">
           Appearance
         </h2>
         <p className="text-text-secondary">
@@ -87,9 +86,9 @@ const AppearanceSettings = () => {
       </div>
 
       {/* Theme Section */}
-      <Card className="border border-border   shadow-sm">
+      <Card className="border border-border bg-card shadow-none">
         <CardHeader className="pb-4">
-          <CardTitle className="text-base font-semibold text-text-primary">
+          <CardTitle className="font-serif text-heading font-normal text-text-primary">
             Theme
           </CardTitle>
           <CardDescription className="text-sm text-text-secondary">
@@ -107,10 +106,10 @@ const AppearanceSettings = () => {
                   key={theme.value}
                   onClick={() => handleThemeChange(theme.value)}
                   className={cn(
-                    "group relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 px-4 py-5 transition-all duration-200",
+                    "group relative flex flex-col items-center justify-center gap-2 rounded-lg border px-4 py-5 transition-all duration-200",
                     isSelected
-                      ? "border-border-strong   shadow-sm"
-                      : "border-border bg-muted hover:border-text-secondary hover:bg-muted-hover",
+                      ? "border-border-strong bg-surface-elevated"
+                      : "border-border bg-muted hover:border-border-strong hover:bg-muted-hover",
                   )}
                 >
                   <div className="text-text-secondary">{theme.icon}</div>
@@ -130,9 +129,9 @@ const AppearanceSettings = () => {
       {/* Primary Color & Typography */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Primary Color */}
-        <Card className="border border-border   shadow-sm">
+        <Card className="border border-border bg-card shadow-none">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold text-text-primary">
+            <CardTitle className="font-serif text-heading font-normal text-text-primary">
               Primary Color
             </CardTitle>
             <CardDescription className="text-sm text-text-secondary">
@@ -148,14 +147,14 @@ const AppearanceSettings = () => {
                     key={color.value}
                     onClick={() => setPrimaryColor(color.value)}
                     className={cn(
-                      "relative flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200 hover:scale-110",
+                      "relative flex h-12 w-12 items-center justify-center rounded-full border border-border transition-all duration-200 hover:border-border-strong",
                       color.color,
                       isSelected &&
-                        "ring-2 ring-accent ring-offset-2 ring-offset-surface",
+                      "ring-2 ring-brand-600 ring-offset-2 ring-offset-surface",
                     )}
                     title={color.label}
                   >
-                    {isSelected && <Check className="h-5 w-5 text-white" />}
+                    {isSelected && <Check className="h-5 w-5 text-text-inverse" />}
                   </button>
                 );
               })}
@@ -164,9 +163,9 @@ const AppearanceSettings = () => {
         </Card>
 
         {/* Typography */}
-        <Card className="border border-border   shadow-sm">
+        <Card className="border border-border bg-card shadow-none">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base font-semibold text-text-primary">
+            <CardTitle className="font-serif text-heading font-normal text-text-primary">
               Typography
             </CardTitle>
             <CardDescription className="text-sm text-text-secondary">
@@ -182,16 +181,17 @@ const AppearanceSettings = () => {
                     key={font.value}
                     onClick={() => setFontFamily(font.value)}
                     className={cn(
-                      "relative flex flex-col items-center justify-center rounded-xl border-2 px-3 py-4 transition-all duration-200",
+                      "relative flex flex-col items-center justify-center rounded-lg border px-3 py-4 transition-all duration-200",
                       isSelected
-                        ? "border-accent bg-accent-light"
-                        : "border-border bg-muted hover:border-text-secondary hover:bg-muted-hover",
+                        ? "border-brand-600 bg-brand-50"
+                        : "border-border bg-muted hover:border-border-strong hover:bg-muted-hover",
                     )}
                   >
                     <span
                       className={cn(
-                        "text-xl font-semibold",
-                        isSelected ? "text-accent" : "text-text-primary",
+                        "text-xl",
+                        font.value === "academic" && "font-serif",
+                        isSelected ? "text-brand-600" : "text-text-primary",
                       )}
                     >
                       {font.preview}
@@ -199,13 +199,13 @@ const AppearanceSettings = () => {
                     <span
                       className={cn(
                         "mt-1 text-xs",
-                        isSelected ? "text-accent" : "text-text-muted",
+                        isSelected ? "text-brand-600" : "text-text-muted",
                       )}
                     >
                       {font.label}
                     </span>
                     {isSelected && (
-                      <Check className="absolute right-2 top-2 h-4 w-4 text-accent" />
+                      <Check className="absolute right-2 top-2 h-4 w-4 text-brand-600" />
                     )}
                   </button>
                 );
@@ -216,9 +216,9 @@ const AppearanceSettings = () => {
       </div>
 
       {/* Layout Density */}
-      <Card className="border border-border   shadow-sm">
+      <Card className="border border-border bg-card shadow-none">
         <CardHeader className="pb-4">
-          <CardTitle className="text-base font-semibold text-text-primary">
+          <CardTitle className="font-serif text-heading font-normal text-text-primary">
             Layout Density
           </CardTitle>
           <CardDescription className="text-sm text-text-secondary">
@@ -234,28 +234,28 @@ const AppearanceSettings = () => {
                   key={mode.value}
                   onClick={() => setViewMode(mode.value)}
                   className={cn(
-                    "relative flex items-start gap-4 rounded-xl border-2 p-4 text-left transition-all duration-200",
+                    "relative flex items-start gap-4 rounded-lg border p-4 text-left transition-all duration-200",
                     isSelected
-                      ? "border-accent bg-accent-light"
-                      : "border-border bg-muted hover:border-text-secondary hover:bg-muted-hover",
+                      ? "border-brand-600 bg-brand-50"
+                      : "border-border bg-muted hover:border-border-strong hover:bg-muted-hover",
                   )}
                 >
                   {/* Radio indicator */}
                   <div
                     className={cn(
                       "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
-                      isSelected ? "border-accent" : "border-text-muted",
+                      isSelected ? "border-brand-600" : "border-text-muted",
                     )}
                   >
                     {isSelected && (
-                      <div className="h-2.5 w-2.5 rounded-full bg-accent" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-brand-600" />
                     )}
                   </div>
                   <div>
                     <div
                       className={cn(
                         "font-medium",
-                        isSelected ? "text-accent" : "text-text-primary",
+                        isSelected ? "text-brand-600" : "text-text-primary",
                       )}
                     >
                       {mode.label}
@@ -272,9 +272,9 @@ const AppearanceSettings = () => {
       </Card>
 
       {/* Live Preview */}
-      <Card className="border border-border   shadow-sm">
+      <Card className="border border-border bg-card shadow-none">
         <CardHeader className="pb-4">
-          <CardTitle className="text-base font-semibold text-text-primary">
+          <CardTitle className="font-serif text-heading font-normal text-text-primary">
             Live Preview
           </CardTitle>
           <CardDescription className="text-sm text-text-secondary">
@@ -284,39 +284,39 @@ const AppearanceSettings = () => {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2">
             {/* Preview Card 1 */}
-            <div className="rounded-xl border border-border bg-muted p-4">
+            <div className="rounded-lg border border-border bg-muted p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-text-primary">
+                  <div className="text-sm font-medium text-text-primary">
                     Project card
                   </div>
                   <div className="text-xs text-text-secondary">
                     Updated just now
                   </div>
                 </div>
-                <span className="rounded-full bg-accent-light px-2.5 py-1 text-xs font-medium text-accent">
+                <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-600">
                   Active
                 </span>
               </div>
               <div className="mt-4 space-y-2">
-                <div className="h-2 rounded-full bg-accent-light" />
+                <div className="h-2 rounded-full bg-brand-50" />
                 <div className="h-2 w-3/4 rounded-full bg-border" />
               </div>
               <div className="mt-4 flex gap-2">
-                <button className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-text-inverse transition-colors hover:bg-accent-hover">
+                <button className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
                   Primary
                 </button>
-                <button className="rounded-lg border border-border   px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:border-accent hover:text-accent">
+                <button className="rounded-lg border border-border px-3 py-2 text-sm font-medium text-text-primary transition-colors hover:border-border-strong">
                   Secondary
                 </button>
               </div>
             </div>
 
             {/* Preview Card 2 */}
-            <div className="rounded-xl border border-border bg-muted p-4">
+            <div className="rounded-lg border border-border bg-muted p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-text-primary">
+                  <div className="text-sm font-medium text-text-primary">
                     Form preview
                   </div>
                   <div className="text-xs text-text-secondary">
@@ -330,13 +330,13 @@ const AppearanceSettings = () => {
               <div className="mt-3 space-y-3">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs text-text-muted">Input label</span>
-                  <div className="rounded-lg border border-border   px-3 py-2 text-sm text-text-muted">
+                  <div className="rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text-muted">
                     Placeholder text
                   </div>
                 </div>
                 <div className="flex items-center justify-between rounded-lg border border-dashed border-border px-3 py-2">
                   <span className="text-xs text-text-secondary">Toggle</span>
-                  <div className="relative h-5 w-9 rounded-full bg-accent">
+                  <div className="relative h-5 w-9 rounded-full bg-brand-600">
                     <div className="absolute right-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-sm" />
                   </div>
                 </div>

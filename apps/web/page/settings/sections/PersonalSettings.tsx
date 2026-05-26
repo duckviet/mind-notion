@@ -108,7 +108,7 @@ const PersonalSettings = () => {
                     id="name"
                     {...register("name")}
                     placeholder="John Doe"
-                    className="pl-9 h-10  -elevated border-border"
+                    className="pl-9 h-10 bg-surface-elevated border-border"
                   />
                 </div>
                 {errors.name && (
@@ -132,7 +132,7 @@ const PersonalSettings = () => {
                     type="email"
                     {...register("email")}
                     placeholder="john@example.com"
-                    className="pl-9 h-10  -elevated border-border"
+                    className="pl-9 h-10 bg-surface-elevated border-border"
                   />
                 </div>
                 {errors.email && (
@@ -156,7 +156,7 @@ const PersonalSettings = () => {
                   id="avatar"
                   {...register("avatar")}
                   placeholder="https://example.com/avatar.jpg"
-                  className="pl-9 h-10  -elevated border-border"
+                  className="pl-9 h-10 bg-surface-elevated border-border"
                 />
               </div>
               {errors.avatar && (

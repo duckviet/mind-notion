@@ -73,17 +73,17 @@ const CodeBlockComponent = (props: any) => {
           >
             <SelectTrigger
               ref={selectRef}
-              className="h-6 w-fit px-2 rounded bg-accent-100  text-text-primary border-none"
+              className="h-6 w-fit rounded border-none bg-surface-100 px-2 text-text-primary"
             >
               <SelectValue placeholder="Code Language" />
             </SelectTrigger>
-            <SelectContent className="z-100 cursor-pointer border-none shadow-md">
+            <SelectContent className="z-[100] cursor-pointer border-none shadow-md">
               {[
                 { value: "plaintext", label: "plaintext" },
                 ...languageList,
               ].map(({ label, value }) => (
                 <SelectItem
-                  className="focus:bg-accent-500/20 text-primary cursor-pointer"
+                  className="cursor-pointer text-text-primary focus:bg-brand-100"
                   value={value}
                   key={value}
                 >
@@ -95,7 +95,7 @@ const CodeBlockComponent = (props: any) => {
 
           <button
             onClick={handleCopy}
-            className="  h-6 ml-2 p-1 text-xs rounded border border-gray-200 bg-white font-mono shadow transition-all hover:bg-gray-100 active:scale-95"
+            className="ml-2 h-6 rounded border border-border bg-surface px-1 font-mono text-xs text-text-primary shadow transition-all hover:bg-surface-hover active:scale-95"
             tabIndex={-1}
             aria-label="Copy code"
             type="button"
@@ -109,7 +109,7 @@ const CodeBlockComponent = (props: any) => {
         </div>
       </div>
       <pre
-        className="p-4 -mt-10  font-mono  text-sm overflow-x-auto"
+        className="-mt-10 overflow-x-auto p-4 font-mono text-sm"
         spellCheck={false}
         data-language={language}
       >

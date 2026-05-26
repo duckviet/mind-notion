@@ -64,13 +64,13 @@ const LinkHoverPopup = ({ editor }: LinkHoverPopupProps) => {
         icon={Pencil}
         title="Edit link"
         onClick={handleEdit}
-        hoverColor="text-blue-600"
+        hoverColor="text-brand-600"
       />
       <IconButton
         icon={Trash2}
         title="Remove link"
         onClick={handleRemove}
-        hoverColor="text-red-600"
+        hoverColor="text-destructive"
       />
     </PopupContainer>
   );

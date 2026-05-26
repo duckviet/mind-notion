@@ -74,12 +74,11 @@ export const CollaborativeSidebar: React.FC<CollaborativeSidebarProps> = ({
       animate={{ width: isSidebarCollapsed ? 50 : 320 }}
       transition={{ type: "spring", stiffness: 260, damping: 30 }}
       className={cn(
-        "shrink-0 rounded-lg  p-4 pl-6 flex flex-col bg-surface overflow-auto dark:border dark:border-border",
+        "flex shrink-0 flex-col overflow-auto rounded-lg p-2 shadow-none",
+        "dark:bg-transparent",
         className,
       )}
-      style={{
-        scrollbarGutter: "stable",
-      }}
+
     >
       <motion.div
         initial={false}
@@ -155,7 +154,7 @@ export const CollaborativeSidebar: React.FC<CollaborativeSidebarProps> = ({
             exit={{ opacity: 0, x: 8 }}
             transition={{ duration: 0.15 }}
             className={cn(
-              "flex flex-col space-y-10 mt-4 min-w-0 mr-2",
+              "flex flex-col space-y-10 mt-4 min-w-0 px-2",
               contentClassName,
             )}
           >
@@ -176,7 +175,7 @@ export const CollaborativeSidebar: React.FC<CollaborativeSidebarProps> = ({
               />
             )}
             {contentLength !== undefined && (
-              <div className="text-xs text-right mt-auto text-gray-500">
+              <div className="text-xs text-right mt-auto text-text-muted">
                 {contentLength} chars
               </div>
             )}

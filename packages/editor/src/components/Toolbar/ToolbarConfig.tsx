@@ -27,6 +27,7 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
+  Minus,
 } from "lucide-react";
 import TableSizeDropdown from "./TableSizeDropdown";
 import CommentPopover from "./CommentPopover";
@@ -70,69 +71,11 @@ export const getHeaderToolbarConfigs = ({
   editor,
   options,
 }: ToolbarConfigProps): ToolbarGroup[] => {
-  const onAddImage = options.onAddImage ?? (() => {});
+  const onAddImage = options.onAddImage ?? (() => { });
   const onAddDrawing =
     options.onAddDrawing ?? (() => editor.commands.insertDrawing());
 
   return [
-    {
-      name: "formatting",
-      items: [
-        {
-          icon: <Bold size={16} />,
-          tooltip: "Bold",
-          isActive: () => editor.isActive("bold"),
-          onClick: () => editor.chain().focus().toggleBold().run(),
-        },
-        {
-          icon: <Italic size={16} />,
-          tooltip: "Italic",
-          isActive: () => editor.isActive("italic"),
-          onClick: () => editor.chain().focus().toggleItalic().run(),
-        },
-        {
-          icon: <Strikethrough size={16} />,
-          tooltip: "Strikethrough",
-          isActive: () => editor.isActive("strike"),
-          onClick: () => editor.chain().focus().toggleStrike().run(),
-        },
-        {
-          icon: <Highlighter size={16} />,
-          tooltip: "Highlighter",
-          isActive: () => editor.isActive("highlight"),
-          onClick: () => editor.chain().focus().toggleHighlight().run(),
-        },
-      ],
-    },
-    {
-      name: "alignment",
-      items: [
-        {
-          icon: <AlignLeft size={16} />,
-          tooltip: "Align Left",
-          isActive: () => editor.isActive({ textAlign: "left" }),
-          onClick: () => editor.chain().focus().setTextAlign("left").run(),
-        },
-        {
-          icon: <AlignCenter size={16} />,
-          tooltip: "Align Center",
-          isActive: () => editor.isActive({ textAlign: "center" }),
-          onClick: () => editor.chain().focus().setTextAlign("center").run(),
-        },
-        {
-          icon: <AlignRight size={16} />,
-          tooltip: "Align Right",
-          isActive: () => editor.isActive({ textAlign: "right" }),
-          onClick: () => editor.chain().focus().setTextAlign("right").run(),
-        },
-        {
-          icon: <AlignJustify size={16} />,
-          tooltip: "Justify",
-          isActive: () => editor.isActive({ textAlign: "justify" }),
-          onClick: () => editor.chain().focus().setTextAlign("justify").run(),
-        },
-      ],
-    },
     {
       name: "headings",
       items: [1, 2, 3].map((level) => ({
@@ -178,13 +121,42 @@ export const getHeaderToolbarConfigs = ({
       ],
     },
     {
+      name: "alignment",
+      items: [
+        {
+          icon: <AlignLeft size={16} />,
+          tooltip: "Align Left",
+          isActive: () => editor.isActive({ textAlign: "left" }),
+          onClick: () => editor.chain().focus().setTextAlign("left").run(),
+        },
+        {
+          icon: <AlignCenter size={16} />,
+          tooltip: "Align Center",
+          isActive: () => editor.isActive({ textAlign: "center" }),
+          onClick: () => editor.chain().focus().setTextAlign("center").run(),
+        },
+        {
+          icon: <AlignRight size={16} />,
+          tooltip: "Align Right",
+          isActive: () => editor.isActive({ textAlign: "right" }),
+          onClick: () => editor.chain().focus().setTextAlign("right").run(),
+        },
+        {
+          icon: <AlignJustify size={16} />,
+          tooltip: "Justify",
+          isActive: () => editor.isActive({ textAlign: "justify" }),
+          onClick: () => editor.chain().focus().setTextAlign("justify").run(),
+        },
+      ],
+    },
+    {
       name: "insert",
       items: [
         {
           icon: null,
           tooltip: "Table",
           isActive: () => editor.isActive("table"),
-          onClick: () => {}, // Handled by component
+          onClick: () => { }, // Handled by component
           isDropdown: true,
           DropdownNode: <TableSizeDropdown editor={editor} />,
         },
@@ -281,25 +253,25 @@ export const getHeaderToolbarConfigs = ({
     },
     ...(options.noteId
       ? [
-          {
-            name: "layout",
-            items: [
-              {
-                icon: null,
-                tooltip: "Page Layout",
-                isActive: () => false,
-                onClick: () => {},
-                isDropdown: true,
-                DropdownNode: (
-                  <NoteLayoutDropdown
-                    editor={editor}
-                    noteId={options.noteId!}
-                  />
-                ),
-              },
-            ],
-          },
-        ]
+        {
+          name: "layout",
+          items: [
+            {
+              icon: null,
+              tooltip: "Page Layout",
+              isActive: () => false,
+              onClick: () => { },
+              isDropdown: true,
+              DropdownNode: (
+                <NoteLayoutDropdown
+                  editor={editor}
+                  noteId={options.noteId!}
+                />
+              ),
+            },
+          ],
+        },
+      ]
       : []),
   ];
 };
@@ -327,7 +299,7 @@ export const getBubbleToolbarConfigs = ({
               createComment={options.createComment}
             />
           ),
-          onClick: () => {},
+          onClick: () => { },
           // editor.chain().focus().setComment({ id: "" }).run(),
         },
       ],
@@ -342,7 +314,7 @@ export const getBubbleToolbarConfigs = ({
           isActive: () => editor.isActive("proposedEdits"),
           isPopover: true,
           PopoverNode: <ProposedEditPopover editor={editor} />,
-          onClick: () => {},
+          onClick: () => { },
         },
       ],
     },
@@ -401,62 +373,6 @@ export const getBubbleToolbarConfigs = ({
         },
       ],
     },
-    {
-      name: "structure",
-      items: [
-        {
-          icon: <Heading1 size={14} />,
-          tooltip: "Heading 1",
-          isActive: () => editor.isActive("heading", { level: 1 }),
-          onClick: () =>
-            editor.chain().focus().toggleHeading({ level: 1 }).run(),
-        },
-        {
-          icon: <Heading2 size={14} />,
-          tooltip: "Heading 2",
-          isActive: () => editor.isActive("heading", { level: 2 }),
-          onClick: () =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run(),
-        },
-        // Heading 3 đôi khi thừa ở bubble menu nhỏ, có thể bỏ nếu muốn gọn
-        {
-          icon: <Heading3 size={14} />,
-          tooltip: "Heading 3",
-          isActive: () => editor.isActive("heading", { level: 3 }),
-          onClick: () =>
-            editor.chain().focus().toggleHeading({ level: 3 }).run(),
-        },
-      ],
-    },
-    {
-      name: "lists_and_blocks",
-      items: [
-        {
-          icon: <Quote size={14} />,
-          tooltip: "Blockquote",
-          isActive: () => editor.isActive("blockquote"),
-          onClick: () => editor.chain().focus().toggleBlockquote().run(),
-        },
-        {
-          icon: <List size={14} />,
-          tooltip: "Bullet List",
-          isActive: () => editor.isActive("bulletList"),
-          onClick: () => editor.chain().focus().toggleBulletList().run(),
-        },
-        {
-          icon: <ListOrdered size={14} />,
-          tooltip: "Numbered List",
-          isActive: () => editor.isActive("orderedList"),
-          onClick: () => editor.chain().focus().toggleOrderedList().run(),
-        },
-        {
-          icon: <CheckSquare size={14} />,
-          tooltip: "Task List",
-          isActive: () => editor.isActive("taskList"),
-          onClick: () => editor.chain().focus().toggleTaskList().run(),
-        },
-      ],
-    },
   ];
 };
 
@@ -464,40 +380,11 @@ export const getSplashMenuToolbarConfigs = ({
   editor,
   options,
 }: ToolbarConfigProps): ToolbarGroup[] => {
-  const onAddImage = options.onAddImage ?? (() => {});
+  const onAddImage = options.onAddImage ?? (() => { });
   const onAddDrawing =
     options.onAddDrawing ?? (() => editor.commands.insertDrawing());
 
   return [
-    {
-      name: "formatting",
-      items: [
-        {
-          icon: <Bold size={16} />,
-          tooltip: "Bold",
-          isActive: () => editor.isActive("bold"),
-          onClick: () => editor.chain().focus().toggleBold().run(),
-        },
-        {
-          icon: <Italic size={16} />,
-          tooltip: "Italic",
-          isActive: () => editor.isActive("italic"),
-          onClick: () => editor.chain().focus().toggleItalic().run(),
-        },
-        {
-          icon: <Strikethrough size={16} />,
-          tooltip: "Strikethrough",
-          isActive: () => editor.isActive("strike"),
-          onClick: () => editor.chain().focus().toggleStrike().run(),
-        },
-        {
-          icon: <Highlighter size={16} />,
-          tooltip: "Highlighter",
-          isActive: () => editor.isActive("highlight"),
-          onClick: () => editor.chain().focus().toggleHighlight().run(),
-        },
-      ],
-    },
     {
       name: "insert",
       items: [
@@ -505,35 +392,9 @@ export const getSplashMenuToolbarConfigs = ({
           icon: null,
           tooltip: "Table",
           isActive: () => editor.isActive("table"),
-          onClick: () => {}, // Handled by component
+          onClick: () => { }, // Handled by component
           isDropdown: true,
           DropdownNode: <TableSizeDropdown editor={editor} />,
-        },
-
-        {
-          icon: <Quote size={16} />,
-          tooltip: "Quote",
-          isActive: () => editor.isActive("blockquote"),
-          onClick: () => editor.chain().focus().toggleBlockquote().run(),
-        },
-        {
-          icon: <Code2 size={16} />,
-          tooltip: "Code Block",
-          isActive: () => editor.isActive("codeBlock"),
-          onClick: () => editor.chain().focus().toggleCodeBlock().run(),
-        },
-        {
-          icon: <Link2 size={16} />,
-          tooltip: "Add Link",
-          isActive: () => editor.isActive("link"),
-          onClick: () => {
-            editor
-              .chain()
-              .focus()
-              .extendMarkRange("link")
-              .setLink({ href: "https://" })
-              .run();
-          },
         },
         {
           icon: <ImageIcon size={16} />,
@@ -546,6 +407,24 @@ export const getSplashMenuToolbarConfigs = ({
           tooltip: "Add Drawing",
           isActive: () => false,
           onClick: onAddDrawing,
+        },
+        {
+          icon: <Minus size={16} />,
+          tooltip: "Divider",
+          isActive: () => editor.isActive("horizontalRule"),
+          onClick: () => editor.chain().focus().setHorizontalRule().run(),
+        },
+        {
+          icon: <Code2 size={16} />,
+          tooltip: "Code Block",
+          isActive: () => editor.isActive("codeBlock"),
+          onClick: () => editor.chain().focus().toggleCodeBlock().run(),
+        },
+        {
+          icon: <Quote size={16} />,
+          tooltip: "Quote",
+          isActive: () => editor.isActive("blockquote"),
+          onClick: () => editor.chain().focus().toggleBlockquote().run(),
         },
         {
           icon: <Columns2 size={16} />,

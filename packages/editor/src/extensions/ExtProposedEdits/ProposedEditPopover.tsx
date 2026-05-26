@@ -103,8 +103,8 @@ const ProposedEditPopover = ({
         }}
         onClick={handleOpen}
         className={cn(
-          "flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors hover:bg-accent-foreground/40 hover:text-primary-foreground",
-          isOpen && "bg-[#a55252] text-white",
+          "flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors hover:bg-surface-hover hover:text-text-primary",
+          isOpen && "bg-brand-600 text-primary-foreground",
         )}
       >
         <FileEdit size={14} /> Propose Edit
@@ -117,11 +117,11 @@ const ProposedEditPopover = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 top-full z-50 mt-4 rounded-lg border border-border bg-accent py-1 px-2 shadow-lg"
+            className="absolute left-0 top-full z-50 mt-4 rounded-lg border border-border bg-surface px-2 py-1 shadow-lg"
           >
             <div className="flex w-72 items-end gap-1">
               <Textarea
-                className="max-h-[300px] min-h-[36px] flex-1 resize-none overflow-y-auto border-none bg-accent text-sm focus-visible:ring-1 focus-visible:ring-ring"
+                className="max-h-[300px] min-h-[36px] flex-1 resize-none overflow-y-auto border-none bg-surface text-sm focus-visible:ring-1 focus-visible:ring-ring"
                 autoFocus
                 placeholder={
                   canPropose

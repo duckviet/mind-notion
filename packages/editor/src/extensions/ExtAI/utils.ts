@@ -82,10 +82,6 @@ export const buildDecorations = (
         status === "processing"
           ? "ai-selection-range ai-selection-range--processing"
           : "ai-selection-range ai-selection-range--menu",
-      style:
-        status === "processing"
-          ? "background-color: rgba(59, 130, 246, 0.2); border-radius: 4px; box-shadow: inset 0 -1px 0 rgba(37, 99, 235, 0.55);"
-          : "background-color: rgba(147, 197, 253, 0.38); border-radius: 4px;",
     }),
   ]);
 };

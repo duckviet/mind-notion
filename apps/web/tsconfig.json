@@ -3,7 +3,6 @@
   "compilerOptions": {
     "baseUrl": ".",
     "ignoreDeprecations": "5.0",
-    "preserveSymlinks": true,
     "paths": {
       "@/*": ["./*"],
       "@tiptap/*": ["./node_modules/@tiptap/*"],

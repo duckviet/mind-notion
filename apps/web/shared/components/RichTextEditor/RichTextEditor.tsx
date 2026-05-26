@@ -21,6 +21,9 @@ export default function RichTextEditor(props: RichTextEditorProps) {
   return (
     <BaseRichTextEditor
       {...props}
+      drawingSyncUri={
+        props.drawingSyncUri ?? process.env.NEXT_PUBLIC_TLDRAW_SYNC_URL ?? ""
+      }
       uploadMedia={
         props.uploadMedia ??
         (async (file) => {

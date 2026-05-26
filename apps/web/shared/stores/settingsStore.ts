@@ -3,8 +3,8 @@ import { persist } from "zustand/middleware";
 
 export type Theme = "light" | "dark" | "black" | "auto";
 export type ViewMode = "default" | "compact";
-export type FontFamily = "inter" | "geist" | "system";
-export type PrimaryColor = "neutral" | "blue" | "purple" | "green";
+export type FontFamily = "academic" | "inter" | "system";
+export type PrimaryColor = "neutral" | "terra" | "azure";
 
 interface SettingsState {
   theme: Theme;
@@ -22,8 +22,8 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       theme: "auto",
       viewMode: "default",
-      fontFamily: "inter",
-      primaryColor: "blue",
+      fontFamily: "academic",
+      primaryColor: "terra",
       setTheme: (theme) => set({ theme }),
       setViewMode: (mode) => set({ viewMode: mode }),
       setFontFamily: (font) => set({ fontFamily: font }),

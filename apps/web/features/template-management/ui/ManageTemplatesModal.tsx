@@ -218,7 +218,7 @@ export function ManageTemplatesModal({
                     whileHover={{ rotate: 90, scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={onClose}
-                    className="flex h-10 w-10 items-center justify-center rounded-full  -elevated text-text-primary transition-colors hover:bg-destructive hover:text-white"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-elevated text-text-primary transition-colors hover:bg-destructive hover:text-white"
                   >
                     <X size={20} />
                   </motion.button>

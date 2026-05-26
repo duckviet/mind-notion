@@ -23,7 +23,7 @@ const ExtComment = Mark.create({
     return {
       HTMLAttributes: {
         class:
-          "rounded-sm dark:bg-yellow-50/20 bg-yellow-100/60 text-foreground",
+          "rounded-sm bg-brand-100/60 text-foreground dark:bg-brand-50/20",
       },
     };
   },
@@ -120,7 +120,7 @@ const ExtComment = Mark.create({
             // Tạo một Decoration (inline) bao phủ toàn bộ range của comment
             cachedDecorations = DecorationSet.create(doc, [
               Decoration.inline(range.from, range.to, {
-                class: "border-b-1 border-yellow-400",
+                class: "border-b border-brand-600",
               }),
             ]);
 

@@ -5,7 +5,7 @@ const ExtMathematics = Math.extend({
     return {
       katexOptions: {
         throwOnError: false,
-        errorColor: "#cc0000",
+        errorColor: "var(--destructive)",
         strict: false,
         trust: false,
         macros: {
@@ -40,8 +40,8 @@ const ExtMathematics = Math.extend({
     const isBlock = node.attrs.kind === "block";
     const tag = isBlock ? "div" : "span";
     const className = isBlock
-      ? "math-block my-4 p-4 bg-gray-50 rounded-lg border border-gray-200 overflow-x-auto text-center"
-      : "math-inline mx-1 px-2 py-1 bg-blue-50 rounded border border-blue-200";
+      ? "math-block my-4 overflow-x-auto rounded-lg border border-border bg-surface-50 p-4 text-center"
+      : "math-inline mx-1 rounded border border-brand-100 bg-brand-50 px-2 py-1";
 
     return [
       tag,

@@ -194,15 +194,15 @@ const DrawingEditorModal = ({
   return (
     <Portal lockScroll={true}>
       <div
-        className="fixed inset-0 z-100 bg-black/40"
+        className="fixed inset-0 z-[100] bg-foreground/40"
         onMouseDown={(event) => {
           event.stopPropagation();
           if (!isSaving) onClose();
         }}
       />
 
-      <div className="fixed inset-0 z-100 p-4 sm:p-6">
-        <div className="mx-auto flex h-full max-w-7xl flex-col overflow-hidden rounded-xl border border-border bg-white shadow-2xl">
+      <div className="fixed inset-0 z-[100] p-4 sm:p-6">
+        <div className="mx-auto flex h-full max-w-7xl flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl">
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-text-primary">
@@ -230,7 +230,7 @@ const DrawingEditorModal = ({
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="inline-flex h-9 items-center justify-center rounded-md bg-accent px-3 text-sm font-medium text-text-primary hover:bg-accent-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-9 items-center justify-center rounded-md bg-brand-600 px-3 text-sm font-medium text-primary-foreground hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSaving ? (
                   <Loader2 className="mr-1 h-4 w-4 animate-spin" />

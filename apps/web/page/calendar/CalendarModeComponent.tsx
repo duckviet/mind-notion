@@ -89,7 +89,7 @@ function CalendarModeComponent({
                 : undefined
             }
             className={cn(
-              "p-2 h-30 bg-accent   rounded-md relative flex items-center cursor-pointer transition hover: -elevated",
+              "p-2 h-30 bg-accent   rounded-md relative flex items-center cursor-pointer transition hover:bg-surface-elevated",
               highlightDate && highlightDate === day.date
                 ? "bg-accent-100 border-accent-300 shadow-md ring ring-accent-200 animate-pulse"
                 : "",

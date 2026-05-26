@@ -1,6 +1,4 @@
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Plus, X } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useComments } from "@/features/note-editing/hooks/useComments";
@@ -16,8 +14,6 @@ interface CommentSectionProps {
 const CommentSection = ({ noteId, activeCommentId }: CommentSectionProps) => {
   const { comments, isLoading, addComment, updateComment, deleteComment } =
     useComments(noteId);
-  const [isAdding, setIsAdding] = useState(false);
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [selectedCommentId, setSelectedCommentId] = useState<string | null>(
     null,
   );
@@ -27,16 +23,15 @@ const CommentSection = ({ noteId, activeCommentId }: CommentSectionProps) => {
     if (!newComment.trim()) return;
     await addComment({
       content: newComment.trim(),
-      parentId: replyingTo || undefined,
     });
     setNewComment("");
-    setIsAdding(false);
-    setReplyingTo(null);
   };
 
-  const handleReply = (commentId: string) => {
-    setReplyingTo(commentId);
-    setIsAdding(true);
+  const handleReply = async (content: string, parentId: string) => {
+    await addComment({
+      content,
+      parentId,
+    });
   };
 
   const handleUpdateComment = async (commentId: string, content: string) => {
@@ -54,39 +49,23 @@ const CommentSection = ({ noteId, activeCommentId }: CommentSectionProps) => {
     <div className="h-full">
       {/* Header */}
       <div className="flex justify-between items-center mb-3">
-        <h3 className="text-lg font-semibold text-text-primary">
+        <h3 className="font-serif text-heading font-normal text-text-primary">
           Comments {comments.length > 0 && <>({comments.length})</>}
         </h3>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsAdding(!isAdding)}
-          className="text-text-secondary hover:text-accent hover:bg-accent/10 transition-colors"
-        >
-          {isAdding ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-        </Button>
       </div>
 
       {/* Add comment form */}
-      <AnimatePresence mode="wait">
-        {isAdding && (
-          <CommentForm
-            value={newComment}
-            onChange={setNewComment}
-            onSubmit={handleAddComment}
-            onCancel={() => {
-              setIsAdding(false);
-              setNewComment("");
-              setReplyingTo(null);
-            }}
-            isLoading={isLoading}
-            placeholder={
-              replyingTo ? "Write a reply..." : "Share your thoughts..."
-            }
-            submitLabel="Send"
-          />
-        )}
-      </AnimatePresence>
+      <CommentForm
+        value={newComment}
+        onChange={setNewComment}
+        onSubmit={handleAddComment}
+        onCancel={() => setNewComment("")}
+        isLoading={isLoading}
+        placeholder="Share your thoughts..."
+        submitLabel="Send"
+        showMotion={false}
+        className="mb-4"
+      />
 
       {/* Comments list */}
       <div className="flex-1 space-y-4">
@@ -97,9 +76,10 @@ const CommentSection = ({ noteId, activeCommentId }: CommentSectionProps) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center py-12"
+              className="text-center py-10 px-4 border border-dashed border-border rounded-xl bg-surface-50"
             >
-              <p className="text-text-muted text-sm">
+              <MessageSquare className="w-8 h-8 mx-auto mb-2 text-text-muted opacity-60" />
+              <p className="text-text-muted text-xs">
                 No comments yet. Be the first to share your thoughts!
               </p>
             </motion.div>

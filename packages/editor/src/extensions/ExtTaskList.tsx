@@ -4,6 +4,7 @@ import {
   NodeViewWrapper,
   NodeViewContent,
 } from "@tiptap/react";
+import { cn } from "../utils/cn";
 
 const ExtTaskList = TaskList.extend({
   addAttributes() {
@@ -26,9 +27,10 @@ const TaskItemComponent = ({
 }) => {
   return (
     <NodeViewWrapper
-      className={`group flex items-start gap-3 rounded-lg px-2 transition-colors hover:bg-muted/40 ${
-        node.attrs.checked ? "bg-muted/20" : ""
-      }`}
+      className={cn(
+        "group flex items-start gap-3 rounded-lg px-2 transition-colors hover:bg-muted/40",
+        node.attrs.checked && "bg-muted/20",
+      )}
     >
       <div contentEditable={false} className="mt-0.5 flex items-center">
         <input
@@ -40,9 +42,10 @@ const TaskItemComponent = ({
       </div>
 
       <NodeViewContent
-        className={`flex-1 leading-relaxed text-sm text-foreground/90 ${
-          node.attrs.checked ? "line-through text-muted-foreground" : ""
-        }`}
+        className={cn(
+          "flex-1 text-sm leading-relaxed text-foreground/90",
+          node.attrs.checked && "text-muted-foreground line-through",
+        )}
       />
     </NodeViewWrapper>
   );

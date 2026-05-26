@@ -24,7 +24,7 @@ const SharedBubbleMenu = ({ editor, getConfig, createComment }: SharedBubbleMenu
       editor={editor}
       options={{ placement: "bottom", offset: 8, flip: true }}
       shouldShow={shouldShow}
-      className="z-9999"
+      className="z-[9999]"
     >
       <Toolbar editor={editor} getConfig={getConfig} createComment={createComment} />
     </BubbleMenu>

@@ -103,8 +103,8 @@ const ResizableMediaContainer: React.FC<ResizableMediaContainerProps> = ({
   minHeight = 50,
   keepAspectRatioOnCorner = true,
   className,
-  selectedClassName = "ring-2 ring-blue-500 rounded",
-  resizeHandleClassName = "bg-blue-500 border-white",
+  selectedClassName = "rounded ring-2 ring-brand-600",
+  resizeHandleClassName = "border-background bg-brand-600",
   style,
   onResize,
   onResizeEnd,
@@ -243,7 +243,7 @@ const ResizableMediaContainer: React.FC<ResizableMediaContainerProps> = ({
       )}
 
       {isResizing && (
-        <div className="pointer-events-none absolute bottom-2 right-2 rounded bg-black/70 px-2 py-1 text-xs text-white">
+        <div className="pointer-events-none absolute bottom-2 right-2 rounded bg-foreground/80 px-2 py-1 text-xs text-background">
           {dimensions.width} x {dimensions.height}
         </div>
       )}

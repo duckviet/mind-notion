@@ -62,7 +62,7 @@ const SIDEBAR_FOLDER_SORT_PREFIX = "tree-folder-sort-";
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
-    className={`animate-pulse rounded-md  -elevated/50 ${className ?? ""}`}
+    className={`animate-pulse rounded-md bg-surface-elevated/50 ${className ?? ""}`}
   />
 );
 
@@ -341,7 +341,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
           {/* Folder Title */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2  -elevated rounded-xl">
+              <div className="p-2 bg-surface-elevated rounded-xl">
                 <FolderOpen className="w-6 h-6 text-text-primary" />
               </div>
               <h1 className="text-2xl font-bold text-text-primary">
@@ -353,7 +353,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
                 </span>
               )}
             </div>
-            <button className="p-2 hover: -elevated rounded-lg transition-colors">
+             <button className="p-2 hover:bg-surface-elevated rounded-lg transition-colors">
               <MoreHorizontal className="w-5 h-5 text-text-muted" />
             </button>
           </div>

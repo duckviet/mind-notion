@@ -131,7 +131,7 @@ const MiscSettings = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="flex flex-col space-y-3 rounded-lg border border-border p-4  -elevated hover:border-accent transition-colors">
+          <div className="flex flex-col space-y-3 rounded-lg border border-border p-4 bg-surface-elevated hover:border-accent transition-colors">
             <div className="flex items-center justify-between">
               <Label className="font-semibold text-text-primary">
                 Export Data
@@ -152,7 +152,7 @@ const MiscSettings = () => {
             </Button>
           </div>
 
-          <div className="flex flex-col space-y-3 rounded-lg border border-border p-4  -elevated hover:border-accent transition-colors">
+          <div className="flex flex-col space-y-3 rounded-lg border border-border p-4 bg-surface-elevated hover:border-accent transition-colors">
             <div className="flex items-center justify-between">
               <Label className="font-semibold text-text-primary">
                 Import Data

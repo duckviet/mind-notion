@@ -38,8 +38,8 @@ export default function TableSizeDropdown({ editor }: { editor: Editor }) {
             className={cn(
               "w-4 h-4 border border-border cursor-pointer transition-colors rounded-[4px]",
               isHighlighted
-                ? "bg-[#a55252]"
-                : "bg-accent-foreground hover:bg-gray-100",
+                ? "bg-brand-600"
+                : "bg-surface hover:bg-surface-hover",
             )}
             onMouseEnter={() => setHoveredCell({ row, col })}
             onClick={() => handleInsertTable(row, col)}
@@ -58,8 +58,8 @@ export default function TableSizeDropdown({ editor }: { editor: Editor }) {
         onClick={() => setIsOpen(!isOpen)}
         title="Insert Table"
         className={cn(
-          "p-1 mt-1 items-center justify-center rounded transition-colors hover:bg-accent-foreground/40 hover:text-primary-foreground",
-          isOpen && "bg-[#a55252] text-primary-foreground",
+          " items-center justify-center rounded p-1 transition-colors hover:bg-surface-hover hover:text-text-primary",
+          isOpen && "bg-brand-600 text-primary-foreground",
         )}
       >
         <Table size={16} />
@@ -72,7 +72,7 @@ export default function TableSizeDropdown({ editor }: { editor: Editor }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-2 bg-accent border border-border rounded-lg shadow-lg p-3 z-50"
+            className="absolute left-0 top-full z-50 mt-2 rounded-lg border border-border bg-surface p-3 shadow-lg"
             onMouseLeave={() => setHoveredCell(null)}
           >
             <div
@@ -83,7 +83,7 @@ export default function TableSizeDropdown({ editor }: { editor: Editor }) {
             >
               {renderGrid()}
             </div>
-            <div className="text-xs text-gray-600 text-center font-medium">
+            <div className="text-center text-xs font-medium text-text-secondary">
               {hoveredCell
                 ? `${hoveredCell.row} × ${hoveredCell.col}`
                 : "Select table size"}

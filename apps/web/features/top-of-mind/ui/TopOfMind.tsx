@@ -27,7 +27,7 @@ const TopOfMind = ({
   return (
     <DroppableZone
       id={droppableId}
-      activeClassName="ring-2 ring-blue-300/20 ring-offset-1 ring-offset-blue-300/20 rounded-2xl"
+      activeClassName="ring-2 ring-brand-600/20 ring-offset-1 ring-offset-background rounded-2xl"
     >
       <div
         style={{
@@ -35,7 +35,7 @@ const TopOfMind = ({
           scrollBehavior: "smooth",
           scrollbarGutter: "stable",
         }}
-        className="flex gap-3  bg-surface-200 items-center w-full rounded-2xl my-4 p-4 h-[154px] transition-all overflow-x-auto scrollbar-hide"
+        className="my-4 flex h-[154px] w-full items-center gap-3 overflow-x-auto rounded-2xl border border-border bg-surface-50/30 dark:bg-surface-100/40 dark:border-border p-4 transition-all scrollbar-hide"
       >
         {notes.length === 0 ? (
           <div className="text-text-muted mx-auto">
@@ -48,7 +48,8 @@ const TopOfMind = ({
               key={note.id}
               id={`${draggableIdPrefix}${note.id}`}
               disabled={dragDisabled}
-              // type="tom-note"
+              className="shrink-0"
+            // type="tom-note"
             >
               <TopOfMindCard
                 note={note}

@@ -2,14 +2,33 @@
 
 import { useEffect } from "react";
 import { useTheme } from "next-themes";
-import { useSettingsStore } from "@/shared/stores/settingsStore";
+import {
+  FontFamily,
+  PrimaryColor,
+  useSettingsStore,
+} from "@/shared/stores/settingsStore";
 
 const fontStacks: Record<string, string> = {
+  academic: "var(--font-anthropic-sans)",
   inter:
-    '"Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-  geist:
-    '"Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    'var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   system: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+};
+
+const normalizeAccent = (value: string): PrimaryColor => {
+  if (value === "neutral" || value === "terra" || value === "azure") {
+    return value;
+  }
+
+  return "terra";
+};
+
+const normalizeFont = (value: string): FontFamily => {
+  if (value === "academic" || value === "inter" || value === "system") {
+    return value;
+  }
+
+  return "academic";
 };
 
 /**
@@ -21,19 +40,40 @@ const fontStacks: Record<string, string> = {
  */
 export function AppearanceApplier() {
   const { resolvedTheme } = useTheme();
-  const { primaryColor, fontFamily, viewMode } = useSettingsStore();
+  const {
+    primaryColor,
+    fontFamily,
+    viewMode,
+    setPrimaryColor,
+    setFontFamily,
+  } = useSettingsStore();
 
   useEffect(() => {
     const root = document.documentElement;
-    // Only set data attribute - let CSS handle the colors
-    root.dataset.accent = primaryColor;
-  }, [primaryColor]);
+    const normalized = normalizeAccent(primaryColor);
+    root.dataset.accent = normalized;
+
+    if (normalized !== primaryColor) {
+      setPrimaryColor(normalized);
+    }
+  }, [primaryColor, setPrimaryColor]);
 
   useEffect(() => {
     const root = document.documentElement;
-    root.dataset.font = fontFamily;
-    root.style.setProperty("--app-font-family", fontStacks[fontFamily]);
-  }, [fontFamily]);
+    const normalized = normalizeFont(fontFamily);
+    root.dataset.font = normalized;
+    root.style.setProperty("--app-font-family", fontStacks[normalized]);
+    root.style.setProperty(
+      "--heading-font-family",
+      normalized === "academic"
+        ? "var(--font-anthropic-serif)"
+        : fontStacks[normalized],
+    );
+
+    if (normalized !== fontFamily) {
+      setFontFamily(normalized);
+    }
+  }, [fontFamily, setFontFamily]);
 
   useEffect(() => {
     const root = document.documentElement;

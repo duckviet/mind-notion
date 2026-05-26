@@ -70,8 +70,8 @@ export default function FocusEditModalContent({
   const [isShareModalOpen, setIsShareModalOpen] = React.useState(false);
 
   return (
-    <div className="flex-1 flex overflow-hidden w-full gap-4 justify-center   bg-surface-100 p-2 rounded-[16px]">
-      <div className="flex-1 overflow-y-auto space-y-4 rounded-2xl  bg-card border border-border w-full">
+    <div className="flex-1 flex overflow-hidden w-full gap-2 justify-center bg-background p-2 rounded-[16px]">
+      <div className="flex-1 overflow-y-auto space-y-2 rounded-2xl  bg-card border border-border w-full">
         <div className="p-6 pb-0">
           <input
             ref={titleRef}
@@ -124,7 +124,7 @@ export default function FocusEditModalContent({
         showExpandAction
         onExpandClick={() => router.push(`/note/${noteId}/edit`)}
         contentLength={form.content.length}
-        className="rounded-2xl  bg-transparent"
+        className="rounded-2xl bg-transparent"
       />
 
       {noteId && showShareActions && (

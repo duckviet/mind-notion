@@ -24,12 +24,12 @@ const SettingsPage = ({ children }: SettingsPageProps) => {
     pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <div className="min-h-screen bg-background text-foreground mx-auto max-w-7xl w-full py-6">
-      <h1 className=" font-bold tracking-tight text-text-primary mb-10">
+    <div className="mx-auto min-h-screen w-full max-w-7xl bg-background py-6 px-6 text-foreground">
+      <h1 className="mb-10 font-serif text-display font-normal leading-display text-text-primary">
         Settings
       </h1>
-      <div className="py-8 md:py-12 w-full">
-        <div className="flex flex-col md:flex-row gap-8">
+      <div className="w-full py-8 md:py-12">
+        <div className="flex flex-col gap-8 md:flex-row">
           {/* Sidebar */}
           <aside className="w-full md:w-48 flex-shrink-0">
             <div className="sticky top-8">
@@ -40,10 +40,10 @@ const SettingsPage = ({ children }: SettingsPageProps) => {
                     href={item.href}
                     aria-current={isActive(item.href) ? "page" : undefined}
                     className={cn(
-                      "block w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+                      "block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors",
                       isActive(item.href)
-                        ? "font-medium text-text-primary bg-accent/10"
-                        : " text-text-muted hover:text-foreground hover:bg-accent/5",
+                        ? "bg-accent font-medium text-text-primary"
+                        : "text-text-muted hover:bg-accent/60 hover:text-foreground",
                     )}
                   >
                     {item.label}
@@ -52,14 +52,14 @@ const SettingsPage = ({ children }: SettingsPageProps) => {
               </nav>
 
               <div className="mt-8 px-2">
-                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                <div className="mb-2 text-xs font-medium uppercase text-muted-foreground">
                   Billing
                 </div>
                 <nav className="space-y-1">
-                  <button className="w-full text-left px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent/5">
+                  <button className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground">
                     Payouts
                   </button>
-                  <button className="w-full text-left px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent/5">
+                  <button className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground">
                     Invoices
                   </button>
                 </nav>

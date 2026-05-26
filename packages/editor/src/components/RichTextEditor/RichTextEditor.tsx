@@ -55,6 +55,7 @@ export interface RichTextEditorProps {
       }
   >;
   uploadMedia?: (file: File) => Promise<string>;
+  drawingSyncUri?: string;
   createComment?: (input: { noteId: string; content: string }) => Promise<string | { id?: string } | null | undefined>;
   getCommentDetail?: CommentHoverPopupProps["getCommentDetail"];
 }
@@ -79,6 +80,7 @@ const Tiptap = ({
   onActiveCommentChange,
   onAIAction,
   uploadMedia,
+  drawingSyncUri,
   createComment,
   getCommentDetail,
 }: RichTextEditorProps) => {
@@ -108,6 +110,7 @@ const Tiptap = ({
     onOpenAI: ai.openAIMenu,
     onKeyDown: handleKeyDown, // set below after keyboard hook
     uploadMedia,
+    drawingSyncUri,
   });
 
   ai.setEditor(editor); // sync ref mỗi render
@@ -123,7 +126,7 @@ const Tiptap = ({
     return (
       <div
         className={cn(
-          "w-full h-full animate-pulse bg-gray-100 rounded",
+          "h-full w-full animate-pulse rounded bg-muted",
           className,
         )}
       />

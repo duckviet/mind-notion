@@ -79,7 +79,7 @@ const Toolbar = ({
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "flex border border-border items-center gap-1 p-1 z-999 bg-surface-50 text-text-primary rounded-md shadow-lg",
+        "z-[999] flex items-center gap-1 rounded-md border border-border bg-surface-50 p-1 text-text-primary shadow-lg",
         direction === "vertical" ? "flex-col w-56" : "flex-wrap",
         className,
       )}
@@ -142,7 +142,7 @@ const Toolbar = ({
                             initial={{ opacity: 0, scale: 0.95, y: 5 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 5 }}
-                            className="absolute left-0 top-full mt-1 bg-surface-50 flex gap-2 flex-col border border-border rounded-md shadow-xl p-1 z-[1001]"
+                            className="absolute left-0 top-full z-[1001] mt-1 flex flex-col gap-2 rounded-md border border-border bg-surface-50 p-1 shadow-xl"
                           >
                             {item.variants.map((variant, variantIdx) => (
                               <ToolbarButton
@@ -182,8 +182,8 @@ const Toolbar = ({
               <div
                 className={cn(
                   direction === "vertical"
-                    ? "h-px w-full bg-gray-300 my-1"
-                    : "w-px h-6 bg-gray-300 mx-1",
+                    ? "my-1 h-px w-full bg-border"
+                    : "mx-1 h-6 w-px bg-border",
                 )}
               />
             )}

@@ -22,7 +22,7 @@ import { invalidateFoldersAfterUpdate } from "@/shared/hooks/query-invalidations
 
 const SkeletonBlock = ({ className }: { className?: string }) => (
   <div
-    className={`animate-pulse rounded-md  -elevated/50 ${className ?? ""}`}
+    className={`animate-pulse rounded-lg bg-surface-100 ${className ?? ""}`}
   />
 );
 
@@ -106,7 +106,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center min-h-100 text-center">
-        <h2 className="text-xl font-semibold text-text-primary mb-2">
+        <h2 className="mb-2 font-serif text-heading-lg font-normal text-text-primary">
           Failed to load folders
         </h2>
         <p className="text-text-secondary mb-4">
@@ -114,7 +114,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
         </p>
         <button
           onClick={() => refetch()}
-          className="text-accent hover:text-accent-600"
+          className="text-brand-600 hover:underline"
         >
           Retry
         </button>
@@ -128,11 +128,13 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Folders</h1>
+            <h1 className="font-serif text-heading-lg font-normal text-text-primary">
+              Folders
+            </h1>
           </div>
           <Button
             onClick={handleCreateFolder}
-            className="bg-accent text-text-primary hover:bg-accent-50"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             <Plus className="w-4 h-4" />
             <span>New Folder</span>
@@ -143,7 +145,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
         {isLoading ? (
           <GridSkeleton items={8} />
         ) : (
-          <div className="grid grid-cols-6 w-full gap-6">
+          <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
             {folders.map((folder) => (
               <FolderCard
                 key={folder.id}
@@ -179,7 +181,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
 
         {/* Create Folder Dialog */}
         <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogContent className="sm:max-w-100 bg-accent border border-border">
+          <DialogContent className="border border-border bg-surface-elevated sm:max-w-100">
             <DialogHeader>
               <DialogTitle>Create New Folder</DialogTitle>
             </DialogHeader>
@@ -202,7 +204,7 @@ const FoldersListPage = ({ parentId }: { parentId?: string }) => {
                       handleCreateFolderSubmit();
                     }
                   }}
-                  className="px-3 py-2 rounded-lg border border-border  focus:ring-2 focus:ring-accent   text-lg"
+                  className="rounded-lg border border-border px-3 py-2 text-lg focus:ring-2 focus:ring-ring/20"
                   autoFocus
                 />
               </div>

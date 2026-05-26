@@ -7,7 +7,7 @@ const ExtLink = Link.extend({
       {
         ...HTMLAttributes,
         class:
-          "text-blue-400 underline-offset-2 hover:underline hover:text-blue-600 break-words",
+          "break-words text-brand-600 underline-offset-2 hover:underline",
       },
       0,
     ];

@@ -37,6 +37,7 @@ interface UseEditorExtensionsProps {
   uploadMediaRef: React.RefObject<
     (args: { data: { file: File } }) => Promise<{ url: string }>
   >;
+  drawingSyncUri?: string;
   onOpenAI: (
     selection: string,
     range: { from: number; to: number },
@@ -49,6 +50,7 @@ export function useEditorExtensions({
   placeholder,
   collaboration,
   uploadMediaRef,
+  drawingSyncUri = "",
   onOpenAI,
 }: UseEditorExtensionsProps) {
   const [toc, setToc] = useState(false);
@@ -105,7 +107,7 @@ export function useEditorExtensions({
         },
       }),
       ExtDrawing.configure({
-        syncUri: process.env.NEXT_PUBLIC_TLDRAW_SYNC_URL || "",
+        syncUri: drawingSyncUri,
         uploadPreviewFn: async (file: File) => {
           const res = await uploadMediaRef.current({
             data: { file },
@@ -142,6 +144,7 @@ export function useEditorExtensions({
     [
       placeholder,
       collabExtensions,
+      drawingSyncUri,
       // Refs below are stable — listed for exhaustive-deps compliance
       onOpenAIRef,
       setTocRef,

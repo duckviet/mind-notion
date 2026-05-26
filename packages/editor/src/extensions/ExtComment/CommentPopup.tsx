@@ -48,7 +48,7 @@ const CommentHoverPopup = ({ editor, getCommentDetail }: CommentHoverPopupProps)
           icon={Trash2}
           title="Remove Comment"
           onClick={handleRemove}
-          hoverColor="text-red-600"
+          hoverColor="text-destructive"
         />
       </div>
     </PopupContainer>

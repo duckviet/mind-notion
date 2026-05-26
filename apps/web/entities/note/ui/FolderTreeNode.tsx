@@ -43,9 +43,9 @@ function FolderTreeNode({
     <div>
       <div
         className={cn(
-          "flex items-center gap-2 py-1.5  cursor-pointer w-full hover:bg-surface-100/70 transition-colors pr-2",
-          isSelected && "bg-surface",
-          folder.id === currentFolderId && "cursor-not-allowed text-gray-400",
+          "flex w-full cursor-pointer items-center gap-2 rounded-[8px] py-1.5 pr-2 transition-colors hover:bg-surface-100/70",
+          isSelected && "bg-surface-100",
+          folder.id === currentFolderId && "cursor-not-allowed text-text-muted",
         )}
         style={{ paddingLeft: `${level * 16 + 8}px` }} // Tăng padding để dễ nhìn cấp độ
         onClick={handleSelect}
@@ -53,12 +53,12 @@ function FolderTreeNode({
         {hasChildren ? (
           <button
             onClick={handleToggle}
-            className="p-0.5 hover:bg-gray-200 rounded shrink-0"
+            className="shrink-0 rounded p-0.5 hover:bg-accent"
           >
             {isExpanded ? (
-              <ChevronDown className="w-4 h-4 text-gray-500" />
+              <ChevronDown className="h-4 w-4 text-text-muted" />
             ) : (
-              <ChevronRight className="w-4 h-4 text-gray-500" />
+              <ChevronRight className="h-4 w-4 text-text-muted" />
             )}
           </button>
         ) : (
@@ -66,15 +66,15 @@ function FolderTreeNode({
         )}
 
         {isExpanded ? (
-          <FolderOpen className="w-4 h-4 text-blue-600 shrink-0" />
+          <FolderOpen className="h-4 w-4 shrink-0 text-brand-600" />
         ) : (
-          <Folder className="w-4 h-4 text-gray-600 shrink-0" />
+          <Folder className="h-4 w-4 shrink-0 text-text-muted" />
         )}
 
         <span
           className={cn(
-            "text-sm truncate select-none",
-            isSelected ? "font-medium text-blue-700" : "text-gray-700",
+            "select-none truncate text-sm",
+            isSelected ? "font-medium text-text-primary" : "text-text-secondary",
           )}
         >
           {folder.name}

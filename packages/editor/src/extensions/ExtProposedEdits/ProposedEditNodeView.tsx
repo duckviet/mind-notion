@@ -50,8 +50,7 @@ const ProposedEditNodeView: React.FC<NodeViewProps> = ({
       data-proposed={proposedText}
       className={cn(
         "group relative mx-1",
-        // "border border-amber-300/70 bg-amber-50/70 p-3 dark:border-amber-500/30 dark:bg-amber-500/10",
-        selected && "ring-1 ring-amber-500/40",
+        selected && "ring-1 ring-brand-600/40",
       )}
     >
       <div className="absolute right-2 -top-2 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
@@ -79,14 +78,14 @@ const ProposedEditNodeView: React.FC<NodeViewProps> = ({
 
       <p
         data-original="true"
-        className="whitespace-pre-wrap wrap-break-word px-1  bg-rose-100/80   text-rose-900 dark:bg-rose-500/20 dark:text-rose-200"
+        className="proposed-edit-original whitespace-pre-wrap wrap-break-word px-1"
       >
         {originalText}
       </p>
 
       <p
         data-proposed="true"
-        className="mt-2 whitespace-pre-wrap wrap-break-word px-1  bg-emerald-100/80   text-emerald-900 dark:bg-emerald-500/20 dark:text-emerald-200"
+        className="proposed-edit-proposed mt-2 whitespace-pre-wrap wrap-break-word px-1"
       >
         {proposedText}
       </p>

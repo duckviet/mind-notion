@@ -57,14 +57,14 @@ export default function AddNoteForm({
     <div className="relative h-full break-inside-avoid mb-6">
       {/* Overlay */}
       {isFocus && (
-        <div className="fixed inset-0 bg-gray-500/20 backdrop-blur-[0.5px] z-30" />
+        <div className="fixed inset-0 z-30 bg-onyx/10 backdrop-blur-[0.5px]" />
       )}
 
       {/* Card Container */}
       <Card
         className={cn(
-          "relative rounded-2xl transition-all duration-200 h-full",
-          isFocus ? "z-40" : "hover:shadow-lg",
+          "relative h-full rounded-xl bg-card transition-all duration-200",
+          isFocus ? "z-40 ring-2 ring-ring/20" : "hover:border-border-strong",
         )}
       >
         {/* Title Input */}
@@ -73,7 +73,7 @@ export default function AddNoteForm({
           onChange={(e) => setTitle(e.target.value)}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
-          className="text-xl px-6 pt-6 mb-2 bg-transparent w-full focus:outline-none"
+          className="mb-2 w-full bg-transparent px-6 pt-6 font-serif text-heading-lg text-text-primary placeholder:text-stone focus:outline-none"
           placeholder="Add a new note"
         />
 
@@ -93,8 +93,7 @@ export default function AddNoteForm({
         {/* Save Hint */}
         {isSaveHintVisible && (
           <p
-            style={{ color: "white" }}
-            className="bg-red-400 text-white absolute px-4 left-0 bottom-0 rounded-2xl rounded-t-none text-center w-full"
+            className="absolute bottom-0 left-0 w-full rounded-b-[9.6px] bg-terra-cotta px-4 text-center text-sm text-snow-white"
           >
             {isSaving ? "Saving..." : "Press Ctrl + Enter to save"}
           </p>

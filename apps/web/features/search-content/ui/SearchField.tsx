@@ -42,16 +42,15 @@ export default function SearchField({
     <div className={cn("relative", className)}>
       <motion.div
         className={cn(
-          "relative  bg-card  rounded-xl",
+          "relative rounded-lg border border-border bg-surface-50",
           "transition-all duration-200 ease-out",
-          isFocused && "shadow-glass-lg border-accent-blue",
+          isFocused && "border-border-strong",
         )}
         animate={{
-          scale: isFocused ? 1.02 : 1,
+          scale: 1,
           boxShadow: isFocused
-            ? "0 0 0 3px rgba(102, 126, 234, 0.1), 0 10px 15px -3px rgb(0 0 0 / 0.1)"
+            ? "0 0 0 3px rgba(31,30,29,0.08)"
             : undefined,
-          //   : "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06)",
         }}
         transition={{ duration: 0.2 }}
       >
@@ -67,7 +66,7 @@ export default function SearchField({
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             className={cn(
-              "flex-1 bg-transparent text-lg placeholder:text-text-muted",
+              "flex-1 bg-transparent text-lg placeholder:text-stone",
               "focus:outline-none text-text-primary",
               "transition-colors duration-200",
             )}
@@ -81,7 +80,7 @@ export default function SearchField({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               onClick={handleClear}
-              className="ml-3 p-1 rounded-full hover:bg-glass-hover transition-colors duration-200"
+              className="ml-3 rounded-full p-1 transition-colors duration-200 hover:bg-accent"
               aria-label="Clear search"
             >
               <X className="w-4 h-4 text-text-muted" />
@@ -91,7 +90,7 @@ export default function SearchField({
           {/* Keyboard shortcut hint */}
           {!isFocused && !query && (
             <div className="ml-3 text-xs text-text-muted hidden sm:block">
-              <kbd className="px-2 py-1 glass-bg rounded border border-glass-border">
+              <kbd className="rounded border border-border-subtle bg-surface px-2 py-1">
                 ⌘K
               </kbd>
             </div>
