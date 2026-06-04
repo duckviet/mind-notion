@@ -100,12 +100,10 @@ func New(ctx context.Context) (*App, func(), error) {
 	collabService := service.NewCollaborationService(userRepo, noteRepo, clientRepo, userService, noteService)
 	wsHandler := handlers.NewWebSocketHandler(collabService)
 
-	// Initialize Google Calendar service (optional - only if credentials are configured)
-	var googleCalendarAPI *handlers.GoogleCalendarAPI
+	gcalService := service.NewGoogleCalendarService(db.DB, accountRepo, cfg.Google)
+	googleCalendarAPI := handlers.NewGoogleCalendarAPI(gcalService, authService)
 	var googleLoginAPI *handlers.GoogleLoginAPI // Added GoogleLoginAPI
 	if cfg.Google.ClientID != "" && cfg.Google.ClientSecret != "" {
-		gcalService := service.NewGoogleCalendarService(db.DB, accountRepo, cfg.Google)
-		googleCalendarAPI = handlers.NewGoogleCalendarAPI(gcalService, authService)
 		log.Printf("📅 Google Calendar integration: ✅ Enabled")
 
 		// Also initialize Google Login since we have credentials

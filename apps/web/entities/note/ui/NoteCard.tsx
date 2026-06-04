@@ -103,7 +103,7 @@ export default function NoteCard({
               <Expand className="w-4 h-4" />
             </Button>
             <div className="flex justify-between items-center w-full mb-4">
-              <CardTitle className="font-serif text-heading-lg! font-normal leading-tight text-text-primary">
+              <CardTitle className="font-serif text-heading-lg! leading-tight text-text-primary">
                 {match.title}
               </CardTitle>
             </div>
@@ -114,10 +114,7 @@ export default function NoteCard({
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="border-border shadow-md">
-        <ContextMenuItem
-          onSelect={handleFocusEdit}
-          className="focus:bg-accent"
-        >
+        <ContextMenuItem onSelect={handleFocusEdit} className="focus:bg-accent">
           <Edit3 className="w-4 h-4 " />
           <p className="text-sm">Focus Edit</p>
         </ContextMenuItem>

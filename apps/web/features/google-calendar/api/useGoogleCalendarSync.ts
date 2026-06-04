@@ -2,20 +2,32 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { client } from "@/shared/services/axios";
 import { toast } from "sonner";
 import { invalidateEventCollections } from "@/shared/hooks/query-invalidations";
+import {
+  getApiErrorMessage,
+  googleCalendarStatusQueryKey,
+  type GoogleCalendarSyncResponse,
+} from "./googleCalendarApi";
 
 export const useGoogleCalendarSync = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () =>
-      client.post("/calendar/google/sync").then((res) => res.data),
-    onSuccess: async (data: { synced: number; message: string }) => {
-      toast.success(`Google Calendar synced: ${data.synced} events`);
-      await invalidateEventCollections(queryClient);
+    mutationFn: async () => {
+      const response = await client.post<GoogleCalendarSyncResponse>(
+        "/calendar/google/sync",
+      );
+      return response.data;
     },
-    onError: (error: any) => {
+    onSuccess: async (data) => {
+      toast.success(`Google Calendar synced: ${data.synced} events`);
+      await Promise.all([
+        invalidateEventCollections(queryClient),
+        queryClient.invalidateQueries({ queryKey: googleCalendarStatusQueryKey }),
+      ]);
+    },
+    onError: (error: unknown) => {
       toast.error(
-        error?.response?.data?.error || "Failed to sync with Google Calendar",
+        getApiErrorMessage(error, "Failed to sync with Google Calendar"),
       );
     },
   });

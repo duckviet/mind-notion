@@ -67,6 +67,7 @@ Editor UI should keep:
 ## Typography
 
 - Body text inherits from `--app-font-family`.
+- Serif font: Noto Serif is the default and only serif font used in the project (mapped to `--font-anthropic-serif` / `font-serif`).
 - Keep headings proportional to their container. Avoid hero-scale headings inside dashboards, cards, dialogs, and sidebars.
 - Do not apply global color rules to `div`, `span`, or `p`; use semantic text classes where needed so local UI can override correctly.
 - Avoid negative letter spacing in compact UI.

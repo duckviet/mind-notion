@@ -13,7 +13,7 @@ import (
 func eventToDTO(event *models.Event) dto.ResDetailEvent {
 	// IDs are stored as strings (UUIDs) in the DB; pass through as-is
 	userId, _ := strconv.ParseInt(event.UserID, 10, 32)
-	
+
 	res := dto.ResDetailEvent{
 		Id:        event.ID,
 		UserId:    int32(userId),
@@ -46,6 +46,12 @@ func eventToDTO(event *models.Event) dto.ResDetailEvent {
 	if event.CategoryID != nil {
 		catId, _ := strconv.ParseInt(*event.CategoryID, 10, 32)
 		res.CategoryId = int32(catId)
+	}
+	if event.GoogleEventID != nil {
+		res.GoogleEventId = event.GoogleEventID
+	}
+	if event.Source != "" {
+		res.Source = event.Source
 	}
 
 	return res
