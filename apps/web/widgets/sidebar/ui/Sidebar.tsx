@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/features/auth";
 import { SidebarProvider, SidebarInset } from "@/shared/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 

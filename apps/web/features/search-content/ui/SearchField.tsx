@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Search, X } from "lucide-react";
 import { useDebounce } from "use-debounce";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 
 type Props = {
   query: string;

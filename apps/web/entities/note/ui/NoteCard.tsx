@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 import NoteDisplay from "./NoteDisplay";
-import FolderTreeSelector from "./FolderTreeSelector";
+import { FolderTreeSelector } from "@/shared/components/FolderTreeSelector";
 import { Card } from "@/shared/components/Card";
 import { ReqUpdateNote, ResDetailNote } from "@/shared/services/generated/api";
 import { Button } from "@/shared/components/ui/button";

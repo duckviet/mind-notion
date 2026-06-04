@@ -1,7 +1,7 @@
 "use client";
 
-import { FoldersListPage } from "@/page/folder";
+import { FoldersList } from "@/widgets/folders-list";
 
 export default function Page() {
-  return <FoldersListPage />;
+  return <FoldersList />;
 }

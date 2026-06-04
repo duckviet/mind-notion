@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import { useDndContext } from "@dnd-kit/core";
 import { motion, AnimatePresence } from "framer-motion";
 

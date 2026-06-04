@@ -3,7 +3,7 @@
 import React from "react";
 import { useParams } from "next/navigation";
 import { useGetPublicNote } from "@/shared/services/generated/api";
-import { NotePage } from "@/page/note/NotePage";
+import { NotePage } from "@/page/note";
 
 export default function PublicNoteViewPage() {
   const params = useParams();

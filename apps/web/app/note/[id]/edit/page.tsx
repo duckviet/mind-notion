@@ -3,13 +3,13 @@
 import React, { useCallback, useRef, useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCollabSession } from "@/features/note-editing/hooks/useCollabSession";
-import { useCollabProvider } from "@/features/note-editing/hooks/useCollabProvider";
-import { useNoteSnapshot } from "@/features/note-editing/hooks/useNoteSnapshot";
-import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { useCollabSession } from "@/features/note-editing";
+import { useCollabProvider } from "@/features/note-editing";
+import { useNoteSnapshot } from "@/features/note-editing";
+import { sanitizeHtml } from "@/shared/utils/sanitizeHtml";
 import { useUpdateNote } from "@/shared/services/generated/api";
 import { invalidateNotesAfterUpdate } from "@/shared/hooks/query-invalidations";
-import { NotePage } from "@/page/note/NotePage";
+import { NotePage } from "@/page/note";
 
 export default function PublicNoteEditPage() {
   const queryClient = useQueryClient();

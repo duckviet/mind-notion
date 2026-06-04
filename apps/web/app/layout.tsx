@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter, Lora } from "next/font/google";
 import "./globals.css";
-import SidebarWrapper from "@/widgets/sidebar/ui/Sidebar";
+import { SidebarWrapper } from "@/widgets/sidebar";
 import { QueryProvider } from "@/shared/providers/QueryProvider";
-import { AuthProvider } from "@/shared/providers/AuthProvider";
 import { ThemeProvider } from "@/shared/providers/ThemeProvider";
-import AutoLogin from "@/features/auth/store/autoLogin";
+import { AuthProvider, AutoLogin } from "@/features/auth";
 import { AppearanceApplier } from "@/shared/providers/AppearanceApplier";
 import { GlobalDndProvider } from "@/shared/components/dnd/GlobalDndProvider";
 

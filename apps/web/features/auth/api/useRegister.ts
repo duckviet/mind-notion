@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { register } from "@/shared/services/generated/api";
 import { toast } from "sonner";
-import { useAuthStore } from "../store/authStore";
+import { useAuthStore } from "@/shared/stores/authStore";
 import Cookies from "js-cookie"; // Import thư viện quản lý cookie
 import { AxiosError } from "axios";
 

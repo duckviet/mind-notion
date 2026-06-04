@@ -2,8 +2,8 @@
 
 import { useEffect, useState, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { LoginForm } from "@/features/auth/ui/LoginForm";
-import { RegisterForm } from "@/features/auth/ui/RegisterForm";
+import { LoginForm } from "@/features/auth";
+import { RegisterForm } from "@/features/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/features/auth";
 

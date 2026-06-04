@@ -3,8 +3,8 @@
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Chatbot } from "@/features/chat-bot";
-import { useChatbotSidebarStore } from "@/features/chat-bot/store/chatbot-sidebar.store";
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useChatbotSidebarStore } from "@/features/chat-bot";
+import { useAuthStore } from "@/features/auth";
 import authAction from "@/shared/services/actions/auth.action";
 import {
   Sidebar,

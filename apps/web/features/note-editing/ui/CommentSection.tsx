@@ -1,7 +1,7 @@
 import { MessageSquare } from "lucide-react";
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useComments } from "@/features/note-editing/hooks/useComments";
+import { useComments } from "../hooks/useComments";
 import CommentForm from "./CommentForm";
 import CommentItem from "./CommentItem";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";

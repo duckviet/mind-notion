@@ -1,6 +1,6 @@
 import React, { useState, KeyboardEvent, useEffect, useRef } from "react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import { Card } from "@/shared/components/Card";
 import { ReqCreateNote } from "@/shared/services/generated/api";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";

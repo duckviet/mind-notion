@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { PreviewOverlay } from "@/shared/components/PreviewOverlay";
+import PreviewOverlay from "./PreviewOverlay";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -11,10 +11,14 @@ import {
 import { Trash2Icon, Eye } from "lucide-react";
 import { Card } from "@/shared/components/Card";
 import WebArticleDisplay from "./WebArticleDisplay";
-import { NoteCardProps } from "@/entities/note/ui/NoteCard";
+import type { ResDetailNote } from "@/shared/services/generated/api";
+
+type ArticleCardItem = ResDetailNote & {
+  score: number;
+};
 
 type Props = {
-  match: NoteCardProps;
+  match: ArticleCardItem;
   onDelete?: (id: string) => void | Promise<void>;
 };
 

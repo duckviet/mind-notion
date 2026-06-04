@@ -6,7 +6,7 @@ import { X, Trash2, Edit2, Save } from "lucide-react";
 import Portal from "@/shared/components/PortalModal/PortalModal";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import {
   ExtTableKit,
   ExtMathematics,

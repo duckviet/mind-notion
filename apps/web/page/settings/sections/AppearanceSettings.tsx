@@ -16,7 +16,7 @@ import {
   FontFamily,
   PrimaryColor,
 } from "@/shared/stores/settingsStore";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import { Check, Monitor, Moon, Sun } from "lucide-react";
 
 const AppearanceSettings = () => {

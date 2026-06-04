@@ -7,7 +7,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/shared/components/ui/context-menu";
-import NoteDisplay from "@/entities/note/ui/NoteDisplay";
+import { NoteDisplay } from "@/entities/note";
 import { CardContent, CardTitle } from "@/shared/components/ui/card";
 
 type TopOfMindCardProps = {

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import React, { useEffect, useMemo, useRef } from "react";
 type Props = {
   content: any;

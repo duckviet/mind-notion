@@ -25,7 +25,6 @@ import type {
   ReqCreateEventStatus,
   ReqCreateEventPriority,
 } from "@/shared/services/generated/api";
-import { useGoogleCalendarStatus } from "@/features/google-calendar";
 
 export type EventFormValues = {
   title: string;
@@ -72,6 +71,7 @@ type EventDialogProps = {
     syncToGoogle: boolean,
   ) => Promise<void> | void;
   submitting?: boolean;
+  googleCalendarConnected?: boolean;
 };
 
 export function EventDialog({
@@ -81,11 +81,11 @@ export function EventDialog({
   initialEvent,
   onSubmit,
   submitting,
+  googleCalendarConnected = false,
 }: EventDialogProps) {
   const [formValues, setFormValues] =
     useState<EventFormValues>(defaultFormValues);
   const [syncToGoogle, setSyncToGoogle] = useState(false);
-  const { data: status } = useGoogleCalendarStatus();
 
   useEffect(() => {
     if (!initialEvent) {
@@ -277,7 +277,7 @@ export function EventDialog({
               </div>
             </div>
 
-            {mode === "create" && status?.connected && (
+            {mode === "create" && googleCalendarConnected && (
               <div className="flex items-center space-x-2 border border-border p-3 rounded-md mt-2">
                 <Switch
                   id="sync-google"

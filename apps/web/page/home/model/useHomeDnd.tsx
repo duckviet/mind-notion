@@ -8,7 +8,7 @@ import {
   ResDetailNote,
 } from "@/shared/services/generated/api";
 import { useGlobalDndHandlers } from "@/shared/components/dnd";
-import NoteCard from "@/entities/note/ui/NoteCard";
+import { NoteCard } from "@/entities/note";
 import {
   findNoteById,
   normalizeHomeDragId,

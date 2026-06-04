@@ -27,7 +27,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 
 const registerSchema = z
   .object({

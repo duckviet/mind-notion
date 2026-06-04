@@ -10,30 +10,30 @@ import {
   type DragEndEvent,
   type UniqueIdentifier,
 } from "@/shared/components/dnd";
-import { DAYS } from "./CalendarPage";
+import { DAYS } from "./model/calendarTypes";
 import TaskCard from "./TaskCard";
 import {
   useEventsRange,
   useCreateEvent,
   useUpdateEvent,
-} from "@/features/event/api";
-import { EventDialog } from "@/features/event/components";
-import type { ResDetailEvent } from "@/features/event/types";
-import type { ReqCreateEvent, ReqUpdateEvent } from "@/features/event/api";
+} from "@/features/event";
+import { EventDialog } from "@/features/event";
+import type { ResDetailEvent } from "@/features/event";
+import type { ReqCreateEvent, ReqUpdateEvent } from "@/features/event";
 import { Button } from "@/shared/components/ui/button";
 import {
   GoogleCalendarToolbar,
   useGoogleCalendarPush,
+  useGoogleCalendarStatus,
 } from "@/features/google-calendar";
 import { eventsKeys } from "@/shared/hooks/query-keys";
+import type { DayTask } from "./model/weeklyTypes";
 
 type DayName = (typeof DAYS)[number];
 type WeekRange = {
   start_time: string;
   end_time: string;
 };
-
-export type DayTask = ResDetailEvent;
 
 // Get the start and end of current week for API query
 const getWeekRange = () => {
@@ -68,6 +68,7 @@ const DayMode = ({ weekRange: externalWeekRange }: DayModeProps) => {
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
   const pushToGoogle = useGoogleCalendarPush();
+  const { data: googleCalendarStatus } = useGoogleCalendarStatus();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
@@ -608,14 +609,15 @@ const DayMode = ({ weekRange: externalWeekRange }: DayModeProps) => {
         </div>
       </div>
 
-      <EventDialog
-        mode={dialogMode}
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        initialEvent={selectedEvent}
-        onSubmit={handleSubmit}
-        submitting={createEvent.isPending || updateEvent.isPending}
-      />
+        <EventDialog
+          mode={dialogMode}
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          initialEvent={selectedEvent}
+          onSubmit={handleSubmit}
+          googleCalendarConnected={Boolean(googleCalendarStatus?.connected)}
+          submitting={createEvent.isPending || updateEvent.isPending}
+        />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { sanitizeHtml } from "@/shared/utils/sanitizeHtml";
 import { saveNoteSnapshot } from "@/shared/services/generated/api";
 
 type UseNoteSnapshotOptions = {

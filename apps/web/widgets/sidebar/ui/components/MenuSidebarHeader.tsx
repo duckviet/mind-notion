@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { SidebarHeader } from "@/shared/components/ui/sidebar";
 import { DroppableZone } from "@/shared/components/dnd";
-import { MindNotionAi, MindNotionLogo } from "@/public";
+import { MindNotionAi, MindNotionLogo } from "@/shared/assets";
 
 interface MenuSidebarHeaderProps {
   onOpenChatbot: () => void;

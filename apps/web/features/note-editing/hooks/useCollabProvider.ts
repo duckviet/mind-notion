@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
-import { isYDocEmpty, hydrateYDocFromHtml } from "@/lib/collab-hydration";
+import { isYDocEmpty, hydrateYDocFromHtml } from "@/shared/utils/collab-hydration";
 import StarterKit from "@tiptap/starter-kit";
 
 type CollabUser = {

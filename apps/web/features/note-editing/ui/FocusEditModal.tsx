@@ -10,8 +10,8 @@ import FocusEditModalContent from "./FocusEditModalContent";
 import { useCollabSession } from "../hooks/useCollabSession";
 import { useCollabProvider } from "../hooks/useCollabProvider";
 import { useNoteSnapshot } from "../hooks/useNoteSnapshot";
-import { useAuthStore } from "@/features/auth";
-import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { useAuthStore } from "@/shared/stores/authStore";
+import { sanitizeHtml } from "@/shared/utils/sanitizeHtml";
 import { Editor } from "@tiptap/react";
 
 interface FocusEditModalProps {

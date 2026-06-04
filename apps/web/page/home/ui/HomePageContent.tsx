@@ -7,23 +7,24 @@ import { SearchField } from "@/features/search-content";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";
 import { FocusEditModal } from "@/features/note-editing";
 import { useListNotesTOM } from "@/shared/services/generated/api";
-import { AnimateCardProvider } from "@/entities/note/ui/AnimateCardProvider";
+import { AnimateCardProvider, NoteCard } from "@/entities/note";
 import {
   DroppableZone,
   SortableContext,
   rectSortingStrategy,
   DraggableItem,
 } from "@/shared/components/dnd";
-import { TopOfMind } from "@/features/top-of-mind";
-import { useChatbotSidebarStore } from "@/features/chat-bot/store/chatbot-sidebar.store";
-import { FoldersListPage } from "@/page/folder";
-import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
-import { useTomVisibility } from "@/features/top-of-mind/model/useTomVisibility";
-import NoteCard from "@/entities/note/ui/NoteCard";
-import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
+import {
+  DragAwareTomModal,
+  TopOfMind,
+  useTomActions,
+  useTomVisibility,
+} from "@/features/top-of-mind";
+import { useChatbotSidebarStore } from "@/features/chat-bot";
+import { FoldersList } from "@/widgets/folders-list";
+import { AddNoteForm } from "@/features/add-note";
 
 import { useHomeState } from "../model/useHomeState";
-import { useTomActions } from "@/features/top-of-mind/model/useTomActions";
 import { useHomeDnd } from "../model/useHomeDnd";
 import { useSortedTopOfMind } from "../model/useSortedTopOfMind";
 
@@ -146,7 +147,7 @@ export function HomePageContent() {
           />
         </DragAwareTomModal>
 
-        <FoldersListPage />
+        <FoldersList />
 
         <DroppableZone
           id="grid-zone"

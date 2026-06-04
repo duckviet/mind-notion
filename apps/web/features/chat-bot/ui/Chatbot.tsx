@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import { DroppableZone } from "@/shared/components/dnd";
 import { useChatbot } from "../model/use-chatbot";
 import { ChatbotComposer } from "./components/ChatbotComposer";

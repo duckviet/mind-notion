@@ -24,8 +24,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import { cn } from "@/lib/utils";
-import { CalendarDay, CalendarMode, HolidayCode } from "./CalendarPage";
+import { cn } from "@/shared/utils/cn";
+import type {
+  CalendarDay,
+  CalendarMode,
+  HolidayCode,
+} from "./model/calendarTypes";
 
 dayjs.extend(customParseFormat);
 function DayDialog({

@@ -1,4 +1,4 @@
-import MiscSettings from "@/page/settings/sections/MiscSettings";
+import { MiscSettings } from "@/page/settings";
 
 export default function Page() {
   return <MiscSettings />;

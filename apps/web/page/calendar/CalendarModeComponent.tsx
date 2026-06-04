@@ -3,9 +3,14 @@
 import { useCallback, useState, type RefObject } from "react";
 import { Loader2 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import DayDialog from "./DayDialog";
-import { CalendarDay, CalendarMode, DAYS, HolidayCode } from "./CalendarPage";
+import {
+  DAYS,
+  type CalendarDay,
+  type CalendarMode,
+  type HolidayCode,
+} from "./model/calendarTypes";
 
 function CalendarModeComponent({
   mode,

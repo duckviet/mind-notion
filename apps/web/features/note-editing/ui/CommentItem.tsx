@@ -3,7 +3,7 @@ import { Edit2, Trash2, MessageSquare, ChevronDown, ChevronUp } from "lucide-rea
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CommentForm from "./CommentForm";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import { formatDate } from "@/shared/utils/date-format";
 import { Comment } from "@/shared/services/generated/api";
 

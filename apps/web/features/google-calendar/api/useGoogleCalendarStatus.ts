@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { client } from "@/shared/services/axios";
-import { useAuthStore } from "@/features/auth";
+import { useAuthStore } from "@/shared/stores/authStore";
 
 export interface GoogleCalendarStatus {
   connected: boolean;

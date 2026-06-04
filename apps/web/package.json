@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "arch:check": "node scripts/check-fsd-architecture.mjs",
     "start": "next start",
     "lint": "eslint",
     "orval": "orval --config ./orval.config.ts"

@@ -44,18 +44,17 @@ const FocusEditModal = dynamic(
     })),
   { ssr: false },
 );
-import NoteCard from "@/entities/note/ui/NoteCard";
-import { AnimateCardProvider } from "@/entities/note/ui/AnimateCardProvider";
+import { AnimateCardProvider, NoteCard } from "@/entities/note";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
-import { FolderCard } from "@/shared/components/Folder";
-import AddNoteForm from "@/features/add-note/ui/AddNoteForm";
-import FoldersListPage from "./FoldersListPage";
+import { FolderCard } from "@/entities/folder";
+import { AddNoteForm } from "@/features/add-note";
+import { FoldersList } from "@/widgets/folders-list";
 import {
   DragEndEvent,
   DraggableItem,
   useGlobalDndHandlers,
 } from "@/shared/components/dnd";
-import DragAwareTomModal from "@/features/top-of-mind/ui/DragAwareTomModal";
+import { DragAwareTomModal } from "@/features/top-of-mind";
 import { TopOfMind } from "@/features/top-of-mind";
 
 const SIDEBAR_FOLDER_SORT_PREFIX = "tree-folder-sort-";
@@ -395,7 +394,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
               onFocusEdit={handleFocusEdit}
             />
           </DragAwareTomModal>
-          <FoldersListPage parentId={folderId} />
+          <FoldersList parentId={folderId} />
 
           <MasonryGrid data={notes}>
             <AddNoteForm folder_id={folderId} onCreate={createNote} />
