@@ -3,9 +3,11 @@
 import { RichTextEditor as BaseRichTextEditor } from "@mind-notion/editor";
 import type { RichTextEditorProps } from "@mind-notion/editor";
 import { toast } from "sonner";
-import { useUploadMedia } from "@/shared/services/generated/api";
+import {
+  useCreateComment,
+  useUploadMedia,
+} from "@/shared/services/generated/api";
 import { requestInlineEdit } from "@/shared/services/ai/inline-edit";
-import { useComments } from "@/features/note-editing/hooks/useComments";
 import { useEditToken } from "./hooks/useEditToken";
 
 export default function RichTextEditor(props: RichTextEditorProps) {
@@ -16,7 +18,12 @@ export default function RichTextEditor(props: RichTextEditorProps) {
       onError: () => toast.error("Failed to upload image"),
     },
   });
-  const { addComment } = useComments(props.noteId ?? "");
+  const { mutateAsync: createComment } = useCreateComment({
+    mutation: {
+      onSuccess: () => toast.success("Comment added"),
+      onError: () => toast.error("Failed to add comment"),
+    },
+  });
 
   return (
     <BaseRichTextEditor
@@ -35,7 +42,10 @@ export default function RichTextEditor(props: RichTextEditorProps) {
         props.createComment ??
         (async ({ content }) => {
           if (!props.noteId) return null;
-          return addComment({ content });
+          return createComment({
+            noteId: props.noteId,
+            data: { content },
+          });
         })
       }
       onAIAction={

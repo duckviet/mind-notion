@@ -24,10 +24,10 @@
   --color-terra-cotta: #d97757;
   --color-background: #e3e0d8;
   /* Typography */
-  --font-anthropic-serif: var(--font-lora), Lora, ui-serif, Georgia, Cambria, "Times New Roman",
+  --font-anthropic-serif: var(--font-tinos), Tinos, ui-serif, Georgia, Cambria, "Times New Roman",
     Times, serif;
   --font-anthropic-sans:
-    var(--font-inter), Inter, ui-sans-serif, system-ui, -apple-system,
+    var(--font-fahkwang), Fahkwang, ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --app-font-family: var(--font-anthropic-sans);
   --heading-font-family: var(--font-anthropic-serif);
@@ -490,6 +490,7 @@ html.black[data-accent="azure"] {
 
   /* Typography */
   --font-sans: var(--app-font-family);
+  --font-serif: var(--font-anthropic-serif);
   --font-anthropic-sans: var(--font-anthropic-sans);
   --font-anthropic-serif: var(--font-anthropic-serif);
   --font-mono:

@@ -3,13 +3,17 @@
 import React, { useCallback, useRef, useState, useEffect } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCollabSession } from "@/features/note-editing/hooks/useCollabSession";
-import { useCollabProvider } from "@/features/note-editing/hooks/useCollabProvider";
-import { useNoteSnapshot } from "@/features/note-editing/hooks/useNoteSnapshot";
-import { sanitizeHtml } from "@/lib/sanitizeHtml";
+import { useCollabSession } from "@/features/note-editing";
+import { useCollabProvider } from "@/features/note-editing";
+import { useNoteSnapshot } from "@/features/note-editing";
+import { sanitizeHtml } from "@/shared/utils/sanitizeHtml";
 import { useUpdateNote } from "@/shared/services/generated/api";
 import { invalidateNotesAfterUpdate } from "@/shared/hooks/query-invalidations";
-import { NotePage } from "@/page/note/NotePage";
+import { NotePage } from "@/page/note";
+import {
+  resolveCollabEditState,
+  resolveCollabEditorContent,
+} from "@/features/note-editing/model/collabFallback";
 
 export default function PublicNoteEditPage() {
   const queryClient = useQueryClient();
@@ -65,11 +69,23 @@ export default function PublicNoteEditPage() {
   const editorRef = useRef<import("@tiptap/react").Editor | null>(null);
 
   // Pass initialHtml to useCollabProvider for automatic hydration
-  const { doc, provider, isSynced, isHydrated } = useCollabProvider({
-    noteId,
-    token: collabToken,
-    enabled: collabEnabled,
-    initialHtml: note?.content ? sanitizeHtml(note.content) : undefined,
+  const { doc, provider, isSynced, isHydrated, isFallbackActive } =
+    useCollabProvider({
+      noteId,
+      token: collabToken,
+      enabled: collabEnabled,
+      initialHtml: note?.content ? sanitizeHtml(note.content) : undefined,
+    });
+  const collabEditState = resolveCollabEditState({
+    collabEnabled,
+    isFallbackActive,
+    isHydrated,
+  });
+  const noteContent = note?.content ?? "";
+  const editorContent = resolveCollabEditorContent({
+    content: noteContent,
+    fallbackContent: sanitizeHtml(noteContent),
+    useFallbackContent: collabEditState.useFallbackContent,
   });
 
   const { scheduleSnapshot, markUserEdited } = useNoteSnapshot({
@@ -101,19 +117,19 @@ export default function PublicNoteEditPage() {
 
   return (
     <NotePage
-      note={note ? { ...note, title } : note}
+      note={note ? { ...note, title, content: editorContent } : note}
       isLoading={isLoading}
       error={error}
       isSynced={isSynced}
       isHydrated={isHydrated}
-      collabEnabled={collabEnabled}
+      collabEnabled={collabEditState.activeCollaboration}
       showComments
       mode="edit"
       onTitleChange={handleTitleChange}
       onContentUpdate={handleContentUpdate}
       onEditorReady={handleEditorReady}
       collaboration={
-        doc && provider
+        collabEditState.activeCollaboration && doc && provider
           ? {
               document: doc,
               provider,

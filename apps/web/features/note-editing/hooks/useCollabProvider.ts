@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
-import { isYDocEmpty, hydrateYDocFromHtml } from "@/lib/collab-hydration";
+import { isYDocEmpty, hydrateYDocFromHtml } from "@/shared/utils/collab-hydration";
 import StarterKit from "@tiptap/starter-kit";
 
 type CollabUser = {
@@ -15,6 +15,7 @@ type UseCollabProviderOptions = {
   enabled?: boolean;
   user?: CollabUser;
   initialHtml?: string;
+  fallbackAfterMs?: number;
 };
 
 const COLORS = [
@@ -43,9 +44,12 @@ export const useCollabProvider = ({
   enabled = true,
   user,
   initialHtml,
+  fallbackAfterMs = 1500,
 }: UseCollabProviderOptions) => {
   const [isSynced, setIsSynced] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isFallbackActive, setIsFallbackActive] = useState(false);
+  const isFallbackActiveRef = useRef(false);
   const docRef = useRef<Y.Doc | null>(null);
   const providerRef = useRef<WebsocketProvider | null>(null);
   const initialHtmlRef = useRef<string | undefined>(initialHtml);
@@ -91,35 +95,73 @@ export const useCollabProvider = ({
     docRef.current = doc;
     providerRef.current = provider;
     setIsHydrated(false);
+    setIsFallbackActive(false);
+    isFallbackActiveRef.current = false;
+
+    const fallbackTimer = window.setTimeout(() => {
+      if (docRef.current !== doc || providerRef.current !== provider) return;
+
+      provider.off("sync", handleSync);
+      provider.destroy();
+      doc.destroy();
+      providerRef.current = null;
+      docRef.current = null;
+      isFallbackActiveRef.current = true;
+      setIsFallbackActive(true);
+      setIsHydrated(true);
+    }, fallbackAfterMs);
 
     const handleSync = (synced: boolean) => {
       setIsSynced(synced);
 
       // Hydrate on first sync if doc is empty and we have initial content
       if (synced) {
+        if (isFallbackActiveRef.current) return;
+        window.clearTimeout(fallbackTimer);
         tryHydrateFromInitialHtml();
         setIsHydrated(true);
+        setIsFallbackActive(false);
       }
     };
 
     provider.on("sync", handleSync);
 
     return () => {
+      window.clearTimeout(fallbackTimer);
       provider.off("sync", handleSync);
-      provider.destroy();
-      doc.destroy();
-      providerRef.current = null;
-      docRef.current = null;
+      if (providerRef.current === provider) {
+        provider.destroy();
+        providerRef.current = null;
+      }
+      if (docRef.current === doc) {
+        doc.destroy();
+        docRef.current = null;
+      }
       setIsSynced(false);
       setIsHydrated(false);
+      setIsFallbackActive(false);
+      isFallbackActiveRef.current = false;
     };
-  }, [enabled, noteId, token, collabUrl, tryHydrateFromInitialHtml]);
+  }, [
+    enabled,
+    noteId,
+    token,
+    collabUrl,
+    fallbackAfterMs,
+    tryHydrateFromInitialHtml,
+  ]);
 
   // Handle late-arriving initialHtml after websocket has already synced.
   useEffect(() => {
-    if (!enabled || !isSynced) return;
+    if (!enabled || (!isSynced && !isFallbackActive)) return;
     tryHydrateFromInitialHtml();
-  }, [enabled, isSynced, initialHtml, tryHydrateFromInitialHtml]);
+  }, [
+    enabled,
+    isSynced,
+    isFallbackActive,
+    initialHtml,
+    tryHydrateFromInitialHtml,
+  ]);
 
   useEffect(() => {
     const provider = providerRef.current;
@@ -134,5 +176,6 @@ export const useCollabProvider = ({
     provider: providerRef.current,
     isSynced,
     isHydrated,
+    isFallbackActive,
   };
 };

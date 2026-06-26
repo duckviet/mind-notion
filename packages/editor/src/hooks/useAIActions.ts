@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import type { Editor } from "@tiptap/react";
 import type { AIAction } from "../extensions/ExtAI";
 import type { AISelectionContext } from "../extensions/ExtAI/types";
-import type { AIMenuState } from "../types";
+import type { AIActionResult, AIMenuState } from "../types";
 import { useAIMenu } from "./useAIMenu";
 
 interface UseAIActionsProps {
@@ -12,18 +12,7 @@ interface UseAIActionsProps {
     selectedText: string,
     customPrompt?: string,
     context?: AISelectionContext,
-  ) => Promise<
-    | string
-    | {
-        text: string;
-        model?: string;
-        usage?: {
-          total_tokens?: number;
-          prompt_tokens?: number;
-          completion_tokens?: number;
-        };
-      }
-  >;
+  ) => Promise<AIActionResult>;
 }
 
 interface AIActionsReturn {
@@ -114,17 +103,41 @@ export function useAIActions({
             )
           : "";
 
-        const proposedText =
-          typeof response === "string" ? response : response.text;
+        if (
+          typeof response === "object" &&
+          "type" in response &&
+          (response.type === "inline_assist" || response.type === "rag_answer")
+        ) {
+          return;
+        }
+
+        let proposedText: string;
+        if (typeof response === "string") {
+          proposedText = response;
+        } else if ("type" in response && response.type === "edit_proposal") {
+          proposedText = response.proposed;
+        } else if ("type" in response && response.type === "inline_transform") {
+          proposedText = response.replacement;
+        } else if ("text" in response) {
+          proposedText = response.text;
+        } else {
+          return;
+        }
         const modelName =
           typeof response === "object" ? response.model : undefined;
+        const originalText =
+          typeof response === "object" &&
+          "type" in response &&
+          response.type === "edit_proposal"
+            ? response.original
+            : aiMenuState.selection;
 
         const creator = "You";
         const modelInfo = modelName ? ` - ${modelName}` : " - using AI";
 
         editor.commands.setProposedEdit({
           range: aiMenuState.range,
-          originalText: aiMenuState.selection,
+          originalText,
           proposedText,
           action,
           customPrompt,

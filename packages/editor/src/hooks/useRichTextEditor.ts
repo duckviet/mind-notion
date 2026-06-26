@@ -34,6 +34,8 @@ export const useTiptapEditor = ({
   onOpenAI,
   uploadMedia,
   drawingSyncUri,
+  editorClassName,
+  editorReadonlyClassName,
 }: UseTiptapEditorProps) => {
   const onKeyDownRef = useStableRef(onKeyDown);
   const uploadMediaRef = useStableRef(
@@ -80,11 +82,14 @@ export const useTiptapEditor = ({
     if (editor) migrateMathStrings(editor);
   }, [editor]);
 
+  const resolvedEditorClass = cn(EDITOR_CLASS, editorClassName);
+  const resolvedReadonlyClass = cn(READONLY_CLASS, editorReadonlyClassName ?? editorClassName);
+
   // --- Reusable primitives ---
   useEditorLifecycle(editor, {
     editable,
-    className: EDITOR_CLASS,
-    readonlyClassName: READONLY_CLASS,
+    className: resolvedEditorClass,
+    readonlyClassName: resolvedReadonlyClass,
   });
 
   useEditorSync(editor, {

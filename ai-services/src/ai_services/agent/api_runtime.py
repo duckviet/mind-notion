@@ -286,7 +286,9 @@ async def run_agent_task(request: AgentRunRequest, state: RunState) -> None:
         queue_event(
             state,
             RunCompletedEvent(
-                run_id=request.run_id, usage=payload, model_name=MODEL_NAME
+                run_id=request.run_id,
+                usage=payload,
+                model_name=MODEL_NAME,
             ),
         )
     except Exception as exc:  # noqa: BLE001
@@ -308,6 +310,8 @@ async def run_inline_edit_task(
     try:
         text = await run_inline_edit(
             action=request.action,
+            command=request.command,
+            mode=request.mode,
             selected_text=request.selected_text,
             custom_prompt=request.custom_prompt,
             context_blocks=request.context_blocks,
@@ -332,7 +336,17 @@ async def run_inline_edit_task(
             detail="inline edit timed out",
         ) from exc
 
-    return AgentInlineEditResponse(text=text)
+    result_text = ""
+    if hasattr(text, "proposed"):
+        result_text = str(text.proposed)
+    elif hasattr(text, "replacement"):
+        result_text = str(text.replacement)
+    elif hasattr(text, "explanation"):
+        result_text = str(text.explanation)
+    elif hasattr(text, "answer"):
+        result_text = str(text.answer)
+
+    return AgentInlineEditResponse(text=result_text, result=text)
 
 
 async def run_inline_edit_streaming_task(
@@ -342,8 +356,10 @@ async def run_inline_edit_streaming_task(
     callbacks = StreamCallbacks(request=request, state=state)
     client = AsyncOpenAI()
     try:
-        await run_inline_edit(
+        result = await run_inline_edit(
             action=request.action,
+            command=request.command,
+            mode=request.mode,
             selected_text=request.selected_text,
             custom_prompt=request.custom_prompt,
             context_blocks=request.context_blocks,
@@ -367,7 +383,10 @@ async def run_inline_edit_streaming_task(
         queue_event(
             state,
             RunCompletedEvent(
-                run_id=request.run_id, usage=payload, model_name=MODEL_NAME
+                run_id=request.run_id,
+                usage=payload,
+                model_name=MODEL_NAME,
+                result=result,
             ),
         )
     except Exception as exc:  # noqa: BLE001

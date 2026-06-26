@@ -1,8 +1,16 @@
 import Cookies from "js-cookie"; // npm install js-cookie
-import {
-  logout as logoutApi,
-  refreshToken as refreshTokenApi,
-} from "../generated/api";
+import axios from "axios";
+
+type ResAuthTokens = {
+  access_token?: string;
+  refresh_token?: string;
+};
+
+const baseUrl = () =>
+  (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api/v1").replace(
+    /\/$/,
+    "",
+  );
 
 const authAction = {
   async refreshToken() {
@@ -10,9 +18,14 @@ const authAction = {
       // 1. Gọi API Refresh Token
       // Ta truyền chuỗi rỗng "" vì trình duyệt sẽ TỰ ĐỘNG gửi HttpOnly Cookie "refresh_token" đi kèm request.
       // Backend (Golang) cần ưu tiên đọc từ Cookie trước, nếu không có mới đọc body.
-      const response = await refreshTokenApi({
-        refresh_token: "",
-      });
+      const { data: response } = await axios.post<ResAuthTokens>(
+        `${baseUrl()}/auth/refresh-token`,
+        { refresh_token: "" },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        },
+      );
 
       // 2. Lưu Access Token mới vào Cookie
       // Để Middleware và Axios Interceptor đều dùng được.
@@ -37,7 +50,9 @@ const authAction = {
 
   async logout() {
     try {
-      await logoutApi();
+      await axios.post(`${baseUrl()}/auth/logout`, undefined, {
+        withCredentials: true,
+      });
     } catch (error) {
       console.error("Logout error:", error);
     } finally {
@@ -48,8 +63,6 @@ const authAction = {
 
   // Hàm tiện ích để dọn dẹp (Dùng chung cho logout và lỗi refresh)
   handleLogoutCleanup() {
-    // Note: cancelRefresh được gọi từ authStore.logout() để tránh circular dependency
-
     // Xóa Access Token (Client xóa được)
     Cookies.remove("access_token");
 

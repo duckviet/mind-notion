@@ -1,6 +1,25 @@
 from __future__ import annotations
 
+import os
 from typing import Any
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Load editor formatting rules from markdown file
+_dir = os.path.dirname(os.path.abspath(__file__))
+_rules_path = os.path.join(_dir, "editor_format_rules.md")
+_EDITOR_FORMAT_RULES = ""
+if os.path.exists(_rules_path):
+    with open(_rules_path, "r", encoding="utf-8") as _f:
+        _EDITOR_FORMAT_RULES = _f.read()
+
+if not _EDITOR_FORMAT_RULES:
+    logger.warning(
+        "editor_format_rules.md not found or empty at %s; "
+        "agent output formatting may be inconsistent", _rules_path
+    )
 
 _IDENTITY = """\
 You are an AI assistant embedded inside a note-taking application.
@@ -124,24 +143,102 @@ def _build_runtime_section(context: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+_FORMAT_POLICY_BY_MODE = {
+    "inline_transform": """\
+## Formatting for this operation (INLINE TRANSFORM)
+
+You are editing a selected passage. Output rules:
+- Return ONLY the replacement text, exactly as it should appear.
+- Do NOT wrap in a code fence (unless the selection itself is code).
+- PRESERVE the original formatting, language, structure, and inline marks.
+- Do NOT introduce new markdown structure (no new headings, tables,
+  split-views, highlights) unless the user explicitly asks.
+- No commentary, no quotes around the output.""",
+
+    "inline_assist": """\
+## Formatting for this operation (INLINE ASSIST / EXPLAIN)
+
+You are explaining or assisting, not replacing text. Output rules:
+- Use light markdown (paragraphs, short bullet lists) for readability.
+- Do NOT use H1-H2 headings; H3 max if needed.
+- Do NOT use split-views or tables unless explicitly requested.""",
+
+    "current_note_qa": """\
+## Formatting for this operation (CURRENT NOTE Q&A)
+
+- Use markdown for readability; avoid it for simple replies.
+- Keep explanations and answers concise and directly related to the note context.
+- Use bullet points or code blocks where appropriate.""",
+
+    "personal_knowledge_search": """\
+## Formatting for this operation (PERSONAL KNOWLEDGE SEARCH)
+
+- Provide clear summaries of findings from the notes search.
+- Use lists to organize different search hits.
+- Cite the source note name or note ID when presenting facts.""",
+
+    "extract": """\
+## Formatting for this operation (EXTRACT / TASK EXTRACTION)
+
+- Extract task list items from the text.
+- Format them strictly as a task list/checklist using `- [ ]` for incomplete tasks.
+- Keep the description of tasks concise.""",
+
+    "insert": """\
+## Formatting for this operation (INSERT / CONTINUE WRITING)
+
+You are adding content into an existing note. Output rules:
+- Match the tone and structure of the surrounding note.
+- Use full markdown where it genuinely aids structure.
+- Avoid top-level H1 if the note already has a title.""",
+
+    "chat": """\
+## Formatting for this operation (CHAT / Q&A)
+
+- Use markdown for readability; avoid it for simple replies.
+- Cite source notes/chunks when answering from rag results.
+- Use tables/split-views only when comparing structured data.""",
+
+    "generate_note": """\
+## Formatting for this operation (GENERATE NOTE)
+
+- Full markdown allowed: headings (H1-H3), lists, tables, code, math.
+- Use split-view only for genuine side-by-side comparisons.
+- Use highlights (<mark>) sparingly for key terms only.""",
+}
+
 _BASE_SECTIONS = [
     _IDENTITY,
     _MEMORY_POLICY,
     _TOOL_POLICY,
     _BEHAVIOR,
     _OUTPUT_FORMAT,
+    _EDITOR_FORMAT_RULES,
 ]
 
 BASE_SYSTEM_PROMPT = "\n\n".join(_BASE_SECTIONS)
 
+_VALID_MODES = frozenset(_FORMAT_POLICY_BY_MODE) | {"chat"}
 
 def build_system_prompt(
     resource_context: dict[str, Any] | None = None,
+    mode: str = "chat",
 ) -> str:
+    if mode not in _VALID_MODES:
+        mode = "chat"
+
     context = resource_context or {}
+    sections = list(_BASE_SECTIONS)
+
+    # Inject mode-specific format policy
+    format_policy = _FORMAT_POLICY_BY_MODE.get(mode)
+    if format_policy:
+        sections.append(format_policy)
+
+    base = "\n\n".join(sections)
     runtime_section = _build_runtime_section(context)
 
     if not runtime_section:
-        return BASE_SYSTEM_PROMPT
+        return base
 
-    return f"{BASE_SYSTEM_PROMPT}\n\n{runtime_section}"
+    return f"{base}\n\n{runtime_section}"

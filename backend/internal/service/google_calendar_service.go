@@ -26,7 +26,8 @@ type GoogleCalendarService struct {
 
 // GoogleCalendarStatus represents the connection status for a user
 type GoogleCalendarStatus struct {
-	Connected bool `json:"connected"`
+	Connected  bool `json:"connected"`
+	Configured bool `json:"configured"`
 }
 
 // NewGoogleCalendarService creates a new GoogleCalendarService instance
@@ -41,6 +42,10 @@ func NewGoogleCalendarService(db *gorm.DB, accountRepo repository.AccountReposit
 		Endpoint: google.Endpoint,
 	}
 	return &GoogleCalendarService{db: db, accountRepo: accountRepo, oauthConfig: oauthConfig}
+}
+
+func (s *GoogleCalendarService) IsConfigured() bool {
+	return s.oauthConfig.ClientID != "" && s.oauthConfig.ClientSecret != ""
 }
 
 // GetAuthURL generates the Google OAuth2 authorization URL
@@ -106,12 +111,16 @@ func (s *GoogleCalendarService) HandleCallback(ctx context.Context, code, userID
 
 // GetStatus returns whether a user has connected Google Calendar
 func (s *GoogleCalendarService) GetStatus(ctx context.Context, userID string) GoogleCalendarStatus {
+	if !s.IsConfigured() {
+		return GoogleCalendarStatus{Connected: false, Configured: false}
+	}
+
 	connected, err := s.accountRepo.IsConnected(ctx, userID, models.AccountProviderGoogle, models.AccountServiceCalendar)
 	if err != nil {
 		log.Printf("google-calendar status: failed to check account for user %s: %v", userID, err)
-		return GoogleCalendarStatus{Connected: false}
+		return GoogleCalendarStatus{Connected: false, Configured: true}
 	}
-	return GoogleCalendarStatus{Connected: connected}
+	return GoogleCalendarStatus{Connected: connected, Configured: true}
 }
 
 // Disconnect removes the user's Google tokens
@@ -406,6 +415,10 @@ func googleEventDateTime(t time.Time, isAllDay bool) *googlecalendar.EventDateTi
 func googleEventEndDateTime(start time.Time, end *time.Time, isAllDay bool) *googlecalendar.EventDateTime {
 	if end != nil {
 		return googleEventDateTime(*end, isAllDay)
+	}
+	if isAllDay {
+		exclusiveEnd := start.AddDate(0, 0, 1)
+		return googleEventDateTime(exclusiveEnd, true)
 	}
 	// Default: 1 hour after start
 	defaultEnd := start.Add(1 * time.Hour)

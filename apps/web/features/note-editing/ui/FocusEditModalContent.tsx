@@ -5,9 +5,9 @@ import { useReactToPrint } from "react-to-print";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import type { CollaborationConfig } from "@/shared/components/RichTextEditor/useTiptapEditor";
 import { Button } from "@/shared/components/ui/button";
-import { CollaborativeSidebar } from "@/shared/components/CollaborativeSidebar";
+import { CollaborativeSidebar } from "./CollaborativeSidebar";
 import { ShareNoteModal } from "./ShareNoteModal";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import { useRouter } from "next/navigation";
 
 interface FocusEditModalContentProps {

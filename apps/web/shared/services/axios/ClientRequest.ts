@@ -4,7 +4,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import Cookies from "js-cookie"; // Dùng cái này để quản lý cookie nhất quán
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/shared/stores/authStore";
 import authAction from "@/shared/services/actions/auth.action";
 import { useEditTokenStore } from "@/shared/stores/editTokenStore";
 interface FailedRequestQueueItem {

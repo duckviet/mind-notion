@@ -1,17 +1,31 @@
 import { useMutation } from "@tanstack/react-query";
 import { client } from "@/shared/services/axios";
 import { toast } from "sonner";
+import {
+  getApiErrorMessage,
+  type GoogleCalendarConnectResponse,
+} from "./googleCalendarApi";
 
 export const useGoogleCalendarConnect = () => {
   const { mutate, isPending } = useMutation({
-    mutationFn: () => client.get("/auth/google/calendar").then((res) => res.data),
-    onSuccess: (data: { url: string }) => {
+    mutationFn: async () => {
+      const response = await client.get<GoogleCalendarConnectResponse>(
+        "/auth/google/calendar",
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
       if (data.url) {
         window.location.href = data.url;
       }
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.error || "Failed to initiate Google Calendar connection");
+    onError: (error: unknown) => {
+      toast.error(
+        getApiErrorMessage(
+          error,
+          "Failed to initiate Google Calendar connection",
+        ),
+      );
     },
   });
 

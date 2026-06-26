@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import { DroppableZone } from "@/shared/components/dnd";
 import { useChatbot } from "../model/use-chatbot";
 import { ChatbotComposer } from "./components/ChatbotComposer";
@@ -72,7 +72,7 @@ export default function Chatbot({
             />
 
             <ChatbotComposer
-              quickPrompts={QUICK_PROMPTS}
+              quickPrompts={messages.length > 0 ? [] : QUICK_PROMPTS}
               inputValue={inputValue}
               setInputValue={setInputValue}
               isStreaming={isStreaming}

@@ -8,6 +8,15 @@ from typing import Any
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletionMessageParam
 
+from .api_contracts import (
+    AIResult,
+    EditProposal,
+    EditTarget,
+    InlineAssistResult,
+    InlineTransformResult,
+    RAGAnswer,
+)
+from .command_registry import resolve_command
 from .run import MODEL_NAME
 from .runtime_context import reset_run_context, set_run_context
 from .system import build_system_prompt
@@ -30,21 +39,29 @@ _ACTION_HINTS: dict[str, str] = {
 def _build_inline_messages(
     *,
     action: str,
+    command: str,
+    mode: str,
     selected_text: str,
     custom_prompt: str,
     context_blocks: list[dict[str, Any]],
     resource_context: dict[str, Any],
 ) -> list[ChatCompletionMessageParam]:
-    system_prompt = build_system_prompt(resource_context)
-    action_hint = _ACTION_HINTS.get(action, "Rewrite the selected text helpfully.")
+    command_spec = resolve_command(action, command, mode)
+    system_prompt = build_system_prompt(resource_context, mode=command_spec.mode)
+    action_hint = command_spec.prompt or _ACTION_HINTS.get(
+        action, "Rewrite the selected text helpfully."
+    )
 
     inline_instruction = (
         "You are an inline editor for a rich-text document. "
-        "Return only the edited text with no markdown fences, labels, or extra commentary."
+        "For inline_transform commands, return only edited text with no markdown fences, labels, or extra commentary. "
+        "For assist or RAG commands, answer concisely and do not rewrite the note."
     )
 
     user_prompt = {
         "action": action,
+        "command": command_spec.command,
+        "mode": command_spec.mode,
         "action_hint": action_hint,
         "custom_prompt": custom_prompt,
         "selected_text": selected_text,
@@ -60,9 +77,69 @@ def _build_inline_messages(
     ]
 
 
+def _trim_model_text(raw_text: str) -> str:
+    text = raw_text.strip()
+    if text.startswith("```") and text.endswith("```"):
+        lines = text.splitlines()
+        if len(lines) >= 2:
+            return "\n".join(lines[1:-1]).strip()
+    return text
+
+
+def _build_inline_result(
+    *,
+    action: str,
+    command: str,
+    mode: str,
+    selected_text: str,
+    raw_text: str,
+    resource_context: dict[str, Any],
+) -> AIResult:
+    spec = resolve_command(action, command, mode)
+    output = _trim_model_text(raw_text)
+
+    if spec.output == "inline_assist":
+        return InlineAssistResult(explanation=output or "No explanation was returned.")
+
+    if spec.output == "rag_answer":
+        return RAGAnswer(
+            answer=output or "Không tìm thấy trong note của bạn.",
+            sources=[],
+            missing_context=True,
+            confidence=0.0,
+        )
+
+    if spec.output == "inline_transform":
+        return InlineTransformResult(
+            replacement=output or selected_text,
+            summary="Prepared inline transform.",
+        )
+
+    proposed = output or selected_text
+    summary = "Prepared edit proposal."
+    if spec.command == "/shorten" and len(proposed) > len(selected_text):
+        proposed = selected_text
+        summary = "No shorter rewrite accepted because the model response was longer."
+
+    target = EditTarget(
+        note_id=str(resource_context.get("note_id", "")),
+        expected_version=resource_context.get("note_version"),
+    )
+    return EditProposal(
+        target=target,
+        original=selected_text,
+        proposed=proposed,
+        summary=summary,
+        preserved=["meaning", "facts", "names", "dates"],
+        confidence=0.8 if proposed != selected_text else 0.4,
+    )
+
+
 async def run_inline_edit(
     *,
     action: str,
+    command: str = "",
+    mode: str = "",
     selected_text: str,
     custom_prompt: str,
     context_blocks: list[dict[str, Any]],
@@ -74,7 +151,7 @@ async def run_inline_edit(
     timeout_ms: int = 10_000,
     max_tokens: int = 20_000,
     callbacks: Any | None = None,
-) -> str:
+) -> AIResult:
     actor_context = actor or {}
     resource_context_data = resource_context or {}
 
@@ -88,6 +165,8 @@ async def run_inline_edit(
 
     messages = _build_inline_messages(
         action=action,
+        command=command,
+        mode=mode,
         selected_text=selected_text,
         custom_prompt=custom_prompt,
         context_blocks=context_blocks,
@@ -134,7 +213,14 @@ async def run_inline_edit(
                     full_content.append(delta)
                     callbacks.on_token(delta)
 
-            return "".join(full_content).strip()
+            return _build_inline_result(
+                action=action,
+                command=command,
+                mode=mode,
+                selected_text=selected_text,
+                raw_text="".join(full_content),
+                resource_context=resource_context_data,
+            )
 
         response = await asyncio.wait_for(
             client.chat.completions.create(
@@ -154,11 +240,25 @@ async def run_inline_edit(
 
     if not response.choices:
         logger.warning("Inline edit returned no choices")
-        return ""
+        return _build_inline_result(
+            action=action,
+            command=command,
+            mode=mode,
+            selected_text=selected_text,
+            raw_text="",
+            resource_context=resource_context_data,
+        )
 
     message_content = response.choices[0].message.content or ""
     if isinstance(message_content, str):
-        return message_content.strip()
+        return _build_inline_result(
+            action=action,
+            command=command,
+            mode=mode,
+            selected_text=selected_text,
+            raw_text=message_content,
+            resource_context=resource_context_data,
+        )
 
     parts: list[str] = []
     for part in message_content:
@@ -166,4 +266,11 @@ async def run_inline_edit(
         if isinstance(text, str) and text.strip():
             parts.append(text.strip())
 
-    return "\n".join(parts).strip()
+    return _build_inline_result(
+        action=action,
+        command=command,
+        mode=mode,
+        selected_text=selected_text,
+        raw_text="\n".join(parts),
+        resource_context=resource_context_data,
+    )

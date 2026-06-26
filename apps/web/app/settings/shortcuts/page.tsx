@@ -1,4 +1,4 @@
-import ShortcutsSettings from "@/page/settings/sections/ShortcutsSettings";
+import { ShortcutsSettings } from "@/page/settings";
 
 export default function Page() {
   return <ShortcutsSettings />;

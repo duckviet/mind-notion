@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 
 export type Theme = "light" | "dark" | "black" | "auto";
 export type ViewMode = "default" | "compact";
-export type FontFamily = "academic" | "inter" | "system";
+export type FontFamily = "academic" | "fahkwang" | "system";
 export type PrimaryColor = "neutral" | "terra" | "azure";
 
 interface SettingsState {

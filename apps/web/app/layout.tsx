@@ -1,23 +1,24 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Inter, Lora } from "next/font/google";
+import { Geist_Mono, Fahkwang, Tinos } from "next/font/google";
 import "./globals.css";
-import SidebarWrapper from "@/widgets/sidebar/ui/Sidebar";
+import { SidebarWrapper } from "@/widgets/sidebar";
 import { QueryProvider } from "@/shared/providers/QueryProvider";
-import { AuthProvider } from "@/shared/providers/AuthProvider";
 import { ThemeProvider } from "@/shared/providers/ThemeProvider";
-import AutoLogin from "@/features/auth/store/autoLogin";
+import { AuthProvider, AutoLogin } from "@/features/auth";
 import { AppearanceApplier } from "@/shared/providers/AppearanceApplier";
 import { GlobalDndProvider } from "@/shared/components/dnd/GlobalDndProvider";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+const fahkwang = Fahkwang({
+  variable: "--font-fahkwang",
+  subsets: ["vietnamese", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const lora = Lora({
-  variable: "--font-lora",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const tinos = Tinos({
+  variable: "--font-tinos",
+  subsets: ["vietnamese", "latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
 });
 
 const geistMono = Geist_Mono({
@@ -37,10 +38,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} ${lora.variable} ${geistMono.variable} antialiased`}
-      >
+    <html
+      lang="en"
+      className={`${fahkwang.variable} ${geistMono.variable} ${tinos.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

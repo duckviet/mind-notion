@@ -1,7 +1,18 @@
 import React from "react";
 import { Button } from "@/shared/components/ui/button";
-import { useGoogleCalendarStatus, useGoogleCalendarConnect, useGoogleCalendarDisconnect, useGoogleCalendarSync } from "../api";
-import { CalendarIcon, Loader2, RefreshCw, LogOut } from "lucide-react";
+import {
+  useGoogleCalendarStatus,
+  useGoogleCalendarConnect,
+  useGoogleCalendarDisconnect,
+  useGoogleCalendarSync,
+} from "../api";
+import {
+  AlertTriangle,
+  CalendarIcon,
+  Loader2,
+  RefreshCw,
+  LogOut,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,9 +35,24 @@ export const GoogleCalendarToolbar = () => {
     );
   }
 
+  if (status?.configured === false) {
+    return (
+      <Button variant="outline" size="sm" disabled className="gap-2">
+        <AlertTriangle className="w-4 h-4" />
+        Google Calendar unavailable
+      </Button>
+    );
+  }
+
   if (!status?.connected) {
     return (
-      <Button variant="outline" size="sm" onClick={() => connect()} disabled={isConnecting} className="gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => connect()}
+        disabled={isConnecting}
+        className="gap-2"
+      >
         {isConnecting ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
@@ -46,7 +72,9 @@ export const GoogleCalendarToolbar = () => {
         disabled={syncMutation.isPending}
         className="gap-2"
       >
-        <RefreshCw className={`w-4 h-4 ${syncMutation.isPending ? "animate-spin" : ""}`} />
+        <RefreshCw
+          className={`w-4 h-4 ${syncMutation.isPending ? "animate-spin" : ""}`}
+        />
         Sync Google Events
       </Button>
 
@@ -57,7 +85,7 @@ export const GoogleCalendarToolbar = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={() => disconnectMutation.mutate()}
             disabled={disconnectMutation.isPending}
             className="text-destructive focus:text-destructive cursor-pointer"

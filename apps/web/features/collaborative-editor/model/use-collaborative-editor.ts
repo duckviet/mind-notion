@@ -1,4 +1,4 @@
-import { useAuthStore } from "@/features/auth";
+import { useAuthStore } from "@/shared/stores/authStore";
 import { useCallback, useEffect, useState, useRef } from "react";
 
 // Types would ideally move to the `entities` layer (e.g., entities/user, entities/document)

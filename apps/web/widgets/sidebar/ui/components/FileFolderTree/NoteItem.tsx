@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FileText, GripVertical } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import { SortableItem } from "@/shared/components/dnd";
 import { NoteNode } from "./types";
 import { isNoteRoute } from "./utils";

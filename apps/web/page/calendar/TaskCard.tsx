@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
-import { DayTask } from "./WeeklyMode";
+import { cn } from "@/shared/utils/cn";
+import type { DayTask } from "./model/weeklyTypes";
 import { GoogleBadge } from "@/features/google-calendar";
 
 const TaskCard = ({

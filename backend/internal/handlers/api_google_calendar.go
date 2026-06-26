@@ -31,6 +31,11 @@ func NewGoogleCalendarAPI(gcalService *service.GoogleCalendarService, authServic
 // GET /api/v1/auth/google/calendar
 // Redirects user to Google OAuth consent screen
 func (api *GoogleCalendarAPI) InitiateOAuth(c *gin.Context) {
+	if !api.gcalService.IsConfigured() {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Google Calendar is not configured"})
+		return
+	}
+
 	userVal, ok := c.Get("user")
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -39,7 +44,7 @@ func (api *GoogleCalendarAPI) InitiateOAuth(c *gin.Context) {
 	u := userVal.(*models.User)
 
 	url := api.gcalService.GetAuthURL(u.ID)
-	// Return the URL as JSON so the frontend can redirect, 
+	// Return the URL as JSON so the frontend can redirect,
 	// avoiding CORS errors and allowing JWT token attachment.
 	c.JSON(http.StatusOK, gin.H{"url": url})
 }
@@ -101,6 +106,11 @@ func (api *GoogleCalendarAPI) GetStatus(c *gin.Context) {
 // DELETE /api/v1/auth/google/calendar
 // Disconnects Google Calendar (removes tokens)
 func (api *GoogleCalendarAPI) Disconnect(c *gin.Context) {
+	if !api.gcalService.IsConfigured() {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Google Calendar is not configured"})
+		return
+	}
+
 	userVal, ok := c.Get("user")
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -119,6 +129,11 @@ func (api *GoogleCalendarAPI) Disconnect(c *gin.Context) {
 // POST /api/v1/calendar/google/sync
 // Manually triggers a sync from Google Calendar into the app
 func (api *GoogleCalendarAPI) SyncFromGoogle(c *gin.Context) {
+	if !api.gcalService.IsConfigured() {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Google Calendar is not configured"})
+		return
+	}
+
 	userVal, ok := c.Get("user")
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -138,6 +153,11 @@ func (api *GoogleCalendarAPI) SyncFromGoogle(c *gin.Context) {
 // POST /api/v1/calendar/google/push/:id
 // Pushes a specific local event to Google Calendar
 func (api *GoogleCalendarAPI) PushToGoogle(c *gin.Context) {
+	if !api.gcalService.IsConfigured() {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Google Calendar is not configured"})
+		return
+	}
+
 	userVal, ok := c.Get("user")
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})

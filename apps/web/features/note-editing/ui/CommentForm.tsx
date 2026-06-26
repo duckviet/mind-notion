@@ -2,7 +2,7 @@ import { Button } from "@/shared/components/ui/button";
 import { ArrowUp, ArrowUpIcon, Send, X, XIcon } from "lucide-react";
 import React from "react";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import { Textarea } from "@/shared/components/ui/textarea";
 
 interface CommentFormProps {

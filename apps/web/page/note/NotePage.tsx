@@ -10,11 +10,11 @@ import { toast } from "sonner";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { sanitizeHtml } from "@/lib/sanitizeHtml";
-import { cn } from "@/lib/utils";
+import { sanitizeHtml } from "@/shared/utils/sanitizeHtml";
+import { cn } from "@/shared/utils/cn";
 import { CollaborationConfig } from "@/shared/components/RichTextEditor/useTiptapEditor";
-import { CollaborativeSidebar } from "@/shared/components/CollaborativeSidebar";
-import { ShareNoteModal } from "@/features/note-editing/ui/ShareNoteModal";
+import { CollaborativeSidebar } from "@/features/note-editing";
+import { ShareNoteModal } from "@/features/note-editing";
 import usePersistentState from "@/shared/hooks/usePersistentState/usePersistentState";
 import { ModalProvider } from "@/shared/contexts/ModalContext";
 import {

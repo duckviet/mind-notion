@@ -6,13 +6,16 @@ import { useEffect } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { ArrowLeftIcon } from "lucide-react";
 import { ArrowRightIcon } from "lucide-react";
-import { CalendarMode, MONTHS } from "./CalendarPage";
-import { ICalendar } from "./CalendarPage";
-import { HolidayCode } from "./CalendarPage";
-import { CalendarDay } from "./CalendarPage";
+import {
+  MONTHS,
+  type CalendarDay,
+  type CalendarMode,
+  type HolidayCode,
+  type ICalendar,
+} from "./model/calendarTypes";
 import CalendarModeComponent from "./CalendarModeComponent";
 import WeeklyMode from "./WeeklyMode";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 function YearDays({
   calendars,
   currentYear,

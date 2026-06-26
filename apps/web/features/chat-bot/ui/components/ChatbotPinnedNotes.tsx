@@ -1,5 +1,5 @@
 import { FileText, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 
 type PinnedNoteItem = {
   id: string;

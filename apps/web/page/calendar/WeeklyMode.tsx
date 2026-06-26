@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import {
   useGlobalDndHandlers,
@@ -10,30 +11,36 @@ import {
   type DragEndEvent,
   type UniqueIdentifier,
 } from "@/shared/components/dnd";
-import { DAYS } from "./CalendarPage";
+import { DAYS } from "./model/calendarTypes";
 import TaskCard from "./TaskCard";
 import {
   useEventsRange,
   useCreateEvent,
   useUpdateEvent,
-} from "@/features/event/api";
-import { EventDialog } from "@/features/event/components";
-import type { ResDetailEvent } from "@/features/event/types";
-import type { ReqCreateEvent, ReqUpdateEvent } from "@/features/event/api";
+} from "@/features/event";
+import { EventDialog } from "@/features/event";
+import type { ResDetailEvent } from "@/features/event";
+import type { ReqCreateEvent, ReqUpdateEvent } from "@/features/event";
 import { Button } from "@/shared/components/ui/button";
 import {
   GoogleCalendarToolbar,
   useGoogleCalendarPush,
+  useGoogleCalendarStatus,
 } from "@/features/google-calendar";
 import { eventsKeys } from "@/shared/hooks/query-keys";
+import type { DayTask } from "./model/weeklyTypes";
+import {
+  buildDraggedEventUpdate,
+  getCreatedEventId,
+  isCreateEventPayload,
+  shouldPushGoogleAfterDrag,
+  type DayName,
+} from "./model/googleSync";
 
-type DayName = (typeof DAYS)[number];
 type WeekRange = {
   start_time: string;
   end_time: string;
 };
-
-export type DayTask = ResDetailEvent;
 
 // Get the start and end of current week for API query
 const getWeekRange = () => {
@@ -68,6 +75,7 @@ const DayMode = ({ weekRange: externalWeekRange }: DayModeProps) => {
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
   const pushToGoogle = useGoogleCalendarPush();
+  const { data: googleCalendarStatus } = useGoogleCalendarStatus();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
@@ -157,9 +165,13 @@ const DayMode = ({ weekRange: externalWeekRange }: DayModeProps) => {
     let eventIdToSync = selectedEvent?.id;
 
     if (dialogMode === "create") {
-      const res = await createEvent.mutateAsync(payload as ReqCreateEvent);
-      // Depending on API generation, res might be the event itself or { data: event }
-      eventIdToSync = (res as any)?.id || (res as any)?.data?.id;
+      if (!isCreateEventPayload(payload)) {
+        toast.error("Failed to create event");
+        return;
+      }
+
+      const res = await createEvent.mutateAsync(payload);
+      eventIdToSync = getCreatedEventId(res);
     } else if (selectedEvent?.id) {
       await updateEvent.mutateAsync({
         id: selectedEvent.id,
@@ -254,62 +266,26 @@ const DayMode = ({ weekRange: externalWeekRange }: DayModeProps) => {
           [destinationDay]: nextTarget,
         }));
 
-        // Calculate new start_time and end_time based on destination day
-        const dayIndexMap: Record<DayName, number> = {
-          sunday: 0,
-          monday: 1,
-          tuesday: 2,
-          wednesday: 3,
-          thursday: 4,
-          friday: 5,
-          saturday: 6,
-        };
+        const updatePayload = buildDraggedEventUpdate({
+          task: movedTask,
+          destinationDay,
+          weekStartTime: weekRange.start_time,
+        });
 
-        const originalStartTime = new Date(movedTask.start_time);
-        const originalEndTime = movedTask.end_time
-          ? new Date(movedTask.end_time)
-          : null;
-
-        // Get the current week's date for the destination day
-        const weekStart = new Date(weekRange.start_time);
-        const weekStartDay = weekStart.getDay();
-        const mondayOffset = weekStartDay === 0 ? -6 : 1 - weekStartDay;
-        const monday = new Date(weekStart);
-        monday.setDate(weekStart.getDate() + mondayOffset);
-
-        // Calculate the target date
-        const destDayIndex = dayIndexMap[destinationDay];
-        const targetDate = new Date(monday);
-        targetDate.setDate(monday.getDate() + destDayIndex - 1);
-
-        // Preserve the time of day, but change the date
-        const newStartTime = new Date(targetDate);
-        newStartTime.setHours(
-          originalStartTime.getHours(),
-          originalStartTime.getMinutes(),
-          originalStartTime.getSeconds(),
-          originalStartTime.getMilliseconds(),
-        );
-
-        const newEndTime = originalEndTime ? new Date(targetDate) : undefined;
-        if (newEndTime && originalEndTime) {
-          newEndTime.setHours(
-            originalEndTime.getHours(),
-            originalEndTime.getMinutes(),
-            originalEndTime.getSeconds(),
-            originalEndTime.getMilliseconds(),
-          );
-        }
-
-        // Persist to backend
         try {
           await updateEvent.mutateAsync({
             id: movedTask.id,
-            data: {
-              start_time: newStartTime.toISOString(),
-              end_time: newEndTime?.toISOString(),
-            },
+            data: updatePayload,
           });
+          if (
+            shouldPushGoogleAfterDrag({
+              googleCalendarConnected: Boolean(googleCalendarStatus?.connected),
+              googleEventId: movedTask.google_event_id,
+              source: movedTask.source,
+            })
+          ) {
+            await pushToGoogle.mutateAsync(movedTask.id);
+          }
         } catch (error) {
           console.error("Failed to update event time:", error);
           // Revert on error
@@ -321,7 +297,13 @@ const DayMode = ({ weekRange: externalWeekRange }: DayModeProps) => {
         }
       }
     },
-    [columns, weekRange.start_time, updateEvent],
+    [
+      columns,
+      googleCalendarStatus?.connected,
+      pushToGoogle,
+      weekRange.start_time,
+      updateEvent,
+    ],
   );
 
   const getTaskById = useCallback(
@@ -614,6 +596,7 @@ const DayMode = ({ weekRange: externalWeekRange }: DayModeProps) => {
         onOpenChange={setDialogOpen}
         initialEvent={selectedEvent}
         onSubmit={handleSubmit}
+        googleCalendarConnected={Boolean(googleCalendarStatus?.connected)}
         submitting={createEvent.isPending || updateEvent.isPending}
       />
     </div>

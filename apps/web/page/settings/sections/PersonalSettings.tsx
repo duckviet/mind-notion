@@ -15,7 +15,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Button } from "@/shared/components/ui/button";
 
-import { useAuthStore } from "@/features/auth/store/authStore";
+import { useAuthStore } from "@/features/auth";
 import { useUpdateMe } from "@/shared/services/generated/api";
 import { toast } from "sonner";
 import { User, Mail, Link } from "lucide-react";

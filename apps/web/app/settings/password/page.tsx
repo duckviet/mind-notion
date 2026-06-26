@@ -1,4 +1,4 @@
-import PasswordSettings from "@/page/settings/sections/PasswordSettings";
+import { PasswordSettings } from "@/page/settings";
 
 export default function Page() {
   return <PasswordSettings />;

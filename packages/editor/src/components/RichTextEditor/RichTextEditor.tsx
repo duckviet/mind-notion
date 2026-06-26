@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { EditorContent, type Editor } from "@tiptap/react";
 import { cn } from "../../utils/cn";
 import { useTiptapEditor } from "../../hooks/useRichTextEditor";
-import type { CollaborationConfig } from "../../types";
+import type { AIActionResult, CollaborationConfig } from "../../types";
 import { SlashCommandMenu } from "../SlashCommand/SlashCommand";
 import TableOfContents from "../TableOfContents/TableOfContents";
 import { useSlashMenu } from "../../hooks/useSlashMenu";
@@ -42,22 +42,14 @@ export interface RichTextEditorProps {
     selectedText: string,
     customPrompt?: string,
     context?: AISelectionContext,
-  ) => Promise<
-    | string
-    | {
-        text: string;
-        model?: string;
-        usage?: {
-          total_tokens?: number;
-          prompt_tokens?: number;
-          completion_tokens?: number;
-        };
-      }
-  >;
+  ) => Promise<AIActionResult>;
   uploadMedia?: (file: File) => Promise<string>;
   drawingSyncUri?: string;
   createComment?: (input: { noteId: string; content: string }) => Promise<string | { id?: string } | null | undefined>;
   getCommentDetail?: CommentHoverPopupProps["getCommentDetail"];
+  editorAreaClassName?: string;
+  editorClassName?: string;
+  editorReadonlyClassName?: string;
 }
 
 const Tiptap = ({
@@ -83,6 +75,9 @@ const Tiptap = ({
   drawingSyncUri,
   createComment,
   getCommentDetail,
+  editorAreaClassName,
+  editorClassName,
+  editorReadonlyClassName,
 }: RichTextEditorProps) => {
   const [isMounted, setIsMounted] = useState(false);
 
@@ -111,6 +106,8 @@ const Tiptap = ({
     onKeyDown: handleKeyDown, // set below after keyboard hook
     uploadMedia,
     drawingSyncUri,
+    editorClassName,
+    editorReadonlyClassName,
   });
 
   ai.setEditor(editor); // sync ref mỗi render
@@ -152,6 +149,8 @@ const Tiptap = ({
           contentRef={contentRef}
           editor={editor}
           className={className}
+          editorAreaClassName={editorAreaClassName}
+          editable={editable}
           onFocus={onFocus}
           onBlur={onBlur}
           slashMenu={slashMenu}
@@ -189,6 +188,8 @@ interface EditorAreaProps {
   ai: ReturnType<typeof useAIActions>;
   createComment?: RichTextEditorProps["createComment"];
   getCommentDetail?: RichTextEditorProps["getCommentDetail"];
+  editorAreaClassName?: string;
+  editable?: boolean;
 }
 
 function EditorArea({
@@ -196,6 +197,8 @@ function EditorArea({
   contentRef,
   editor,
   className,
+  editorAreaClassName,
+  editable = true,
   onFocus,
   onBlur,
   slashMenu,
@@ -205,7 +208,7 @@ function EditorArea({
   getCommentDetail,
 }: EditorAreaProps) {
   return (
-    <div ref={contentRef} className="relative flex gap-6 px-6">
+    <div ref={contentRef} className={cn("relative flex gap-6 px-6", editorAreaClassName)}>
       <div className="flex-1 relative">
         <EditorContent
           ref={ref}
@@ -219,7 +222,7 @@ function EditorArea({
           onBlur={onBlur}
         />
 
-        {slashMenu.isOpen && (
+        {editable && slashMenu.isOpen && (
           <SlashCommandMenu
             menuRef={menuRef}
             editor={editor}
@@ -228,7 +231,7 @@ function EditorArea({
           />
         )}
 
-        {ai.aiMenuState.isOpen && (
+        {editable && ai.aiMenuState.isOpen && (
           <AIMenu
             isOpen
             onClose={ai.closeAIMenu}
@@ -240,16 +243,20 @@ function EditorArea({
           />
         )}
 
-        <SharedBubbleMenu
-          editor={editor}
-          getConfig={getBubbleToolbarConfigs}
-          createComment={createComment}
-        />
-        <LinkHoverPopup editor={editor} />
-        <CommentHoverPopup editor={editor} getCommentDetail={getCommentDetail} />
+        {editable && (
+          <>
+            <SharedBubbleMenu
+              editor={editor}
+              getConfig={getBubbleToolbarConfigs}
+              createComment={createComment}
+            />
+            <LinkHoverPopup editor={editor} />
+            <CommentHoverPopup editor={editor} getCommentDetail={getCommentDetail} />
+          </>
+        )}
       </div>
 
-      <TableOfContents editor={editor} />
+      {editable && <TableOfContents editor={editor} />}
     </div>
   );
 }

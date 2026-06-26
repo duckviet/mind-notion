@@ -16,7 +16,7 @@ import {
   FontFamily,
   PrimaryColor,
 } from "@/shared/stores/settingsStore";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils/cn";
 import { Check, Monitor, Moon, Sun } from "lucide-react";
 
 const AppearanceSettings = () => {
@@ -54,7 +54,7 @@ const AppearanceSettings = () => {
 
   const fonts: { value: FontFamily; label: string; preview: string }[] = [
     { value: "academic", label: "Academic", preview: "Aa" },
-    { value: "inter", label: "Inter", preview: "Aa" },
+    { value: "fahkwang", label: "Fahkwang", preview: "Aa" },
     { value: "system", label: "System", preview: "Aa" },
   ];
 
