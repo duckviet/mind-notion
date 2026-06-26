@@ -13,6 +13,7 @@ export type { FloatingElementReturn } from "./hooks/useFloatingElement";
 export type { EditorSyncOptions } from "./hooks/useEditorSync";
 export { cn } from "./utils/cn";
 export { sanitizeHtml } from "./utils/sanitizeHtml";
+export { markdownToHtml } from "./utils/markdownToHtml";
 export {
 	isYDocEmpty,
 	isEditorContentEmpty,

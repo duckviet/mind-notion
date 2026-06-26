@@ -34,6 +34,8 @@ export interface UseTiptapEditorProps {
   ) => void;
   uploadMedia?: (file: File) => Promise<string>;
   drawingSyncUri?: string;
+  editorClassName?: string;
+  editorReadonlyClassName?: string;
 }
 
 export type AIActionResult =

@@ -571,6 +571,10 @@ func (api *AIRunAPI) persistSSEFrame(c *gin.Context, eventType string, dataLines
 		eventID = uuid.NewString()
 	}
 
+	if eventType == "assistant.delta" || strings.HasSuffix(eventType, ".delta") {
+		return
+	}
+
 	_ = api.aiRuns.AppendEvent(c.Request.Context(), &dbmodels.AIRunEvent{
 		RunID:     runID,
 		EventID:   eventID,

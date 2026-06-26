@@ -30,21 +30,23 @@ export function ChatbotComposer({
 }: ChatbotComposerProps) {
   return (
     <div className="px-4 pb-4 pt-2 border-t border-border/60 space-y-3">
-      <div className="flex gap-2 overflow-x-auto">
-        {quickPrompts.map((prompt) => (
-          <button
-            key={prompt}
-            type="button"
-            onClick={() => {
-              void onSend(prompt);
-            }}
-            disabled={isStreaming}
-            className="shrink-0 rounded-xl bg-muted px-3 py-2 text-xs text-text-primary hover:bg-muted/80 transition-colors"
-          >
-            {prompt}
-          </button>
-        ))}
-      </div>
+      {quickPrompts.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto">
+          {quickPrompts.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              onClick={() => {
+                void onSend(prompt);
+              }}
+              disabled={isStreaming}
+              className="shrink-0 rounded-xl bg-muted px-3 py-2 text-xs text-text-primary hover:bg-muted/80 transition-colors"
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+      )}
 
       {pendingConsent ? (
         <div className="rounded-xl border border-border bg-muted/40 p-3">

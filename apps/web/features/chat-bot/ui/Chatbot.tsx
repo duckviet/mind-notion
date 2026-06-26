@@ -72,7 +72,7 @@ export default function Chatbot({
             />
 
             <ChatbotComposer
-              quickPrompts={QUICK_PROMPTS}
+              quickPrompts={messages.length > 0 ? [] : QUICK_PROMPTS}
               inputValue={inputValue}
               setInputValue={setInputValue}
               isStreaming={isStreaming}

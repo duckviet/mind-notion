@@ -1,9 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  provideAiRunConsent,
-  type ReqCreateAIRun,
-} from "@/shared/services/generated/api";
+import { provideAiRunConsent, type ReqCreateAIRun } from "@/shared/services/generated/api";
 import { streamAiRun } from "@/shared/services/ai/stream-ai-run";
 import {
   invalidateNoteDetail,
@@ -11,174 +8,57 @@ import {
   invalidateTopOfMindNotes,
 } from "@/shared/hooks/query-invalidations";
 
-export type ChatbotDroppedNote = {
-  id: string;
-  title?: string | null;
-  content?: string | null;
-};
+import type { ChatMessage, ChatbotPendingConsent } from "./chatbot-types";
+import { usePinnedNotes } from "./use-pinned-notes";
+import { buildMessageWithPinnedNotes, insertToolMessage, newId } from "./stream-helpers";
 
-export type ChatbotDropPayload = {
-  note: ChatbotDroppedNote;
-  droppedAt: number;
-};
-
-type ChatMessage = {
-  id: string;
-  role: "assistant" | "user";
-  content: string;
-};
-
-type PinnedNote = {
-  id: string;
-  title: string;
-  content: string;
-  preview: string;
-  droppedAt: number;
-};
-
-export type ChatbotPendingConsent = {
-  toolName: string;
-};
+export type { ChatbotDropPayload, ChatbotDroppedNote, ChatbotPendingConsent } from "./chatbot-types";
 
 type UseChatbotParams = {
-  droppedNotePayload?: ChatbotDropPayload | null;
-};
-
-const buildMessageWithPinnedNotes = (
-  prompt: string,
-  notes: PinnedNote[],
-): string => {
-  if (!notes.length) {
-    return prompt;
-  }
-
-  const notesContext = notes
-    .map((note, index) => {
-      const content = note.content.trim();
-      const clipped =
-        content.length > 3000 ? `${content.slice(0, 3000)}...` : content;
-
-      return [
-        `Pinned note ${index + 1}: ${note.title}`,
-        clipped ? `Content:\n${clipped}` : "Content: (empty)",
-      ].join("\n");
-    })
-    .join("\n\n---\n\n");
-
-  return [
-    "Use the pinned notes below as context when relevant.",
-    "",
-    notesContext,
-    "",
-    "User prompt:",
-    prompt,
-  ].join("\n");
+  droppedNotePayload?: import("./chatbot-types").ChatbotDropPayload | null;
 };
 
 export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
   const queryClient = useQueryClient();
-  const [pinnedNotes, setPinnedNotes] = useState<PinnedNote[]>([]);
-  const [activePinnedId, setActivePinnedId] = useState<string | null>(null);
+
+  // ── Sub-hooks ──────────────────────────────────────────────────────────────
+  const pinned = usePinnedNotes({ droppedNotePayload });
+
+  // ── Messaging state ────────────────────────────────────────────────────────
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamError, setStreamError] = useState<string | null>(null);
-  const [pendingConsent, setPendingConsent] =
-    useState<ChatbotPendingConsent | null>(null);
+
+  // ── Consent state ──────────────────────────────────────────────────────────
+  const [pendingConsent, setPendingConsent] = useState<ChatbotPendingConsent | null>(null);
   const [isSubmittingConsent, setIsSubmittingConsent] = useState(false);
-  const sessionIdRef = useRef(
-    typeof crypto !== "undefined" && "randomUUID" in crypto
-      ? crypto.randomUUID()
-      : `${Date.now()}`,
-  );
-  const abortControllerRef = useRef<AbortController | null>(null);
   const consentResolverRef = useRef<((approved: boolean) => void) | null>(null);
 
-  useEffect(() => {
-    if (!droppedNotePayload) {
-      return;
-    }
-
-    const title = (droppedNotePayload.note.title || "Untitled note").trim();
-    const content = (droppedNotePayload.note.content || "").trim();
-    const preview = content.slice(0, 240);
-
-    setPinnedNotes((prev) => {
-      const next = prev.filter(
-        (item) => item.id !== droppedNotePayload.note.id,
-      );
-      next.push({
-        id: droppedNotePayload.note.id,
-        title,
-        content,
-        preview,
-        droppedAt: droppedNotePayload.droppedAt,
-      });
-      return next;
-    });
-
-    setActivePinnedId(droppedNotePayload.note.id);
-  }, [droppedNotePayload]);
-
-  const activePinnedNote = useMemo(
-    () => pinnedNotes.find((item) => item.id === activePinnedId) ?? null,
-    [activePinnedId, pinnedNotes],
-  );
-
-  const handleRemovePinnedNote = (id: string) => {
-    setPinnedNotes((prev) => {
-      const next = prev.filter((item) => item.id !== id);
-      if (activePinnedId === id) {
-        setActivePinnedId(next.length ? next[next.length - 1].id : null);
-      }
-      return next;
-    });
-  };
-
-  const handleClearPinnedNotes = () => {
-    setPinnedNotes([]);
-    setActivePinnedId(null);
-  };
-
-  const resolveConsentDecision = (approved: boolean) => {
-    if (!consentResolverRef.current || isSubmittingConsent) {
-      return;
-    }
-
+  const resolveConsent = (approved: boolean) => {
+    if (!consentResolverRef.current || isSubmittingConsent) return;
     const resolve = consentResolverRef.current;
     consentResolverRef.current = null;
     setIsSubmittingConsent(true);
     resolve(approved);
   };
 
-  const handleApproveConsent = () => {
-    resolveConsentDecision(true);
-  };
+  // ── Refs ────────────────────────────────────────────────────────────────────
+  const sessionIdRef = useRef(newId("session"));
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  const handleDenyConsent = () => {
-    resolveConsentDecision(false);
-  };
+  // ── Send ────────────────────────────────────────────────────────────────────
 
   const handleSend = async (forcedPrompt?: string) => {
     const prompt = (forcedPrompt ?? inputValue).trim();
-    if (!prompt || isStreaming) {
-      return;
-    }
+    if (!prompt || isStreaming) return;
 
     setInputValue("");
     setStreamError(null);
 
-    const selectedNoteId = activePinnedNote?.id ?? pinnedNotes[0]?.id ?? "";
-    const messageContent = buildMessageWithPinnedNotes(prompt, pinnedNotes);
-
-    const userMessageId =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `user-${Date.now()}`;
-    const assistantMessageId =
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `assistant-${Date.now()}`;
+    const selectedNoteId = pinned.activePinnedNote?.id ?? pinned.pinnedNotes[0]?.id ?? "";
+    const userMessageId = newId("user");
+    const assistantMessageId = newId("assistant");
 
     setMessages((prev) => [
       ...prev,
@@ -186,226 +66,181 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
       { id: assistantMessageId, role: "assistant", content: "" },
     ]);
 
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
+    abortControllerRef.current?.abort();
     const controller = new AbortController();
     abortControllerRef.current = controller;
     setIsStreaming(true);
-
-    let currentRunId = "";
-    let assistantHasContent = false;
 
     const payload: ReqCreateAIRun = {
       workspace_id: "default-workspace",
       session_id: sessionIdRef.current,
       note_id: selectedNoteId,
-      // queryKeys:[""]
-      message: {
-        role: "user",
-        content: messageContent,
-      },
+      message: { role: "user", content: buildMessageWithPinnedNotes(prompt, pinned.pinnedNotes) },
     };
 
-    const refreshNotesData = async () => {
-      const invalidations: Promise<void>[] = [
+    const refreshNotes = async () => {
+      const tasks: Promise<void>[] = [
         invalidateNoteLists(queryClient),
         invalidateTopOfMindNotes(queryClient),
         queryClient.invalidateQueries({
-          queryKey: selectedNoteId
-            ? ["collab-session", selectedNoteId]
-            : ["collab-session"],
+          queryKey: selectedNoteId ? ["collab-session", selectedNoteId] : ["collab-session"],
         }),
       ];
-
-      if (selectedNoteId) {
-        invalidations.push(invalidateNoteDetail(queryClient, selectedNoteId));
-      }
-
-      await Promise.all(invalidations);
+      if (selectedNoteId) tasks.push(invalidateNoteDetail(queryClient, selectedNoteId));
+      await Promise.all(tasks);
     };
+
+    let currentRunId = "";
+    let assistantHasContent = false;
 
     try {
       await streamAiRun(payload, {
         signal: controller.signal,
-        onEvent: async ({ event, payload: eventPayload }) => {
-          const payloadObj =
-            eventPayload && typeof eventPayload === "object"
-              ? (eventPayload as Record<string, unknown>)
-              : {};
+        onEvent: async ({ event, payload: raw }) => {
+          const p = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+          if (typeof p.run_id === "string") currentRunId = p.run_id;
 
-          const runIdFromEvent = payloadObj.run_id;
-          if (typeof runIdFromEvent === "string") {
-            currentRunId = runIdFromEvent;
-          }
-
-          if (event === "assistant.delta") {
-            const delta = payloadObj.content;
-            if (typeof delta === "string" && delta.length > 0) {
-              assistantHasContent = true;
-              setMessages((prev) =>
-                prev.map((item) =>
-                  item.id === assistantMessageId
-                    ? { ...item, content: `${item.content}${delta}` }
-                    : item,
-                ),
-              );
-            }
-            return;
-          }
-
-          if (event === "run.awaiting_consent") {
-            const consentRaw = payloadObj.consent;
-            const consentObj =
-              consentRaw && typeof consentRaw === "object"
-                ? (consentRaw as Record<string, unknown>)
-                : {};
-
-            const toolCallId = consentObj.tool_call_id;
-            const toolName = consentObj.tool;
-
-            if (
-              !currentRunId ||
-              typeof toolCallId !== "string" ||
-              typeof toolName !== "string"
-            ) {
+          switch (event) {
+            case "tool.call": {
+              const { tool_call_id: callId, tool: toolName } = p;
+              if (typeof callId === "string" && typeof toolName === "string") {
+                setMessages((prev) => insertToolMessage(prev, callId, toolName, assistantMessageId));
+              }
               return;
             }
 
-            if (consentResolverRef.current) {
-              const resolvePrevious = consentResolverRef.current;
-              consentResolverRef.current = null;
-              resolvePrevious(false);
-            }
-
-            setIsSubmittingConsent(false);
-            setPendingConsent({ toolName });
-
-            const approved = await new Promise<boolean>((resolve) => {
-              consentResolverRef.current = resolve;
-            });
-
-            if (controller.signal.aborted) {
-              setPendingConsent(null);
-              setIsSubmittingConsent(false);
-              return;
-            }
-
-            try {
-              await provideAiRunConsent(currentRunId, {
-                tool_call_id: toolCallId,
-                approved,
-              });
-
-              if (!approved) {
+            case "assistant.delta": {
+              const delta = p.content;
+              if (typeof delta === "string" && delta.length > 0) {
+                assistantHasContent = true;
                 setMessages((prev) =>
-                  prev.map((item) =>
-                    item.id === assistantMessageId && item.content.length === 0
-                      ? {
-                          ...item,
-                          content:
-                            "Permission denied. Tool execution was not approved.",
-                        }
-                      : item,
+                  prev.map((m) =>
+                    m.id === assistantMessageId ? { ...m, content: `${m.content}${delta}` } : m,
                   ),
                 );
               }
-            } finally {
-              setPendingConsent(null);
+              return;
+            }
+
+            case "run.awaiting_consent": {
+              const consent = p.consent && typeof p.consent === "object"
+                ? (p.consent as Record<string, unknown>)
+                : {};
+              const { tool_call_id: callId, tool: toolName } = consent;
+              if (!currentRunId || typeof callId !== "string" || typeof toolName !== "string") return;
+
+              // Dismiss any stale consent
+              if (consentResolverRef.current) {
+                consentResolverRef.current(false);
+                consentResolverRef.current = null;
+              }
+
               setIsSubmittingConsent(false);
+              setPendingConsent({ toolName });
+
+              const approved = await new Promise<boolean>((resolve) => {
+                consentResolverRef.current = resolve;
+              });
+
+              if (controller.signal.aborted) {
+                setPendingConsent(null);
+                setIsSubmittingConsent(false);
+                return;
+              }
+
+              try {
+                await provideAiRunConsent(currentRunId, { tool_call_id: callId, approved });
+                if (!approved) {
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantMessageId && m.content.length === 0
+                        ? { ...m, content: "Permission denied. Tool execution was not approved." }
+                        : m,
+                    ),
+                  );
+                }
+              } finally {
+                setPendingConsent(null);
+                setIsSubmittingConsent(false);
+              }
+              return;
             }
 
-            return;
-          }
-
-          if (event === "tool.result") {
-            const toolName = payloadObj.tool;
-            const ok = payloadObj.ok;
-
-            if (toolName === "notes.write" && ok === true) {
-              await refreshNotesData();
+            case "tool.result": {
+              const { tool_call_id: callId, tool: toolName, ok } = p;
+              if (typeof callId === "string") {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === callId ? { ...m, toolStatus: ok === true ? "done" : "error" } : m,
+                  ),
+                );
+              }
+              if (toolName === "notes.write" && ok === true) await refreshNotes();
+              return;
             }
 
-            return;
-          }
-
-          if (event === "run.failed") {
-            const errorMessage =
-              typeof payloadObj.message === "string" &&
-              payloadObj.message.length > 0
-                ? payloadObj.message
-                : "AI run failed";
-
-            if (!assistantHasContent) {
-              setMessages((prev) =>
-                prev.map((item) =>
-                  item.id === assistantMessageId && item.content.length === 0
-                    ? { ...item, content: errorMessage }
-                    : item,
-                ),
-              );
+            case "run.failed": {
+              const errorMessage =
+                typeof p.message === "string" && p.message.length > 0 ? p.message : "AI run failed";
+              if (!assistantHasContent) {
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === assistantMessageId && m.content.length === 0
+                      ? { ...m, content: errorMessage }
+                      : m,
+                  ),
+                );
+              }
+              throw new Error(errorMessage);
             }
-
-            throw new Error(errorMessage);
           }
         },
       });
     } catch (error) {
-      const aborted =
-        error instanceof DOMException && error.name === "AbortError";
-      if (!aborted) {
-        const message =
-          error instanceof Error ? error.message : "Failed to stream AI run";
-        setStreamError(message);
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        setStreamError(error instanceof Error ? error.message : "Failed to stream AI run");
       }
     } finally {
       setIsStreaming(false);
-      if (abortControllerRef.current === controller) {
-        abortControllerRef.current = null;
-      }
-
+      if (abortControllerRef.current === controller) abortControllerRef.current = null;
       if (consentResolverRef.current) {
-        const resolve = consentResolverRef.current;
+        consentResolverRef.current(false);
         consentResolverRef.current = null;
-        resolve(false);
       }
-
       setPendingConsent(null);
       setIsSubmittingConsent(false);
     }
   };
 
+  // ── Cleanup on unmount ─────────────────────────────────────────────────────
+
   useEffect(() => {
     return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
+      abortControllerRef.current?.abort();
       if (consentResolverRef.current) {
-        const resolve = consentResolverRef.current;
+        consentResolverRef.current(false);
         consentResolverRef.current = null;
-        resolve(false);
       }
     };
   }, []);
 
+  // ── Return ─────────────────────────────────────────────────────────────────
+
   return {
-    pinnedNotes,
-    activePinnedId,
-    setActivePinnedId,
-    activePinnedNote,
+    // Pinned notes (delegated)
+    ...pinned,
+    // Messages
     messages,
     inputValue,
     setInputValue,
     isStreaming,
     streamError,
+    // Consent
     pendingConsent,
     isSubmittingConsent,
-    handleApproveConsent,
-    handleDenyConsent,
-    handleRemovePinnedNote,
-    handleClearPinnedNotes,
+    handleApproveConsent: () => resolveConsent(true),
+    handleDenyConsent: () => resolveConsent(false),
+    // Actions
     handleSend,
   };
 }
