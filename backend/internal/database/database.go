@@ -96,6 +96,9 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*DB, error) {
 		&models.Event{},
 		&models.Comment{},
 		&models.NoteChunk{},
+		&models.AIRun{},
+		&models.AIToolCall{},
+		&models.AIRunEvent{},
 	); err != nil {
 		return nil, fmt.Errorf("failed to auto migrate: %w", err)
 	}

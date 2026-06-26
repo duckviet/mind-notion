@@ -10,8 +10,8 @@ import {
 
 const fontStacks: Record<string, string> = {
   academic: "var(--font-anthropic-sans)",
-  inter:
-    'var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  fahkwang:
+    'var(--font-fahkwang), "Fahkwang", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   system: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
 };
 
@@ -24,7 +24,7 @@ const normalizeAccent = (value: string): PrimaryColor => {
 };
 
 const normalizeFont = (value: string): FontFamily => {
-  if (value === "academic" || value === "inter" || value === "system") {
+  if (value === "academic" || value === "fahkwang" || value === "system") {
     return value;
   }
 

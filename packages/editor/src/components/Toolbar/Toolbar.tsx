@@ -60,14 +60,14 @@ const Toolbar = ({
     () =>
       getConfig
         ? getConfig({
-            editor,
-            options: {
-              onAddImage: () => fileInputRef.current?.click(),
-              onAddDrawing: () => (editor.commands as any).insertDrawing?.(),
-              noteId,
-              createComment,
-            },
-          })
+          editor,
+          options: {
+            onAddImage: () => fileInputRef.current?.click(),
+            onAddDrawing: () => (editor.commands as any).insertDrawing?.(),
+            noteId,
+            createComment,
+          },
+        })
         : [],
     [createComment, editor, getConfig, noteId],
   );

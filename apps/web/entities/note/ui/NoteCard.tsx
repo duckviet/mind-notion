@@ -103,7 +103,7 @@ export default function NoteCard({
               <Expand className="w-4 h-4" />
             </Button>
             <div className="flex justify-between items-center w-full mb-4">
-              <CardTitle className="font-serif text-heading-lg! leading-tight text-text-primary">
+              <CardTitle className="font-serif font-medium text-[24px] leading-tight text-text-primary">
                 {match.title}
               </CardTitle>
             </div>

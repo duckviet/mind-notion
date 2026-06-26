@@ -80,6 +80,8 @@ class AgentInlineEditRequest(BaseContract):
     trace_id: str = Field(default_factory=new_id)
     actor: Actor
     action: str
+    command: str = ""
+    mode: str = ""
     selected_text: str = Field(min_length=1)
     custom_prompt: str = ""
     context_blocks: list[dict[str, Any]] = Field(default_factory=list)
@@ -87,8 +89,59 @@ class AgentInlineEditRequest(BaseContract):
     policy: InlineEditPolicy = Field(default_factory=InlineEditPolicy)
 
 
+class EditTarget(BaseContract):
+    note_id: str = ""
+    expected_version: int | None = None
+    selection_id: str | None = None
+
+
+class EditProposal(BaseContract):
+    type: Literal["edit_proposal"] = "edit_proposal"
+    operation: Literal["replace", "append", "patch"] = "replace"
+    target: EditTarget = Field(default_factory=EditTarget)
+    original: str = Field(min_length=1)
+    proposed: str = Field(min_length=1)
+    summary: str = Field(min_length=1)
+    preserved: list[str] = Field(default_factory=list)
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+
+
+class InlineTransformResult(BaseContract):
+    type: Literal["inline_transform"] = "inline_transform"
+    replacement: str = Field(min_length=1)
+    target_language: str = ""
+    summary: str = ""
+
+
+class InlineAssistResult(BaseContract):
+    type: Literal["inline_assist"] = "inline_assist"
+    explanation: str = ""
+    summary: str = ""
+    bullets: list[str] = Field(default_factory=list)
+    tasks: list[str] = Field(default_factory=list)
+
+
+class RAGSource(BaseContract):
+    note_id: str
+    chunk_index: int = Field(ge=0)
+    snippet: str = Field(min_length=1)
+    score: float = Field(ge=0.0)
+
+
+class RAGAnswer(BaseContract):
+    type: Literal["rag_answer"] = "rag_answer"
+    answer: str = Field(min_length=1)
+    sources: list[RAGSource] = Field(default_factory=list)
+    missing_context: bool = False
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+
+
+AIResult = EditProposal | InlineTransformResult | InlineAssistResult | RAGAnswer
+
+
 class AgentInlineEditResponse(BaseContract):
-    text: str
+    text: str = ""
+    result: AIResult | None = None
 
 
 class ConsentDecisionRequest(BaseContract):
@@ -135,6 +188,7 @@ class RunCompletedEvent(StreamEventBase):
     type: Literal["run.completed"] = "run.completed"
     usage: dict[str, Any]
     model_name: str | None = None
+    result: AIResult | None = None
 
 
 class RunFailedEvent(StreamEventBase):

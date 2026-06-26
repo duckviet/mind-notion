@@ -35,3 +35,36 @@ export interface UseTiptapEditorProps {
   uploadMedia?: (file: File) => Promise<string>;
   drawingSyncUri?: string;
 }
+
+export type AIActionResult =
+  | string
+  | {
+      text: string;
+      model?: string;
+      usage?: {
+        total_tokens?: number;
+        prompt_tokens?: number;
+        completion_tokens?: number;
+      };
+    }
+  | {
+      type: "edit_proposal";
+      original: string;
+      proposed: string;
+      summary: string;
+      confidence?: number;
+      model?: string;
+    }
+  | {
+      type: "inline_transform";
+      replacement: string;
+      summary?: string;
+      model?: string;
+    }
+  | {
+      type: "inline_assist" | "rag_answer";
+      explanation?: string;
+      answer?: string;
+      summary?: string;
+      model?: string;
+    };

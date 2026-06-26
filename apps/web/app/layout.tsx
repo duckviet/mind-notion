@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Inter, Noto_Serif } from "next/font/google";
+import { Geist_Mono, Fahkwang, Tinos } from "next/font/google";
 import "./globals.css";
 import { SidebarWrapper } from "@/widgets/sidebar";
 import { QueryProvider } from "@/shared/providers/QueryProvider";
@@ -8,15 +8,16 @@ import { AuthProvider, AutoLogin } from "@/features/auth";
 import { AppearanceApplier } from "@/shared/providers/AppearanceApplier";
 import { GlobalDndProvider } from "@/shared/components/dnd/GlobalDndProvider";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+const fahkwang = Fahkwang({
+  variable: "--font-fahkwang",
+  subsets: ["vietnamese", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const notoSerif = Noto_Serif({
-  variable: "--font-noto-serif",
+const tinos = Tinos({
+  variable: "--font-tinos",
   subsets: ["vietnamese", "latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "700"],
   style: ["normal", "italic"],
 });
 
@@ -39,7 +40,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} ${notoSerif.variable}`}
+      className={`${fahkwang.variable} ${geistMono.variable} ${tinos.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased">

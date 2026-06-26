@@ -44,8 +44,8 @@ export function ChatbotMessages({
               className={cn(
                 "max-w-[82%] rounded-2xl px-4 py-3 text-sm whitespace-pre-line",
                 isUser
-                  ? "bg-surface-50/60 text-text-primary"
-                  : "bg-surface-50 text-text-primary",
+                  ? "bg-surface-100/60 text-text-primary"
+                  : "bg-surface-100 text-text-primary",
               )}
             >
               {message.content}

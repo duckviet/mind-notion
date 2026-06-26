@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { EditorContent, type Editor } from "@tiptap/react";
 import { cn } from "../../utils/cn";
 import { useTiptapEditor } from "../../hooks/useRichTextEditor";
-import type { CollaborationConfig } from "../../types";
+import type { AIActionResult, CollaborationConfig } from "../../types";
 import { SlashCommandMenu } from "../SlashCommand/SlashCommand";
 import TableOfContents from "../TableOfContents/TableOfContents";
 import { useSlashMenu } from "../../hooks/useSlashMenu";
@@ -42,18 +42,7 @@ export interface RichTextEditorProps {
     selectedText: string,
     customPrompt?: string,
     context?: AISelectionContext,
-  ) => Promise<
-    | string
-    | {
-        text: string;
-        model?: string;
-        usage?: {
-          total_tokens?: number;
-          prompt_tokens?: number;
-          completion_tokens?: number;
-        };
-      }
-  >;
+  ) => Promise<AIActionResult>;
   uploadMedia?: (file: File) => Promise<string>;
   drawingSyncUri?: string;
   createComment?: (input: { noteId: string; content: string }) => Promise<string | { id?: string } | null | undefined>;

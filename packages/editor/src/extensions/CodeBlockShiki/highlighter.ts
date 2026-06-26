@@ -137,12 +137,12 @@ export async function initHighlighter({
   defaultLanguage: BundledLanguage | null | undefined;
   defaultTheme: BundledTheme;
   themeModes:
-    | {
-        light: BundledTheme;
-        dark: BundledTheme;
-      }
-    | null
-    | undefined;
+  | {
+    light: BundledTheme;
+    dark: BundledTheme;
+  }
+  | null
+  | undefined;
 }) {
   const codeBlocks = findChildren(doc, (node) => node.type.name === name);
 
@@ -170,4 +170,60 @@ export async function initHighlighter({
       ...languages.map((language) => loadLanguage(language)),
     ]);
   }
+}
+
+export function highlightCode(
+  code: string,
+  language: string | null | undefined,
+  themes: { light: BundledTheme; dark: BundledTheme } | null | undefined,
+  defaultTheme: BundledTheme = "github-dark",
+): string {
+  const h = getShiki();
+  if (!h) return escapeHtml(code);
+
+  const lang =
+    language && h.getLoadedLanguages().includes(language as BundledLanguage)
+      ? (language as BundledLanguage)
+      : "plaintext";
+
+  try {
+    let html: string;
+    if (themes) {
+      html = h.codeToHtml(code, {
+        lang,
+        themes: { light: themes.light, dark: themes.dark },
+      });
+    } else {
+      html = h.codeToHtml(code, { lang, theme: defaultTheme });
+    }
+
+    // Strip background-color khỏi inline style của <pre> và <code>
+    // để CSS class bên ngoài kiểm soát background
+    return stripShikiBackground(html);
+  } catch {
+    return escapeHtml(code);
+  }
+}
+
+function stripShikiBackground(html: string): string {
+  // Xóa background-color trong style attribute của <pre> và <code>
+  return html
+    .replace(
+      /(<(?:pre|code)[^>]*?\bstyle=")([^"]*?)(")/g,
+      (_, open, styles, close) => {
+        const cleaned = styles
+          .split(";")
+          .map((s: string) => s.trim())
+          .filter((s: string) => !s.toLowerCase().startsWith("background"))
+          .join("; ");
+        return `${open}${cleaned}${close}`;
+      },
+    );
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }

@@ -61,7 +61,7 @@ export const AIMenu: React.FC<AIMenuProps> = ({
           initial={{ opacity: 0, y: 8, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 8, scale: 0.96 }}
-          className="fixed z-[100] w-[min(32rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-popover shadow-2xl ring-1 ring-border"
+          className="fixed z-[100] w-[min(32rem,calc(100vw-2rem))] overflow-hidden rounded-xl bg-popover shadow-2xl ring-1 ring-border"
           style={{ top: position.top, left: position.left }}
         >
           {isLoading ? (

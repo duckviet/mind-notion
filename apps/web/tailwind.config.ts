@@ -14,6 +14,7 @@ const config: Config = {
       fontFamily: {
         sans: [
           "var(--app-font-family)",
+          "Fahkwang",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
@@ -21,6 +22,7 @@ const config: Config = {
         ],
         serif: [
           "var(--font-anthropic-serif)",
+          "Tinos",
           "Lora",
           "Georgia",
           "serif",

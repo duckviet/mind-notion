@@ -2,9 +2,9 @@ import {
   Node,
   type Editor,
   mergeAttributes,
-  type JSONContent,
 } from "@tiptap/core";
 import { NodeSelection } from "@tiptap/pm/state";
+import { Node as PMNode } from "@tiptap/pm/model";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import ProposedEditNodeView from "./ProposedEditNodeView";
 
@@ -51,20 +51,73 @@ const normalizeRange = (
   };
 };
 
-const buildParagraphBlocks = (text: string): JSONContent[] => {
+const buildReplacementNodes = (
+  schema: any,
+  text: string,
+  contextType: string = "paragraph",
+  codeLanguage?: string,
+  headingLevel?: number,
+): PMNode[] => {
+  if (contextType === "codeBlock") {
+    const codeBlockType = schema.nodes.codeBlock;
+    if (codeBlockType) {
+      return [
+        codeBlockType.create(
+          { language: codeLanguage ?? null },
+          text ? schema.text(text) : undefined,
+        ),
+      ];
+    }
+  }
+
+  if (contextType === "heading") {
+    const headingType = schema.nodes.heading;
+    if (headingType) {
+      return [
+        headingType.create(
+          { level: headingLevel ?? 1 },
+          text ? schema.text(text) : undefined,
+        ),
+      ];
+    }
+  }
+
+  if (contextType === "blockquote") {
+    const blockquoteType = schema.nodes.blockquote;
+    if (blockquoteType) {
+      const lines = text
+        .split(/\n+/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+
+      const innerNodes = lines.map((line) =>
+        schema.nodes.paragraph.create(null, line ? schema.text(line) : undefined)
+      );
+
+      return [
+        blockquoteType.create(
+          null,
+          innerNodes.length > 0 ? innerNodes : [schema.nodes.paragraph.create()]
+        ),
+      ];
+    }
+  }
+
   const lines = text
     .split(/\n+/)
     .map((line) => line.trim())
     .filter(Boolean);
 
   if (lines.length === 0) {
-    return [{ type: "paragraph" }];
+    return [schema.nodes.paragraph.create()];
   }
 
-  return lines.map((line) => ({
-    type: "paragraph",
-    content: [{ type: "text", text: line }],
-  }));
+  return lines.map((line) => {
+    return schema.nodes.paragraph.create(
+      null,
+      line ? schema.text(line) : undefined,
+    );
+  });
 };
 
 declare module "@tiptap/core" {
@@ -129,6 +182,23 @@ const ExtProposedEdits = Node.create<Record<string, never>>({
         parseHTML: (element: HTMLElement) =>
           element.getAttribute("data-created-by"),
       },
+      contextType: {
+        default: "paragraph",
+        parseHTML: (element: HTMLElement) =>
+          element.getAttribute("data-context-type") || "paragraph",
+      },
+      codeLanguage: {
+        default: null,
+        parseHTML: (element: HTMLElement) =>
+          element.getAttribute("data-code-language"),
+      },
+      headingLevel: {
+        default: null,
+        parseHTML: (element: HTMLElement) => {
+          const value = element.getAttribute("data-heading-level");
+          return value ? Number(value) : null;
+        },
+      },
     };
   },
 
@@ -151,6 +221,9 @@ const ExtProposedEdits = Node.create<Record<string, never>>({
         "data-custom-prompt": node.attrs.customPrompt,
         "data-created-at": node.attrs.createdAt,
         "data-created-by": node.attrs.createdBy,
+        "data-context-type": node.attrs.contextType,
+        "data-code-language": node.attrs.codeLanguage,
+        "data-heading-level": node.attrs.headingLevel,
         class: "proposed-edit-block",
       }),
       ["p", { "data-original": "true" }, originalText],
@@ -190,91 +263,128 @@ const ExtProposedEdits = Node.create<Record<string, never>>({
     return {
       setProposedEdit:
         (payload) =>
-        ({ state, dispatch }) => {
-          const nodeType = state.schema.nodes[this.name];
-          if (!nodeType) {
-            return false;
-          }
+          ({ state, dispatch }) => {
+            const nodeType = state.schema.nodes[this.name];
+            if (!nodeType) {
+              return false;
+            }
 
-          const maxPosition = state.doc.content.size + 1;
-          const range = normalizeRange(payload.range, maxPosition);
+            const maxPosition = state.doc.content.size + 1;
+            const range = normalizeRange(payload.range, maxPosition);
 
-          if (!range) {
-            return false;
-          }
+            if (!range) {
+              return false;
+            }
 
-          const proposedEditNode = nodeType.create({
-            id: payload.id ?? `proposed-edit-${Date.now()}`,
-            createdAt: payload.createdAt ?? Date.now(),
-            createdBy: payload?.createdBy || "",
-            originalText: payload.originalText,
-            proposedText: payload.proposedText,
-            action: payload.action,
-            customPrompt: payload.customPrompt,
-          });
+            const $from = state.doc.resolve(range.from);
+            const parentNode = $from.parent;
+            const parentTypeName = parentNode?.type?.name || "paragraph";
 
-          if (dispatch) {
-            dispatch(
-              state.tr
-                .replaceRangeWith(range.from, range.to, proposedEditNode)
-                .scrollIntoView(),
-            );
-          }
+            const isInsideCodeBlock = parentTypeName === "codeBlock";
+            const isInsideHeading = parentTypeName === "heading";
+            const isInsideBlockquote = parentTypeName === "blockquote";
 
-          return true;
-        },
+            let replaceFrom = range.from;
+            let replaceTo = range.to;
+
+            const shouldReplaceParent = isInsideCodeBlock || isInsideHeading || isInsideBlockquote;
+
+            if (shouldReplaceParent) {
+              replaceFrom = $from.before($from.depth);
+              replaceTo = replaceFrom + parentNode.nodeSize;
+            }
+
+            const proposedEditNode = nodeType.create({
+              id: payload.id ?? `proposed-edit-${Date.now()}`,
+              createdAt: payload.createdAt ?? Date.now(),
+              createdBy: payload?.createdBy || "",
+              originalText: payload.originalText,
+              proposedText: payload.proposedText,
+              action: payload.action,
+              customPrompt: payload.customPrompt,
+              contextType: shouldReplaceParent ? parentTypeName : "paragraph",
+              codeLanguage: isInsideCodeBlock ? (parentNode.attrs.language ?? null) : null,
+              headingLevel: isInsideHeading ? (parentNode.attrs.level ?? 1) : null,
+            });
+
+            if (dispatch) {
+              dispatch(
+                state.tr
+                  .replaceRangeWith(replaceFrom, replaceTo, proposedEditNode)
+                  .scrollIntoView(),
+              );
+            }
+
+            return true;
+          },
 
       clearProposedEdit:
         (pos) =>
-        ({ editor }) => {
-          const targetPos = resolveNodePos(editor, pos);
-          if (targetPos === null) {
-            return false;
-          }
+          ({ state, dispatch, editor }) => {
+            const targetPos = resolveNodePos(editor, pos);
+            if (targetPos === null) {
+              return false;
+            }
 
-          const node = editor.state.doc.nodeAt(targetPos);
-          if (!node || node.type.name !== this.name) {
-            return false;
-          }
+            const node = state.doc.nodeAt(targetPos);
+            if (!node || node.type.name !== this.name) {
+              return false;
+            }
 
-          return editor
-            .chain()
-            .focus()
-            .insertContentAt(
-              { from: targetPos, to: targetPos + node.nodeSize },
-              buildParagraphBlocks((node.attrs.originalText as string) || ""),
-            )
-            .run();
-        },
+            if (dispatch) {
+              const contextType = (node.attrs.contextType as string) ?? "paragraph";
+              const codeLanguage = (node.attrs.codeLanguage as string) ?? undefined;
+              const headingLevel = (node.attrs.headingLevel as number) ?? undefined;
+              const nodes = buildReplacementNodes(
+                state.schema,
+                (node.attrs.originalText as string) || "",
+                contextType,
+                codeLanguage,
+                headingLevel,
+              );
+              dispatch(
+                state.tr.replaceWith(targetPos, targetPos + node.nodeSize, nodes)
+              );
+            }
+            return true;
+          },
 
       acceptProposedEdit:
         (pos) =>
-        ({ editor }) => {
-          const targetPos = resolveNodePos(editor, pos);
-          if (targetPos === null) {
-            return false;
-          }
+          ({ state, dispatch, editor }) => {
+            const targetPos = resolveNodePos(editor, pos);
+            if (targetPos === null) {
+              return false;
+            }
 
-          const node = editor.state.doc.nodeAt(targetPos);
-          if (!node || node.type.name !== this.name) {
-            return false;
-          }
+            const node = state.doc.nodeAt(targetPos);
+            if (!node || node.type.name !== this.name) {
+              return false;
+            }
 
-          return editor
-            .chain()
-            .focus()
-            .insertContentAt(
-              { from: targetPos, to: targetPos + node.nodeSize },
-              buildParagraphBlocks((node.attrs.proposedText as string) || ""),
-            )
-            .run();
-        },
+            if (dispatch) {
+              const contextType = (node.attrs.contextType as string) ?? "paragraph";
+              const codeLanguage = (node.attrs.codeLanguage as string) ?? undefined;
+              const headingLevel = (node.attrs.headingLevel as number) ?? undefined;
+              const nodes = buildReplacementNodes(
+                state.schema,
+                (node.attrs.proposedText as string) || "",
+                contextType,
+                codeLanguage,
+                headingLevel,
+              );
+              dispatch(
+                state.tr.replaceWith(targetPos, targetPos + node.nodeSize, nodes)
+              );
+            }
+            return true;
+          },
 
       rejectProposedEdit:
         (pos) =>
-        ({ editor }) => {
-          return editor.commands.clearProposedEdit(pos);
-        },
+          ({ commands }) => {
+            return commands.clearProposedEdit(pos);
+          },
     };
   },
 });

@@ -87,7 +87,8 @@ func New(ctx context.Context) (*App, func(), error) {
 	eventService := service.NewEventService(eventRepo)
 	authService := service.NewAuthService(userRepo, accountRepo, cfg)
 	commentService := service.NewCommentService(commentRepo, noteRepo, userRepo)
-	aiRunAPI := handlers.NewAIRunAPI(cfg, noteService)
+	aiRunRepository := repository.NewAIRunRepository(db)
+	aiRunAPI := handlers.NewAIRunAPI(cfg, noteService, aiRunRepository)
 	aiInternalAPI := handlers.NewAIInternalAPI(noteService, noteChunkRepo, cfg)
 
 	mediaService, err := service.NewMediaService(ctx, cfg.CDN)

@@ -29,16 +29,16 @@ export default function ToolbarButton({
       disabled={disabled}
       title={tooltip}
       className={cn(
-        "p-1 gap-2 rounded inline-flex items-center space-x-2 transition-colors text-sm",
+        "p-1 gap-2 rounded inline-flex items-center space-x-2 transition-colors text-sm w-full text-nowrap",
         className,
         isActive && "bg-brand-600 text-primary-foreground",
         disabled && "cursor-not-allowed",
         !isActive &&
-          !disabled &&
-          "hover:bg-surface-hover hover:text-text-primary",
+        !disabled &&
+        "hover:bg-surface-hover hover:text-text-primary",
       )}
     >
-      {icon}
+      <div>{icon}</div>
       {label}
     </motion.button>
   );

@@ -10,6 +10,10 @@ import FocusEditModalContent from "./FocusEditModalContent";
 import { useCollabSession } from "../hooks/useCollabSession";
 import { useCollabProvider } from "../hooks/useCollabProvider";
 import { useNoteSnapshot } from "../hooks/useNoteSnapshot";
+import {
+  resolveCollabEditState,
+  resolveCollabEditorContent,
+} from "../model/collabFallback";
 import { useAuthStore } from "@/shared/stores/authStore";
 import { sanitizeHtml } from "@/shared/utils/sanitizeHtml";
 import { Editor } from "@tiptap/react";
@@ -81,17 +85,28 @@ export default function FocusEditModal({
   const editorRef = useRef<Editor | null>(null);
 
   // Pass initialHtml for automatic Yjs hydration
-  const { doc, provider, isSynced, isHydrated } = useCollabProvider({
-    noteId,
-    token: collabToken,
-    enabled: isOpen && collabEnabled,
-    user: user?.name
-      ? {
-          name: user.name,
-          color: "#6366f1",
-        }
-      : undefined,
-    initialHtml: note?.content ? sanitizeHtml(note.content) : undefined,
+  const { doc, provider, isSynced, isHydrated, isFallbackActive } =
+    useCollabProvider({
+      noteId,
+      token: collabToken,
+      enabled: isOpen && collabEnabled,
+      user: user?.name
+        ? {
+            name: user.name,
+            color: "#6366f1",
+          }
+        : undefined,
+      initialHtml: note?.content ? sanitizeHtml(note.content) : undefined,
+    });
+  const collabEditState = resolveCollabEditState({
+    collabEnabled,
+    isFallbackActive,
+    isHydrated,
+  });
+  const editorContent = resolveCollabEditorContent({
+    content: form.content,
+    fallbackContent: sanitizeHtml(form.content),
+    useFallbackContent: collabEditState.useFallbackContent,
   });
 
   const handleEditorReady = useCallback(
@@ -108,18 +123,28 @@ export default function FocusEditModal({
 
   const handleContentUpdate = useCallback(
     (value: string, isUserInput: boolean = true) => {
-      if (collabEnabled) {
+      if (collabEditState.activeCollaboration) {
         if (isUserInput) markUserEdited();
         scheduleSnapshot(value);
       } else {
         handleContentChange(value);
+        if (collabEnabled) {
+          if (isUserInput) markUserEdited();
+          scheduleSnapshot(value);
+        }
       }
     },
-    [collabEnabled, scheduleSnapshot, markUserEdited, handleContentChange],
+    [
+      collabEnabled,
+      collabEditState.activeCollaboration,
+      scheduleSnapshot,
+      markUserEdited,
+      handleContentChange,
+    ],
   );
 
   // Wait for Yjs hydration before showing editor
-  const showEditor = !collabPending && (!collabEnabled || isHydrated);
+  const showEditor = !collabPending && collabEditState.showEditor;
 
   const handleSave = () => {
     if (!note) return;
@@ -133,7 +158,9 @@ export default function FocusEditModal({
     const payload: ReqUpdateNote = {
       ...note,
       title: form.title,
-      content: collabEnabled ? undefined : form.content,
+      content: collabEditState.activeCollaboration
+        ? undefined
+        : sanitizeHtml(form.content),
       tags: form.tags,
       content_type: "text",
     };
@@ -181,7 +208,7 @@ export default function FocusEditModal({
             >
               <div className="w-[95vw] h-full max-h-[90vh] items-center space-x-4 pointer-events-auto flex flex-col ">
                 <FocusEditModalContent
-                  form={form}
+                  form={{ ...form, content: editorContent }}
                   newTag={newTag}
                   error={error}
                   isSaving={false}
@@ -197,7 +224,7 @@ export default function FocusEditModal({
                   onTagRemove={handleTagRemove}
                   onToggleSidebar={() => setIsSidebarCollapsed((prev) => !prev)}
                   collaboration={
-                    doc && provider
+                    collabEditState.activeCollaboration && doc && provider
                       ? {
                           document: doc,
                           provider,
