@@ -28,7 +28,7 @@ const DragAwareTomModal = ({
           className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-[90vw] max-w-4xl"
         >
           {/* Lớp nền (Overlay) */}
-          <div className="absolute inset-0 -z-10 rounded-2xl bg-brand-100/40 blur-xl" />
+          <div className="absolute inset-0 -z-10 rounded-2xl bg-brand-100/50 blur-sm" />
 
           {/* Nội dung bên trong */}
           <div className="relative z-10">{children}</div>

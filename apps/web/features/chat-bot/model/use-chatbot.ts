@@ -10,7 +10,7 @@ import {
 
 import type { ChatMessage, ChatbotPendingConsent } from "./chatbot-types";
 import { usePinnedNotes } from "./use-pinned-notes";
-import { buildMessageWithPinnedNotes, insertToolMessage, newId } from "./stream-helpers";
+import { buildMessageWithPinnedNotes, newId } from "./stream-helpers";
 
 export type { ChatbotDropPayload, ChatbotDroppedNote, ChatbotPendingConsent } from "./chatbot-types";
 
@@ -58,12 +58,10 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
 
     const selectedNoteId = pinned.activePinnedNote?.id ?? pinned.pinnedNotes[0]?.id ?? "";
     const userMessageId = newId("user");
-    const assistantMessageId = newId("assistant");
 
     setMessages((prev) => [
       ...prev,
       { id: userMessageId, role: "user", content: prompt },
-      { id: assistantMessageId, role: "assistant", content: "" },
     ]);
 
     abortControllerRef.current?.abort();
@@ -104,7 +102,19 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
             case "tool.call": {
               const { tool_call_id: callId, tool: toolName } = p;
               if (typeof callId === "string" && typeof toolName === "string") {
-                setMessages((prev) => insertToolMessage(prev, callId, toolName, assistantMessageId));
+                setMessages((prev) => {
+                  if (prev.some((m) => m.id === callId)) return prev;
+                  return [
+                    ...prev,
+                    {
+                      id: callId,
+                      role: "tool",
+                      content: "",
+                      toolName,
+                      toolStatus: "running",
+                    },
+                  ];
+                });
               }
               return;
             }
@@ -113,11 +123,19 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
               const delta = p.content;
               if (typeof delta === "string" && delta.length > 0) {
                 assistantHasContent = true;
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantMessageId ? { ...m, content: `${m.content}${delta}` } : m,
-                  ),
-                );
+                setMessages((prev) => {
+                  const last = prev[prev.length - 1];
+                  if (last && last.role === "assistant") {
+                    return prev.map((m, idx) =>
+                      idx === prev.length - 1 ? { ...m, content: `${m.content}${delta}` } : m,
+                    );
+                  } else {
+                    return [
+                      ...prev,
+                      { id: newId("assistant"), role: "assistant", content: delta },
+                    ];
+                  }
+                });
               }
               return;
             }
@@ -151,13 +169,14 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
               try {
                 await provideAiRunConsent(currentRunId, { tool_call_id: callId, approved });
                 if (!approved) {
-                  setMessages((prev) =>
-                    prev.map((m) =>
-                      m.id === assistantMessageId && m.content.length === 0
-                        ? { ...m, content: "Permission denied. Tool execution was not approved." }
-                        : m,
-                    ),
-                  );
+                  setMessages((prev) => [
+                    ...prev,
+                    {
+                      id: newId("assistant"),
+                      role: "assistant",
+                      content: "Permission denied. Tool execution was not approved.",
+                    },
+                  ]);
                 }
               } finally {
                 setPendingConsent(null);
@@ -183,13 +202,14 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
               const errorMessage =
                 typeof p.message === "string" && p.message.length > 0 ? p.message : "AI run failed";
               if (!assistantHasContent) {
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantMessageId && m.content.length === 0
-                      ? { ...m, content: errorMessage }
-                      : m,
-                  ),
-                );
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: newId("assistant"),
+                    role: "assistant",
+                    content: errorMessage,
+                  },
+                ]);
               }
               throw new Error(errorMessage);
             }
