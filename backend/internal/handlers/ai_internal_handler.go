@@ -282,12 +282,13 @@ func (api *AIInternalAPI) executeNotesWrite(c *gin.Context, req aiToolExecuteReq
 		return
 	}
 
-	newContent := content
+	htmlContent := markdownToHTML(content)
+	newContent := htmlContent
 	switch operation {
 	case "replace":
-		// keep content as-is
+		newContent = htmlContent
 	case "append":
-		newContent = note.Content + content
+		newContent = note.Content + htmlContent
 	case "patch":
 		c.JSON(http.StatusBadRequest, aiToolResponse{
 			OK:         false,

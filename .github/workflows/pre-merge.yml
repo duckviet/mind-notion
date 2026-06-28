@@ -19,22 +19,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
 
       - name: Install dependencies
-        working-directory: ./frontend
-        run: |
-          rm -rf package-lock.json
-          npm i
+        run: pnpm install
+
       - name: Check lint errors
-        working-directory: ./frontend
-        run: npm run lint
-      # - run: npm run format:check
+        run: pnpm lint
+
       - name: Build the source code
-        working-directory: ./frontend
-        run: npm run build
-      # - name: Testing
-      #   run: npm test
+        run: pnpm build
