@@ -18,9 +18,19 @@ async function startServer() {
     // Validate environment
     validateEnvironment();
 
+    const connectionOptions = {
+      connectionString: config.databaseUrl,
+    };
+
+    if (config.databaseUrl && !config.databaseUrl.includes("localhost") && !config.databaseUrl.includes("127.0.0.1") && !config.databaseUrl.includes("sslmode=disable")) {
+      connectionOptions.ssl = {
+        rejectUnauthorized: false,
+      };
+    }
+
     // Initialize persistence
     const persistence = await PostgresqlPersistence.build(
-      { connectionString: config.databaseUrl },
+      connectionOptions,
       { tableName: config.tableName },
     );
     logger.info(
