@@ -5,7 +5,7 @@ const TOP_OF_MIND_ZONE_IDS = new Set([
   "top-of-mind-zone-floating",
 ]);
 
-const CHAT_BOT_ZONE_IDS = new Set(["chat-bot", "chat-bot-sidebar"]);
+const CHAT_BOT_ZONE_IDS = new Set(["chat-bot", "chat-bot-sidebar", "chat-bot-right-sidebar"]);
 const SIDEBAR_FOLDER_SORT_PREFIX = "tree-folder-sort-";
 
 export type HomeDropAction =

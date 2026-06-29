@@ -54,15 +54,24 @@ const CommentForm = ({
           <span className="text-xs text-text-muted">{value.length}/1000</span>
           <div className="flex gap-2">
             <button
-              className="m-0 rounded-full bg-accent p-2 hover:bg-muted-hover"
+              type="button"
+              className="m-0 rounded-full bg-surface-100 hover:bg-surface-200 p-2 text-text-muted transition-colors dark:bg-surface-800 dark:hover:bg-surface-700 cursor-pointer select-none"
               onClick={onCancel}
+              aria-label="Clear comment text"
             >
               <XIcon width={14} height={14} />
             </button>
             <button
+              type="button"
               onClick={onSubmit}
               disabled={isLoading || !value.trim()}
-              className="m-0 rounded-full bg-primary p-2 text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              className={cn(
+                "m-0 rounded-full p-2 transition-colors duration-200 select-none",
+                value.trim()
+                  ? "bg-black text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 cursor-pointer"
+                  : "bg-surface-200 text-text-muted/40 cursor-not-allowed dark:bg-surface-800"
+              )}
+              aria-label="Send comment"
             >
               <ArrowUpIcon width={14} height={14} />
             </button>

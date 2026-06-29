@@ -54,7 +54,7 @@ export default function SearchField({
         }}
         transition={{ duration: 0.2 }}
       >
-        <div className="flex items-center px-6 py-4">
+        <div className="flex items-center px-6 h-[48px]">
           <Search className="w-5 h-5 text-text-muted mr-3 flex-shrink-0" />
 
           <input

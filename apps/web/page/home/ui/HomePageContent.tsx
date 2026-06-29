@@ -27,6 +27,7 @@ import { AddNoteForm } from "@/features/add-note";
 import { useHomeState } from "../model/useHomeState";
 import { useHomeDnd } from "../model/useHomeDnd";
 import { useSortedTopOfMind } from "../model/useSortedTopOfMind";
+import { MindNotionAi } from "@/shared/assets";
 
 const MasonryGrid = dynamic(
   () => import("@/widgets/content-grid").then((m) => m.MasonryGrid),
@@ -59,7 +60,7 @@ const TopOfMindSkeleton = () => (
 
 export function HomePageContent() {
   const state = useHomeState();
-  const { setDroppedNotePayload } = useChatbotSidebarStore();
+  const { setDroppedNotePayload, isOpen, setIsOpen } = useChatbotSidebarStore();
 
   const {
     notes: notesData,
@@ -98,8 +99,10 @@ export function HomePageContent() {
     disabled: state.isModalOpen,
     onUpdateTom: tomActions.updateTopOfMindNote,
     onReorderTom: tomActions.reorderTopOfMindNote,
-    onDropToChat: (note) =>
-      setDroppedNotePayload({ note, droppedAt: Date.now() }),
+    onDropToChat: (note) => {
+      setIsOpen(true);
+      setDroppedNotePayload({ note, droppedAt: Date.now() });
+    },
     onUpdateNote: (id, data) => updateNote({ id, data }),
     onMoveNoteToFolder: (id, data) => moveNoteToFolder({ id, data }),
     getNextOrder: tomActions.getNextOrder,
@@ -113,12 +116,28 @@ export function HomePageContent() {
   return (
     <div className="min-h-screen overflow-hidden bg-background">
       <div className="p-6 space-y-6">
-        <SearchField
-          className="rounded-md"
-          query={state.query}
-          setQuery={state.setQuery}
-          onEnter={() => { }}
-        />
+        <div className="flex gap-4 items-center w-full">
+          <SearchField
+            className="flex-1 rounded-md"
+            query={state.query}
+            setQuery={state.setQuery}
+            onEnter={() => { }}
+          />
+      
+      {!isOpen && 
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex size-8 items-center justify-center transition-colors"
+          aria-label="Open chatbot"
+          title="Mở chatbot hoặc kéo note vào đây"
+        >
+          <div className="flex aspect-square size-12 items-center justify-center rounded-md bg-surface-50 hover:bg-surface-100 p-1">
+            <MindNotionAi className="rounded-lg dark:text-white" />
+          </div>
+        </button> 
+      }
+        </div>
 
         <SortableContext
           items={topOfMindNotes.map((n) => n.id)}

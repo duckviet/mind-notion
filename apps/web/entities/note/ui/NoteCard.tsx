@@ -80,7 +80,7 @@ export default function NoteCard({
     <ContextMenu>
       <ContextMenuTrigger asChild>
         <div
-          onDoubleClick={handleFocusEdit}
+          onClick={handleFocusEdit}
           onKeyDown={handleKeyDown}
           className="cursor-pointer"
           tabIndex={0}
