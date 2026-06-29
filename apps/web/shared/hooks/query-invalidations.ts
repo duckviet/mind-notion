@@ -1,4 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
+
+import { isCollabSessionForNote } from "./collab-session-query";
 import {
   eventsKeys,
   foldersKeys,
@@ -129,4 +131,13 @@ export async function invalidateEventCollections(queryClient: QueryClient) {
 
 export async function invalidateTemplateLists(queryClient: QueryClient) {
   await queryClient.invalidateQueries({ queryKey: templatesKeys.lists() });
+}
+export async function invalidateCollabSession(
+  queryClient: QueryClient,
+  noteId: string,
+) {
+  await queryClient.invalidateQueries({
+    predicate: (query) => isCollabSessionForNote(query, noteId),
+    refetchType: "all",
+  });
 }

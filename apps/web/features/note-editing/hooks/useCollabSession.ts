@@ -12,6 +12,7 @@ export const useCollabSession = (
       createCollabToken({ note_id: noteId, edit_token: editToken }),
     enabled: enabled && !!noteId,
     retry: false,
-    staleTime: 60_000,
+    staleTime: 20_000,
+    gcTime: 0,
     refetchOnWindowFocus: false,
   });

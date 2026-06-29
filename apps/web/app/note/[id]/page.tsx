@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useParams } from "next/navigation";
-import { useGetPublicNote } from "@/shared/services/generated/api";
+import { useGetPublicNote, getGetPublicNoteQueryKey } from "@/shared/services/generated/api";
 import { NotePage } from "@/page/note";
 
 export default function PublicNoteViewPage() {
@@ -15,6 +15,7 @@ export default function PublicNoteViewPage() {
     error,
   } = useGetPublicNote(id, {
     query: {
+      queryKey: getGetPublicNoteQueryKey(id),
       retry: false,
       refetchOnWindowFocus: false,
     },

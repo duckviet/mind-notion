@@ -1,0 +1,28 @@
+type: object
+required:
+  - items
+properties:
+  items:
+    type: array
+    items:
+      type: object
+      required:
+        - id
+        - title
+        - last_message_at
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        last_message_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

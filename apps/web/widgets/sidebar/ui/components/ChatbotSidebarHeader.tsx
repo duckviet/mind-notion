@@ -14,7 +14,7 @@ export function ChatbotSidebarHeader({
   return (
     <SidebarHeader className="flex-row items-center justify-between gap-2 px-4 py-3 border-b border-sidebar-border/50">
       <div className="flex items-center gap-2.5 min-w-0">
-        <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-white shadow-sm">
+        <div className="flex aspect-square size-8 items-center justify-center rounded-md">
           <Image
             src="/mind-notion-ai.svg"
             alt="Logo"

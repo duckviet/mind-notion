@@ -22,10 +22,10 @@ export function MenuSidebarFooter({
         <SidebarMenuItem>
           <div className="group flex items-center gap-3 rounded-lg transition-all hover:bg-sidebar-accent/60">
             <div className="relative shrink-0">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-brand-50 text-brand-600 font-medium">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-full bg-surface-100 text-brand-600 font-medium">
                 {userEmail?.[0]?.toUpperCase() || "U"}
               </div>
-              <div className="absolute bottom-0 right-0 size-3 rounded-full bg-terra-cotta ring-2 ring-sidebar"></div>
+              <div className="absolute bottom-0 right-0 size-2 rounded-full bg-terra-cotta ring-2 ring-sidebar"></div>
             </div>
 
             <div className="flex flex-col min-w-0 group-data-[collapsible=icon]:hidden">

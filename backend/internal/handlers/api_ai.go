@@ -20,6 +20,46 @@ type AIAPI struct {
 	aiRun interfaces.AIRunAPIHandler
 }
 
+func (api *AIAPI) ListAiConversations(c *gin.Context) {
+	if api.aiRun == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+	api.aiRun.ListConversations(c)
+}
+
+func (api *AIAPI) CreateAiConversation(c *gin.Context) {
+	if api.aiRun == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+	api.aiRun.CreateConversation(c)
+}
+
+func (api *AIAPI) GetAiConversation(c *gin.Context) {
+	if api.aiRun == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+	api.aiRun.GetConversation(c)
+}
+
+func (api *AIAPI) UpdateAiConversation(c *gin.Context) {
+	if api.aiRun == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+	api.aiRun.UpdateConversation(c)
+}
+
+func (api *AIAPI) DeleteAiConversation(c *gin.Context) {
+	if api.aiRun == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+	api.aiRun.DeleteConversation(c)
+}
+
 var _ interfaces.AIAPIHandler = (*AIAPI)(nil)
 
 func NewAIAPI(aiRun interfaces.AIRunAPIHandler) *AIAPI {

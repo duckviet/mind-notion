@@ -76,10 +76,12 @@ const CommentSection = ({ noteId, activeCommentId }: CommentSectionProps) => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center py-10 px-4 border border-dashed border-border rounded-xl bg-surface-50"
+              className="text-center py-20 px-4 flex flex-col items-center justify-center"
             >
-              <MessageSquare className="w-8 h-8 mx-auto mb-2 text-text-muted opacity-60" />
-              <p className="text-text-muted text-xs">
+              <div className="w-10 h-10 rounded-full bg-surface-100 dark:bg-surface-800 flex items-center justify-center mb-3">
+                <MessageSquare className="w-5 h-5 text-text-muted" />
+              </div>
+              <p className="text-text-muted text-xs leading-relaxed max-w-[200px]">
                 No comments yet. Be the first to share your thoughts!
               </p>
             </motion.div>

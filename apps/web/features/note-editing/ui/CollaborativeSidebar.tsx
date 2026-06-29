@@ -11,6 +11,9 @@ import { Button } from "@/shared/components/ui/button";
 import NoteTagsSection from "./NoteTagsSection";
 import CommentSection from "./CommentSection";
 import { cn } from "@/shared/utils/cn";
+import { Chatbot } from "@/features/chat-bot";
+import { useChatbotSidebarStore } from "@/features/chat-bot";
+import { MindNotionAi } from "@/shared/assets";
 
 export interface CollaborativeSidebarProps {
   // Sidebar state
@@ -68,96 +71,50 @@ export const CollaborativeSidebar: React.FC<CollaborativeSidebarProps> = ({
   className,
   contentClassName,
 }) => {
+  const { activeTab, setActiveTab } = useChatbotSidebarStore();
+
   return (
     <motion.aside
       initial={false}
-      animate={{ width: isSidebarCollapsed ? 50 : 320 }}
+      animate={{ width: 360 }}
       transition={{ type: "spring", stiffness: 260, damping: 30 }}
       className={cn(
-        "flex shrink-0 flex-col overflow-auto rounded-lg p-2 shadow-none",
-        "dark:bg-transparent",
+        "flex shrink-0 flex-col overflow-y-auto rounded-lg p-2 shadow-none border border-border bg-card",
         className,
       )}
-
     >
-      <motion.div
-        initial={false}
-        transition={{ type: "spring", stiffness: 260, damping: 30 }}
-        className={cn(
-          "flex items-center justify-end gap-1",
-          isSidebarCollapsed && "flex-col-reverse",
-        )}
-      >
-        {showShareActions && onShareClick && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onShareClick}
-            aria-label="Share note"
-            className="hover:bg-hover-overlay"
-          >
-            <Share2 className="w-4 h-4" />
-          </Button>
-        )}
-
-        {showPrintAction && onPrintClick && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onPrintClick}
-            aria-label="Print note"
-            className="hover:bg-hover-overlay"
-          >
-            <Printer className="w-4 h-4" />
-          </Button>
-        )}
-
-        {showExpandAction && onExpandClick && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onExpandClick}
-            aria-label="Expand"
-            className="hover:bg-hover-overlay"
-          >
-            <Expand className="w-4 h-4" />
-          </Button>
-        )}
-
-        <Button
+      {/* Tab Switcher */}
+      <div className="flex border-b border-border/60 mb-4 text-xs font-semibold shrink-0">
+        <button
           type="button"
-          variant="ghost"
-          size="icon"
-          className="hover:bg-hover-overlay"
-          onClick={onToggleSidebar}
-          aria-label={
-            isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-          }
-        >
-          {isSidebarCollapsed ? (
-            <ChevronLeft className="w-4 h-4" />
-          ) : (
-            <ChevronRight className="w-4 h-4" />
+          onClick={() => setActiveTab("comments")}
+          className={cn(
+            "flex-1 py-2 text-center transition-colors border-b-2 cursor-pointer select-none",
+            activeTab === "comments"
+              ? "border-black text-black font-semibold dark:border-white dark:text-white"
+              : "border-transparent text-text-muted hover:text-text-primary"
           )}
-        </Button>
-      </motion.div>
+        >
+          💬 Comments
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("maind")}
+          className={cn(
+            "flex-1 py-2 text-center transition-colors border-b-2 cursor-pointer select-none flex items-center justify-center gap-1.5",
+            activeTab === "maind"
+              ? "border-black text-black font-semibold dark:border-white dark:text-white"
+              : "border-transparent text-text-muted hover:text-text-primary"
+          )}
+        >
+          <MindNotionAi className="w-3.5 h-3.5 shrink-0" />
+          Maind
+        </button>
+      </div>
 
-      <AnimatePresence initial={false}>
-        {!isSidebarCollapsed && (
-          <motion.div
-            key="sidebar-content"
-            initial={{ opacity: 0, x: 8 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 8 }}
-            transition={{ duration: 0.15 }}
-            className={cn(
-              "flex flex-col space-y-10 mt-4 min-w-0 px-2",
-              contentClassName,
-            )}
-          >
+      <div className="flex-1 flex flex-col min-h-0 min-w-0">
+        {activeTab === "comments" ? (
+          <div className="flex-1 flex flex-col space-y-6 min-w-0 px-1">
             {tags && onNewTagChange && onTagAdd && onTagRemove && (
               <NoteTagsSection
                 tags={tags}
@@ -175,13 +132,20 @@ export const CollaborativeSidebar: React.FC<CollaborativeSidebarProps> = ({
               />
             )}
             {contentLength !== undefined && (
-              <div className="text-xs text-right mt-auto text-text-muted">
+              <div className="text-[10px] text-right mt-auto text-text-muted/80 pb-2">
                 {contentLength} chars
               </div>
             )}
-          </motion.div>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
+            <Chatbot
+              droppableId="chat-bot-collab-sidebar"
+              className="w-full flex-1 border-none shadow-none bg-transparent max-h-[calc(100vh-140px)]"
+            />
+          </div>
         )}
-      </AnimatePresence>
+      </div>
     </motion.aside>
   );
 };

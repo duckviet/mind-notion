@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -114,4 +115,50 @@ func TestAIRunConsentPersistsApprovedAuditTrail(t *testing.T) {
 	require.Equal(t, models.AIToolCallStatusApproved, toolCall.Status)
 	require.Equal(t, "user-1", toolCall.ApprovedBy)
 	require.NotNil(t, toolCall.ApprovedAt)
+}
+func TestAIRunCreatePersistsConversationMessages(t *testing.T) {
+	note := &models.Note{
+		BaseModel: models.BaseModel{ID: "note-1"},
+		UserID:    "user-1",
+		Version:   7,
+	}
+	router, repo := newAIRunHandlerTestRouter(t, func(w http.ResponseWriter, r *http.Request) {
+		require.Equal(t, "/internal/v1/agent/runs", r.URL.Path)
+
+		var payload map[string]interface{}
+		require.NoError(t, json.NewDecoder(r.Body).Decode(&payload))
+		runID, ok := payload["run_id"].(string)
+		require.True(t, ok)
+
+		w.Header().Set("Content-Type", "text/event-stream")
+		_, _ = fmt.Fprintf(w, "event: run.started\ndata: {\"run_id\":%q,\"resume_token\":\"resume-1\"}\n\n", runID)
+		_, _ = fmt.Fprintf(w, "event: assistant.delta\ndata: {\"run_id\":%q,\"content\":\"Hello \"}\n\n", runID)
+		_, _ = fmt.Fprintf(w, "event: assistant.delta\ndata: {\"run_id\":%q,\"content\":\"back\"}\n\n", runID)
+		_, _ = fmt.Fprintf(w, "event: run.completed\ndata: {\"run_id\":%q}\n\n", runID)
+	}, note)
+
+	body := bytes.NewBufferString(`{
+		"workspace_id":"workspace-1",
+		"session_id":"session-1",
+		"note_id":"note-1",
+		"display_user_message":"Plain prompt",
+		"message":{"role":"user","content":"Prompt with pinned note context"}
+	}`)
+	request := httptest.NewRequest(http.MethodPost, "/api/v1/ai/runs", body)
+	request.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+
+	router.ServeHTTP(recorder, request)
+
+	require.Equal(t, http.StatusOK, recorder.Code)
+	require.Contains(t, recorder.Body.String(), "conversation.created")
+
+	repo.mu.Lock()
+	defer repo.mu.Unlock()
+	messages := repo.messages["conversation-id"]
+	require.Len(t, messages, 2)
+	require.Equal(t, "user", messages[0].Role)
+	require.Equal(t, "Plain prompt", messages[0].Content)
+	require.Equal(t, "assistant", messages[1].Role)
+	require.Equal(t, "Hello back", messages[1].Content)
 }

@@ -25,6 +25,10 @@ paths:
     $ref: "./paths/jwt-auth/refresh-token.yaml"
 
   # AI
+  /ai/conversations:
+    $ref: "./paths/ai/conversations.yaml"
+  /ai/conversations/{conversation_id}:
+    $ref: "./paths/ai/conversation-detail.yaml"
   /ai/runs:
     $ref: "./paths/ai/create-run.yaml"
   /ai/runs/{run_id}/consent:

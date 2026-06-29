@@ -22,6 +22,7 @@ import {
   MoreHorizontal,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useChatbotSidebarStore } from "@/features/chat-bot";
 import { useDebounce } from "use-debounce";
 import {
   ReqUpdateNote,
@@ -91,6 +92,8 @@ interface FolderPageContentProps {
 }
 
 function FolderPageContent({ folderId }: FolderPageContentProps) {
+  const router = useRouter();
+  const { isOpen, setIsOpen } = useChatbotSidebarStore();
   const [query, setQuery] = useState("");
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -209,10 +212,9 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
 
   const handleFocusEdit = useCallback(
     (noteId: string) => {
-      setFocusEditNoteId(noteId);
-      openModal();
+      router.push(`/note/${noteId}/edit`);
     },
-    [openModal],
+    [router],
   );
 
   const handleCloseFocusEdit = useCallback(() => {
@@ -376,8 +378,21 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
       ) : null}
 
       {/* Search */}
-      <div className="mb-6">
-        <SearchField query={query} setQuery={setQuery} onEnter={() => {}} />
+      <div className="mb-6 flex gap-4 items-stretch w-full">
+        <SearchField
+          className="flex-1 rounded-md"
+          query={query}
+          setQuery={setQuery}
+          onEnter={() => {}}
+        />
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2 px-5 bg-black text-white hover:bg-neutral-800 rounded-lg transition-colors font-medium select-none cursor-pointer"
+        >
+          <span>✨ Maind</span>
+          <span className="size-2 rounded-full bg-emerald-500"></span>
+        </button>
       </div>
 
       {/* Notes Grid */}

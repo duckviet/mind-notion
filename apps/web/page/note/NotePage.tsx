@@ -7,6 +7,9 @@ import { Calendar, User, Clock, AlertCircle, Copy, Check } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import { toast } from "sonner";
 
+import Link from "next/link";
+import { useChatbotSidebarStore } from "@/features/chat-bot";
+import { MindNotionAi } from "@/shared/assets";
 import { RichTextEditor } from "@/shared/components/RichTextEditor";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
@@ -82,6 +85,7 @@ export const NotePage: React.FC<NotePageProps> = ({
   showComments = false,
   containerClassName,
 }) => {
+  const { activeTab, setActiveTab } = useChatbotSidebarStore();
   const [copied, setCopied] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = usePersistentState(
     "note-sidebar",
@@ -166,13 +170,52 @@ export const NotePage: React.FC<NotePageProps> = ({
         <div className="flex h-full w-fit flex-1 flex-col overflow-y-auto overflow-x-hidden rounded-lg bg-card p-6 shadow-none dark:border dark:border-border">
           {/* Header */}
           <header className="mb-4 px-6 space-y-6">
+            <div className="flex items-center justify-between w-full text-sm text-text-muted">
+              <div className="flex items-center gap-1.5 font-medium">
+                <Link href="/" className="hover:text-text-primary transition-colors">
+                  ← Home
+                </Link>
+                <span>/</span>
+                <span className="truncate max-w-[200px] text-text-primary">
+                  {note.title}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="shrink-0 gap-2 hover:bg-muted/70 text-xs py-1 h-8 rounded-md bg-white border border-border"
+                  onClick={handleCopyLink}
+                >
+                  {copied ? (
+                    <Check className="w-3.5 h-3.5" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                  {copied ? "Copied" : "Copy Link"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveTab("maind")}
+                  className={cn(
+                    "shrink-0 gap-1.5 text-xs py-1 h-8 rounded-md bg-white border border-border font-medium",
+                    activeTab === "maind" ? "bg-black text-white hover:bg-neutral-800" : "hover:bg-muted/70"
+                  )}
+                >
+                  <MindNotionAi className="w-3.5 h-3.5 shrink-0" />
+                  <span>Maind</span>
+                </Button>
+              </div>
+            </div>
+
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               {isEditable ? (
                 <input
                   value={note.title}
                   onChange={(e) => onTitleChange?.(e.target.value)}
                   placeholder="Your note title..."
-                  className="w-full bg-transparent font-serif text-3xl font-normal leading-tight text-text-primary outline-none placeholder:text-stone md:text-5xl"
+                  className="w-full bg-transparent font-serif text-3xl font-normal leading-tight text-text-primary outline-none placeholder:text-stone md:text-5xl animate-fade-in"
                   maxLength={200}
                 />
               ) : (
@@ -180,20 +223,6 @@ export const NotePage: React.FC<NotePageProps> = ({
                   {note.title}
                 </h1>
               )}
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  className="shrink-0 gap-2 hover:bg-foreground/50"
-                  onClick={handleCopyLink}
-                >
-                  {copied ? (
-                    <Check className="w-4 h-4" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                  {copied ? "Copied" : "Copy Link"}
-                </Button>
-              </div>
             </div>
           </header>
 

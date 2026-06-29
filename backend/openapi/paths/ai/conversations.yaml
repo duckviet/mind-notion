@@ -1,0 +1,40 @@
+get:
+  tags:
+    - AI
+  operationId: ListAiConversations
+  summary: List AI conversations
+  responses:
+    "200":
+      description: Successful response with AI conversations
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas/AI/Res_ListAIConversations.yaml"
+    "401":
+      $ref: "../../components/responses/Unauthorized.yaml"
+    "500":
+      $ref: "../../components/responses/InternalServerError.yaml"
+post:
+  tags:
+    - AI
+  operationId: CreateAiConversation
+  summary: Create an AI conversation
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          $ref: "../../components/schemas/AI/Req_CreateAIConversation.yaml"
+  responses:
+    "201":
+      description: Created AI conversation
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas/AI/AIConversation.yaml"
+    "400":
+      $ref: "../../components/responses/BadRequest.yaml"
+    "401":
+      $ref: "../../components/responses/Unauthorized.yaml"
+    "500":
+      $ref: "../../components/responses/InternalServerError.yaml"
