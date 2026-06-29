@@ -3,17 +3,21 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   deleteAiConversation,
   getAiConversation,
+  getNote,
   listAiConversations,
   provideAiRunConsent,
   updateAiConversation,
+  type ListNotes200,
   type ReqCreateAIRun,
 } from "@/shared/services/generated/api";
 import { streamAiRun } from "@/shared/services/ai/stream-ai-run";
 import {
+  invalidateCollabSession,
   invalidateNoteDetail,
   invalidateNoteLists,
   invalidateTopOfMindNotes,
 } from "@/shared/hooks/query-invalidations";
+import { notesKeys } from "@/shared/hooks/query-keys";
 
 import type { ChatMessage, ChatbotPendingConsent } from "./chatbot-types";
 import { usePinnedNotes } from "./use-pinned-notes";
@@ -199,14 +203,15 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
       const tasks: Promise<void>[] = [
         invalidateNoteLists(queryClient),
         invalidateTopOfMindNotes(queryClient),
-        queryClient.invalidateQueries({
-          queryKey: selectedNoteId
-            ? ["collab-session", selectedNoteId]
-            : ["collab-session"],
-        }),
       ];
-      if (selectedNoteId)
+      if (selectedNoteId) {
         tasks.push(invalidateNoteDetail(queryClient, selectedNoteId));
+        tasks.push(invalidateCollabSession(queryClient, selectedNoteId));
+      } else {
+        tasks.push(
+          queryClient.invalidateQueries({ queryKey: ["collab-session"] }),
+        );
+      }
       await Promise.all(tasks);
     };
 
@@ -368,8 +373,36 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
                   ),
                 );
               }
-              if (toolName === "notes.write" && ok === true)
+              if (toolName === "notes.write" && ok === true) {
                 await refreshNotes();
+                // Optimistic update: proactively fetch updated note and set in
+                // list + detail caches so the list page and note detail show fresh
+                // content immediately without waiting for background refetch.
+                if (selectedNoteId) {
+                  getNote(selectedNoteId).then((updatedNote) => {
+                    queryClient.setQueryData(
+                      notesKeys.detail(selectedNoteId),
+                      updatedNote,
+                    );
+                    queryClient.setQueriesData<ListNotes200>(
+                      { queryKey: notesKeys.lists() },
+                      (oldData) => {
+                        if (!oldData?.notes) return oldData;
+                        return {
+                          ...oldData,
+                          notes: oldData.notes.map((n) =>
+                            n.id === selectedNoteId
+                              ? { ...n, ...updatedNote }
+                              : n,
+                          ),
+                        };
+                      },
+                    );
+                  }).catch(() => {
+                    // Fetch failed — leave invalidation to refetch on next access
+                  });
+                }
+              }
               return;
             }
 

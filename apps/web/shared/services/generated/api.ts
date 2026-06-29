@@ -7,14 +7,28 @@
  */
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   MutationFunction,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseMutationOptions,
   UseMutationResult,
-  UseQueryOptions,
+  UseQueryOptions as ReactQueryUseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
+
+export type UseQueryOptions<
+  TQueryFnData = unknown,
+  TError = unknown,
+  TData = TQueryFnData,
+  TQueryKey extends QueryKey = QueryKey,
+> = Omit<ReactQueryUseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, "queryKey"> & {
+  queryKey?: TQueryKey;
+};
 
 import { customInstance } from "../axios/custom-instance";
 export interface ResAuthTokens {
@@ -781,10 +795,6 @@ export type UploadMediaBody = {
   file: Blob;
 };
 
-type AwaitedInput<T> = PromiseLike<T> | T;
-
-type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
-
 /**
  * @summary Authenticate to receive a JWT
  */
@@ -847,17 +857,17 @@ export type LoginMutationError = UnauthorizedResponse;
 /**
  * @summary Authenticate to receive a JWT
  */
-export const useLogin = <
-  TError = UnauthorizedResponse,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof login>>,
-    TError,
-    { data: ReqLoginCredentials },
-    TContext
-  >;
-}): UseMutationResult<
+export const useLogin = <TError = UnauthorizedResponse, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof login>>,
+      TError,
+      { data: ReqLoginCredentials },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof login>>,
   TError,
   { data: ReqLoginCredentials },
@@ -865,7 +875,7 @@ export const useLogin = <
 > => {
   const mutationOptions = getLoginMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -933,14 +943,17 @@ export type RegisterMutationError = BadRequestResponse | UnauthorizedResponse;
 export const useRegister = <
   TError = BadRequestResponse | UnauthorizedResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof register>>,
-    TError,
-    { data: ReqUserRegistration },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof register>>,
+      TError,
+      { data: ReqUserRegistration },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof register>>,
   TError,
   { data: ReqUserRegistration },
@@ -948,7 +961,7 @@ export const useRegister = <
 > => {
   const mutationOptions = getRegisterMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -1005,14 +1018,17 @@ export type LogoutMutationError = BadRequestResponse | UnauthorizedResponse;
 export const useLogout = <
   TError = BadRequestResponse | UnauthorizedResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof logout>>,
-    TError,
-    void,
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof logout>>,
+      TError,
+      void,
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof logout>>,
   TError,
   void,
@@ -1020,7 +1036,7 @@ export const useLogout = <
 > => {
   const mutationOptions = getLogoutMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -1038,7 +1054,9 @@ export const getCheckAuthQueryOptions = <
   TData = Awaited<ReturnType<typeof checkAuth>>,
   TError = UnauthorizedResponse,
 >(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof checkAuth>>, TError, TData>;
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof checkAuth>>, TError, TData>
+  >;
 }) => {
   const { query: queryOptions } = options ?? {};
 
@@ -1052,7 +1070,7 @@ export const getCheckAuthQueryOptions = <
     Awaited<ReturnType<typeof checkAuth>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type CheckAuthQueryResult = NonNullable<
@@ -1060,6 +1078,61 @@ export type CheckAuthQueryResult = NonNullable<
 >;
 export type CheckAuthQueryError = UnauthorizedResponse;
 
+export function useCheckAuth<
+  TData = Awaited<ReturnType<typeof checkAuth>>,
+  TError = UnauthorizedResponse,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof checkAuth>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof checkAuth>>,
+          TError,
+          Awaited<ReturnType<typeof checkAuth>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCheckAuth<
+  TData = Awaited<ReturnType<typeof checkAuth>>,
+  TError = UnauthorizedResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof checkAuth>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof checkAuth>>,
+          TError,
+          Awaited<ReturnType<typeof checkAuth>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCheckAuth<
+  TData = Awaited<ReturnType<typeof checkAuth>>,
+  TError = UnauthorizedResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof checkAuth>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Check current JWT and return basic info
  */
@@ -1067,14 +1140,22 @@ export type CheckAuthQueryError = UnauthorizedResponse;
 export function useCheckAuth<
   TData = Awaited<ReturnType<typeof checkAuth>>,
   TError = UnauthorizedResponse,
->(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof checkAuth>>, TError, TData>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof checkAuth>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getCheckAuthQueryOptions(options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -1146,14 +1227,17 @@ export type RefreshTokenMutationError = UnauthorizedResponse;
 export const useRefreshToken = <
   TError = UnauthorizedResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof refreshToken>>,
-    TError,
-    { data: RefreshTokenBody },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof refreshToken>>,
+      TError,
+      { data: RefreshTokenBody },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof refreshToken>>,
   TError,
   { data: RefreshTokenBody },
@@ -1161,7 +1245,7 @@ export const useRefreshToken = <
 > => {
   const mutationOptions = getRefreshTokenMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -1183,10 +1267,12 @@ export const getListAiConversationsQueryOptions = <
   TData = Awaited<ReturnType<typeof listAiConversations>>,
   TError = UnauthorizedResponse | InternalServerErrorResponse,
 >(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listAiConversations>>,
-    TError,
-    TData
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof listAiConversations>>,
+      TError,
+      TData
+    >
   >;
 }) => {
   const { query: queryOptions } = options ?? {};
@@ -1201,7 +1287,7 @@ export const getListAiConversationsQueryOptions = <
     Awaited<ReturnType<typeof listAiConversations>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type ListAiConversationsQueryResult = NonNullable<
@@ -1211,6 +1297,73 @@ export type ListAiConversationsQueryError =
   | UnauthorizedResponse
   | InternalServerErrorResponse;
 
+export function useListAiConversations<
+  TData = Awaited<ReturnType<typeof listAiConversations>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listAiConversations>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAiConversations>>,
+          TError,
+          Awaited<ReturnType<typeof listAiConversations>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListAiConversations<
+  TData = Awaited<ReturnType<typeof listAiConversations>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listAiConversations>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAiConversations>>,
+          TError,
+          Awaited<ReturnType<typeof listAiConversations>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListAiConversations<
+  TData = Awaited<ReturnType<typeof listAiConversations>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listAiConversations>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List AI conversations
  */
@@ -1218,18 +1371,26 @@ export type ListAiConversationsQueryError =
 export function useListAiConversations<
   TData = Awaited<ReturnType<typeof listAiConversations>>,
   TError = UnauthorizedResponse | InternalServerErrorResponse,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listAiConversations>>,
-    TError,
-    TData
-  >;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listAiConversations>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getListAiConversationsQueryOptions(options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -1310,14 +1471,17 @@ export const useCreateAiConversation = <
     | UnauthorizedResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createAiConversation>>,
-    TError,
-    { data: CreateAiConversationBody },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createAiConversation>>,
+      TError,
+      { data: CreateAiConversationBody },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof createAiConversation>>,
   TError,
   { data: CreateAiConversationBody },
@@ -1325,7 +1489,7 @@ export const useCreateAiConversation = <
 > => {
   const mutationOptions = getCreateAiConversationMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -1355,10 +1519,12 @@ export const getGetAiConversationQueryOptions = <
 >(
   conversationId: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getAiConversation>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAiConversation>>,
+        TError,
+        TData
+      >
     >;
   },
 ) => {
@@ -1380,7 +1546,7 @@ export const getGetAiConversationQueryOptions = <
     Awaited<ReturnType<typeof getAiConversation>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type GetAiConversationQueryResult = NonNullable<
@@ -1391,6 +1557,85 @@ export type GetAiConversationQueryError =
   | NotFoundResponse
   | InternalServerErrorResponse;
 
+export function useGetAiConversation<
+  TData = Awaited<ReturnType<typeof getAiConversation>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  conversationId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAiConversation>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAiConversation>>,
+          TError,
+          Awaited<ReturnType<typeof getAiConversation>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAiConversation<
+  TData = Awaited<ReturnType<typeof getAiConversation>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAiConversation>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAiConversation>>,
+          TError,
+          Awaited<ReturnType<typeof getAiConversation>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAiConversation<
+  TData = Awaited<ReturnType<typeof getAiConversation>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAiConversation>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get an AI conversation with messages
  */
@@ -1404,21 +1649,27 @@ export function useGetAiConversation<
 >(
   conversationId: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getAiConversation>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAiConversation>>,
+        TError,
+        TData
+      >
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getGetAiConversationQueryOptions(
     conversationId,
     options,
   );
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -1432,7 +1683,7 @@ export const updateAiConversation = (
   conversationId: string,
   updateAiConversationBody: UpdateAiConversationBody,
 ) => {
-  return customInstance<Schema>({
+  return customInstance<CreateAiConversation201>({
     url: `/ai/conversations/${conversationId}`,
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -1501,14 +1752,17 @@ export const useUpdateAiConversation = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateAiConversation>>,
-    TError,
-    { conversationId: string; data: UpdateAiConversationBody },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateAiConversation>>,
+      TError,
+      { conversationId: string; data: UpdateAiConversationBody },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof updateAiConversation>>,
   TError,
   { conversationId: string; data: UpdateAiConversationBody },
@@ -1516,7 +1770,7 @@ export const useUpdateAiConversation = <
 > => {
   const mutationOptions = getUpdateAiConversationMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -1587,14 +1841,17 @@ export const useDeleteAiConversation = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteAiConversation>>,
-    TError,
-    { conversationId: string },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteAiConversation>>,
+      TError,
+      { conversationId: string },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof deleteAiConversation>>,
   TError,
   { conversationId: string },
@@ -1602,7 +1859,7 @@ export const useDeleteAiConversation = <
 > => {
   const mutationOptions = getDeleteAiConversationMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -1685,14 +1942,17 @@ export const useCreateAiRun = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createAiRun>>,
-    TError,
-    { data: ReqCreateAIRun },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createAiRun>>,
+      TError,
+      { data: ReqCreateAIRun },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof createAiRun>>,
   TError,
   { data: ReqCreateAIRun },
@@ -1700,7 +1960,7 @@ export const useCreateAiRun = <
 > => {
   const mutationOptions = getCreateAiRunMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -1776,14 +2036,17 @@ export const useProvideAiRunConsent = <
     | UnauthorizedResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof provideAiRunConsent>>,
-    TError,
-    { runId: string; data: ReqProvideAIRunConsent },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof provideAiRunConsent>>,
+      TError,
+      { runId: string; data: ReqProvideAIRunConsent },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof provideAiRunConsent>>,
   TError,
   { runId: string; data: ReqProvideAIRunConsent },
@@ -1791,7 +2054,7 @@ export const useProvideAiRunConsent = <
 > => {
   const mutationOptions = getProvideAiRunConsentMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -1874,14 +2137,17 @@ export const useInlineEditAi = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof inlineEditAi>>,
-    TError,
-    { data: ReqInlineEdit },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof inlineEditAi>>,
+      TError,
+      { data: ReqInlineEdit },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof inlineEditAi>>,
   TError,
   { data: ReqInlineEdit },
@@ -1889,7 +2155,7 @@ export const useInlineEditAi = <
 > => {
   const mutationOptions = getInlineEditAiMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -1972,14 +2238,17 @@ export const useInlineEditAiRun = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof inlineEditAiRun>>,
-    TError,
-    { data: ReqInlineEdit },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof inlineEditAiRun>>,
+      TError,
+      { data: ReqInlineEdit },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof inlineEditAiRun>>,
   TError,
   { data: ReqInlineEdit },
@@ -1987,7 +2256,7 @@ export const useInlineEditAiRun = <
 > => {
   const mutationOptions = getInlineEditAiRunMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -2008,7 +2277,9 @@ export const getGetMeQueryOptions = <
     | NotFoundResponse
     | InternalServerErrorResponse,
 >(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>;
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>
+  >;
 }) => {
   const { query: queryOptions } = options ?? {};
 
@@ -2022,7 +2293,7 @@ export const getGetMeQueryOptions = <
     Awaited<ReturnType<typeof getMe>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type GetMeQueryResult = NonNullable<Awaited<ReturnType<typeof getMe>>>;
@@ -2031,6 +2302,70 @@ export type GetMeQueryError =
   | NotFoundResponse
   | InternalServerErrorResponse;
 
+export function useGetMe<
+  TData = Awaited<ReturnType<typeof getMe>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMe>>,
+          TError,
+          Awaited<ReturnType<typeof getMe>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMe<
+  TData = Awaited<ReturnType<typeof getMe>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMe>>,
+          TError,
+          Awaited<ReturnType<typeof getMe>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMe<
+  TData = Awaited<ReturnType<typeof getMe>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get current user information
  */
@@ -2041,14 +2376,22 @@ export function useGetMe<
     | UnauthorizedResponse
     | NotFoundResponse
     | InternalServerErrorResponse,
->(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getMe>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getGetMeQueryOptions(options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -2125,14 +2468,17 @@ export const useUpdateMe = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateMe>>,
-    TError,
-    { data: ReqUpdateProfile },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateMe>>,
+      TError,
+      { data: ReqUpdateProfile },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof updateMe>>,
   TError,
   { data: ReqUpdateProfile },
@@ -2140,7 +2486,7 @@ export const useUpdateMe = <
 > => {
   const mutationOptions = getUpdateMeMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -2206,14 +2552,17 @@ export const useDeleteMe = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteMe>>,
-    TError,
-    void,
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteMe>>,
+      TError,
+      void,
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof deleteMe>>,
   TError,
   void,
@@ -2221,7 +2570,7 @@ export const useDeleteMe = <
 > => {
   const mutationOptions = getDeleteMeMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -2298,14 +2647,17 @@ export const useCreateNote = <
     | UnauthorizedResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createNote>>,
-    TError,
-    { data: ReqCreateNote },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createNote>>,
+      TError,
+      { data: ReqCreateNote },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof createNote>>,
   TError,
   { data: ReqCreateNote },
@@ -2313,7 +2665,7 @@ export const useCreateNote = <
 > => {
   const mutationOptions = getCreateNoteMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -2342,10 +2694,8 @@ export const getListNotesQueryOptions = <
 >(
   params?: ListNotesParams,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listNotes>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotes>>, TError, TData>
     >;
   },
 ) => {
@@ -2361,7 +2711,7 @@ export const getListNotesQueryOptions = <
     Awaited<ReturnType<typeof listNotes>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type ListNotesQueryResult = NonNullable<
@@ -2373,6 +2723,76 @@ export type ListNotesQueryError =
   | NotFoundResponse
   | InternalServerErrorResponse;
 
+export function useListNotes<
+  TData = Awaited<ReturnType<typeof listNotes>>,
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  params: undefined | ListNotesParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotes>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listNotes>>,
+          TError,
+          Awaited<ReturnType<typeof listNotes>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListNotes<
+  TData = Awaited<ReturnType<typeof listNotes>>,
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  params?: ListNotesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotes>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listNotes>>,
+          TError,
+          Awaited<ReturnType<typeof listNotes>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListNotes<
+  TData = Awaited<ReturnType<typeof listNotes>>,
+  TError =
+    | BadRequestResponse
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  params?: ListNotesParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotes>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List user's notes
  */
@@ -2387,18 +2807,20 @@ export function useListNotes<
 >(
   params?: ListNotesParams,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listNotes>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotes>>, TError, TData>
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getListNotesQueryOptions(params, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -2429,7 +2851,9 @@ export const getGetNoteQueryOptions = <
 >(
   noteId: string,
   options?: {
-    query?: UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>;
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>
+    >;
   },
 ) => {
   const { query: queryOptions } = options ?? {};
@@ -2446,7 +2870,7 @@ export const getGetNoteQueryOptions = <
     enabled: !!noteId,
     ...queryOptions,
   } as UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData> & {
-    queryKey: QueryKey;
+    queryKey: DataTag<QueryKey, TData, TError>;
   };
 };
 
@@ -2458,6 +2882,73 @@ export type GetNoteQueryError =
   | NotFoundResponse
   | InternalServerErrorResponse;
 
+export function useGetNote<
+  TData = Awaited<ReturnType<typeof getNote>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNote>>,
+          TError,
+          Awaited<ReturnType<typeof getNote>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetNote<
+  TData = Awaited<ReturnType<typeof getNote>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getNote>>,
+          TError,
+          Awaited<ReturnType<typeof getNote>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetNote<
+  TData = Awaited<ReturnType<typeof getNote>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get note by ID
  */
@@ -2471,14 +2962,20 @@ export function useGetNote<
 >(
   noteId: string,
   options?: {
-    query?: UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>;
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getNote>>, TError, TData>
+    >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getGetNoteQueryOptions(noteId, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -2558,14 +3055,17 @@ export const useUpdateNote = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateNote>>,
-    TError,
-    { noteId: string; data: ReqUpdateNote },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateNote>>,
+      TError,
+      { noteId: string; data: ReqUpdateNote },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof updateNote>>,
   TError,
   { noteId: string; data: ReqUpdateNote },
@@ -2573,7 +3073,7 @@ export const useUpdateNote = <
 > => {
   const mutationOptions = getUpdateNoteMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -2644,14 +3144,17 @@ export const useDeleteNote = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteNote>>,
-    TError,
-    { noteId: string },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteNote>>,
+      TError,
+      { noteId: string },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof deleteNote>>,
   TError,
   { noteId: string },
@@ -2659,7 +3162,7 @@ export const useDeleteNote = <
 > => {
   const mutationOptions = getDeleteNoteMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -2686,10 +3189,12 @@ export const getGetPublicEditSettingsQueryOptions = <
 >(
   noteId: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getPublicEditSettings>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPublicEditSettings>>,
+        TError,
+        TData
+      >
     >;
   },
 ) => {
@@ -2711,7 +3216,7 @@ export const getGetPublicEditSettingsQueryOptions = <
     Awaited<ReturnType<typeof getPublicEditSettings>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type GetPublicEditSettingsQueryResult = NonNullable<
@@ -2722,6 +3227,85 @@ export type GetPublicEditSettingsQueryError =
   | NotFoundResponse
   | InternalServerErrorResponse;
 
+export function useGetPublicEditSettings<
+  TData = Awaited<ReturnType<typeof getPublicEditSettings>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPublicEditSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicEditSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicEditSettings>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPublicEditSettings<
+  TData = Awaited<ReturnType<typeof getPublicEditSettings>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPublicEditSettings>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicEditSettings>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicEditSettings>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPublicEditSettings<
+  TData = Awaited<ReturnType<typeof getPublicEditSettings>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPublicEditSettings>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get public edit settings for a note
  */
@@ -2735,18 +3319,24 @@ export function useGetPublicEditSettings<
 >(
   noteId: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getPublicEditSettings>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPublicEditSettings>>,
+        TError,
+        TData
+      >
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getGetPublicEditSettingsQueryOptions(noteId, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -2831,14 +3421,17 @@ export const useUpdatePublicEditSettings = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updatePublicEditSettings>>,
-    TError,
-    { noteId: string; data: ReqPublicEditSettings },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updatePublicEditSettings>>,
+      TError,
+      { noteId: string; data: ReqPublicEditSettings },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof updatePublicEditSettings>>,
   TError,
   { noteId: string; data: ReqPublicEditSettings },
@@ -2846,7 +3439,7 @@ export const useUpdatePublicEditSettings = <
 > => {
   const mutationOptions = getUpdatePublicEditSettingsMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -2918,14 +3511,17 @@ export const useRotatePublicEditToken = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof rotatePublicEditToken>>,
-    TError,
-    { noteId: string },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof rotatePublicEditToken>>,
+      TError,
+      { noteId: string },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof rotatePublicEditToken>>,
   TError,
   { noteId: string },
@@ -2933,7 +3529,7 @@ export const useRotatePublicEditToken = <
 > => {
   const mutationOptions = getRotatePublicEditTokenMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -3008,14 +3604,17 @@ export const useUpdateNoteTOM = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateNoteTOM>>,
-    TError,
-    { noteId: string; params?: UpdateNoteTOMParams },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateNoteTOM>>,
+      TError,
+      { noteId: string; params?: UpdateNoteTOMParams },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof updateNoteTOM>>,
   TError,
   { noteId: string; params?: UpdateNoteTOMParams },
@@ -3023,7 +3622,7 @@ export const useUpdateNoteTOM = <
 > => {
   const mutationOptions = getUpdateNoteTOMMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -3045,10 +3644,8 @@ export const getListNotesTOMQueryOptions = <
   TData = Awaited<ReturnType<typeof listNotesTOM>>,
   TError = UnauthorizedResponse | InternalServerErrorResponse,
 >(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listNotesTOM>>,
-    TError,
-    TData
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof listNotesTOM>>, TError, TData>
   >;
 }) => {
   const { query: queryOptions } = options ?? {};
@@ -3063,7 +3660,7 @@ export const getListNotesTOMQueryOptions = <
     Awaited<ReturnType<typeof listNotesTOM>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type ListNotesTOMQueryResult = NonNullable<
@@ -3073,6 +3670,61 @@ export type ListNotesTOMQueryError =
   | UnauthorizedResponse
   | InternalServerErrorResponse;
 
+export function useListNotesTOM<
+  TData = Awaited<ReturnType<typeof listNotesTOM>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotesTOM>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listNotesTOM>>,
+          TError,
+          Awaited<ReturnType<typeof listNotesTOM>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListNotesTOM<
+  TData = Awaited<ReturnType<typeof listNotesTOM>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotesTOM>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listNotesTOM>>,
+          TError,
+          Awaited<ReturnType<typeof listNotesTOM>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListNotesTOM<
+  TData = Awaited<ReturnType<typeof listNotesTOM>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotesTOM>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List user's top of mind notes
  */
@@ -3080,18 +3732,22 @@ export type ListNotesTOMQueryError =
 export function useListNotesTOM<
   TData = Awaited<ReturnType<typeof listNotesTOM>>,
   TError = UnauthorizedResponse | InternalServerErrorResponse,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listNotesTOM>>,
-    TError,
-    TData
-  >;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listNotesTOM>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getListNotesTOMQueryOptions(options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -3120,10 +3776,8 @@ export const getGetPublicNoteQueryOptions = <
 >(
   noteId: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getPublicNote>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getPublicNote>>, TError, TData>
     >;
   },
 ) => {
@@ -3144,7 +3798,7 @@ export const getGetPublicNoteQueryOptions = <
     Awaited<ReturnType<typeof getPublicNote>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type GetPublicNoteQueryResult = NonNullable<
@@ -3154,6 +3808,64 @@ export type GetPublicNoteQueryError =
   | NotFoundResponse
   | InternalServerErrorResponse;
 
+export function useGetPublicNote<
+  TData = Awaited<ReturnType<typeof getPublicNote>>,
+  TError = NotFoundResponse | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getPublicNote>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicNote>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicNote>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPublicNote<
+  TData = Awaited<ReturnType<typeof getPublicNote>>,
+  TError = NotFoundResponse | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getPublicNote>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPublicNote>>,
+          TError,
+          Awaited<ReturnType<typeof getPublicNote>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPublicNote<
+  TData = Awaited<ReturnType<typeof getPublicNote>>,
+  TError = NotFoundResponse | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getPublicNote>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get a public note by ID (no auth required)
  */
@@ -3164,18 +3876,20 @@ export function useGetPublicNote<
 >(
   noteId: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getPublicNote>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getPublicNote>>, TError, TData>
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getGetPublicNoteQueryOptions(noteId, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -3260,14 +3974,17 @@ export const useSaveNoteSnapshot = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof saveNoteSnapshot>>,
-    TError,
-    { noteId: string; data: ReqNoteSnapshot },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof saveNoteSnapshot>>,
+      TError,
+      { noteId: string; data: ReqNoteSnapshot },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof saveNoteSnapshot>>,
   TError,
   { noteId: string; data: ReqNoteSnapshot },
@@ -3275,7 +3992,7 @@ export const useSaveNoteSnapshot = <
 > => {
   const mutationOptions = getSaveNoteSnapshotMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -3356,14 +4073,17 @@ export const useSaveNoteTiptapSnapshot = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof saveNoteTiptapSnapshot>>,
-    TError,
-    { noteId: string; data: ReqNoteTiptapSnapshot },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof saveNoteTiptapSnapshot>>,
+      TError,
+      { noteId: string; data: ReqNoteTiptapSnapshot },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof saveNoteTiptapSnapshot>>,
   TError,
   { noteId: string; data: ReqNoteTiptapSnapshot },
@@ -3371,7 +4091,7 @@ export const useSaveNoteTiptapSnapshot = <
 > => {
   const mutationOptions = getSaveNoteTiptapSnapshotMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -3452,14 +4172,17 @@ export const useCreateCollabToken = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createCollabToken>>,
-    TError,
-    { data: ReqCollabToken },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createCollabToken>>,
+      TError,
+      { data: ReqCollabToken },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof createCollabToken>>,
   TError,
   { data: ReqCollabToken },
@@ -3467,7 +4190,7 @@ export const useCreateCollabToken = <
 > => {
   const mutationOptions = getCreateCollabTokenMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -3548,14 +4271,17 @@ export const useCreateComment = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createComment>>,
-    TError,
-    { noteId: string; data: ReqCreateComment },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createComment>>,
+      TError,
+      { noteId: string; data: ReqCreateComment },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof createComment>>,
   TError,
   { noteId: string; data: ReqCreateComment },
@@ -3563,7 +4289,7 @@ export const useCreateComment = <
 > => {
   const mutationOptions = getCreateCommentMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -3590,10 +4316,8 @@ export const getListCommentsQueryOptions = <
 >(
   noteId: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listComments>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listComments>>, TError, TData>
     >;
   },
 ) => {
@@ -3614,7 +4338,7 @@ export const getListCommentsQueryOptions = <
     Awaited<ReturnType<typeof listComments>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type ListCommentsQueryResult = NonNullable<
@@ -3625,6 +4349,73 @@ export type ListCommentsQueryError =
   | NotFoundResponse
   | InternalServerErrorResponse;
 
+export function useListComments<
+  TData = Awaited<ReturnType<typeof listComments>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listComments>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listComments>>,
+          TError,
+          Awaited<ReturnType<typeof listComments>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListComments<
+  TData = Awaited<ReturnType<typeof listComments>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listComments>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listComments>>,
+          TError,
+          Awaited<ReturnType<typeof listComments>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListComments<
+  TData = Awaited<ReturnType<typeof listComments>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  noteId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listComments>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List comments for a note
  */
@@ -3638,18 +4429,20 @@ export function useListComments<
 >(
   noteId: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listComments>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listComments>>, TError, TData>
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getListCommentsQueryOptions(noteId, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -3736,14 +4529,17 @@ export const useUpdateComment = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateComment>>,
-    TError,
-    { noteId: string; commentId: string; data: ReqUpdateComment },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateComment>>,
+      TError,
+      { noteId: string; commentId: string; data: ReqUpdateComment },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof updateComment>>,
   TError,
   { noteId: string; commentId: string; data: ReqUpdateComment },
@@ -3751,7 +4547,7 @@ export const useUpdateComment = <
 > => {
   const mutationOptions = getUpdateCommentMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -3825,14 +4621,17 @@ export const useDeleteComment = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteComment>>,
-    TError,
-    { noteId: string; commentId: string },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteComment>>,
+      TError,
+      { noteId: string; commentId: string },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof deleteComment>>,
   TError,
   { noteId: string; commentId: string },
@@ -3840,7 +4639,7 @@ export const useDeleteComment = <
 > => {
   const mutationOptions = getDeleteCommentMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -3867,10 +4666,8 @@ export const getCommentDetailQueryOptions = <
 >(
   commentId: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof commentDetail>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof commentDetail>>, TError, TData>
     >;
   },
 ) => {
@@ -3892,7 +4689,7 @@ export const getCommentDetailQueryOptions = <
     Awaited<ReturnType<typeof commentDetail>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type CommentDetailQueryResult = NonNullable<
@@ -3903,6 +4700,73 @@ export type CommentDetailQueryError =
   | NotFoundResponse
   | InternalServerErrorResponse;
 
+export function useCommentDetail<
+  TData = Awaited<ReturnType<typeof commentDetail>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  commentId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof commentDetail>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof commentDetail>>,
+          TError,
+          Awaited<ReturnType<typeof commentDetail>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCommentDetail<
+  TData = Awaited<ReturnType<typeof commentDetail>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  commentId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof commentDetail>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof commentDetail>>,
+          TError,
+          Awaited<ReturnType<typeof commentDetail>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCommentDetail<
+  TData = Awaited<ReturnType<typeof commentDetail>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  commentId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof commentDetail>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get comment by comment Id
  */
@@ -3916,18 +4780,20 @@ export function useCommentDetail<
 >(
   commentId: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof commentDetail>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof commentDetail>>, TError, TData>
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getCommentDetailQueryOptions(commentId, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -4008,14 +4874,17 @@ export const useCreateFolder = <
     | UnauthorizedResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createFolder>>,
-    TError,
-    { data: ReqCreateFolder },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createFolder>>,
+      TError,
+      { data: ReqCreateFolder },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof createFolder>>,
   TError,
   { data: ReqCreateFolder },
@@ -4023,7 +4892,7 @@ export const useCreateFolder = <
 > => {
   const mutationOptions = getCreateFolderMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -4051,10 +4920,8 @@ export const getListFoldersQueryOptions = <
 >(
   params?: ListFoldersParams,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listFolders>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listFolders>>, TError, TData>
     >;
   },
 ) => {
@@ -4070,7 +4937,7 @@ export const getListFoldersQueryOptions = <
     Awaited<ReturnType<typeof listFolders>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type ListFoldersQueryResult = NonNullable<
@@ -4080,6 +4947,64 @@ export type ListFoldersQueryError =
   | UnauthorizedResponse
   | InternalServerErrorResponse;
 
+export function useListFolders<
+  TData = Awaited<ReturnType<typeof listFolders>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  params: undefined | ListFoldersParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listFolders>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listFolders>>,
+          TError,
+          Awaited<ReturnType<typeof listFolders>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListFolders<
+  TData = Awaited<ReturnType<typeof listFolders>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  params?: ListFoldersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listFolders>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listFolders>>,
+          TError,
+          Awaited<ReturnType<typeof listFolders>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListFolders<
+  TData = Awaited<ReturnType<typeof listFolders>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  params?: ListFoldersParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listFolders>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List user's folders
  */
@@ -4090,18 +5015,20 @@ export function useListFolders<
 >(
   params?: ListFoldersParams,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listFolders>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listFolders>>, TError, TData>
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getListFoldersQueryOptions(params, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -4182,14 +5109,17 @@ export const useReorderFolders = <
     | UnauthorizedResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof reorderFolders>>,
-    TError,
-    { data: ReqReorderFolders },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof reorderFolders>>,
+      TError,
+      { data: ReqReorderFolders },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof reorderFolders>>,
   TError,
   { data: ReqReorderFolders },
@@ -4197,7 +5127,7 @@ export const useReorderFolders = <
 > => {
   const mutationOptions = getReorderFoldersMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -4224,10 +5154,8 @@ export const getGetFolderQueryOptions = <
 >(
   id: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getFolder>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFolder>>, TError, TData>
     >;
   },
 ) => {
@@ -4245,7 +5173,7 @@ export const getGetFolderQueryOptions = <
     enabled: !!id,
     ...queryOptions,
   } as UseQueryOptions<Awaited<ReturnType<typeof getFolder>>, TError, TData> & {
-    queryKey: QueryKey;
+    queryKey: DataTag<QueryKey, TData, TError>;
   };
 };
 
@@ -4257,6 +5185,73 @@ export type GetFolderQueryError =
   | NotFoundResponse
   | InternalServerErrorResponse;
 
+export function useGetFolder<
+  TData = Awaited<ReturnType<typeof getFolder>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFolder>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFolder>>,
+          TError,
+          Awaited<ReturnType<typeof getFolder>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetFolder<
+  TData = Awaited<ReturnType<typeof getFolder>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFolder>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getFolder>>,
+          TError,
+          Awaited<ReturnType<typeof getFolder>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetFolder<
+  TData = Awaited<ReturnType<typeof getFolder>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFolder>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get folder by ID
  */
@@ -4270,18 +5265,20 @@ export function useGetFolder<
 >(
   id: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getFolder>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getFolder>>, TError, TData>
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getGetFolderQueryOptions(id, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -4361,14 +5358,17 @@ export const useUpdateFolder = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateFolder>>,
-    TError,
-    { id: string; data: ReqUpdateFolder },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateFolder>>,
+      TError,
+      { id: string; data: ReqUpdateFolder },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof updateFolder>>,
   TError,
   { id: string; data: ReqUpdateFolder },
@@ -4376,7 +5376,7 @@ export const useUpdateFolder = <
 > => {
   const mutationOptions = getUpdateFolderMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -4447,14 +5447,17 @@ export const useDeleteFolder = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteFolder>>,
-    TError,
-    { id: string },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteFolder>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof deleteFolder>>,
   TError,
   { id: string },
@@ -4462,7 +5465,7 @@ export const useDeleteFolder = <
 > => {
   const mutationOptions = getDeleteFolderMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -4543,14 +5546,17 @@ export const useAddNoteToFolder = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof addNoteToFolder>>,
-    TError,
-    { id: string; data: ReqAddNote },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof addNoteToFolder>>,
+      TError,
+      { id: string; data: ReqAddNote },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof addNoteToFolder>>,
   TError,
   { id: string; data: ReqAddNote },
@@ -4558,7 +5564,7 @@ export const useAddNoteToFolder = <
 > => {
   const mutationOptions = getAddNoteToFolderMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -4628,14 +5634,17 @@ export type CreateEventMutationError =
 export const useCreateEvent = <
   TError = BadRequestResponse | UnauthorizedResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createEvent>>,
-    TError,
-    { data: ReqCreateEvent },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createEvent>>,
+      TError,
+      { data: ReqCreateEvent },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof createEvent>>,
   TError,
   { data: ReqCreateEvent },
@@ -4643,7 +5652,7 @@ export const useCreateEvent = <
 > => {
   const mutationOptions = getCreateEventMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -4668,10 +5677,8 @@ export const getListEventsQueryOptions = <
 >(
   params?: ListEventsParams,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listEvents>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>
     >;
   },
 ) => {
@@ -4687,7 +5694,7 @@ export const getListEventsQueryOptions = <
     Awaited<ReturnType<typeof listEvents>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type ListEventsQueryResult = NonNullable<
@@ -4695,6 +5702,64 @@ export type ListEventsQueryResult = NonNullable<
 >;
 export type ListEventsQueryError = UnauthorizedResponse;
 
+export function useListEvents<
+  TData = Awaited<ReturnType<typeof listEvents>>,
+  TError = UnauthorizedResponse,
+>(
+  params: undefined | ListEventsParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listEvents>>,
+          TError,
+          Awaited<ReturnType<typeof listEvents>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListEvents<
+  TData = Awaited<ReturnType<typeof listEvents>>,
+  TError = UnauthorizedResponse,
+>(
+  params?: ListEventsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listEvents>>,
+          TError,
+          Awaited<ReturnType<typeof listEvents>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListEvents<
+  TData = Awaited<ReturnType<typeof listEvents>>,
+  TError = UnauthorizedResponse,
+>(
+  params?: ListEventsParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List all events for the current user
  */
@@ -4705,18 +5770,20 @@ export function useListEvents<
 >(
   params?: ListEventsParams,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listEvents>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getListEventsQueryOptions(params, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -4744,10 +5811,8 @@ export const getGetEventByIdQueryOptions = <
 >(
   id: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getEventById>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
     >;
   },
 ) => {
@@ -4768,7 +5833,7 @@ export const getGetEventByIdQueryOptions = <
     Awaited<ReturnType<typeof getEventById>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type GetEventByIdQueryResult = NonNullable<
@@ -4776,6 +5841,64 @@ export type GetEventByIdQueryResult = NonNullable<
 >;
 export type GetEventByIdQueryError = UnauthorizedResponse | NotFoundResponse;
 
+export function useGetEventById<
+  TData = Awaited<ReturnType<typeof getEventById>>,
+  TError = UnauthorizedResponse | NotFoundResponse,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEventById>>,
+          TError,
+          Awaited<ReturnType<typeof getEventById>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetEventById<
+  TData = Awaited<ReturnType<typeof getEventById>>,
+  TError = UnauthorizedResponse | NotFoundResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEventById>>,
+          TError,
+          Awaited<ReturnType<typeof getEventById>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetEventById<
+  TData = Awaited<ReturnType<typeof getEventById>>,
+  TError = UnauthorizedResponse | NotFoundResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get a specific event by ID
  */
@@ -4786,18 +5909,20 @@ export function useGetEventById<
 >(
   id: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getEventById>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getEventById>>, TError, TData>
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getGetEventByIdQueryOptions(id, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -4865,14 +5990,17 @@ export type UpdateEventMutationError = UnauthorizedResponse | NotFoundResponse;
 export const useUpdateEvent = <
   TError = UnauthorizedResponse | NotFoundResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateEvent>>,
-    TError,
-    { id: string; data: ReqUpdateEvent },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateEvent>>,
+      TError,
+      { id: string; data: ReqUpdateEvent },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof updateEvent>>,
   TError,
   { id: string; data: ReqUpdateEvent },
@@ -4880,7 +6008,7 @@ export const useUpdateEvent = <
 > => {
   const mutationOptions = getUpdateEventMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -4942,14 +6070,17 @@ export type DeleteEventMutationError = UnauthorizedResponse | NotFoundResponse;
 export const useDeleteEvent = <
   TError = UnauthorizedResponse | NotFoundResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteEvent>>,
-    TError,
-    { id: string },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteEvent>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof deleteEvent>>,
   TError,
   { id: string },
@@ -4957,7 +6088,7 @@ export const useDeleteEvent = <
 > => {
   const mutationOptions = getDeleteEventMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -4987,10 +6118,12 @@ export const getListEventsByRangeQueryOptions = <
 >(
   params: ListEventsByRangeParams,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listEventsByRange>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listEventsByRange>>,
+        TError,
+        TData
+      >
     >;
   },
 ) => {
@@ -5007,7 +6140,7 @@ export const getListEventsByRangeQueryOptions = <
     Awaited<ReturnType<typeof listEventsByRange>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type ListEventsByRangeQueryResult = NonNullable<
@@ -5015,6 +6148,76 @@ export type ListEventsByRangeQueryResult = NonNullable<
 >;
 export type ListEventsByRangeQueryError = UnauthorizedResponse;
 
+export function useListEventsByRange<
+  TData = Awaited<ReturnType<typeof listEventsByRange>>,
+  TError = UnauthorizedResponse,
+>(
+  params: ListEventsByRangeParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listEventsByRange>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listEventsByRange>>,
+          TError,
+          Awaited<ReturnType<typeof listEventsByRange>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListEventsByRange<
+  TData = Awaited<ReturnType<typeof listEventsByRange>>,
+  TError = UnauthorizedResponse,
+>(
+  params: ListEventsByRangeParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listEventsByRange>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listEventsByRange>>,
+          TError,
+          Awaited<ReturnType<typeof listEventsByRange>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListEventsByRange<
+  TData = Awaited<ReturnType<typeof listEventsByRange>>,
+  TError = UnauthorizedResponse,
+>(
+  params: ListEventsByRangeParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listEventsByRange>>,
+        TError,
+        TData
+      >
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List events within a date/time range
  */
@@ -5025,18 +6228,24 @@ export function useListEventsByRange<
 >(
   params: ListEventsByRangeParams,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof listEventsByRange>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listEventsByRange>>,
+        TError,
+        TData
+      >
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getListEventsByRangeQueryOptions(params, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -5117,14 +6326,17 @@ export const useCreateTemplate = <
     | UnauthorizedResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createTemplate>>,
-    TError,
-    { data: ReqCreateTemple },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createTemplate>>,
+      TError,
+      { data: ReqCreateTemple },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof createTemplate>>,
   TError,
   { data: ReqCreateTemple },
@@ -5132,7 +6344,7 @@ export const useCreateTemplate = <
 > => {
   const mutationOptions = getCreateTemplateMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -5154,10 +6366,8 @@ export const getListTemplatesQueryOptions = <
   TData = Awaited<ReturnType<typeof listTemplates>>,
   TError = UnauthorizedResponse | InternalServerErrorResponse,
 >(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listTemplates>>,
-    TError,
-    TData
+  query?: Partial<
+    UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>
   >;
 }) => {
   const { query: queryOptions } = options ?? {};
@@ -5172,7 +6382,7 @@ export const getListTemplatesQueryOptions = <
     Awaited<ReturnType<typeof listTemplates>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type ListTemplatesQueryResult = NonNullable<
@@ -5182,6 +6392,61 @@ export type ListTemplatesQueryError =
   | UnauthorizedResponse
   | InternalServerErrorResponse;
 
+export function useListTemplates<
+  TData = Awaited<ReturnType<typeof listTemplates>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof listTemplates>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListTemplates<
+  TData = Awaited<ReturnType<typeof listTemplates>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listTemplates>>,
+          TError,
+          Awaited<ReturnType<typeof listTemplates>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListTemplates<
+  TData = Awaited<ReturnType<typeof listTemplates>>,
+  TError = UnauthorizedResponse | InternalServerErrorResponse,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List all templates for authenticated user
  */
@@ -5189,18 +6454,22 @@ export type ListTemplatesQueryError =
 export function useListTemplates<
   TData = Awaited<ReturnType<typeof listTemplates>>,
   TError = UnauthorizedResponse | InternalServerErrorResponse,
->(options?: {
-  query?: UseQueryOptions<
-    Awaited<ReturnType<typeof listTemplates>>,
-    TError,
-    TData
-  >;
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof listTemplates>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getListTemplatesQueryOptions(options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -5231,10 +6500,8 @@ export const getGetTemplateQueryOptions = <
 >(
   id: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getTemplate>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>
     >;
   },
 ) => {
@@ -5255,7 +6522,7 @@ export const getGetTemplateQueryOptions = <
     Awaited<ReturnType<typeof getTemplate>>,
     TError,
     TData
-  > & { queryKey: QueryKey };
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type GetTemplateQueryResult = NonNullable<
@@ -5266,6 +6533,73 @@ export type GetTemplateQueryError =
   | NotFoundResponse
   | InternalServerErrorResponse;
 
+export function useGetTemplate<
+  TData = Awaited<ReturnType<typeof getTemplate>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTemplate>>,
+          TError,
+          Awaited<ReturnType<typeof getTemplate>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTemplate<
+  TData = Awaited<ReturnType<typeof getTemplate>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTemplate>>,
+          TError,
+          Awaited<ReturnType<typeof getTemplate>>
+        >,
+        "initialData"
+      >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTemplate<
+  TData = Awaited<ReturnType<typeof getTemplate>>,
+  TError =
+    | UnauthorizedResponse
+    | NotFoundResponse
+    | InternalServerErrorResponse,
+>(
+  id: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>
+    >;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get template by ID
  */
@@ -5279,18 +6613,20 @@ export function useGetTemplate<
 >(
   id: string,
   options?: {
-    query?: UseQueryOptions<
-      Awaited<ReturnType<typeof getTemplate>>,
-      TError,
-      TData
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getTemplate>>, TError, TData>
     >;
   },
-): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
   const queryOptions = getGetTemplateQueryOptions(id, options);
 
-  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
-    queryKey: QueryKey;
-  };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey;
 
@@ -5373,14 +6709,17 @@ export const useUpdateTemplate = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof updateTemplate>>,
-    TError,
-    { id: string; data: ReqUpdateTemplate },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateTemplate>>,
+      TError,
+      { id: string; data: ReqUpdateTemplate },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof updateTemplate>>,
   TError,
   { id: string; data: ReqUpdateTemplate },
@@ -5388,7 +6727,7 @@ export const useUpdateTemplate = <
 > => {
   const mutationOptions = getUpdateTemplateMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -5459,14 +6798,17 @@ export const useDeleteTemplate = <
     | NotFoundResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteTemplate>>,
-    TError,
-    { id: string },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteTemplate>>,
+      TError,
+      { id: string },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof deleteTemplate>>,
   TError,
   { id: string },
@@ -5474,7 +6816,7 @@ export const useDeleteTemplate = <
 > => {
   const mutationOptions = getDeleteTemplateMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };
 
 /**
@@ -5555,14 +6897,17 @@ export const useUploadMedia = <
     | UnauthorizedResponse
     | InternalServerErrorResponse,
   TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof uploadMedia>>,
-    TError,
-    { data: UploadMediaBody },
-    TContext
-  >;
-}): UseMutationResult<
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof uploadMedia>>,
+      TError,
+      { data: UploadMediaBody },
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
   Awaited<ReturnType<typeof uploadMedia>>,
   TError,
   { data: UploadMediaBody },
@@ -5570,5 +6915,5 @@ export const useUploadMedia = <
 > => {
   const mutationOptions = getUploadMediaMutationOptions(options);
 
-  return useMutation(mutationOptions);
+  return useMutation(mutationOptions, queryClient);
 };

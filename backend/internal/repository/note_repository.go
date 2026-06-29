@@ -82,6 +82,11 @@ func (r *noteRepository) UpdateContentWithVersion(ctx context.Context, id string
 		return nil, ErrVersionConflict
 	}
 
+	// Clear collab session updates to force client re-hydration on reconnect/re-open
+	if r.db.Migrator().HasTable("yjs_updates") {
+		_ = r.db.WithContext(ctx).Exec("DELETE FROM yjs_updates WHERE docname = ?", id).Error
+	}
+
 	note, err := r.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -92,7 +97,14 @@ func (r *noteRepository) UpdateContentWithVersion(ctx context.Context, id string
 
 // Delete deletes a note
 func (r *noteRepository) Delete(ctx context.Context, id string) error {
-	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Note{}).Error
+	err := r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Note{}).Error
+	if err == nil {
+		// Clear collab session updates as well
+		if r.db.Migrator().HasTable("yjs_updates") {
+			_ = r.db.WithContext(ctx).Exec("DELETE FROM yjs_updates WHERE docname = ?", id).Error
+		}
+	}
+	return err
 }
 
 // List retrieves notes with pagination

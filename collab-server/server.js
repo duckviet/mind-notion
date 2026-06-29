@@ -1,4 +1,5 @@
 const http = require("http");
+const Y = require("yjs");
 const { WebSocketServer } = require("ws");
 const { PostgresqlPersistence } = require("y-postgresql");
 
@@ -18,12 +19,44 @@ async function startServer() {
     validateEnvironment();
 
     // Initialize persistence
-    const persistence = new PostgresqlPersistence(config.databaseUrl, {
-      tableName: config.tableName,
-    });
+    const persistence = await PostgresqlPersistence.build(
+      { connectionString: config.databaseUrl },
+      { tableName: config.tableName },
+    );
     logger.info(
       `PostgreSQL persistence initialized with table: ${config.tableName}`,
     );
+
+    // Wire persistence into y-websocket so Yjs docs are:
+    //   1. Persisted to PostgreSQL (updates stored incrementally)
+    //   2. Destroyed from memory when all connections close
+    // Without this, the module-level persistence stays null, in-memory
+    // Yjs docs live forever, and stale doc state overrides fresh
+    // note content after UpdateContentWithVersion clears yjs_updates.
+    const yUtils = require("y-websocket/bin/utils");
+    global.loadingDocs = new Map();
+    yUtils.setPersistence({
+      bindState: (docName, ydoc) => {
+        const promise = (async () => {
+          const persistedYdoc = await persistence.getYDoc(docName);
+          const newUpdates = Y.encodeStateAsUpdate(ydoc);
+          await persistence.storeUpdate(docName, newUpdates);
+          Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
+          ydoc.on("update", async (update) => {
+            await persistence.storeUpdate(docName, update);
+          });
+        })();
+        global.loadingDocs.set(docName, promise);
+        promise.finally(() => {
+          global.loadingDocs.delete(docName);
+        });
+        return promise;
+      },
+      writeState: async () => {
+        // Updates are stored incrementally via the on("update") handler
+        // in bindState — no explicit flush needed on disconnect.
+      },
+    });
 
     // Initialize connection manager
     const connectionManager = new ConnectionManager();
@@ -39,7 +72,7 @@ async function startServer() {
 
     // Handle WebSocket connections
     wss.on("connection", (conn, req) => {
-      handleConnection(conn, req, connectionManager, persistence);
+      handleConnection(conn, req, connectionManager);
     });
 
     // Start listening

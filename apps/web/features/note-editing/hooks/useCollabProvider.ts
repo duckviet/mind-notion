@@ -57,12 +57,20 @@ export const useCollabProvider = ({
     name: getAnonymousName(),
     color: getRandomColor(),
   });
+  const hasHydratedRef = useRef(false);
 
   const tryHydrateFromInitialHtml = useCallback(() => {
     const doc = docRef.current;
     const html = initialHtmlRef.current;
 
-    if (!doc || !html || !isYDocEmpty(doc)) {
+    if (!doc || !html || hasHydratedRef.current) {
+      return false;
+    }
+
+    // Set immediately to prevent any concurrent/subsequent calls
+    hasHydratedRef.current = true;
+
+    if (!isYDocEmpty(doc)) {
       return false;
     }
 
@@ -97,6 +105,7 @@ export const useCollabProvider = ({
     setIsHydrated(false);
     setIsFallbackActive(false);
     isFallbackActiveRef.current = false;
+    hasHydratedRef.current = false;
 
     const fallbackTimer = window.setTimeout(() => {
       if (docRef.current !== doc || providerRef.current !== provider) return;

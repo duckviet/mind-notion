@@ -1,4 +1,4 @@
-const { setupWSConnection } = require("y-websocket/bin/utils");
+const { setupWSConnection, docs, getYDoc } = require("y-websocket/bin/utils");
 const { getNoteIdFromRequest, getTokenFromRequest } = require("./utils");
 const { verifyToken } = require("./auth");
 const config = require("./config");
@@ -9,9 +9,8 @@ const logger = require("./logger");
  * @param {WebSocket} conn - The WebSocket connection
  * @param {http.IncomingMessage} req - The HTTP request
  * @param {ConnectionManager} connectionManager - The connection manager instance
- * @param {PostgresqlPersistence} persistence - The persistence instance
  */
-function handleConnection(conn, req, connectionManager, persistence) {
+async function handleConnection(conn, req, connectionManager) {
   const noteId = getNoteIdFromRequest(req);
 
   // Validate note ID
@@ -53,9 +52,16 @@ function handleConnection(conn, req, connectionManager, persistence) {
     `Client connected to note ${noteId} (${currentConnections}/${config.maxConnectionsPerNote})`,
   );
 
+  // Pre-load document from database if not already in memory to prevent sync race conditions
+  if (!docs.has(noteId)) {
+    getYDoc(noteId);
+  }
+  if (global.loadingDocs && global.loadingDocs.has(noteId)) {
+    await global.loadingDocs.get(noteId);
+  }
+
   // Setup Yjs WebSocket connection
   setupWSConnection(conn, req, {
-    persistence,
     docName: noteId,
   });
 

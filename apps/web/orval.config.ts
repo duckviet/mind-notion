@@ -3,7 +3,7 @@ module.exports = {
     // Input: Nơi để lấy file spec
     input: {
       // Dùng file local
-      target: "../backend/openapi/dist.yaml",
+      target: "../../backend/openapi/dist.yaml",
       // Hoặc dùng URL
       // target: 'http://localhost:8080/openapi.json',
     },
