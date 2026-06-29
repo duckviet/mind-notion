@@ -24,6 +24,13 @@ type AIRunRepository interface {
 	ApproveToolCall(ctx context.Context, runID, toolCallID, userID string, approved bool) error
 	GetToolCall(ctx context.Context, runID, toolCallID string) (*models.AIToolCall, error)
 	ExpirePendingToolCalls(ctx context.Context, now time.Time) error
+	CreateConversation(ctx context.Context, conversation *models.AIConversation) error
+	ListConversations(ctx context.Context, userID string, limit int) ([]models.AIConversation, error)
+	GetConversation(ctx context.Context, conversationID, userID string) (*models.AIConversation, error)
+	UpdateConversationTitle(ctx context.Context, conversationID, userID, title string) error
+	SoftDeleteConversation(ctx context.Context, conversationID, userID string) error
+	AppendConversationMessage(ctx context.Context, message *models.AIConversationMessage) error
+	ListConversationMessages(ctx context.Context, conversationID string) ([]models.AIConversationMessage, error)
 }
 
 type aiRunRepository struct {
@@ -141,4 +148,68 @@ func (r *aiRunRepository) ExpirePendingToolCalls(ctx context.Context, now time.T
 		Where("status = ? AND expires_at IS NOT NULL AND expires_at < ?", models.AIToolCallStatusPending, now).
 		Update("status", models.AIToolCallStatusExpired).
 		Error
+}
+
+func (r *aiRunRepository) CreateConversation(ctx context.Context, conversation *models.AIConversation) error {
+	return r.db.WithContext(ctx).Create(conversation).Error
+}
+
+func (r *aiRunRepository) ListConversations(ctx context.Context, userID string, limit int) ([]models.AIConversation, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 50
+	}
+	var conversations []models.AIConversation
+	return conversations, r.db.WithContext(ctx).
+		Where("user_id = ? AND is_deleted = ?", userID, false).
+		Order("last_message_at DESC").
+		Order("created_at DESC").
+		Limit(limit).
+		Find(&conversations).Error
+}
+
+func (r *aiRunRepository) GetConversation(ctx context.Context, conversationID, userID string) (*models.AIConversation, error) {
+	var conversation models.AIConversation
+	if err := r.db.WithContext(ctx).
+		Where("id = ? AND user_id = ? AND is_deleted = ?", conversationID, userID, false).
+		First(&conversation).Error; err != nil {
+		return nil, err
+	}
+	return &conversation, nil
+}
+
+func (r *aiRunRepository) UpdateConversationTitle(ctx context.Context, conversationID, userID, title string) error {
+	return r.db.WithContext(ctx).
+		Model(&models.AIConversation{}).
+		Where("id = ? AND user_id = ? AND is_deleted = ?", conversationID, userID, false).
+		Update("title", title).
+		Error
+}
+
+func (r *aiRunRepository) SoftDeleteConversation(ctx context.Context, conversationID, userID string) error {
+	return r.db.WithContext(ctx).
+		Model(&models.AIConversation{}).
+		Where("id = ? AND user_id = ? AND is_deleted = ?", conversationID, userID, false).
+		Update("is_deleted", true).
+		Error
+}
+
+func (r *aiRunRepository) AppendConversationMessage(ctx context.Context, message *models.AIConversationMessage) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(message).Error; err != nil {
+			return err
+		}
+		return tx.Model(&models.AIConversation{}).
+			Where("id = ?", message.ConversationID).
+			Update("last_message_at", message.CreatedAt).
+			Error
+	})
+}
+
+func (r *aiRunRepository) ListConversationMessages(ctx context.Context, conversationID string) ([]models.AIConversationMessage, error) {
+	var messages []models.AIConversationMessage
+	return messages, r.db.WithContext(ctx).
+		Where("conversation_id = ?", conversationID).
+		Order("created_at ASC").
+		Order("id ASC").
+		Find(&messages).Error
 }

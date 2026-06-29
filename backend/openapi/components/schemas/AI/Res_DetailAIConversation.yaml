@@ -1,0 +1,58 @@
+type: object
+required:
+  - conversation
+  - messages
+properties:
+  conversation:
+    type: object
+    required:
+      - id
+      - title
+      - last_message_at
+      - created_at
+      - updated_at
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+      last_message_at:
+        type: string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+  messages:
+    type: array
+    items:
+      type: object
+      required:
+        - id
+        - conversation_id
+        - run_id
+        - role
+        - content
+        - created_at
+      properties:
+        id:
+          type: string
+        conversation_id:
+          type: string
+        run_id:
+          type: string
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+        content:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time

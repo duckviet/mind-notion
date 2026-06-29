@@ -109,6 +109,240 @@ paths:
                 $ref: '#/components/schemas/Res_AuthTokens'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /ai/conversations:
+    get:
+      tags:
+        - AI
+      operationId: ListAiConversations
+      summary: List AI conversations
+      responses:
+        '200':
+          description: Successful response with AI conversations
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - items
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - title
+                        - last_message_at
+                        - created_at
+                        - updated_at
+                      properties:
+                        id:
+                          type: string
+                        title:
+                          type: string
+                        last_message_at:
+                          type: string
+                          format: date-time
+                        created_at:
+                          type: string
+                          format: date-time
+                        updated_at:
+                          type: string
+                          format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - AI
+      operationId: CreateAiConversation
+      summary: Create an AI conversation
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: New chat
+      responses:
+        '201':
+          description: Created AI conversation
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - title
+                  - last_message_at
+                  - created_at
+                  - updated_at
+                properties:
+                  id:
+                    type: string
+                    example: 8f84f155-5a42-4d63-9ba3-c3f6f750f04f
+                  title:
+                    type: string
+                    example: Summarize this note
+                  last_message_at:
+                    type: string
+                    format: date-time
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/ai/conversations/{conversation_id}':
+    get:
+      tags:
+        - AI
+      operationId: GetAiConversation
+      summary: Get an AI conversation with messages
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response with AI conversation detail
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - conversation
+                  - messages
+                properties:
+                  conversation:
+                    type: object
+                    required:
+                      - id
+                      - title
+                      - last_message_at
+                      - created_at
+                      - updated_at
+                    properties:
+                      id:
+                        type: string
+                      title:
+                        type: string
+                      last_message_at:
+                        type: string
+                        format: date-time
+                      created_at:
+                        type: string
+                        format: date-time
+                      updated_at:
+                        type: string
+                        format: date-time
+                  messages:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - conversation_id
+                        - run_id
+                        - role
+                        - content
+                        - created_at
+                      properties:
+                        id:
+                          type: string
+                        conversation_id:
+                          type: string
+                        run_id:
+                          type: string
+                        role:
+                          type: string
+                          enum:
+                            - user
+                            - assistant
+                        content:
+                          type: string
+                        metadata:
+                          type: object
+                          additionalProperties: true
+                        created_at:
+                          type: string
+                          format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - AI
+      operationId: UpdateAiConversation
+      summary: Update an AI conversation
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  example: Project planning
+      responses:
+        '200':
+          description: Updated AI conversation
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1ai~1conversations/post/responses/201/content/application~1json/schema'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - AI
+      operationId: DeleteAiConversation
+      summary: Delete an AI conversation
+      parameters:
+        - name: conversation_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: AI conversation deleted
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   /ai/runs:
     post:
       summary: Create AI run and stream assistant output
@@ -195,6 +429,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Res_InlineEdit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /ai/inline-edit/runs:
+    post:
+      summary: Create streaming AI inline edit run
+      operationId: inlineEditAiRun
+      tags:
+        - AI
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Req_InlineEdit'
+      responses:
+        '200':
+          description: Streaming SSE response from AI inline edit run
+          content:
+            text/event-stream:
+              schema:
+                type: string
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -2112,6 +2377,10 @@ components:
         - note
     Req_CreateAIRun:
       type: object
+      required:
+        - workspace_id
+        - session_id
+        - message
       properties:
         workspace_id:
           type: string
@@ -2122,24 +2391,23 @@ components:
         note_id:
           type: string
           example: note-123
+        conversation_id:
+          type: string
+          example: 8f84f155-5a42-4d63-9ba3-c3f6f750f04f
+        display_user_message:
+          type: string
+          example: Summarize this note
         message:
           type: object
+          required:
+            - content
           properties:
             role:
               type: string
-              enum:
-                - user
               example: user
             content:
               type: string
-              example: Hãy tóm tắt ghi chú này
-          required:
-            - content
-      required:
-        - workspace_id
-        - session_id
-        - note_id
-        - message
+              example: Summarize this note
     Req_ProvideAIRunConsent:
       type: object
       properties:

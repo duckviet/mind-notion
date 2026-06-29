@@ -4,6 +4,7 @@ import { cn } from "@/shared/utils/cn";
 import { DroppableZone } from "@/shared/components/dnd";
 import { useChatbot } from "../model/use-chatbot";
 import { ChatbotComposer } from "./components/ChatbotComposer";
+import { ChatbotHistory } from "./components/ChatbotHistory";
 import { ChatbotMessages } from "./components/ChatbotMessages";
 import { ChatbotPinnedNotes } from "./components/ChatbotPinnedNotes";
 import type {
@@ -34,6 +35,9 @@ export default function Chatbot({
     activePinnedId,
     setActivePinnedId,
     activePinnedNote,
+    conversations,
+    activeConversationId,
+    isLoadingConversations,
     messages,
     inputValue,
     setInputValue,
@@ -43,6 +47,10 @@ export default function Chatbot({
     isSubmittingConsent,
     handleApproveConsent,
     handleDenyConsent,
+    handleNewConversation,
+    handleSelectConversation,
+    handleRenameConversation,
+    handleDeleteConversation,
     handleRemovePinnedNote,
     handleClearPinnedNotes,
     handleSend,
@@ -57,6 +65,17 @@ export default function Chatbot({
       <div className={cn("h-full w-full", className)}>
         <section className="h-full w-full   overflow-hidden">
           <div className="h-full flex flex-col">
+            <ChatbotHistory
+              conversations={conversations}
+              activeConversationId={activeConversationId}
+              isLoading={isLoadingConversations}
+              isStreaming={isStreaming}
+              onNew={handleNewConversation}
+              onSelect={handleSelectConversation}
+              onRename={handleRenameConversation}
+              onDelete={handleDeleteConversation}
+            />
+
             <ChatbotPinnedNotes
               pinnedNotes={pinnedNotes}
               activePinnedId={activePinnedId}

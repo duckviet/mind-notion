@@ -17,17 +17,21 @@ import (
 )
 
 type aiRunHandlerTestRepo struct {
-	mu        sync.Mutex
-	runs      map[string]*models.AIRun
-	toolCalls map[string]*models.AIToolCall
-	events    map[string][]models.AIRunEvent
+	mu            sync.Mutex
+	runs          map[string]*models.AIRun
+	toolCalls     map[string]*models.AIToolCall
+	events        map[string][]models.AIRunEvent
+	conversations map[string]*models.AIConversation
+	messages      map[string][]models.AIConversationMessage
 }
 
 func newAIRunHandlerTestRepo() *aiRunHandlerTestRepo {
 	return &aiRunHandlerTestRepo{
-		runs:      make(map[string]*models.AIRun),
-		toolCalls: make(map[string]*models.AIToolCall),
-		events:    make(map[string][]models.AIRunEvent),
+		runs:          make(map[string]*models.AIRun),
+		toolCalls:     make(map[string]*models.AIToolCall),
+		events:        make(map[string][]models.AIRunEvent),
+		conversations: make(map[string]*models.AIConversation),
+		messages:      make(map[string][]models.AIConversationMessage),
 	}
 }
 
@@ -35,7 +39,12 @@ func (r *aiRunHandlerTestRepo) CreateRun(_ context.Context, run *models.AIRun) e
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	runCopy := *run
-	r.runs[run.ID] = &runCopy
+	if run.RunID != "" {
+		r.runs[run.RunID] = &runCopy
+	}
+	if run.ID != "" {
+		r.runs[run.ID] = &runCopy
+	}
 	return nil
 }
 
@@ -184,6 +193,78 @@ func (r *aiRunHandlerTestRepo) ExpirePendingToolCalls(_ context.Context, before 
 	return nil
 }
 
+func (r *aiRunHandlerTestRepo) CreateConversation(_ context.Context, conversation *models.AIConversation) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	stored := *conversation
+	if stored.ID == "" {
+		stored.ID = "conversation-id"
+		conversation.ID = stored.ID
+	}
+	r.conversations[stored.ID] = &stored
+	return nil
+}
+
+func (r *aiRunHandlerTestRepo) ListConversations(_ context.Context, userID string, _ int) ([]models.AIConversation, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	conversations := make([]models.AIConversation, 0, len(r.conversations))
+	for _, conversation := range r.conversations {
+		if conversation.UserID == userID && !conversation.IsDeleted {
+			conversations = append(conversations, *conversation)
+		}
+	}
+	return conversations, nil
+}
+
+func (r *aiRunHandlerTestRepo) GetConversation(_ context.Context, conversationID, userID string) (*models.AIConversation, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	conversation, ok := r.conversations[conversationID]
+	if !ok || conversation.UserID != userID || conversation.IsDeleted {
+		return nil, gorm.ErrRecordNotFound
+	}
+	stored := *conversation
+	return &stored, nil
+}
+
+func (r *aiRunHandlerTestRepo) UpdateConversationTitle(_ context.Context, conversationID, userID, title string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	conversation, ok := r.conversations[conversationID]
+	if !ok || conversation.UserID != userID || conversation.IsDeleted {
+		return gorm.ErrRecordNotFound
+	}
+	conversation.Title = title
+	return nil
+}
+
+func (r *aiRunHandlerTestRepo) SoftDeleteConversation(_ context.Context, conversationID, userID string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	conversation, ok := r.conversations[conversationID]
+	if !ok || conversation.UserID != userID || conversation.IsDeleted {
+		return gorm.ErrRecordNotFound
+	}
+	conversation.IsDeleted = true
+	return nil
+}
+
+func (r *aiRunHandlerTestRepo) AppendConversationMessage(_ context.Context, message *models.AIConversationMessage) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	stored := *message
+	r.messages[stored.ConversationID] = append(r.messages[stored.ConversationID], stored)
+	return nil
+}
+
+func (r *aiRunHandlerTestRepo) ListConversationMessages(_ context.Context, conversationID string) ([]models.AIConversationMessage, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	messages := append([]models.AIConversationMessage(nil), r.messages[conversationID]...)
+	return messages, nil
+}
+
 func (r *aiRunHandlerTestRepo) mustCreateRun(t *testing.T, run *models.AIRun) {
 	t.Helper()
 	require.NoError(t, r.CreateRun(context.Background(), run))
@@ -229,6 +310,12 @@ func newAIRunHandlerTestRouter(t *testing.T, python http.HandlerFunc, note *mode
 		c.Next()
 	})
 	group := router.Group("/api/v1/ai")
+	group.POST("/runs", api.CreateRun)
+	group.GET("/conversations", api.ListConversations)
+	group.POST("/conversations", api.CreateConversation)
+	group.GET("/conversations/:conversation_id", api.GetConversation)
+	group.PATCH("/conversations/:conversation_id", api.UpdateConversation)
+	group.DELETE("/conversations/:conversation_id", api.DeleteConversation)
 	group.POST("/inline-edit/runs", api.InlineEditRun)
 	group.POST("/runs/:run_id/consent", api.ProvideConsent)
 

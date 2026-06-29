@@ -87,10 +87,28 @@ type ApiHandleFunctions struct {
 func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 	return []Route{ 
 		{
+			"CreateAiConversation",
+			http.MethodPost,
+			"/api/v1/ai/conversations",
+			handleFunctions.AIAPI.CreateAiConversation,
+		},
+		{
 			"CreateAiRun",
 			http.MethodPost,
 			"/api/v1/ai/runs",
 			handleFunctions.AIAPI.CreateAiRun,
+		},
+		{
+			"DeleteAiConversation",
+			http.MethodDelete,
+			"/api/v1/ai/conversations/:conversation_id",
+			handleFunctions.AIAPI.DeleteAiConversation,
+		},
+		{
+			"GetAiConversation",
+			http.MethodGet,
+			"/api/v1/ai/conversations/:conversation_id",
+			handleFunctions.AIAPI.GetAiConversation,
 		},
 		{
 			"InlineEditAi",
@@ -105,10 +123,22 @@ func getRoutes(handleFunctions ApiHandleFunctions) []Route {
 			handleFunctions.AIAPI.InlineEditAiRun,
 		},
 		{
+			"ListAiConversations",
+			http.MethodGet,
+			"/api/v1/ai/conversations",
+			handleFunctions.AIAPI.ListAiConversations,
+		},
+		{
 			"ProvideAiRunConsent",
 			http.MethodPatch,
 			"/api/v1/ai/runs/:run_id/consent",
 			handleFunctions.AIAPI.ProvideAiRunConsent,
+		},
+		{
+			"UpdateAiConversation",
+			http.MethodPatch,
+			"/api/v1/ai/conversations/:conversation_id",
+			handleFunctions.AIAPI.UpdateAiConversation,
 		},
 		{
 			"CheckAuth",

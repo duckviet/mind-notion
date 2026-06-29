@@ -11,6 +11,11 @@ type AIRunAPIHandler interface {
 	InlineEdit(c *gin.Context)
 	InlineEditRun(c *gin.Context)
 	ProvideConsent(c *gin.Context)
+	ListConversations(c *gin.Context)
+	CreateConversation(c *gin.Context)
+	GetConversation(c *gin.Context)
+	UpdateConversation(c *gin.Context)
+	DeleteConversation(c *gin.Context)
 }
 
 type AIInternalAPIHandler interface {

@@ -1,0 +1,23 @@
+type: object
+required:
+  - id
+  - title
+  - last_message_at
+  - created_at
+  - updated_at
+properties:
+  id:
+    type: string
+    example: "8f84f155-5a42-4d63-9ba3-c3f6f750f04f"
+  title:
+    type: string
+    example: "Summarize this note"
+  last_message_at:
+    type: string
+    format: date-time
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time

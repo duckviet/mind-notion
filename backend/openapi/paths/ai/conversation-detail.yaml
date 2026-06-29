@@ -1,0 +1,76 @@
+get:
+  tags:
+    - AI
+  operationId: GetAiConversation
+  summary: Get an AI conversation with messages
+  parameters:
+    - name: conversation_id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    "200":
+      description: Successful response with AI conversation detail
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas/AI/Res_DetailAIConversation.yaml"
+    "401":
+      $ref: "../../components/responses/Unauthorized.yaml"
+    "404":
+      $ref: "../../components/responses/NotFound.yaml"
+    "500":
+      $ref: "../../components/responses/InternalServerError.yaml"
+patch:
+  tags:
+    - AI
+  operationId: UpdateAiConversation
+  summary: Update an AI conversation
+  parameters:
+    - name: conversation_id
+      in: path
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../../components/schemas/AI/Req_UpdateAIConversation.yaml"
+  responses:
+    "200":
+      description: Updated AI conversation
+      content:
+        application/json:
+          schema:
+            $ref: "../../components/schemas/AI/AIConversation.yaml"
+    "400":
+      $ref: "../../components/responses/BadRequest.yaml"
+    "401":
+      $ref: "../../components/responses/Unauthorized.yaml"
+    "404":
+      $ref: "../../components/responses/NotFound.yaml"
+    "500":
+      $ref: "../../components/responses/InternalServerError.yaml"
+delete:
+  tags:
+    - AI
+  operationId: DeleteAiConversation
+  summary: Delete an AI conversation
+  parameters:
+    - name: conversation_id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    "204":
+      description: AI conversation deleted
+    "401":
+      $ref: "../../components/responses/Unauthorized.yaml"
+    "404":
+      $ref: "../../components/responses/NotFound.yaml"
+    "500":
+      $ref: "../../components/responses/InternalServerError.yaml"

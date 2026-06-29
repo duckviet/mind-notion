@@ -30,6 +30,31 @@ type AIRunAPI struct {
 	streamHTTPClient *http.Client
 }
 
+type aiConversationResponse struct {
+	ID            string    `json:"id"`
+	Title         string    `json:"title"`
+	LastMessageAt time.Time `json:"last_message_at"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+}
+
+type aiConversationMessageResponse struct {
+	ID             string         `json:"id"`
+	ConversationID string         `json:"conversation_id"`
+	RunID          string         `json:"run_id"`
+	Role           string         `json:"role"`
+	Content        string         `json:"content"`
+	Metadata       datatypes.JSON `json:"metadata,omitempty"`
+	CreatedAt      time.Time      `json:"created_at"`
+}
+
+type aiRunHistory struct {
+	RunID          string
+	ConversationID string
+	Title          string
+	Created        bool
+}
+
 var _ interfaces.AIRunAPIHandler = (*AIRunAPI)(nil)
 
 func NewAIRunAPI(cfg *config.Config, noteService service.NoteService, aiRuns repository.AIRunRepository) *AIRunAPI {
@@ -43,6 +68,99 @@ func NewAIRunAPI(cfg *config.Config, noteService service.NoteService, aiRuns rep
 	}
 }
 
+func conversationTitleFromPrompt(prompt string) string {
+	title := strings.TrimSpace(prompt)
+	if title == "" {
+		return "New chat"
+	}
+	const maxTitleRunes = 80
+	runes := []rune(title)
+	if len(runes) <= maxTitleRunes {
+		return title
+	}
+	return strings.TrimSpace(string(runes[:maxTitleRunes]))
+}
+
+func conversationResponse(conversation dbmodels.AIConversation) aiConversationResponse {
+	return aiConversationResponse{
+		ID:            conversation.ID,
+		Title:         conversation.Title,
+		LastMessageAt: conversation.LastMessageAt,
+		CreatedAt:     conversation.CreatedAt,
+		UpdatedAt:     conversation.UpdatedAt,
+	}
+}
+
+func conversationMessageResponse(message dbmodels.AIConversationMessage) aiConversationMessageResponse {
+	return aiConversationMessageResponse{
+		ID:             message.ID,
+		ConversationID: message.ConversationID,
+		RunID:          message.RunID,
+		Role:           message.Role,
+		Content:        message.Content,
+		Metadata:       message.Metadata,
+		CreatedAt:      message.CreatedAt,
+	}
+}
+
+func (api *AIRunAPI) ensureConversation(
+	c *gin.Context,
+	userID string,
+	conversationID string,
+	prompt string,
+) (*dbmodels.AIConversation, bool, error) {
+	if api.aiRuns == nil {
+		return nil, false, nil
+	}
+
+	trimmedConversationID := strings.TrimSpace(conversationID)
+	if trimmedConversationID != "" {
+		conversation, err := api.aiRuns.GetConversation(c.Request.Context(), trimmedConversationID, userID)
+		return conversation, false, err
+	}
+
+	now := time.Now().UTC()
+	conversation := &dbmodels.AIConversation{
+		UserID:        userID,
+		Title:         conversationTitleFromPrompt(prompt),
+		LastMessageAt: now,
+	}
+	if err := api.aiRuns.CreateConversation(c.Request.Context(), conversation); err != nil {
+		return nil, false, err
+	}
+	return conversation, true, nil
+}
+
+func (api *AIRunAPI) appendConversationMessage(
+	c *gin.Context,
+	conversationID string,
+	runID string,
+	role string,
+	content string,
+	metadata map[string]interface{},
+) error {
+	if api.aiRuns == nil || conversationID == "" || strings.TrimSpace(content) == "" {
+		return nil
+	}
+
+	var rawMetadata datatypes.JSON
+	if metadata != nil {
+		encoded, err := json.Marshal(metadata)
+		if err != nil {
+			return err
+		}
+		rawMetadata = datatypes.JSON(encoded)
+	}
+
+	return api.aiRuns.AppendConversationMessage(c.Request.Context(), &dbmodels.AIConversationMessage{
+		ConversationID: conversationID,
+		RunID:          runID,
+		Role:           role,
+		Content:        content,
+		Metadata:       rawMetadata,
+	})
+}
+
 func (api *AIRunAPI) persistRun(
 	c *gin.Context,
 	user *dbmodels.User,
@@ -50,28 +168,40 @@ func (api *AIRunAPI) persistRun(
 	workspaceID string,
 	noteID string,
 	sessionID string,
+	conversationID string,
 ) error {
 	if api.aiRuns == nil {
 		return nil
 	}
 	return api.aiRuns.CreateRun(c.Request.Context(), &dbmodels.AIRun{
-		RunID:       runID,
-		UserID:      user.ID,
-		WorkspaceID: workspaceID,
-		NoteID:      noteID,
-		SessionID:   sessionID,
-		Status:      dbmodels.AIRunStatusRunning,
+		RunID:          runID,
+		UserID:         user.ID,
+		WorkspaceID:    workspaceID,
+		NoteID:         noteID,
+		SessionID:      sessionID,
+		ConversationID: conversationID,
+		Status:         dbmodels.AIRunStatusRunning,
 	})
 }
 
 type createRunRequest struct {
-	WorkspaceID string `json:"workspace_id" binding:"required"`
-	SessionID   string `json:"session_id" binding:"required"`
-	NoteID      string `json:"note_id"`
-	Message     struct {
+	WorkspaceID        string `json:"workspace_id" binding:"required"`
+	SessionID          string `json:"session_id" binding:"required"`
+	NoteID             string `json:"note_id"`
+	ConversationID     string `json:"conversation_id"`
+	DisplayUserMessage string `json:"display_user_message"`
+	Message            struct {
 		Role    string `json:"role"`
 		Content string `json:"content" binding:"required"`
 	} `json:"message" binding:"required"`
+}
+
+type createConversationRequest struct {
+	Title string `json:"title"`
+}
+
+type updateConversationRequest struct {
+	Title string `json:"title" binding:"required"`
 }
 
 type consentRequest struct {
@@ -156,11 +286,47 @@ func (api *AIRunAPI) CreateRun(c *gin.Context) {
 
 	}
 
+	displayUserMessage := strings.TrimSpace(req.DisplayUserMessage)
+	if displayUserMessage == "" {
+		displayUserMessage = req.Message.Content
+	}
+
+	conversation, conversationCreated, err := api.ensureConversation(
+		c,
+		user.ID,
+		req.ConversationID,
+		displayUserMessage,
+	)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "conversation not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to prepare conversation"})
+		return
+	}
+
+	conversationID := ""
+	conversationTitle := ""
+	if conversation != nil {
+		conversationID = conversation.ID
+		conversationTitle = conversation.Title
+	}
+
 	runID := uuid.NewString()
-	if err := api.persistRun(c, user, runID, req.WorkspaceID, req.NoteID, req.SessionID); err != nil {
+	if err := api.persistRun(c, user, runID, req.WorkspaceID, req.NoteID, req.SessionID, conversationID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to persist ai run"})
 		return
 	}
+	if err := api.appendConversationMessage(c, conversationID, runID, "user", displayUserMessage, map[string]interface{}{
+		"workspace_id": req.WorkspaceID,
+		"note_id":      resourceNoteID,
+		"session_id":   req.SessionID,
+	}); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to persist conversation message"})
+		return
+	}
+
 	payload := map[string]interface{}{
 		"run_id":   runID,
 		"trace_id": c.GetString("trace_id"),
@@ -222,7 +388,184 @@ func (api *AIRunAPI) CreateRun(c *gin.Context) {
 		return
 	}
 
-	api.proxySSE(c, resp.Body)
+	api.proxySSE(c, resp.Body, &aiRunHistory{
+		RunID:          runID,
+		ConversationID: conversationID,
+		Title:          conversationTitle,
+		Created:        conversationCreated,
+	})
+}
+
+func (api *AIRunAPI) ListConversations(c *gin.Context) {
+	if api.aiRuns == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	user := userVal.(*dbmodels.User)
+
+	conversations, err := api.aiRuns.ListConversations(c.Request.Context(), user.ID, 50)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list conversations"})
+		return
+	}
+
+	items := make([]aiConversationResponse, 0, len(conversations))
+	for _, conversation := range conversations {
+		items = append(items, conversationResponse(conversation))
+	}
+	c.JSON(http.StatusOK, gin.H{"items": items})
+}
+
+func (api *AIRunAPI) CreateConversation(c *gin.Context) {
+	if api.aiRuns == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+
+	var req createConversationRequest
+	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+		return
+	}
+
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	user := userVal.(*dbmodels.User)
+
+	now := time.Now().UTC()
+	title := conversationTitleFromPrompt(req.Title)
+	conversation := &dbmodels.AIConversation{
+		UserID:        user.ID,
+		Title:         title,
+		LastMessageAt: now,
+	}
+	if err := api.aiRuns.CreateConversation(c.Request.Context(), conversation); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create conversation"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, conversationResponse(*conversation))
+}
+
+func (api *AIRunAPI) GetConversation(c *gin.Context) {
+	if api.aiRuns == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	user := userVal.(*dbmodels.User)
+	conversationID := c.Param("conversation_id")
+
+	conversation, err := api.aiRuns.GetConversation(c.Request.Context(), conversationID, user.ID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "conversation not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get conversation"})
+		return
+	}
+
+	messages, err := api.aiRuns.ListConversationMessages(c.Request.Context(), conversation.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list messages"})
+		return
+	}
+
+	messageItems := make([]aiConversationMessageResponse, 0, len(messages))
+	for _, message := range messages {
+		messageItems = append(messageItems, conversationMessageResponse(message))
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"conversation": conversationResponse(*conversation),
+		"messages":     messageItems,
+	})
+}
+
+func (api *AIRunAPI) UpdateConversation(c *gin.Context) {
+	if api.aiRuns == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+
+	var req updateConversationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request, " + err.Error()})
+		return
+	}
+
+	title := conversationTitleFromPrompt(req.Title)
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	user := userVal.(*dbmodels.User)
+	conversationID := c.Param("conversation_id")
+
+	if _, err := api.aiRuns.GetConversation(c.Request.Context(), conversationID, user.ID); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "conversation not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get conversation"})
+		return
+	}
+	if err := api.aiRuns.UpdateConversationTitle(c.Request.Context(), conversationID, user.ID, title); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update conversation"})
+		return
+	}
+
+	conversation, err := api.aiRuns.GetConversation(c.Request.Context(), conversationID, user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get conversation"})
+		return
+	}
+	c.JSON(http.StatusOK, conversationResponse(*conversation))
+}
+
+func (api *AIRunAPI) DeleteConversation(c *gin.Context) {
+	if api.aiRuns == nil {
+		c.JSON(http.StatusNotImplemented, gin.H{"error": "ai run service unavailable"})
+		return
+	}
+
+	userVal, ok := c.Get("user")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+	user := userVal.(*dbmodels.User)
+	conversationID := c.Param("conversation_id")
+
+	if _, err := api.aiRuns.GetConversation(c.Request.Context(), conversationID, user.ID); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "conversation not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get conversation"})
+		return
+	}
+	if err := api.aiRuns.SoftDeleteConversation(c.Request.Context(), conversationID, user.ID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete conversation"})
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 func (api *AIRunAPI) InlineEdit(c *gin.Context) {
@@ -255,7 +598,7 @@ func (api *AIRunAPI) InlineEdit(c *gin.Context) {
 	}
 
 	runID := uuid.NewString()
-	if err := api.persistRun(c, user, runID, req.WorkspaceID, req.NoteID, ""); err != nil {
+	if err := api.persistRun(c, user, runID, req.WorkspaceID, req.NoteID, "", ""); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to persist ai run"})
 		return
 	}
@@ -349,7 +692,7 @@ func (api *AIRunAPI) InlineEditRun(c *gin.Context) {
 	}
 
 	runID := uuid.NewString()
-	if err := api.persistRun(c, user, runID, req.WorkspaceID, req.NoteID, ""); err != nil {
+	if err := api.persistRun(c, user, runID, req.WorkspaceID, req.NoteID, "", ""); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to persist ai run"})
 		return
 	}
@@ -410,7 +753,7 @@ func (api *AIRunAPI) InlineEditRun(c *gin.Context) {
 		return
 	}
 
-	api.proxySSE(c, resp.Body)
+	api.proxySSE(c, resp.Body, nil)
 }
 
 func (api *AIRunAPI) ProvideConsent(c *gin.Context) {
@@ -504,7 +847,7 @@ func (api *AIRunAPI) ProvideConsent(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", raw)
 }
 
-func (api *AIRunAPI) proxySSE(c *gin.Context, reader io.Reader) {
+func (api *AIRunAPI) proxySSE(c *gin.Context, reader io.Reader, history *aiRunHistory) {
 	c.Header("Content-Type", "text/event-stream")
 	c.Header("Cache-Control", "no-cache")
 	c.Header("Connection", "keep-alive")
@@ -515,6 +858,18 @@ func (api *AIRunAPI) proxySSE(c *gin.Context, reader io.Reader) {
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "streaming unsupported"})
 		return
+	}
+
+	var assistantContent strings.Builder
+	if history != nil && history.ConversationID != "" {
+		payload, _ := json.Marshal(map[string]interface{}{
+			"run_id":          history.RunID,
+			"conversation_id": history.ConversationID,
+			"title":           history.Title,
+			"created":         history.Created,
+		})
+		_, _ = fmt.Fprintf(c.Writer, "event: conversation.created\ndata: %s\n\n", payload)
+		flusher.Flush()
 	}
 
 	bReader := bufio.NewReader(reader)
@@ -530,7 +885,7 @@ func (api *AIRunAPI) proxySSE(c *gin.Context, reader io.Reader) {
 			case bytes.HasPrefix(trimmed, []byte("data:")):
 				dataLines = append(dataLines, bytes.TrimSpace(bytes.TrimPrefix(trimmed, []byte("data:"))))
 			case len(trimmed) == 0:
-				api.persistSSEFrame(c, eventType, dataLines)
+				api.persistSSEFrame(c, eventType, dataLines, history, &assistantContent)
 				eventType = ""
 				dataLines = nil
 			}
@@ -548,7 +903,13 @@ func (api *AIRunAPI) proxySSE(c *gin.Context, reader io.Reader) {
 	}
 }
 
-func (api *AIRunAPI) persistSSEFrame(c *gin.Context, eventType string, dataLines [][]byte) {
+func (api *AIRunAPI) persistSSEFrame(
+	c *gin.Context,
+	eventType string,
+	dataLines [][]byte,
+	history *aiRunHistory,
+	assistantContent *strings.Builder,
+) {
 	if api.aiRuns == nil || len(dataLines) == 0 {
 		return
 	}
@@ -572,6 +933,11 @@ func (api *AIRunAPI) persistSSEFrame(c *gin.Context, eventType string, dataLines
 	}
 
 	if eventType == "assistant.delta" || strings.HasSuffix(eventType, ".delta") {
+		if history != nil && assistantContent != nil {
+			if delta, ok := payload["content"].(string); ok {
+				assistantContent.WriteString(delta)
+			}
+		}
 		return
 	}
 
@@ -591,8 +957,16 @@ func (api *AIRunAPI) persistSSEFrame(c *gin.Context, eventType string, dataLines
 		api.persistPendingConsent(c, runID, payload)
 	case "run.completed":
 		_ = api.aiRuns.UpdateRunStatus(c.Request.Context(), runID, dbmodels.AIRunStatusCompleted)
+		if history != nil && assistantContent != nil {
+			_ = api.appendConversationMessage(c, history.ConversationID, runID, "assistant", assistantContent.String(), nil)
+		}
 	case "run.failed":
 		_ = api.aiRuns.UpdateRunStatus(c.Request.Context(), runID, dbmodels.AIRunStatusFailed)
+		if history != nil && assistantContent != nil {
+			_ = api.appendConversationMessage(c, history.ConversationID, runID, "assistant", assistantContent.String(), map[string]interface{}{
+				"status": "failed",
+			})
+		}
 	default:
 		_ = api.aiRuns.SetRunResume(c.Request.Context(), runID, "", eventID)
 	}

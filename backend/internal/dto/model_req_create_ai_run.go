@@ -15,7 +15,11 @@ type ReqCreateAiRun struct {
 
 	SessionId string `json:"session_id"`
 
-	NoteId string `json:"note_id"`
+	NoteId string `json:"note_id,omitempty"`
+
+	ConversationId string `json:"conversation_id,omitempty"`
+
+	DisplayUserMessage string `json:"display_user_message,omitempty"`
 
 	Message ReqCreateAiRunMessage `json:"message"`
 }
