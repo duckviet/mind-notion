@@ -96,7 +96,11 @@ export default function NoteCard({
               type="button"
               variant="ghost"
               size="icon"
-              onClick={() => router.push(`/note/${match.id}/edit`)}
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                e.stopPropagation();
+                e.preventDefault()
+                router.push(`/note/${match.id}/edit`)
+              }}
               aria-label="Expand"
               className="absolute top-2 right-2 opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100"
             >
