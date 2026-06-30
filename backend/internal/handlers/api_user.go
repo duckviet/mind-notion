@@ -34,8 +34,16 @@ func (api *UserAPI) GetMe(c *gin.Context) {
 	u := userVal.(*dbmodels.User)
 
 	c.JSON(200, gin.H{
-		"id":       u.ID,
-		"username": u.Username,
+		"id":             u.ID,
+		"username":       u.Username,
+		"email":          u.Email,
+		"name":           u.Name,
+		"avatar":         u.Avatar,
+		"avatar_url":     u.Avatar,
+		"status":         u.Status,
+		"email_verified": u.EmailVerified,
+		"created_at":     u.CreatedAt,
+		"updated_at":     u.UpdatedAt,
 	})
 }
 

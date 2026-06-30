@@ -184,7 +184,7 @@ export const NotePage: React.FC<NotePageProps> = ({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="shrink-0 gap-2 hover:bg-muted/70 text-xs py-1 h-8 rounded-md bg-white border border-border"
+                  className="shrink-0 gap-2 hover:bg-muted/70 text-xs py-1 h-8 rounded-md bg-surface-50 border border-border"
                   onClick={handleCopyLink}
                 >
                   {copied ? (
@@ -199,7 +199,7 @@ export const NotePage: React.FC<NotePageProps> = ({
                   variant="outline"
                   onClick={() => setActiveTab("maind")}
                   className={cn(
-                    "shrink-0 gap-1.5 text-xs py-1 h-8 rounded-md bg-white border border-border font-medium",
+                    "shrink-0 gap-1.5 text-xs py-1 h-8 rounded-md bg-surface-50 border border-border font-medium",
                     activeTab === "maind" ? "bg-black text-white hover:bg-neutral-800" : "hover:bg-muted/70"
                   )}
                 >

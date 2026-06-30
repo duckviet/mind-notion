@@ -64,7 +64,7 @@ export function RightChatbotSidebar() {
 
   return (
     <div
-      className="h-full shrink-0 flex flex-row rounded-lg bg-sidebar text-text-primary overflow-visible relative"
+      className="h-full shrink-0 flex flex-row rounded-lg bg-sidebar text-text-primary overflow-visible relative dark:border border-border"
       style={{ width }}
     >
       {/* Resize handle — left edge */}

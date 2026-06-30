@@ -2,6 +2,7 @@ import { MessageSquarePlus, Pencil, Trash2, X } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/shared/utils/cn";
 import type { ChatbotConversation } from "../../model/use-chatbot";
+import { MindNotionAi } from "@/shared/assets";
 
 type ChatbotListViewProps = {
   conversations: ChatbotConversation[];
@@ -34,14 +35,8 @@ export function ChatbotListView({
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-3 border-b border-border/60 shrink-0">
-        <div className="flex aspect-square size-7 items-center justify-center rounded-md shrink-0">
-          <Image
-            src="/mind-notion-ai.svg"
-            alt="Maind"
-            width={28}
-            height={28}
-            className="rounded-md"
-          />
+        <div className="flex aspect-square size-8 items-center justify-center rounded-md border border-sidebar-border/50">
+          <MindNotionAi className="rounded-lg dark:text-white" />
         </div>
         <p className="text-sm font-semibold text-text-primary flex-1 min-w-0">
           Maind

@@ -33,6 +33,7 @@ import {
   BreadcrumbItemType,
   useBreadcrumb,
 } from "@/shared/contexts/BreadcrumbContext";
+import { MindNotionAi } from "@/shared/assets";
 
 const MasonryGrid = dynamic(
   () => import("@/widgets/content-grid").then((m) => m.MasonryGrid),
@@ -390,10 +391,11 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-5 bg-black text-white hover:bg-neutral-800 rounded-lg transition-colors font-medium select-none cursor-pointer"
+          className="flex items-center gap-2 px-3 bg-surface-50 text-white hover:bg-neutral-800 rounded-lg transition-colors font-medium select-none cursor-pointer"
         >
-          <span>✨ Maind</span>
-          <span className="size-2 rounded-full bg-emerald-500"></span>
+        <div className="flex aspect-square size-8 items-center justify-center rounded-md border border-sidebar-border/50">
+          <MindNotionAi className="rounded-lg dark:text-white" />
+        </div>
         </button>
       </div>
 
