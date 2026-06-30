@@ -54,10 +54,10 @@ export default function MasonryGrid({
   };
 
   return (
-    <div className="w-full relative">
+    <div className="w-full relative @container">
       <motion.div
         ref={gridRef}
-        className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6"
+        className="columns-1 @min-[540px]:columns-2 @min-[800px]:columns-3 @min-[1100px]:columns-4 gap-6"
         style={{
           columnGap: "24px",
           columnFill: "balance",

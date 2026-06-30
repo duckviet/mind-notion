@@ -31,7 +31,7 @@ type AIRun struct {
 	WorkspaceID    string         `gorm:"type:varchar(128);index;not null" json:"workspace_id"`
 	NoteID         string         `gorm:"type:varchar(64);index" json:"note_id"`
 	SessionID      string         `gorm:"type:varchar(128);index;not null" json:"session_id"`
-	ConversationID string         `gorm:"type:uuid;index" json:"conversation_id"`
+	ConversationID *string        `gorm:"type:uuid;index" json:"conversation_id"`
 	Status         AIRunStatus    `gorm:"type:varchar(32);index;not null" json:"status"`
 	ResumeToken    string         `gorm:"type:varchar(64);index" json:"resume_token"`
 	LastEventID    string         `gorm:"type:varchar(64)" json:"last_event_id"`

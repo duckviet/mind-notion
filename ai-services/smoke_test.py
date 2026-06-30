@@ -7,7 +7,7 @@ from pathlib import Path
 
 from openai import AsyncOpenAI
 
-from agent import run_agent
+from agent.run import run_agent
 from agent.contracts import TokenUsageInfo
 
 

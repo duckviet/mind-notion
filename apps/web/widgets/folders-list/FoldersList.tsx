@@ -27,12 +27,14 @@ const SkeletonBlock = ({ className }: { className?: string }) => (
 );
 
 const GridSkeleton = ({ items = 6 }: { items?: number }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-    {Array.from({ length: items }).map((_, idx) => (
-      <div key={idx}>
-        <SkeletonBlock className="h-40 w-full rounded-2xl" />
-      </div>
-    ))}
+  <div className="@container">
+    <div className="grid grid-cols-1 @min-[360px]:grid-cols-2 @min-[540px]:grid-cols-3 @min-[720px]:grid-cols-4 @min-[900px]:grid-cols-5 @min-[1080px]:grid-cols-6 gap-6">
+      {Array.from({ length: items }).map((_, idx) => (
+        <div key={idx}>
+          <SkeletonBlock className="h-40 w-full rounded-2xl" />
+        </div>
+      ))}
+    </div>
   </div>
 );
 
@@ -145,24 +147,26 @@ const FoldersList = ({ parentId }: { parentId?: string }) => {
         {isLoading ? (
           <GridSkeleton items={8} />
         ) : (
-          <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
-            {folders.map((folder) => (
-              <FolderCard
-                key={folder.id}
-                id={folder.id}
-                name={folder.name}
-                notesCount={folder.notes?.length || 0}
-                subFoldersCount={folder.children_folders?.length || 0}
-                updatedAt={folder.updated_at}
-                isPublic={folder.is_public}
-                onDelete={handleDeleteRequest}
-                onMoveToFolder={(toFolderId) => {
-                  console.log("Move folder", folder.id, toFolderId);
+          <div className="@container">
+            <div className="grid w-full grid-cols-1 gap-6 @min-[360px]:grid-cols-2 @min-[540px]:grid-cols-3 @min-[720px]:grid-cols-4 @min-[900px]:grid-cols-5 @min-[1080px]:grid-cols-6">
+              {folders.map((folder) => (
+                <FolderCard
+                  key={folder.id}
+                  id={folder.id}
+                  name={folder.name}
+                  notesCount={folder.notes?.length || 0}
+                  subFoldersCount={folder.children_folders?.length || 0}
+                  updatedAt={folder.updated_at}
+                  isPublic={folder.is_public}
+                  onDelete={handleDeleteRequest}
+                  onMoveToFolder={(toFolderId) => {
+                    console.log("Move folder", folder.id, toFolderId);
 
-                  handleMoveToFolder(folder.id, toFolderId);
-                }}
-              />
-            ))}
+                    handleMoveToFolder(folder.id, toFolderId);
+                  }}
+                />
+              ))}
+            </div>
           </div>
         )}
 

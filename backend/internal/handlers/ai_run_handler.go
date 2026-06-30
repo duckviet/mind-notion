@@ -173,13 +173,17 @@ func (api *AIRunAPI) persistRun(
 	if api.aiRuns == nil {
 		return nil
 	}
+	var convID *string
+	if conversationID != "" {
+		convID = &conversationID
+	}
 	return api.aiRuns.CreateRun(c.Request.Context(), &dbmodels.AIRun{
 		RunID:          runID,
 		UserID:         user.ID,
 		WorkspaceID:    workspaceID,
 		NoteID:         noteID,
 		SessionID:      sessionID,
-		ConversationID: conversationID,
+		ConversationID: convID,
 		Status:         dbmodels.AIRunStatusRunning,
 	})
 }

@@ -67,12 +67,14 @@ const SkeletonBlock = ({ className }: { className?: string }) => (
 );
 
 const GridSkeleton = ({ items = 6 }: { items?: number }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    {Array.from({ length: items }).map((_, idx) => (
-      <div key={idx} className="break-inside-avoid">
-        <SkeletonBlock className="h-48 w-full" />
-      </div>
-    ))}
+  <div className="@container">
+    <div className="grid grid-cols-1 @min-[540px]:grid-cols-2 @min-[800px]:grid-cols-3 gap-6">
+      {Array.from({ length: items }).map((_, idx) => (
+        <div key={idx} className="break-inside-avoid">
+          <SkeletonBlock className="h-48 w-full" />
+        </div>
+      ))}
+    </div>
   </div>
 );
 
