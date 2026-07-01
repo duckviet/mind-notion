@@ -17,18 +17,9 @@ import type {
   UndefinedInitialDataOptions,
   UseMutationOptions,
   UseMutationResult,
-  UseQueryOptions as ReactQueryUseQueryOptions,
+  UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
-
-export type UseQueryOptions<
-  TQueryFnData = unknown,
-  TError = unknown,
-  TData = TQueryFnData,
-  TQueryKey extends QueryKey = QueryKey,
-> = Omit<ReactQueryUseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, "queryKey"> & {
-  queryKey?: TQueryKey;
-};
 
 import { customInstance } from "../axios/custom-instance";
 export interface ResAuthTokens {
@@ -240,6 +231,7 @@ export interface ReqCreateAIRun {
   workspace_id: string;
   session_id: string;
   note_id?: string;
+  folder_id?: string;
   conversation_id?: string;
   display_user_message?: string;
   message: ReqCreateAIRunMessage;
@@ -270,6 +262,18 @@ export interface ReqInlineEdit {
 
 export interface ResInlineEdit {
   text: string;
+}
+
+export interface AIConversation {
+  id: string;
+  title: string;
+  last_message_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReqUpdateAIConversation {
+  title: string;
 }
 
 export interface Comment {
@@ -560,14 +564,6 @@ export type CreateAiConversationBody = {
   title?: string;
 };
 
-export type CreateAiConversation201 = {
-  id: string;
-  title: string;
-  last_message_at: string;
-  created_at: string;
-  updated_at: string;
-};
-
 export type GetAiConversation200Conversation = {
   id: string;
   title: string;
@@ -602,10 +598,6 @@ export type GetAiConversation200MessagesItem = {
 export type GetAiConversation200 = {
   conversation: GetAiConversation200Conversation;
   messages: GetAiConversation200MessagesItem[];
-};
-
-export type UpdateAiConversationBody = {
-  title: string;
 };
 
 export type ListNotesParams = {
@@ -1404,7 +1396,7 @@ export const createAiConversation = (
   createAiConversationBody?: CreateAiConversationBody,
   signal?: AbortSignal,
 ) => {
-  return customInstance<CreateAiConversation201>({
+  return customInstance<AIConversation>({
     url: `/ai/conversations`,
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -1681,13 +1673,13 @@ export function useGetAiConversation<
  */
 export const updateAiConversation = (
   conversationId: string,
-  updateAiConversationBody: UpdateAiConversationBody,
+  reqUpdateAIConversation: ReqUpdateAIConversation,
 ) => {
-  return customInstance<CreateAiConversation201>({
+  return customInstance<AIConversation>({
     url: `/ai/conversations/${conversationId}`,
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    data: updateAiConversationBody,
+    data: reqUpdateAIConversation,
   });
 };
 
@@ -1702,13 +1694,13 @@ export const getUpdateAiConversationMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateAiConversation>>,
     TError,
-    { conversationId: string; data: UpdateAiConversationBody },
+    { conversationId: string; data: ReqUpdateAIConversation },
     TContext
   >;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateAiConversation>>,
   TError,
-  { conversationId: string; data: UpdateAiConversationBody },
+  { conversationId: string; data: ReqUpdateAIConversation },
   TContext
 > => {
   const mutationKey = ["updateAiConversation"];
@@ -1722,7 +1714,7 @@ export const getUpdateAiConversationMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateAiConversation>>,
-    { conversationId: string; data: UpdateAiConversationBody }
+    { conversationId: string; data: ReqUpdateAIConversation }
   > = (props) => {
     const { conversationId, data } = props ?? {};
 
@@ -1735,7 +1727,7 @@ export const getUpdateAiConversationMutationOptions = <
 export type UpdateAiConversationMutationResult = NonNullable<
   Awaited<ReturnType<typeof updateAiConversation>>
 >;
-export type UpdateAiConversationMutationBody = UpdateAiConversationBody;
+export type UpdateAiConversationMutationBody = ReqUpdateAIConversation;
 export type UpdateAiConversationMutationError =
   | BadRequestResponse
   | UnauthorizedResponse
@@ -1757,7 +1749,7 @@ export const useUpdateAiConversation = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateAiConversation>>,
       TError,
-      { conversationId: string; data: UpdateAiConversationBody },
+      { conversationId: string; data: ReqUpdateAIConversation },
       TContext
     >;
   },
@@ -1765,7 +1757,7 @@ export const useUpdateAiConversation = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateAiConversation>>,
   TError,
-  { conversationId: string; data: UpdateAiConversationBody },
+  { conversationId: string; data: ReqUpdateAIConversation },
   TContext
 > => {
   const mutationOptions = getUpdateAiConversationMutationOptions(options);

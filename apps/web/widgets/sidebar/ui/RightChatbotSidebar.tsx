@@ -3,18 +3,42 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Chatbot } from "@/features/chat-bot";
 import { useChatbotSidebarStore } from "@/features/chat-bot";
-import { DroppableZone } from "@/shared/components/dnd";
+import { DroppableZone, useGlobalDndHandlers } from "@/shared/components/dnd";
 
 const MIN_WIDTH = 300;
 const MAX_WIDTH = 600;
 const DEFAULT_WIDTH = 360;
 
 export function RightChatbotSidebar() {
-  const { isOpen, droppedNotePayload } = useChatbotSidebarStore();
+  const { isOpen, droppedNotePayload, setDroppedNotePayload, setIsOpen } = useChatbotSidebarStore();
   const [width, setWidth] = useState(DEFAULT_WIDTH);
   const isDragging = useRef(false);
   const startX = useRef(0);
   const startWidth = useRef(DEFAULT_WIDTH);
+
+  useGlobalDndHandlers({
+    onDragEnd: (event) => {
+      const { active, over } = event;
+      if (!over) return;
+
+      if (over.id === "chat-bot-right-sidebar") {
+        const rawNote = active.data?.current?.note;
+        const type = active.data?.current?.type;
+        if (rawNote) {
+          setIsOpen(true);
+          setDroppedNotePayload({
+            note: {
+              id: rawNote.id,
+              title: rawNote.title,
+              content: rawNote.content,
+              type: type || "note",
+            },
+            droppedAt: Date.now(),
+          });
+        }
+      }
+    },
+  });
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,7 +88,7 @@ export function RightChatbotSidebar() {
 
   return (
     <div
-      className="h-full shrink-0 flex flex-row rounded-lg bg-sidebar text-text-primary overflow-visible relative dark:border border-border"
+      className="h-full shrink-0 flex flex-row rounded-lg text-text-primary overflow-visible relative dark:border border-border"
       style={{ width }}
     >
       {/* Resize handle — left edge */}
@@ -78,7 +102,7 @@ export function RightChatbotSidebar() {
       </div>
 
       {/* Chatbot content */}
-      <div className="flex-1 overflow-hidden rounded-lg">
+      <div className="flex-1 overflow-hidden rounded-lg bg-sidebar">
         <Chatbot
           droppableId="chat-bot-right-sidebar"
           className="h-full w-full"

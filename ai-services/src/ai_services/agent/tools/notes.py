@@ -183,3 +183,66 @@ notes_write = ToolSpec(
     },
     execute=_notes_write,
 )
+
+
+async def _notes_list(args: dict[str, Any]) -> str:
+    input_payload: dict[str, Any] = {}
+    if "folder_id" in args:
+        input_payload["folder_id"] = args.get("folder_id")
+    if "query" in args:
+        input_payload["query"] = args.get("query")
+
+    return await _execute_backend_tool("notes.list", input_payload)
+
+notes_list = ToolSpec(
+    name="notes.list",
+    description="List notes in the workspace, optionally filtering by folder_id or query string.",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "folder_id": {"type": "string", "description": "Optional folder identifier to filter notes"},
+            "query": {"type": "string", "description": "Optional query string to search note titles"},
+        },
+        "additionalProperties": False,
+    },
+    execute=_notes_list,
+)
+
+
+async def _folders_list(args: dict[str, Any]) -> str:
+    return await _execute_backend_tool("folders.list", {})
+
+folders_list = ToolSpec(
+    name="folders.list",
+    description="List all folders in the workspace to discover their names and IDs.",
+    input_schema={
+        "type": "object",
+        "properties": {},
+        "additionalProperties": False,
+    },
+    execute=_folders_list,
+)
+
+
+async def _folders_read(args: dict[str, Any]) -> str:
+    folder_id = str(args.get("folder_id") or "").strip()
+    if not folder_id:
+        return "Error INVALID_INPUT: folder_id is required"
+
+    input_payload: dict[str, Any] = {"folder_id": folder_id}
+    return await _execute_backend_tool("folders.read", input_payload)
+
+folders_read = ToolSpec(
+    name="folders.read",
+    description="Read details of a specific folder including subfolders and list of notes inside it by folder_id.",
+    input_schema={
+        "type": "object",
+        "properties": {
+            "folder_id": {"type": "string", "description": "The folder identifier"},
+        },
+        "required": ["folder_id"],
+        "additionalProperties": False,
+    },
+    execute=_folders_read,
+)
+

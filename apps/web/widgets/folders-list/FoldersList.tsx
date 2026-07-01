@@ -1,6 +1,6 @@
 // FoldersListPage.tsx
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import { useFolders } from "@/shared/hooks/useFolders";
 import { ConfirmDialog } from "@/shared/components/ConfirmDialog/ConfirmDialog";
 import { Plus } from "lucide-react";
@@ -38,16 +38,32 @@ const GridSkeleton = ({ items = 6 }: { items?: number }) => (
   </div>
 );
 
-const FoldersList = ({ parentId }: { parentId?: string }) => {
-  const queryClient = useQueryClient();
-  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [folderName, setFolderName] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
+export interface FoldersListRef {
+  openCreateModal: () => void;
+}
 
-  const { folders, isLoading, error, deleteFolder, createFolder, refetch } =
-    useFolders({ limit: 50, offset: 0, parent_id: parentId || "" });
+interface FoldersListProps {
+  parentId?: string;
+  showHeader?: boolean;
+}
+
+const FoldersList = forwardRef<FoldersListRef, FoldersListProps>(
+  ({ parentId, showHeader = true }, ref) => {
+    const queryClient = useQueryClient();
+    const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [folderName, setFolderName] = useState("");
+    const [isCreating, setIsCreating] = useState(false);
+
+    useImperativeHandle(ref, () => ({
+      openCreateModal: () => {
+        setIsCreateModalOpen(true);
+      },
+    }));
+
+    const { folders, isLoading, error, deleteFolder, createFolder, refetch } =
+      useFolders({ limit: 50, offset: 0, parent_id: parentId || "" });
 
   const handleDeleteRequest = (id: string) => {
     setDeleteTargetId(id);
@@ -128,20 +144,22 @@ const FoldersList = ({ parentId }: { parentId?: string }) => {
     <ModalProvider>
       <div className="mb-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="font-serif text-heading-lg font-normal text-text-primary">
-              Folders
-            </h1>
+        {showHeader && (
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="font-serif text-heading-lg font-normal text-text-primary">
+                Folders
+              </h1>
+            </div>
+            <Button
+              onClick={handleCreateFolder}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Folder</span>
+            </Button>
           </div>
-          <Button
-            onClick={handleCreateFolder}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Folder</span>
-          </Button>
-        </div>
+        )}
 
         {/* Folders Grid */}
         {isLoading ? (
@@ -230,6 +248,8 @@ const FoldersList = ({ parentId }: { parentId?: string }) => {
       </div>
     </ModalProvider>
   );
-};
+});
+
+FoldersList.displayName = "FoldersList";
 
 export default FoldersList;

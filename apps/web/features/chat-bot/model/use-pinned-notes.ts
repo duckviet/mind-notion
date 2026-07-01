@@ -13,12 +13,22 @@ export function usePinnedNotes({ droppedNotePayload }: UsePinnedNotesParams) {
     if (!droppedNotePayload) return;
 
     const { note, droppedAt } = droppedNotePayload;
-    const title = (note.title || "Untitled note").trim();
-    const content = (note.content || "").trim();
+    const isFolder = note.type === "folder";
+    const title = (note.title || "Untitled").trim();
+    const content = isFolder
+      ? `Folder ID: ${note.id}\nThis is a pinned folder. Use folders.read with this ID to inspect its notes.`
+      : (note.content || "").trim();
 
     setPinnedNotes((prev) => {
       const next = prev.filter((item) => item.id !== note.id);
-      next.push({ id: note.id, title, content, preview: content.slice(0, 240), droppedAt });
+      next.push({
+        id: note.id,
+        title,
+        content,
+        preview: isFolder ? "Folder containing notes" : content.slice(0, 240),
+        droppedAt,
+        type: note.type,
+      });
       return next;
     });
 
@@ -45,6 +55,29 @@ export function usePinnedNotes({ droppedNotePayload }: UsePinnedNotesParams) {
     setActivePinnedId(null);
   };
 
+  const handlePinNote = (item: { id: string; title: string; content?: string; type?: "note" | "folder" }) => {
+    const isFolder = item.type === "folder";
+    const title = (item.title || "Untitled").trim();
+    const content = isFolder
+      ? `Folder ID: ${item.id}\nThis is a pinned folder. Use folders.read with this ID to inspect its notes.`
+      : (item.content || "").trim();
+
+    setPinnedNotes((prev) => {
+      const next = prev.filter((x) => x.id !== item.id);
+      next.push({
+        id: item.id,
+        title,
+        content,
+        preview: isFolder ? "Folder containing notes" : content.slice(0, 240),
+        droppedAt: Date.now(),
+        type: item.type,
+      });
+      return next;
+    });
+
+    setActivePinnedId(item.id);
+  };
+
   return {
     pinnedNotes,
     activePinnedId,
@@ -52,5 +85,6 @@ export function usePinnedNotes({ droppedNotePayload }: UsePinnedNotesParams) {
     activePinnedNote,
     handleRemovePinnedNote,
     handleClearPinnedNotes,
+    handlePinNote,
   };
 }

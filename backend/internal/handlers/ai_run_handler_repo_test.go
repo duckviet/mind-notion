@@ -301,6 +301,7 @@ func newAIRunHandlerTestRouter(t *testing.T, python http.HandlerFunc, note *mode
 			},
 		},
 		aiRunHandlerTestNoteService{note: note},
+		nil,
 		repo,
 	)
 

@@ -13,6 +13,9 @@ properties:
   note_id:
     type: string
     example: "note-123"
+  folder_id:
+    type: string
+    example: "folder-123"
   conversation_id:
     type: string
     example: "8f84f155-5a42-4d63-9ba3-c3f6f750f04f"

@@ -11,7 +11,7 @@ import {
   GripVertical,
 } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
-import { SortableItem } from "@/shared/components/dnd";
+import { SortableItem, DraggableItem } from "@/shared/components/dnd";
 import { FolderNode } from "./types";
 import { getFolderSortableId, isFolderRoute } from "./utils";
 import { NoteItem } from "./NoteItem";
@@ -68,22 +68,35 @@ export function FolderItem({
               <span className="inline-block size-6" />
             )}
 
-            <Link
-              href={`/folder/${folder.id}`}
-              className={cn(
-                "flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-                isActive
-                  ? "bg-surface-100 font-medium text-text-primary"
-                  : "text-text-muted hover:bg-surface-100/60 hover:text-text-primary",
-              )}
+            <DraggableItem
+              id={`sidebar-folder-${folder.id}`}
+              data={{
+                type: "folder",
+                note: {
+                  id: folder.id,
+                  title: folder.name,
+                  content: "",
+                  type: "folder",
+                },
+              }}
             >
-              {isExpanded ? (
-                <FolderOpen className="size-4 shrink-0" />
-              ) : (
-                <Folder className="size-4 shrink-0" />
-              )}
-              <span className="truncate">{folder.name}</span>
-            </Link>
+              <Link
+                href={`/folder/${folder.id}`}
+                className={cn(
+                  "flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+                  isActive
+                    ? "bg-surface-100 font-medium text-text-primary"
+                    : "text-text-muted hover:bg-surface-100/60 hover:text-text-primary",
+                )}
+              >
+                {isExpanded ? (
+                  <FolderOpen className="size-4 shrink-0" />
+                ) : (
+                  <Folder className="size-4 shrink-0" />
+                )}
+                <span className="truncate">{folder.name}</span>
+              </Link>
+            </DraggableItem>
 
             <button
               type="button"

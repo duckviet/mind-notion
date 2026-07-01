@@ -7,6 +7,7 @@ import {
   listAiConversations,
   provideAiRunConsent,
   updateAiConversation,
+  updateNote,
   type ListNotes200,
   type ReqCreateAIRun,
 } from "@/shared/services/generated/api";
@@ -18,6 +19,8 @@ import {
   invalidateTopOfMindNotes,
 } from "@/shared/hooks/query-invalidations";
 import { notesKeys } from "@/shared/hooks/query-keys";
+import { toast } from "sonner";
+import { markdownToHtml } from "@mind-notion/editor";
 
 import type { ChatMessage, ChatbotPendingConsent } from "./chatbot-types";
 import { usePinnedNotes } from "./use-pinned-notes";
@@ -173,8 +176,10 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
     setInputValue("");
     setStreamError(null);
 
-    const selectedNoteId =
-      pinned.activePinnedNote?.id ?? pinned.pinnedNotes[0]?.id ?? "";
+    const activeNote = pinned.activePinnedNote ?? pinned.pinnedNotes[0] ?? null;
+    const isFolder = activeNote?.type === "folder";
+    const selectedNoteId = !isFolder ? (activeNote?.id ?? "") : "";
+    const selectedFolderId = isFolder ? (activeNote?.id ?? "") : "";
     const userMessageId = newId("user");
 
     setMessages((prev) => [
@@ -190,7 +195,8 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
     const payload: ReqCreateAIRun = {
       workspace_id: "default-workspace",
       session_id: sessionIdRef.current,
-      note_id: selectedNoteId,
+      note_id: selectedNoteId || undefined,
+      folder_id: selectedFolderId || undefined,
       conversation_id: activeConversationId ?? undefined,
       display_user_message: prompt,
       message: {
@@ -484,5 +490,33 @@ export function useChatbot({ droppedNotePayload }: UseChatbotParams) {
     handleRenameConversation,
     handleDeleteConversation,
     handleSend,
+    handleInsertToNote: async (text: string) => {
+      const noteId = pinned.activePinnedId ?? (pinned.pinnedNotes[0]?.id || "");
+      if (!noteId) {
+        toast.error("Please drag or pin a note to insert this content.");
+        return;
+      }
+
+      try {
+        const currentNote = await getNote(noteId);
+        const originalContent = currentNote.content ?? "";
+        const htmlToInsert = `<div><br/><hr/><p><strong>Maind Response:</strong></p>${markdownToHtml(text)}</div>`;
+        const updatedContent = `${originalContent}${htmlToInsert}`;
+
+        await updateNote(noteId, {
+          id: noteId,
+          title: currentNote.title,
+          content: updatedContent,
+        });
+
+        await invalidateNoteDetail(queryClient, noteId);
+        await invalidateNoteLists(queryClient);
+
+        toast.success("Successfully inserted content into note!");
+      } catch (error) {
+        console.error("Failed to insert content to note:", error);
+        toast.error("Failed to insert content to note.");
+      }
+    },
   };
 }

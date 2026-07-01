@@ -6,6 +6,7 @@ import React, {
   useCallback,
   Fragment,
   useEffect,
+  useRef,
 } from "react";
 import dynamic from "next/dynamic";
 import { useFolder, useFolders } from "@/shared/hooks/useFolders";
@@ -20,6 +21,7 @@ import {
   Clock,
   Settings,
   MoreHorizontal,
+  FolderPlus,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useChatbotSidebarStore } from "@/features/chat-bot";
@@ -50,7 +52,8 @@ import { AnimateCardProvider, NoteCard } from "@/entities/note";
 import { ModalProvider, useModal } from "@/shared/contexts/ModalContext";
 import { FolderCard } from "@/entities/folder";
 import { AddNoteForm } from "@/features/add-note";
-import { FoldersList } from "@/widgets/folders-list";
+import { FoldersList, FoldersListRef } from "@/widgets/folders-list";
+import { Button } from "@/shared/components/ui/button";
 import {
   DragEndEvent,
   DraggableItem,
@@ -96,6 +99,7 @@ interface FolderPageContentProps {
 
 function FolderPageContent({ folderId }: FolderPageContentProps) {
   const router = useRouter();
+  const foldersListRef = useRef<FoldersListRef>(null);
   const { isOpen, setIsOpen } = useChatbotSidebarStore();
   const [query, setQuery] = useState("");
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -381,22 +385,28 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
       ) : null}
 
       {/* Search */}
-      <div className="mb-6 flex gap-4 items-stretch w-full">
+      <div className="mb-6 flex gap-2 items-stretch w-full">
         <SearchField
           className="flex-1 rounded-md"
           query={query}
           setQuery={setQuery}
           onEnter={() => {}}
         />
-        <button
+        <Button
+          onClick={() => foldersListRef.current?.openCreateModal()}
+          className="[&_svg]:size-5 h-12 w-12 rounded-lg px-2 bg-surface-50 hover:bg-surface-100 flex items-center justify-center"
+          title="New Folder"
+          aria-label="New Folder"
+        >
+          <FolderPlus className="w-6 h-6 text-text-primary" />
+        </Button>
+        <Button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 bg-surface-50 text-white hover:bg-neutral-800 rounded-lg transition-colors font-medium select-none cursor-pointer"
+          className="[&_svg]:size-6 flex h-12 w-12 items-center gap-2 bg-surface-50 hover:bg-surface-100 rounded-lg transition-colors font-medium select-none cursor-pointer"
         >
-        <div className="flex aspect-square size-8 items-center justify-center rounded-md border border-sidebar-border/50">
-          <MindNotionAi className="rounded-lg dark:text-white" />
-        </div>
-        </button>
+          <MindNotionAi className="rounded-lg text-text-primary" />
+        </Button>
       </div>
 
       {/* Notes Grid */}
@@ -413,7 +423,7 @@ function FolderPageContent({ folderId }: FolderPageContentProps) {
               onFocusEdit={handleFocusEdit}
             />
           </DragAwareTomModal>
-          <FoldersList parentId={folderId} />
+          <FoldersList ref={foldersListRef} parentId={folderId} showHeader={false} />
 
           <MasonryGrid data={notes}>
             <AddNoteForm folder_id={folderId} onCreate={createNote} />

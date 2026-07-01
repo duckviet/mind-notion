@@ -79,37 +79,37 @@ export const CollaborativeSidebar: React.FC<CollaborativeSidebarProps> = ({
       animate={{ width: 360 }}
       transition={{ type: "spring", stiffness: 260, damping: 30 }}
       className={cn(
-        "flex shrink-0 flex-col overflow-y-auto rounded-lg p-2 shadow-none border border-border bg-card",
+        "flex shrink-0 flex-col overflow-y-auto rounded-lg shadow-none border border-border bg-card",
         className,
       )}
     >
       {/* Tab Switcher */}
-      <div className="flex border-b border-border/60 mb-4 text-xs font-semibold shrink-0">
-        <button
+      <div className="flex border-b border-border/60 mb-4 text-xs font-semibold shrink-0 px-2">
+        <Button
           type="button"
           onClick={() => setActiveTab("comments")}
           className={cn(
-            "flex-1 py-2 text-center transition-colors border-b-2 cursor-pointer select-none",
+            "flex-1 bg-transparent hover:bg-transparent rounded-none py-2 text-center transition-colors border-b-2 cursor-pointer select-none",
             activeTab === "comments"
               ? "border-black text-black font-semibold dark:border-white dark:text-white"
               : "border-transparent text-text-muted hover:text-text-primary"
           )}
         >
-          💬 Comments
-        </button>
-        <button
+          Comments
+        </Button>
+        <Button
           type="button"
           onClick={() => setActiveTab("maind")}
           className={cn(
-            "flex-1 py-2 text-center transition-colors border-b-2 cursor-pointer select-none flex items-center justify-center gap-1.5",
+            "flex-1 bg-transparent hover:bg-transparent rounded-none py-2 text-center transition-colors border-b-2 cursor-pointer select-none flex items-center justify-center gap-1.5",
             activeTab === "maind"
               ? "border-black text-black font-semibold dark:border-white dark:text-white"
               : "border-transparent text-text-muted hover:text-text-primary"
           )}
         >
-          <MindNotionAi className="w-3.5 h-3.5 shrink-0" />
+          <MindNotionAi className="w-4 h-4 shrink-0" />
           Maind
-        </button>
+        </Button>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
@@ -138,10 +138,10 @@ export const CollaborativeSidebar: React.FC<CollaborativeSidebarProps> = ({
             )}
           </div>
         ) : (
-          <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0 min-w-0 overflow-hidden px-2">
             <Chatbot
               droppableId="chat-bot-collab-sidebar"
-              className="w-full flex-1 border-none shadow-none bg-transparent max-h-[calc(100vh-140px)]"
+              className="w-full flex-1 border-none shadow-none bg-transparent max-h-[calc(100vh-140px)] rounded-md"
             />
           </div>
         )}
