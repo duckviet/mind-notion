@@ -174,29 +174,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                required:
-                  - id
-                  - title
-                  - last_message_at
-                  - created_at
-                  - updated_at
-                properties:
-                  id:
-                    type: string
-                    example: 8f84f155-5a42-4d63-9ba3-c3f6f750f04f
-                  title:
-                    type: string
-                    example: Summarize this note
-                  last_message_at:
-                    type: string
-                    format: date-time
-                  created_at:
-                    type: string
-                    format: date-time
-                  updated_at:
-                    type: string
-                    format: date-time
+                $ref: '#/components/schemas/AIConversation'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -301,20 +279,14 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - title
-              properties:
-                title:
-                  type: string
-                  example: Project planning
+              $ref: '#/components/schemas/Req_UpdateAIConversation'
       responses:
         '200':
           description: Updated AI conversation
           content:
             application/json:
               schema:
-                $ref: '#/paths/~1ai~1conversations/post/responses/201/content/application~1json/schema'
+                $ref: '#/components/schemas/AIConversation'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -2391,6 +2363,9 @@ components:
         note_id:
           type: string
           example: note-123
+        folder_id:
+          type: string
+          example: folder-123
         conversation_id:
           type: string
           example: 8f84f155-5a42-4d63-9ba3-c3f6f750f04f
@@ -2475,6 +2450,38 @@ components:
           example: This is a polished sentence.
       required:
         - text
+    AIConversation:
+      type: object
+      required:
+        - id
+        - title
+        - last_message_at
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          example: 8f84f155-5a42-4d63-9ba3-c3f6f750f04f
+        title:
+          type: string
+          example: Summarize this note
+        last_message_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Req_UpdateAIConversation:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: Project planning
     Comment:
       type: object
       properties:

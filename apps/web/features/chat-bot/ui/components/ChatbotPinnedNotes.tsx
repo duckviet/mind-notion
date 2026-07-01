@@ -1,9 +1,10 @@
-import { FileText, X } from "lucide-react";
+import { FileText, Folder, X } from "lucide-react";
 import { cn } from "@/shared/utils/cn";
 
 type PinnedNoteItem = {
   id: string;
   title: string;
+  type?: "note" | "folder";
 };
 
 interface ChatbotPinnedNotesProps {
@@ -47,7 +48,11 @@ export function ChatbotPinnedNotes({
                 className="flex items-center gap-1.5 px-2 py-1"
                 title={note.title}
               >
-                <FileText className="w-3.5 h-3.5" />
+                {note.type === "folder" ? (
+                  <Folder className="w-3.5 h-3.5 text-[#8b5cf6]" />
+                ) : (
+                  <FileText className="w-3.5 h-3.5 text-[#3b82f6]" />
+                )}
                 <span className="max-w-[140px] truncate">{note.title}</span>
               </button>
               <button

@@ -17,6 +17,8 @@ type ReqCreateAiRun struct {
 
 	NoteId string `json:"note_id,omitempty"`
 
+	FolderId string `json:"folder_id,omitempty"`
+
 	ConversationId string `json:"conversation_id,omitempty"`
 
 	DisplayUserMessage string `json:"display_user_message,omitempty"`

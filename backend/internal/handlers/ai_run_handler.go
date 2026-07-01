@@ -25,6 +25,7 @@ import (
 type AIRunAPI struct {
 	config           *config.Config
 	noteService      service.NoteService
+	folderService    service.FolderService
 	aiRuns           repository.AIRunRepository
 	httpClient       *http.Client
 	streamHTTPClient *http.Client
@@ -57,11 +58,12 @@ type aiRunHistory struct {
 
 var _ interfaces.AIRunAPIHandler = (*AIRunAPI)(nil)
 
-func NewAIRunAPI(cfg *config.Config, noteService service.NoteService, aiRuns repository.AIRunRepository) *AIRunAPI {
+func NewAIRunAPI(cfg *config.Config, noteService service.NoteService, folderService service.FolderService, aiRuns repository.AIRunRepository) *AIRunAPI {
 	timeout := time.Duration(cfg.AI.RequestTimeoutMs) * time.Millisecond
 	return &AIRunAPI{
 		config:           cfg,
 		noteService:      noteService,
+		folderService:    folderService,
 		aiRuns:           aiRuns,
 		httpClient:       &http.Client{Timeout: timeout},
 		streamHTTPClient: &http.Client{},
@@ -192,6 +194,7 @@ type createRunRequest struct {
 	WorkspaceID        string `json:"workspace_id" binding:"required"`
 	SessionID          string `json:"session_id" binding:"required"`
 	NoteID             string `json:"note_id"`
+	FolderID           string `json:"folder_id"`
 	ConversationID     string `json:"conversation_id"`
 	DisplayUserMessage string `json:"display_user_message"`
 	Message            struct {
@@ -240,6 +243,7 @@ func (api *AIRunAPI) CreateRun(c *gin.Context) {
 	user := userVal.(*dbmodels.User)
 
 	trimmedNoteID := strings.TrimSpace(req.NoteID)
+	trimmedFolderID := strings.TrimSpace(req.FolderID)
 
 	noteVersion := 0
 	resourceNoteID := ""
@@ -287,7 +291,18 @@ func (api *AIRunAPI) CreateRun(c *gin.Context) {
 
 		resourceNoteID = trimmedNoteID
 		noteVersion = note.Version
+	}
 
+	if trimmedFolderID != "" && api.folderService != nil {
+		folder, err := api.folderService.GetFolderByID(c.Request.Context(), trimmedFolderID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "folder not found"})
+			return
+		}
+		if folder.UserID != user.ID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "forbidden"})
+			return
+		}
 	}
 
 	displayUserMessage := strings.TrimSpace(req.DisplayUserMessage)

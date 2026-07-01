@@ -63,6 +63,8 @@ export default function Chatbot({
     handleRemovePinnedNote,
     handleClearPinnedNotes,
     handleSend,
+    handleInsertToNote,
+    handlePinNote,
   } = useChatbot({ droppedNotePayload });
 
   // Auto-navigate to chat view when an existing conversation is selected
@@ -99,6 +101,12 @@ export default function Chatbot({
     setView("chat");
   };
 
+  const handleStartChat = (prompt: string) => {
+    handleNewConversation();
+    setView("chat");
+    void handleSend(prompt);
+  };
+
   return (
     <DroppableZone
       id={droppableId}
@@ -123,6 +131,8 @@ export default function Chatbot({
             onRename={handleRenameConversation}
             onDelete={handleDeleteConversation}
             onClose={() => setIsOpen(false)}
+            onStartChat={handleStartChat}
+            onPinNote={handlePinNote}
           />
         </div>
 
@@ -153,6 +163,7 @@ export default function Chatbot({
             messages={messages}
             activePinnedNote={activePinnedNote}
             isStreaming={isStreaming}
+            onInsertToNote={handleInsertToNote}
           />
 
           <ChatbotComposer
@@ -167,6 +178,7 @@ export default function Chatbot({
             onSend={handleSend}
             onApproveConsent={handleApproveConsent}
             onDenyConsent={handleDenyConsent}
+            onPinNote={handlePinNote}
           />
         </div>
       </div>

@@ -13,14 +13,25 @@ import (
 
 type AIInternalAPI struct {
 	noteService   service.NoteService
+	folderService service.FolderService
 	noteChunkRepo repository.NoteChunkRepository
 	config        *config.Config
 }
 
 var _ interfaces.AIInternalAPIHandler = (*AIInternalAPI)(nil)
 
-func NewAIInternalAPI(noteService service.NoteService, noteChunkRepo repository.NoteChunkRepository, cfg *config.Config) *AIInternalAPI {
-	return &AIInternalAPI{noteService: noteService, noteChunkRepo: noteChunkRepo, config: cfg}
+func NewAIInternalAPI(
+	noteService service.NoteService,
+	folderService service.FolderService,
+	noteChunkRepo repository.NoteChunkRepository,
+	cfg *config.Config,
+) *AIInternalAPI {
+	return &AIInternalAPI{
+		noteService:   noteService,
+		folderService: folderService,
+		noteChunkRepo: noteChunkRepo,
+		config:        cfg,
+	}
 }
 
 type aiActor struct {
@@ -83,6 +94,12 @@ func (api *AIInternalAPI) ExecuteTool(c *gin.Context) {
 		api.executeNotesRead(c, req)
 	case "notes.write":
 		api.executeNotesWrite(c, req)
+	case "notes.list":
+		api.executeNotesList(c, req)
+	case "folders.list":
+		api.executeFoldersList(c, req)
+	case "folders.read":
+		api.executeFoldersRead(c, req)
 	case "rag.search":
 		api.executeRAGSearch(c, req)
 	default:
@@ -95,6 +112,7 @@ func (api *AIInternalAPI) ExecuteTool(c *gin.Context) {
 				Retryable: false,
 			},
 		})
+		return
 	}
 }
 
@@ -354,4 +372,165 @@ func (api *AIInternalAPI) isAuthorized(c *gin.Context) bool {
 
 	provided := extractBearerToken(c)
 	return provided == expected
+}
+
+func (api *AIInternalAPI) executeNotesList(c *gin.Context, req aiToolExecuteRequest) {
+	userID := req.Actor.UserID
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "INVALID_INPUT", Message: "actor.user_id is required", Retryable: false},
+		})
+		return
+	}
+
+	folderID, _ := req.Input["folder_id"].(string)
+	query, _ := req.Input["query"].(string)
+
+	var folderIDPtr *string
+	if folderID != "" {
+		folderIDPtr = &folderID
+	}
+	var queryPtr *string
+	if query != "" {
+		queryPtr = &query
+	}
+
+	params := repository.NoteListParams{
+		Limit:    200,
+		FolderID: folderIDPtr,
+		Query:    queryPtr,
+	}
+
+	notes, _, err := api.noteService.GetNotesByUserID(c.Request.Context(), userID, params)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "INTERNAL", Message: err.Error(), Retryable: false},
+		})
+		return
+	}
+
+	outputNotes := []gin.H{}
+	for _, note := range notes {
+		outputNotes = append(outputNotes, gin.H{
+			"id":         note.ID,
+			"title":      note.Title,
+			"folder_id":  note.FolderID,
+			"updated_at": note.UpdatedAt,
+		})
+	}
+
+	c.JSON(http.StatusOK, aiToolResponse{
+		OK:         true,
+		ToolCallID: req.ToolCallID,
+		Output: gin.H{
+			"notes": outputNotes,
+		},
+	})
+}
+
+func (api *AIInternalAPI) executeFoldersList(c *gin.Context, req aiToolExecuteRequest) {
+	userID := req.Actor.UserID
+	if userID == "" {
+		c.JSON(http.StatusBadRequest, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "INVALID_INPUT", Message: "actor.user_id is required", Retryable: false},
+		})
+		return
+	}
+
+	params := repository.FolderListParams{
+		Limit: 200,
+	}
+
+	folders, _, err := api.folderService.GetFoldersByUserID(c.Request.Context(), userID, params)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "INTERNAL", Message: err.Error(), Retryable: false},
+		})
+		return
+	}
+
+	outputFolders := []gin.H{}
+	for _, folder := range folders {
+		outputFolders = append(outputFolders, gin.H{
+			"id":        folder.ID,
+			"name":      folder.Name,
+			"parent_id": folder.ParentID,
+		})
+	}
+
+	c.JSON(http.StatusOK, aiToolResponse{
+		OK:         true,
+		ToolCallID: req.ToolCallID,
+		Output: gin.H{
+			"folders": outputFolders,
+		},
+	})
+}
+
+func (api *AIInternalAPI) executeFoldersRead(c *gin.Context, req aiToolExecuteRequest) {
+	folderID, _ := req.Input["folder_id"].(string)
+	if folderID == "" {
+		c.JSON(http.StatusBadRequest, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "INVALID_INPUT", Message: "folder_id is required", Retryable: false},
+		})
+		return
+	}
+
+	folder, err := api.folderService.GetFolderByID(c.Request.Context(), folderID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "NOT_FOUND", Message: "folder not found", Retryable: false},
+		})
+		return
+	}
+
+	if folder.UserID != req.Actor.UserID {
+		c.JSON(http.StatusForbidden, aiToolResponse{
+			OK:         false,
+			ToolCallID: req.ToolCallID,
+			Error:      &aiToolError{Code: "FORBIDDEN", Message: "missing permission folder:read", Retryable: false},
+		})
+		return
+	}
+
+	notes := []gin.H{}
+	for _, n := range folder.Notes {
+		notes = append(notes, gin.H{
+			"id":         n.ID,
+			"title":      n.Title,
+			"updated_at": n.UpdatedAt,
+		})
+	}
+
+	subfolders := []gin.H{}
+	for _, child := range folder.Children {
+		subfolders = append(subfolders, gin.H{
+			"id":   child.ID,
+			"name": child.Name,
+		})
+	}
+
+	c.JSON(http.StatusOK, aiToolResponse{
+		OK:         true,
+		ToolCallID: req.ToolCallID,
+		Output: gin.H{
+			"id":         folder.ID,
+			"name":       folder.Name,
+			"parent_id":  folder.ParentID,
+			"subfolders": subfolders,
+			"notes":      notes,
+		},
+	})
 }

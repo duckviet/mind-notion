@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React, { useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNotes } from "@/shared/hooks/useNotes";
@@ -21,8 +21,10 @@ import {
   useTomVisibility,
 } from "@/features/top-of-mind";
 import { useChatbotSidebarStore } from "@/features/chat-bot";
-import { FoldersList } from "@/widgets/folders-list";
+import { FoldersList, FoldersListRef } from "@/widgets/folders-list";
 import { AddNoteForm } from "@/features/add-note";
+import { FolderPlus } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
 
 import { useHomeState } from "../model/useHomeState";
 import { useHomeDnd } from "../model/useHomeDnd";
@@ -62,6 +64,7 @@ const TopOfMindSkeleton = () => (
 
 export function HomePageContent() {
   const state = useHomeState();
+  const foldersListRef = useRef<FoldersListRef>(null);
   const { setDroppedNotePayload, isOpen, setIsOpen } = useChatbotSidebarStore();
 
   const {
@@ -118,7 +121,7 @@ export function HomePageContent() {
   return (
     <div className="min-h-screen overflow-hidden bg-background">
       <div className="p-6 space-y-6">
-        <div className="flex gap-4 items-center w-full">
+        <div className="flex gap-2 items-center w-full">
           <SearchField
             className="flex-1 rounded-md"
             query={state.query}
@@ -126,19 +129,26 @@ export function HomePageContent() {
             onEnter={() => { }}
           />
       
-      {!isOpen && 
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex size-8 items-center justify-center transition-colors"
-          aria-label="Open chatbot"
-          title="Mở chatbot hoặc kéo note vào đây"
-        >
-          <div className="flex aspect-square size-12 items-center justify-center rounded-md bg-surface-50 hover:bg-surface-100 p-1">
-            <MindNotionAi className="rounded-lg dark:text-white" />
-          </div>
-        </button> 
-      }
+          <Button
+            onClick={() => foldersListRef.current?.openCreateModal()}
+            className="[&_svg]:size-5 h-12 w-12 rounded-lg px-2 bg-surface-50 hover:bg-surface-100 flex items-center justify-center"
+            title="New Folder"
+            aria-label="New Folder"
+          >
+            <FolderPlus className="w-5 h-5 text-text-primary" />
+          </Button>
+
+          {!isOpen && (
+            <Button
+              type="button"
+              onClick={() => setIsOpen(!isOpen)}
+              className="[&_svg]:size-6 flex h-12 w-12 items-center gap-2 bg-surface-50 hover:bg-surface-100 rounded-lg transition-colors font-medium select-none cursor-pointer"
+              aria-label="Open chatbot"
+              title="Mở chatbot hoặc kéo note vào đây"
+            >
+              <MindNotionAi className="rounded-lg text-text-primary" />
+            </Button> 
+          )}
         </div>
 
         <SortableContext
@@ -168,7 +178,7 @@ export function HomePageContent() {
           />
         </DragAwareTomModal>
 
-        <FoldersList />
+        <FoldersList ref={foldersListRef} showHeader={false} />
 
         <DroppableZone
           id="grid-zone"

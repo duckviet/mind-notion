@@ -58,6 +58,10 @@ Req_InlineEdit:
   $ref: "./AI/Req_InlineEdit.yaml"
 Res_InlineEdit:
   $ref: "./AI/Res_InlineEdit.yaml"
+AIConversation:
+  $ref: "./AI/AIConversation.yaml"
+Req_UpdateAIConversation:
+  $ref: "./AI/Req_UpdateAIConversation.yaml"
 
 Comment:
   $ref: "./Comment/Comment.yaml"

@@ -9,6 +9,7 @@ export interface DraggableItemProps {
   style?: CSSProperties;
   disabled?: boolean;
   type?: string;
+  data?: Record<string, any>;
 }
 
 /**
@@ -21,11 +22,13 @@ export function DraggableItem({
   style = {},
   disabled = false,
   type = "note",
+  data,
 }: DraggableItemProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
       id,
       disabled,
+      data,
     });
 
   const draggableStyle: CSSProperties = {

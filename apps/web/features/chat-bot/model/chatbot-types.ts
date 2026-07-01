@@ -6,6 +6,7 @@ export type ChatbotDroppedNote = {
   id: string;
   title?: string | null;
   content?: string | null;
+  type?: "note" | "folder";
 };
 
 export type ChatbotDropPayload = {
@@ -23,4 +24,5 @@ export type PinnedNote = {
   content: string;
   preview: string;
   droppedAt: number;
+  type?: "note" | "folder";
 };
